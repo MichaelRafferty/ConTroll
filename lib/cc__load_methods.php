@@ -42,10 +42,10 @@ function cc__metaval($value) :string {
 // common build the notes fields for the credit card build order routines, builds notes and metadata
 // Registration order line items
 function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : array {
-    // notes for alexia: 'reg.01'~memid~perid~newperid~transid~memCategory~glnum
-    // metadata 10: reg.01,memid,perid,newperid,planname,transid,custId,glnum, regid, rowno
+    // notes for alexia: 'reg.02'^memid^perid^newperid^transid^memCategory^glnum
+    // metadata 10: reg.02,memid,perid,newperid,planname,transid,custId,glnum, regid, rowno
 
-    $version = 'reg.01';
+    $version = 'reg.02';
     if (array_key_exists('perid', $badge))
         $perid = cc__metaval($badge['perid']);
     else
@@ -73,7 +73,7 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
         $planName = 'missing';
     }
 
-    $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$memCategory,$glNum));
+    $reg['note'] = implode('^', array($version,$badge['memId'],$perid,$newperid,$transid,$memCategory,$glNum));
     $reg['metadata'] = array(
         'version' => $version,
         'memId' => cc__metaval($badge['memId']),
@@ -92,15 +92,15 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
 
 // Payments on Payment Plan items
 function cc_planNotes($ep, $transId) : array {
-    // note: 'pplan.01',planId~planName~payorPerid~payorNewPerid~transid
+    // note: 'pplan.02',planId^planName^payorPerid^payorNewPerid^transid
     // meta: 8: version, planId, planName, payorPeri, payorNewPerid, transId, currentPayment, BalanceDue
-    $version = 'pplan.01';
+    $version = 'pplan.02';
     $planName = $ep['name'] !== null ? cc__metaval($ep['name']) : 'missing';
     $planId = $ep['id'] !== null ? cc__metaval($ep['id']) : 'missing';
     $payorPerid = $ep['perid'] !== null ? cc__metaval($ep['perid']) : 'missing';
     $payorNewPerid = $ep['newperid'] !== null ? cc__metaval($ep['newperid']) : 'missing';
 
-    $plan['note'] = implode("~", array($version, $planId, $planName, $payorPerid, $payorNewPerid, $transId));
+    $plan['note'] = implode("^", array($version, $planId, $planName, $payorPerid, $payorNewPerid, $transId));
     $plan['metadata'] = array(
         'version' => $version,
         'planId' => $planId,
@@ -116,10 +116,10 @@ function cc_planNotes($ep, $transId) : array {
 
 // Exhibitor Space Payments
 function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
-    // Note: sp.01,regionName,exhibitorId,incMbrAllowed,AddUsed,transid,glnum
-    // MetaData: 9: sp.01,regionName,exhibitorId~exhibitorNum~incMbrAllowed/incMbrUsed~addMbrAllowed/addUsed~spaceId~transid~glnum
+    // Note: sp.02,regionName,exhibitorId,incMbrAllowed,AddUsed,transid,glnum
+    // MetaData: 9: sp.02,regionName,exhibitorId^exhibitorNum^incMbrAllowed/incMbrUsed^addMbrAllowed/addUsed^spaceId^transid^glnum
 
-    $version = 'sp.01';
+    $version = 'sp.02';
     if (array_key_exists('glNum', $space)) {
         $glNum = $space['glNum'];
     } else {
@@ -130,7 +130,7 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
     else
         $exhNum = '';
 
-    $space['note'] = implode("~", array($version, $space['regionName'], $space['exhibitorId'],
+    $space['note'] = implode("^", array($version, $space['regionName'], $space['exhibitorId'],
         $space['includedMemberships'],$addCount, $transid, $glNum));
 
     $space['metadata'] = array(
@@ -150,14 +150,14 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
 
 // exhibitor mail in fee
 function cc_mailFeeNotes($fee, $transid) : array {
-    // 'fee.01',name~feeGL
-    $version = 'mail.01';
+    // 'fee.02',name^feeGL
+    $version = 'mail.02';
     if (array_key_exists('glNum', $fee))
         $glNum = $fee['glNum'];
     else
         $glNum = '';
 
-    $fee['note'] = implode("~", array($version, $glNum));
+    $fee['note'] = implode("^", array($version, $glNum));
     $fee['metadata'] = array(
         'version' => $version,
         'regionName' => cc__metaval($fee['name']),
@@ -169,9 +169,9 @@ function cc_mailFeeNotes($fee, $transid) : array {
 
 // plan deferement amounts
 function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $loginNewperid, $transid) : array {
-    // planName~planId~nonPlanAmt~downPmt~balanceDue~perid~newperid~transid
-    $version = 'plan.01';
-    $newPlan['note'] = implode('~', array($version,$planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
+    // planName^planId^nonPlanAmt^downPmt^balanceDue^perid^newperid^transid
+    $version = 'plan.02';
+    $newPlan['note'] = implode('^', array($version,$planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
     $newPlan['metadata'] = array(
         'version' => $version,
         'planName' => cc__metaval($planName),
@@ -190,7 +190,7 @@ function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,
 function cc_artSalesNotes($art, $payorId, $transid) : array {
     // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid, glnum (placeholder))
     // default perid to payorId if null (non bid on item)
-    $version = 'art.01';
+    $version = 'art.02';
     $perid = $art['perid'];
     if ($perid == null)
         $perid = $payorId;
@@ -200,7 +200,8 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         $exhNum = $art['exhibitorNumber'];
     else
         $exhNum = '';
-    $art['note'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
+    $art['note'] = implode('^',
+        array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, $art['revenueGlNum']));
 
     $art['metadata'] = array(
         'version' => $version,
@@ -212,7 +213,7 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         'artSalesId' =>  cc__metaval($art['artSalesId']),
         'priceType' => cc__metaval($art['priceType']),
         'transId' => cc__metaval($transid),
-        'glNum' => 'Future'
+        'glNum' => cc__metaval($art['revenueGlNum']),
     );
     return $art;
 }

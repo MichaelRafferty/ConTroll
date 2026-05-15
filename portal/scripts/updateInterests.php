@@ -45,8 +45,13 @@ $personType = getSessionVar('idType');
 $currentPerson = $_POST['currentPerson'];
 $currentPersonType = $_POST['currentPersonType'];
 
+if (!validateAccess($currentPerson, $currentPersonType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'You do not have permission to update this account.'));
+    exit();
+}
+
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPerson;
+$response['currentPerson'] = $currentPerson;
 $response['personId'] =$personId;
 $response['personType'] = $personType;
 $rows_upd = updateMemberInterests($conid, $currentPerson, $currentPersonType, $personId, $personType);

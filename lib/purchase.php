@@ -21,13 +21,10 @@ WHERE m.conid=? OR m.conid=?;
 EOQ;
         } else {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum, c.variablePrice
 FROM memLabel m
-WHERE
-    (m.conid=? OR m.conid=?)
-    AND startdate <= CURRENT_TIMESTAMP()
-    AND enddate > CURRENT_TIMESTAMP()
-;
+JOIN memCategories c ON m.memCategory = c.memCategory
+WHERE m.conid=? OR m.conid=?;
 EOQ;
         }
         $mtypes = array ();

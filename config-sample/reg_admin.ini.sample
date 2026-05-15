@@ -87,6 +87,18 @@ minComp="2021"
 compLen="365"
 ;;; conLen: how many days long is the convention
 conLen="3"
+;;; maxHistoryYears - on annual rollover, clear history older that the specified number of years before the new conid.
+;;; Note if missing, the retention period is indefinite (not automatically cleared)
+;;; maxHistoryYears: default for all history tables
+;;; maxPerinfoHistoryYears: override of default for the perinfoHistory table
+;;; maxRegHistoryYears: override of default for the regHistory table
+;;; maxExhibitorHistoryYears: override of default for the exhibitorHistory table
+;;; maxArtItemsHistoryYears: override of default for the artItemsHistory table
+; maxHistoryYears=7
+; maxPerinfoHistoryYears=7
+; maxRegHistoryYears=7
+; maxExhibitorHistoryYears=7
+; maxArtItemsHistoryYears=7
 
 ;;; The debug [debug] section sets debug log file flags for each section of the system.  0 = debug logs from that section disavbled
 ;   Some debug flags are 0/1, others are bitmasks.  The comments below indicate which type each section uses.  These debug statements are

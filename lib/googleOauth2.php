@@ -13,17 +13,16 @@
             return $oauthParams;
         }
 
-        $googleConf = get_conf('google');
         if ($redirectURI == null || $redirectURI == '') {
-            $redirectURI = $googleConf['redirect_base'];
+            $redirectURI = getConfValue('portal', 'redirect_base', '/');
         }
 
         // so we get back to here, mark that we are doing a google authentication session
         setSessionVar('oauth2', 'google');
         setSessionVar('oauth2pass', 'startup');
         $provider = new Google([
-                                   'clientId' => $googleConf['client_id'],
-                                   'clientSecret' => $googleConf['client_secret'],
+                                   'clientId' => getConfValue('google', 'client_id'),
+                                   'clientSecret' => getConfValue('google', 'client_secret'),
                                    'redirectUri' => $redirectURI,
                                ]);
 

@@ -70,21 +70,11 @@ $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
-$otherPay = $_POST['otherPay'];
 $orderId = $_POST['orderId'];
 $source = 'portal';
 
-// load the amount values
-if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
-    $totalAmountDue = $_POST['totalAmountDue'];
-    $amountDue = $totalAmountDue;
-} else {
-    $totalAmountDue = 0;
-}
 if ($newplan) {
     $amount = $planRec['currentPayment'];
-    if ($totalAmountDue == 0)
-        $totalAmountDue = $amount;
 }
 
 if (array_key_exists('couponDiscount', $_POST)) {
@@ -100,6 +90,8 @@ if (array_key_exists('preCouponAmountDue', $_POST)) {
 
 if (array_key_exists('taxAmount', $_POST)) {
     $taxAmount = $_POST['taxAmount'];
+    if ($newplan)
+        $amount += $taxAmount;
 } else {
     $taxAmount = 0;
 }
@@ -107,7 +99,7 @@ if (array_key_exists('taxAmount', $_POST)) {
 if (array_key_exists('preTaxAmount', $_POST)) {
     $preTaxAmount = $_POST['preTaxAmount'];
 } else {
-    $preTaxAmount = $totalAmountDue;
+    $preTaxAmount = $amount;
 }
 
 if (array_key_exists('badges', $_POST)) {
@@ -120,6 +112,48 @@ if (array_key_exists('badges', $_POST)) {
         error_log($msg);
         ajaxSuccess($response);
         exit();
+    }
+    // now validate the badges just as in portalOrder.php
+    if (count($badges) > 0) {
+        $badgeRegIds = '';
+        $badgeIndex = [];
+        $count = 0;
+        foreach ($badges as $key => $badge) {
+            $regId = $badge['regId'];
+            if (!is_numeric($regId)) {
+                $msg = 'Invalid data received for the memberships for this payment. Seek assistance.';
+                $response['error'] = $msg;
+                error_log($msg);
+                ajaxSuccess($response);
+                exit();
+            }
+            $badgeIndex[$regId] = $count++;
+            $badgeRegIds .= ($regId + 0) . ','; // make it a number, not a string, to avoid any SQL injection
+        }
+        $badgeRegIds = substr($badgeRegIds, 0, -1); // strip off the trailing comma
+        $dbRegQ = <<<EOS
+SELECT *
+FROM reg
+WHERE id in ($badgeRegIds);
+EOS;
+        $badgeRegR = dbQuery($dbRegQ);
+        if ($badgeRegR === false) {
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Database error in validating registrations, get assistance.'));
+            exit();
+        }
+        $valid = true;
+        while ($badgeL = $badgeRegR->fetch_assoc()) {
+            $reg = $badges[$badgeIndex[$badgeL['id']]]; // get the passed reg record
+            // compare the fields
+            if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] || $reg['status'] != $badgeL['status'] ||
+                $reg['price'] != $badgeL['price'] || $reg['paid'] != $badgeL['paid'])
+                $valid = false;
+        }
+        $badgeRegR->free();
+        if (!$valid) {
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Memberships passed are not valid, get assistance.'));
+            exit();
+        }
     }
 } else {
     $badges = [];
@@ -167,8 +201,8 @@ $referenceId = $transId . '-' . 'pay-' . time();
 
 $order = cc_fetchOrder($source, $orderId, true);
 if ($order != null) {
-    if ($totalAmountDue != $order['totalAmountDue']) {
-        error_log('bad total: post=' . $totalAmountDue . ', order=' . $order['totalAmountDue']);
+    if ($amount != $order['totalAmountDue']) {
+        error_log('bad total: post=' . $amount . ', order=' . $order['totalAmountDue']);
         ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
         exit();
     }
@@ -183,7 +217,7 @@ if ($order != null) {
 } else
     $customerId = $conf['id'] . "-$loginType-$loginId";
 
-if ($totalAmountDue > 0) {
+if ($amount > 0) {
     $results = array (
         'source' => $source,
         'nonce' => $nonce,
@@ -196,6 +230,11 @@ if ($totalAmountDue > 0) {
         'preTaxAmt' => $preTaxAmount,
         'taxAmt' => $taxAmount,
         'total' => $amount,
+        'price' => null,
+        'badges' => null,
+        'change' => 0,
+        'externalType' => '',
+        'desc' => 'Online CC Pmt',
     );
 
 // call the credit card processor to make the payment
@@ -360,7 +399,7 @@ EOS;
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-if (round($approved_amt,2) == round($totalAmountDue,2)) {
+if (round($approved_amt,2) == round($amount,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
@@ -383,7 +422,7 @@ if ($amount > 0 && $planPayment != 1) {
     // figure out the percentage to apply to each
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
-if ($totalAmountDue > 0) {
+if ($amount > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
         $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $taxes, $planPayment );
 

@@ -19,7 +19,7 @@ class Unmatched {
     #candidates = null;
     #newperson = null;
     #newpersonTable = null;
-    #candidatesName = null;
+    #candidatesNameH1 = null;
     #candidateTable = null;
     #aditional = null;
     #additionalSearchStr = null;
@@ -102,7 +102,7 @@ class Unmatched {
         if (id) {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
-            this.#candidatesName = document.getElementById('candidatesName');
+            this.#candidatesNameH1 = document.getElementById('candidatesH1Text');
             this.#additionalSearchStr = document.getElementById('matchAdditionalQuery');
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
@@ -407,7 +407,7 @@ class Unmatched {
         var newpeople = [];
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
-        this.#candidatesName.innerHTML = this.#newperson.fullName;
+        this.#candidatesNameH1.innerHTML = '<b>Potential Matches for: ' + this.#newperson.fullName + '</b>';
         if (this.#newpersonTable) {
             this.#newpersonTable.destroy();
             this.#newpersonTable = null;
@@ -556,7 +556,7 @@ class Unmatched {
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
-            this.#editMatchTitle.innerHTML = this.#newperson.fullName;
+            this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName;
             this.#matchPerson = null;
         } else {
             // set the candidate section of the edit block to the values from the table
@@ -566,7 +566,7 @@ class Unmatched {
             } else {
                 this.#matchPerson = this.#additionalTable.getRow(id).getData();
             }
-            this.#editMatchTitle.innerHTML = this.#newperson.fullName + ' and ' + this.#matchPerson.fullName;
+            this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName + ' <b>with</b> ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
             this.#matchLegal.innerHTML = this.#matchPerson.legalName;
@@ -854,6 +854,14 @@ class Unmatched {
     copy(source) {
         var policy = ''
         var mpol = null;
+        clear_message('result_message_candidate');
+
+        if (source.startsWith('match')) {
+           if (this.#matchPerson == null) {
+               show_message("No matched person to copy from", 'error', 'result_message_candidate');
+               return;
+           }
+        }
 
         switch (source) {
             case 'matchName':

@@ -2,7 +2,7 @@
 // profile - anything to do with the PHP side of editing your name/address/... profile
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
+function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
      $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false) {
     if ($class != '')
         $class .= '.';
@@ -133,11 +133,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>countryChange();"
                     tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php
-                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
-                        echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . '</option>';
-                    }
-                    fclose($fh);
+                    echo $countryOptions;
                 ?>
             </select>
         </div>
@@ -373,4 +369,52 @@ EOS;
 
     $ageR->free();
     return (array($ageList, $ageListIdx));
+}
+
+// drawGetNewMemberships - membership selection
+function drawGetNewMemberships($fullName) : void {
+    if ($fullName) {
+?>
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3 class='text-primary'>Add/Edit Memberships and other Purchases for <?php echo $fullName; ?></h3>
+        </div>
+    </div>
+<?php } ?>
+    <div class='row mt-1' id='membershipButtons'></div>
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            Select from the buttons above to add memberships and other items.
+        </div>
+    </div>
+    <?php
+}
+
+// draw variable price membership set modal
+function drawVariablePriceModal($class) : void {
+?>
+    <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='variablePriceTitle'>
+                        <strong>How Much?</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="variablePriceBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='vpMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
 }

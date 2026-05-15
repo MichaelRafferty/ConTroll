@@ -13,6 +13,7 @@ LOCK TABLES `controllAppPages` WRITE;
 ALTER TABLE `controllAppPages` DISABLE KEYS;
 INSERT INTO `controllAppPages` VALUES
 ('controll','emails','customizable emails from the controll app'),
+('exhibitor','emails','Emails sent by Controll Exhibitor Pages'),
 ('exhibitor','index','Exhibitor Portal Main Page - artist/vendor/fan/exhibits'),
 ('portal','accountSettings','Sets up management associations and identities for the Registation Portal'),
 ('portal','add','Add New Member to a Portal Account'),

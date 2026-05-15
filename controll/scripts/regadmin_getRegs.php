@@ -39,12 +39,20 @@ if (array_key_exists('limitConid', $_POST)) {
 $response['limitConid'] = $limitConid;
 
 $bQ = <<<EOS
-SELECT r.*, m.label
+WITH printed AS (
+    SELECT R.id, COUNT(N.id) AS pcount
+    FROM reg R
+    JOIN regActions N ON R.id = N.regId
+    WHERE R.perid = ? AND R.conid = ? AND N.action = 'print'
+    GROUP BY R.id
+)
+SELECT r.*, m.label, m.memCategory AS category, m.memType AS type, IFNULL(p.pcount,0) AS pcount
 FROM reg r
 JOIN memLabel m ON r.memId = m.id
+LEFT OUTER JOIN printed p ON r.id = p.id
 WHERE r.perid = ? AND r.conid = ?;
 EOS;
-$bR = dbSafeQuery($bQ, 'ii', array($perid, $limitConid));
+$bR = dbSafeQuery($bQ, 'iiii', array($perid, $limitConid, $perid, $limitConid));
 if ($bR === false) {
     $response['error'] = 'Database error retrieving memberships';
     ajaxSuccess($response);

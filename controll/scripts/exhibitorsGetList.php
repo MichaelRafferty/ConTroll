@@ -26,6 +26,10 @@ if (!(array_key_exists('regionId', $_POST))) {
 $con = get_con();
 $conid = $con['id'];
 $regionId = $_POST['regionId'];
+if (array_key_exists('exhibitorConid', $_POST))
+    $exhibitorConid = $_POST['exhibitorConid'];
+else
+    $exhibitorConid = $conid;
 
 $exhibitorQ = <<<EOS
 WITH regionYear AS (
@@ -51,7 +55,7 @@ WHERE ery.exhibitsRegion = ? AND eY.conid = ? AND nn.id IS NULL
 ORDER BY e.id;
 EOS;
 
-$exhibitorR = dbSafeQuery($exhibitorQ, 'iiii', array($regionId, $conid, $regionId, $conid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'iiii', array($regionId, $exhibitorConid, $regionId, $exhibitorConid));
 if (!$exhibitorR) {
     ajaxSuccess(array(
         "args" => $_POST,

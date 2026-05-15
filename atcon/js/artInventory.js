@@ -80,7 +80,7 @@ function init_table() {
 }
 
 function inventory() {
-    var script = 'scripts/artInventory_inventory.php';
+    let script = 'scripts/artInventory_inventory.php';
     $.ajax({
             method: "POST",
             url: script,
@@ -96,8 +96,8 @@ function inventory() {
 }
 
 function init_locations() {
-    var script = 'scripts/artInventory_getLocations.php';
-    var data = "region=" + region
+    let script = 'scripts/artInventory_getLocations.php';
+    let data = "region=" + region
     $.ajax({
             method: "GET",
             url: script,
@@ -111,15 +111,13 @@ function init_locations() {
 }
 
 function addInventoryIcon(cell, formatterParams, onRendered) {
-    var html = '';
-    var item_status = cell.getData().status;
-    var isDisabled = cell.getData().inCart;
-    var btnClass = 'btn btn-sm p-0';
-    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
-
+    let html = '';
+    let item_status = cell.getData().status;
+    let isDisabled = cell.getData().inCart;
+    let btnClass = 'btn btn-sm p-0';
+    let btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
     switch(item_status) {
-        case 'Not In Show':
         case 'Checked Out':
         case 'Purchased/Released':
             html += '<button disabled type="button" class="btn btn-sm btn-danger '+btnClass+' ps-2 pe-2"' + btnStyle + '">N/A</button>';
@@ -131,61 +129,78 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
             break;
         case 'Quicksale/Sold':
             //inventory
-            if(mode == 'artinventory') {
-                if(isDisabled) {
-                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+            if (mode == 'artinventory') {
+                if (isDisabled) {
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
                 } else {
-                    html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
                 }
             }
             //manager can release
-            if(manager) {
-                if(isDisabled) {
-                    html += '<button disabled type="button" class="ps-1 pe-1 ' + btnClass + ' btn-secondary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
+            if (manager) {
+                if (isDisabled) {
+                    html += '<button disabled type="button" class="ps-1 pe-1 ' + btnClass + ' btn-secondary" ' + btnStyle +
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
                 } else {
-                    html += '<button type="button" class="ps-1 pe-1 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
+                    html += '<button type="button" class="ps-1 pe-1 '+btnClass+' btn-secondary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
                 }
             }
             break;
         case 'To Auction':
         case 'BID':
             //inventory only
-            if(mode == 'artinventory') {
-                if(isDisabled) {
-                    html += '<button disabled type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+            if (mode == 'artinventory') {
+                if (isDisabled) {
+                    html += '<button disabled type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
                 } else {
-                    html += '<button type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
                 }
             }
             break;
         case 'Checked In':
         case 'NFS':
             // inventory or check out
-            if(mode == 'artinventory') {
-                if(isDisabled) {
-                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
-                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
+            if (mode == 'artinventory') {
+                if (isDisabled) {
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-secondary" '+btnStyle+'' +
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
                 } else {
-                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
-                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-secondary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
+                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle +
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-secondary" ' + btnStyle +
+                        ' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
                 }
             }
+            break;
         case 'Entered':
-            if(isDisabled) {
-                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
-                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Withdraw</button> ';
+            if (isDisabled) {
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle +
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle +
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Wdraw</button> ';
             } else {
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Withdraw</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Wdraw</button> ';
             }
             break;
         case 'Removed from Show':
         default:
             // must check in
-            if(isDisabled) {
-                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+            if (isDisabled) {
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle +
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
             } else {
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+
+                    ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
             }
     }
     return html;
@@ -207,11 +222,11 @@ function build_record_hover(e, cell, onRendered) {
 function build_table(tableData) {
     init_table();
 
-    var html = ''
+    let html = ''
 
-    if(tableData.length > 0) {
-        for (var trow in tableData) {
-            var row = tableData[trow];
+    if (tableData.length > 0) {
+        for (let trow in tableData) {
+            let row = tableData[trow];
             row.index = trow;
             row.prev_loc = row.location;
             row.prev_bid = row.final_price;
@@ -253,16 +268,15 @@ function build_table(tableData) {
 
 function find_item(action) {
     console.log(action);
-    var artist = artist_field.value;
-
-    var script = 'scripts/artInventory_getItem.php';
+    let artist = artist_field.value;
+    let script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
         data: { artist: artist, region: region, action: action },
         method: "POST",
         url: script,
         success: function(data, textStatus, jqXhr) {
-            if(data.noitem!=undefined) {
+            if (data.noitem!=undefined) {
                 alert("No matching Item Found");
             } else {
                 exhibitorYearId = data.exhibitorYearId;
@@ -274,12 +288,12 @@ function find_item(action) {
 }
 
 function remove_from_cart(index) {
-    var key = cart_items[index]
-    var item = cart[index];
+    let key = cart_items[index]
+    let item = cart[index];
     find_result_table.getRow(item.id).update({inCart:false});
 
-    if(item.need_count) { need_count--; }
-    if(item.need_location) { need_location--; }
+    if (item.need_count) { need_count--; }
+    if (item.need_location) { need_location--; }
     for (action in actionlist) {
         while((actionlist.length>0) && actionlist[action].item == key) {
             switch(actionlist[action].action) {
@@ -309,7 +323,7 @@ function remove_from_cart(index) {
 }
 
 function add_to_cart(index, action) {
-    var item = datatbl[index];
+    let item = datatbl[index];
     find_result_table.getRow(item.id).update({inCart:true});
     if (config.debug > 0)
         $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
@@ -323,12 +337,12 @@ function add_to_cart(index, action) {
     case 'Check Out':
         //ready for checkin?
         //does item have location?
-        if(item.location == "") {
+        if (item.location == "") {
             item.need_location = true;
             need_location++;
         }
         //have we confirmed count?
-        if(item.type == 'print') {
+        if (item.type == 'print') {
             item.need_count = true;
             need_count++;
         }
@@ -362,26 +376,26 @@ function changed_loc(row) {
 }
 
 function draw_cart_row(rownum) {
-    var item = cart[rownum];
-    var btnClass = 'btn btn-sm p-0';
-    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+    let item = cart[rownum];
+    let btnClass = 'btn btn-sm p-0';
+    let btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
-    var html = `
+    let html = `
 <div class="row">
     <div class="col-sm-8">
         <div class="text-bg-info">
 `;
-    var action_html = `
+    let action_html = `
     </div>
     <div class="col-sm-4">
         <button type="button" class="ps-2 pe-2 ` + btnClass +` btn-secondary" `+btnStyle+` onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
 `;
-    var trailing_html = '</div></div>';
+    let trailing_html = '</div></div>';
 
-    var location_select = '<select onchange="changed_loc('+rownum+');"'
-    if(item.need_location) { location_select += 'class="bg-warning" '; }
+    let location_select = '<select onchange="changed_loc('+rownum+');"'
+    if (item.need_location) { location_select += 'class="bg-warning" '; }
     location_select += 'id="loc_' + item.id + '">';
-    if(item.location == "") {
+    if (item.location == "") {
         location_select += '<option></option>';
     }
     for(loc in locations[item.exhibitorNumber]) {
@@ -392,7 +406,7 @@ function draw_cart_row(rownum) {
         }
     }
     location_select += '</select>';
-    var show_location = true;
+    let show_location = true;
     if((item.action == 'Check Out')){
         show_location = false;
         need_location = false;
@@ -404,8 +418,8 @@ function draw_cart_row(rownum) {
                     + ((show_location)?'Location: ' + location_select + '<br/>':'')
                     + 'Display Only @ ' + item.status + '<br/>';
                 action_html += '<br/>';
-                if(show_location) {
-                  if(item.need_location) {
+                if (show_location) {
+                  if (item.need_location) {
                     action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                   } else {
                     action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
@@ -419,37 +433,37 @@ function draw_cart_row(rownum) {
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
                 + 'Art Item @ ' + item.status + '<br/>';
             action_html += '<br/>';
-            if(show_location) {
-              if(item.need_location) {
+            if (show_location) {
+              if (item.need_location) {
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               } else {
                 action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
-            if(item.status == 'BID') {
+            if (item.status == 'BID') {
                 action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
 
-            var min_price=item.min_price;
+            let min_price=item.min_price;
             if (min_price == null || min_price.toString().toLowerCase() == 'null')
                 min_price = 0;
             if (item.final_price != null && item.final_price.toString().toLowerCase() != 'null') {
                 min_price = item.final_price;
             }
 
-            var bidder = item.bidder;
+            let bidder = item.bidder;
             if (bidder == null || bidder.toString().toLowerCase() == 'null') {
                 bidder = '';
             }
-            var final_price = item.final_price;
+            let final_price = item.final_price;
             if (final_price == null || final_price.toString().toLowerCase() == 'null') {
                 final_price = '';
             }
 
-            if(item.status == 'Quicksale/Sold') {
+            if (item.status == 'Quicksale/Sold') {
                 html += `Purchased by ` + item.bidder + ` @ $` + item.final_price;
             } else if((item.status == 'To Auction')) {
                 html += 'Bid ';
@@ -474,22 +488,22 @@ function draw_cart_row(rownum) {
                 + item.exhibitorName + ': ' + item.title + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
                 + 'Print Shop @ ' + item.status + '<br/>';
-            if(item.need_count) {
+            if (item.need_count) {
                 html += '<span class="bg-warning">' + item.quantity + '</span>'
                 + ' @ ' + item.status + '<br/>';
             } else {
                 html += item.quantity + ' @ ' + item.status + '<br/>';
             }
             action_html += '<br/>';
-            if(show_location) {
-              if(item.need_location) {
+            if (show_location) {
+              if (item.need_location) {
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 } else {
                 action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
-            if(item.need_count) {
+            if (item.need_count) {
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
             }
             action_html += '<br/>';
@@ -503,9 +517,9 @@ function draw_cart_row(rownum) {
 
 function change_locs() {
     for (row in cart) {
-        var item = cart[row].id;
-        var new_loc = document.getElementById('loc_' + item).value;
-        if(new_loc != cart[row].location) {
+        let item = cart[row].id;
+        let new_loc = document.getElementById('loc_' + item).value;
+        if (new_loc != cart[row].location) {
             update_loc(row, new_loc, false);
         }
     }
@@ -514,11 +528,11 @@ function change_locs() {
 }
 
 function update_bid(row, to_auction=false, close=false) {
-    var item = cart[row].id;
-    var bidder = document.getElementById('bidder_' + item).value; 
-    var price = document.getElementById('bid_' + item).value; 
+    let item = cart[row].id;
+    let bidder = document.getElementById('bidder_' + item).value; 
+    let price = document.getElementById('bid_' + item).value; 
     //check if valid
-    if(cart[row].type != "art") {
+    if (cart[row].type != "art") {
         alert("Item not in auction");
     } else {
         actionlist.push(create_action('Set Bidder', item, bidder));
@@ -545,12 +559,12 @@ function update_bid(row, to_auction=false, close=false) {
         cart[row].bidder=bidder;
         cart[row].final_price=price;
 
-        if(to_auction) {
+        if (to_auction) {
             actionlist.push(create_action('Send To Auction', item));
             cart[row].status='To Auction';
         }
-        if(close) {
-            if(cart[row].status == 'To Auction') {
+        if (close) {
+            if (cart[row].status == 'To Auction') {
                 actionlist.push(create_action('Sell At Auction', item));
                 cart[row].status='Sold At Auction';
             } else {
@@ -564,24 +578,24 @@ function update_bid(row, to_auction=false, close=false) {
 }
 
 function update_loc(row, loc, redraw=true) {
-    var item = cart[row].id;
-    if(loc == undefined) { loc = document.getElementById('loc_' + item).value; }
+    let item = cart[row].id;
+    if (loc == undefined) { loc = document.getElementById('loc_' + item).value; }
     console.log("Shift " + item + " to " + loc);
     //check if valid
-    if(!locations[cart[row].exhibitorNumber].includes(loc)) {
+    if (!locations[cart[row].exhibitorNumber].includes(loc)) {
         alert("Invalid location");
     } else {
         actionlist.push(create_action('Set Location', item, loc));
 
         cart[row].location=loc;
 
-        if(cart[row].need_location) {
+        if (cart[row].need_location) {
             cart[row].need_location=false;
             need_location--;
         }
     }
 
-    if(redraw) { draw_cart(); }
+    if (redraw) { draw_cart(); }
 }
 
 
@@ -592,11 +606,11 @@ function confirm_count(row) {
 }
 
 function toggle_visibility(id) {
-    var element = document.getElementById(id);
-    var element_show = document.getElementById(id + "_show");
-    var element_hide = document.getElementById(id + "_hide");
+    let element = document.getElementById(id);
+    let element_show = document.getElementById(id + "_show");
+    let element_hide = document.getElementById(id + "_hide");
 
-    if(element.style.display == "none") {
+    if (element.style.display == "none") {
         element.style.display = "block";
         element_hide.style.display = "inline";
         element_show.style.display = "none";
@@ -609,7 +623,7 @@ function toggle_visibility(id) {
 }
 
 function draw_notes() {
-    var html = `<div onclick="toggle_visibility('artInventory_pending')">` + actionlist.length + ` Pending Actions
+    let html = `<div onclick="toggle_visibility('artInventory_pending')">` + actionlist.length + ` Pending Actions
     <span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_show">show</span><span class='btn btn-secondary btn-sm p-0' id="artInventory_pending_hide" style="display: none">hide</span>
     <div id="artInventory_pending" class="text-info" style="display: none"><ul>`;
 
@@ -631,10 +645,10 @@ function draw_notes() {
     }
         
     html += `</ul></div>`;
-    if(need_count > 0) {
+    if (need_count > 0) {
         html += "<div>Please Confirm current quantity for " + need_count + " items.</div>";
     }
-    if(need_location > 0) {
+    if (need_location > 0) {
         html += "<div>Please set locations for " + need_location + " items.</div>";
     }
 
@@ -644,7 +658,7 @@ function draw_notes() {
 function draw_cart() {
     locations_changed = 0;
     num_rows = 0;
-    var html = `
+    let html = `
 <div class="container-fluid">
 <div class="row">
     <div class="col-sm-8 text-bg-primary">Items</div>
@@ -657,7 +671,7 @@ function draw_cart() {
         html += draw_cart_row(rownum);
     }
 
-    if(actionlist.length > 0) {
+    if (actionlist.length > 0) {
         html += `
 <div class="row">
     <div class="col-sm-12 text-bg-secondary">Notes</div>
@@ -686,6 +700,6 @@ function create_action(action, item, value) {
 
 // print control sheets
 function pdfSheets(type, email) {
-    var script = "scripts/artInventory_bidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + exhibitorYearId + "&email=" + email;
+    let script = "scripts/artInventory_bidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + exhibitorYearId + "&email=" + email;
     window.open(script, "_blank")
 }

@@ -47,6 +47,10 @@ if ($disType == 'client') {
     $reason = 'Client Req';
 }
 
+if (!validateAccess($personId, $personType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'You do not have permission to disassociate this account.'));
+    exit();
+}
 
 if ($personType == 'p') {
     $personQ = <<<EOS

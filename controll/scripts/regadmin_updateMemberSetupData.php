@@ -98,8 +98,17 @@ EOS;
                     continue;
             }
             if (array_key_exists('agekey', $row)) { // if key is there, it's an update
+                if (array_key_exists('badgeFlag', $row)) {
+                    $badgeFlag = $row['badgeFlag'];
+                    if ($badgeFlag !== null) {
+                        $badgeFlag = trim($badgeFlag);
+                    }
+                    if ($badgeFlag == '')
+                        $badgeFlag = null;
+                } else
+                    $badgeFlag = null;
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeCmd($updsql, 'sssssisi', array($ageType, $row['label'], $row['shortname'], $row['badgeFlag'],
+                $numrows = dbSafeCmd($updsql, 'sssssisi', array($ageType, $row['label'], $row['shortname'], $badgeFlag,
                     $row['verify'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
@@ -112,8 +121,17 @@ EOS;
                     continue;
             }
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
+                if (array_key_exists('badgeFlag', $row)) {
+                    $badgeFlag = $row['badgeFlag'];
+                    if ($badgeFlag !== null) {
+                        $badgeFlag = trim($badgeFlag);
+                    }
+                    if ($badgeFlag == '')
+                        $badgeFlag = null;
+                } else
+                    $badgeFlag = null;
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeInsert($inssql, 'isssssi', array($year, $ageType, $row['label'], $row['shortname'], $row['badgeFlag'],
+                $numrows = dbSafeInsert($inssql, 'isssssi', array($year, $ageType, $row['label'], $row['shortname'], $badgeFlag,
                     $row['verify'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;

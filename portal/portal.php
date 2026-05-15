@@ -3,7 +3,7 @@
 require_once("lib/base.php");
 require_once('lib/getAccountData.php');
 require_once('lib/sessionManagement.php');
-require_once('../lib/portalForms.php');
+require_once('lib/portalForms.php');
 require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
 require_once("../lib/interests.php");
@@ -91,6 +91,9 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $tab = '';
 if (array_key_exists('payment', $_REQUEST)) {
@@ -106,9 +109,7 @@ if (array_key_exists('payment', $_REQUEST)) {
 
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
-$memberships = [];
-$manager = false;
-
+//$memberships = [];
 // this section is for 'in-session' management
 // build info array about the account holder
 $info = getPersonInfo($conid);
@@ -118,6 +119,27 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+$manager = $info['managedByName'] == null;
+$managerId = null;
+$managerType = null;
+if (!$manager) {
+    $managedByName = $info['managedByName'];
+    if (array_key_exists('managedByNew', $info)) {
+        if ($info['managedBy'] == null) {
+            $managerId = $info['managedByNew'];
+            $managerType = 'n';
+        } else {
+            $managerId = $info['managedBy'];
+            $managerType = 'p';
+        }
+    } else {
+        $managerId = $info['managedBy'];
+        $managerType = 'p';
+    }
+}
+
+$mpId = $info['personType'] . $info['id'];
+$missingPolicies[$mpId] = $info['missingPolicies'];
 $dolfmt = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
@@ -134,14 +156,25 @@ if ($hasPasskey == false) {
 $allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
 
+// define these before check, as they are set in the sql that may or may not be run
+$holderMembership = [];
+$allMemberships = [];
+
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
     $numChild = 0;
+    if (isSessionVar('portalProfileChecked'))
+        $portalProfileChecked = getSessionVar('portalProfileChecked');
+    else
+        $portalProfileChecked = [];
+
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
+SELECT r.status, r.memId, m.*, mc.variablePrice,
+       a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+       r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
@@ -214,6 +247,7 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
     END AS memberId
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
+JOIN memCategories mc ON m.memCategory = mc.memCategory
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
 LEFT OUTER JOIN transaction t ON r.create_trans = t.id
 LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
@@ -224,13 +258,11 @@ LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 LEFT OUTER JOIN perinfo rp ON r.perid = rp.id
 LEFT OUTER JOIN newperson rn ON r.newperid = rn.id
 WHERE
-    status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
+    status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?)
-ORDER BY create_date;
+ORDER BY m.sort_order, create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
-    $holderMembership = [];
-    $paidOtherMembership = [];
     $holderMemberAge = '';
     $holderPrimary = null;
 
@@ -304,28 +336,28 @@ EOS;
              if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
                 $denyVirtual = true;
 
-            if ($m['memType'] == 'donation') {
-                $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
-                $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
-            }  else {
-                $label = $m['label'];
-                $shortname = $m['shortname'];
+            if ($m['variablePrice'] == 'Y') {
+                $m['label'] = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
+                $m['shortname'] = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
             }
-            if ($m['status'] == 'unpaid' && ($m['startdate'] > $now || $m['enddate'] < $now))
+            $label = $m['label'];
+            $shortname = $m['shortname'];
+            if ($m['status'] == 'unpaid' && ($m['actPaid'] + $m['actCouponDiscount']) == 0 && ($m['startdate'] > $now || $m['enddate'] < $now))
                 $m['expired'] = 1;
 
             if ($m['regid'] != null) {
-                $item = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-                        'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                $item = array ('conid' => $m['conid'], 'label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label,
+                        'status' => $m['status'], 'memAge' => $m['memAge'], 'memType' => $m['memType'], 'memCategory' => $m['memCategory'],
                         'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname,
-                        'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+                        'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'], 'variablePrice' => $m['variablePrice'],
                         'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
                         'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
                         'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
                         'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+                        'price' => $m['actPrice'], 'paid' => $m['actPaid'], 'couponDiscount' => $m['actCouponDiscount'],
                         'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
                         'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
-                        'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
+                        'fname' => $m['first_name'], 'ageshortname' => $m['ageShortName'], 'planId' => $m['planId'],
                 );
 
                 if (array_key_exists('expired', $m))
@@ -335,23 +367,8 @@ EOS;
                 // set member age and primary membership (newest primary)
                 if (isPrimary($m, $conid))
                     $holderPrimary = $m;
-                if ($item['completePerid'] != null) {
-                    $compareId = $item['completePerid'];
-                    $compareType = 'p';
-                } else if ($item['completeNewperid'] != null) {
-                    $compareId = $item['completeNewperid'];
-                    $compareType = 'n';
-                } else if ($item['createPerid'] != null) {
-                    $compareId = $item['createPerid'];
-                    $compareType = 'p';
-                } else if ($item['createNewperid'] != null) {
-                    $compareId = $item['createNewperid'];
-                    $compareType = 'n';
-                } else {
-                    $compareId = '';
-                    $compareType = '';
-                }
-                if ($compareId != $loginId || $compareType != $loginType) {
+
+                if ($m['regid'] != null) {
                     $item['create_date'] = $m['create_date'];
                     $item['create_trans'] = $m['create_trans'];
                     $item['complete_trans'] = $m['complete_trans'];
@@ -363,7 +380,7 @@ EOS;
                     $item['sortTrans'] = $m['sortTrans'];
                     $item['transDate'] = $m['transDate'];
                     $item['age'] = $m['memAge'];
-                    $item['online'] = $m['online'];
+
                     $item['managedBy'] = $m['managedBy'];
                     $item['managedByNew'] = $m['managedByNew'];
                     $item['badge_name'] = $m['badge_name'];
@@ -371,8 +388,7 @@ EOS;
                     $item['badgename'] = $m['badgename'];
                     $item['fullName'] = $m['fullName'];
                     $item['memberId'] = $m['memberId'];
-                    $item['planId'] = $m['planId'];
-                    $paidOtherMembership[] = $item;
+                    $allMemberships[] = $item;
                 }
                 if (isPrimary($m, $conid)) {
                     $numPrimary++;
@@ -402,9 +418,10 @@ WITH ppl AS (
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
+        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online, mc.variablePrice,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -416,8 +433,9 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memCategories mc ON m.memCategory = mc.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
@@ -434,9 +452,10 @@ WITH ppl AS (
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
+        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online, mc.variablePrice,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -448,8 +467,9 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
@@ -484,8 +504,9 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.startdate, m.enddate, m.online,
@@ -500,8 +521,9 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
@@ -516,8 +538,9 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.startdate, m.enddate, m.online,
@@ -532,8 +555,9 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
@@ -562,15 +586,18 @@ EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
 
-    $managed = [];
     $managedPeople = [];
     if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
             $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
-            $managed[] = $p;
+            if ($p['variablePrice'] == 'Y') {
+                $p['label'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['label'];
+                $p['shortname'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['shortname'];
+            }
 
             // set the managed people array
             $mId = $p['personType'] . $p['id'];
+            $missingPolicies[$mId] = $p['missingPolicies'];
             if (array_key_exists($mId, $managedPeople))
                 $mp = $managedPeople[$mId];
             else {
@@ -585,7 +612,7 @@ EOS;
                 $mp['memAge'] = $p['memAge'];
 
             if (isPrimary($p, $conid)) {
-                if ($p['status'] == 'unpaid' && ($p['startdate'] > $now || $p['enddate'] < $now)) {
+                if ($p['status'] == 'unpaid' && ($p['actPaid'] + $p['actCouponDiscount']) == 0 && ($p['startdate'] > $now || $p['enddate'] < $now)) {
                     $p['expired'] = 1;
                 }
                 $mp['primary'] = $p;
@@ -593,35 +620,23 @@ EOS;
 
             $managedPeople[$mId] = $mp;
 
-            if ($p['completePerid'] != NULL) {
-                $compareId = $p['completePerid'];
-                $compareType = 'p';
-            } else if ($p['completeNewperid'] != NULL) {
-                $compareId = $p['completeNewperid'];
-                $compareType = 'n';
-            } else if ($p['createPerid'] != NULL) {
-                $compareId = $p['createPerid'];
-                $compareType = 'p';
-            } else if ($p['createNewperid'] != NULL) {
-                $compareId = $p['createNewperid'];
-                $compareType = 'n';
-            } else {
-                $compareId = '';
-                $compareType = '';
-            }
+            $label = $p['label'];
+            $shortname = $p['shortname'];
 
-            if (($compareId != $loginId || $compareType != $loginType) && $p['regid'] != null) {
+            // all memberships, not just other
+            if ($p['regid'] != null) {
                 $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
-                        'memAge' => $p['memAge'], 'type' => $p['memType'], 'category' => $p['memCategory'],
+                        'memAge' => $p['memAge'], 'memType' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
                         'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
                         'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
                         'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],
                         'createPerid' => $p['createPerid'], 'completePerid' => $p['completePerid'], 'purchaserName' => $p['purchaserName'],
                         'startdate' => $p['startdate'], 'enddate' => $p['enddate'], 'online' => $p['online'],
                         'actPrice' => $p['actPrice'], 'actPaid' => $p['actPaid'], 'actCouponDiscount' => $p['actCouponDiscount'],
+                        'price' => $p['price'], 'paid' => $p['paid'], 'couponDiscount' => $p['couponDiscount'],
                         'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
                         'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
-                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'],
+                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'],
                 );
 
                 if (array_key_exists('expired', $p))
@@ -638,7 +653,6 @@ EOS;
                 $item['sortTrans'] = $p['sortTrans'];
                 $item['transDate'] = $p['transDate'];
                 $item['age'] = $p['memAge'];
-                $item['online'] = $p['online'];
                 $item['managedBy'] = $p['managedBy'];
                 $item['managedByNew'] = $p['managedByNew'];
                 $item['badge_name'] = $p['badge_name'];
@@ -646,14 +660,13 @@ EOS;
                 $item['badgename'] = $p['badgename'];
                 $item['fullName'] = $p['fullName'];
                 $item['memberId'] = $p['memberId'];
-                $item['planId'] = $p['planId'];
-                $paidOtherMembership[] = $item;
+                $allMemberships[] = $item;
             }
         }
         $managedByR->free();
     }
 
-    $memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
+    //$memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
 
 // get the information for the interest  and policies blocks
     $interests = getInterests();
@@ -704,35 +717,60 @@ if (array_key_exists('plans', $paymentPlansData)) {
 // get valid coupons
 $numCoupons = num_coupons();
 
-// compute total due so we can display it up top as well...
+// compute payment information
 $totalDue = 0;
 $totalUnpaid = 0;
 $totalPaid = 0;
+$unpaidByOthers = 0;
+$unpaidByMe = 0;
 $numExpired = 0;
 $disablePay = '';
 
-foreach ($memberships as $key => $membership) {
+foreach ($allMemberships as $key => $membership) {
+    $status = $membership['status'];
+    if ($membership['completePerid'] != null) {
+        $compareId = $membership['completePerid'];
+        $compareType = 'p';
+    } else if ($membership['completeNewperid'] != null) {
+        $compareId = $membership['completeNewperid'];
+        $compareType = 'n';
+    } else if ($membership['createPerid'] != null) {
+        $compareId = $membership['createPerid'];
+        $compareType = 'p';
+    } else if ($membership['createNewperid'] != null) {
+        $compareId = $membership['createNewperid'];
+        $compareType = 'n';
+    } else {
+        $compareId = '';
+        $compareType = '';
+    }
     $label = ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];
-    if ($membership['status'] == 'unpaid') {
+    if ($status == 'unpaid') {
         $totalUnpaid++;
         $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
         $totalDue += $due;
-
-        $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
-
-        if ($membership['startdate'] > $now || $membership['enddate'] < $now) {
+        if (($membership['actPaid'] + $membership['actCouponDiscount']) == 0 && ($membership['startdate'] > $now || $membership['enddate'] < $now)) {
             $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
             $membership['expired'] = 1;
             $numExpired++;
         }
     }
-    if ($membership['status'] == 'plan') {
+    if ($status == 'plan') {
         $totalUnpaid++;
     }
-    if ($membership['status'] == 'paid') {
+    if ($status == 'paid') {
         $totalPaid++;
     }
-    $memberships[$key]['displayLabel'] = $label;
+
+    if (($compareId != $loginId || $compareType != $loginType) && $membership['actPrice'] >= 0) {
+        if ($status == 'unpaid' || $status == 'plan') {
+            $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+        }
+    } else {
+        if ($membership['actPrice'] >= 0 && ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')) {
+            $unpaidByMe += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+        }
+    }
 }
 if ($numExpired > 0) {
     $disablePay = ' disabled';
@@ -792,17 +830,18 @@ if ($refresh) {
     var config = <?php echo json_encode($config_vars); ?>;
     var paymentPlanList = <?php echo json_encode($paymentPlans); ?>;
     var payorPlans = <?php echo json_encode($payorPlan); ?>;
-    var membershipsPurchased = <?php echo json_encode($memberships); ?>;
-    var paidOtherMembership = <?php echo json_encode($paidOtherMembership); ?>;
+    var membershipsPurchased = <?php echo json_encode($allMemberships); ?>;
     var numCoupons = <?php echo $numCoupons; ?>;
     var policies = <?php echo json_encode($policies); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var ageByDate = <?php echo '"' . $ageByDate . '"'; ?>;
+    var missingPolicies = <?php echo json_encode($missingPolicies); ?>;
+    var alreadyChecked = <?php echo json_encode($portalProfileChecked); ?>;
 </script>
 <?php
 // draw all the modals for this screen
-draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate']);
+draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate'], $countryOptions);
 if ($interests != null && count($interests) > 0) {
     draw_editInterestsModal($interests);
 }
@@ -816,8 +855,24 @@ if (count($paymentPlans) > 0) {
     draw_payPlanModal('portal');
 }
 
+// layout:
+//  block 1 - Virtual, name/member number, worldcon buttons
+//  block 2
+//      email
+//      if managed, manager info
+//  block 3
+//      current payment
+//      payment plan status
+// block 4
+//      people you manage
+// each persons tab (or only person without tab if managed)
+//      add items to cart
+//      purchases "buttons"
+//      profile section
+//      interests
+
 // draw the top of page banner
-// Line 1: Virtual, Name/mem number, worldcon buttons
+// Block 1: Virtual, Name/mem number, worldcon buttons
 $fullName = $info['fullName'];
 $id = $info['id'];
 $type = $info['personType'];
@@ -837,7 +892,7 @@ if ($ageType == '') {
 if ($holderPrimary) {
     $holderPrimaryMembership = '<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')';
     if (array_key_exists('expired', $holderPrimary) && $holderPrimary['expired'] == 1) {
-        $holderPrimaryMembership = "<span class='warn'>Expired: $holderPrimaryMembership</span>";
+        $holderPrimaryMembership = "<span class='warn'>$holderPrimaryMembership</span>";
     }
 } else {
     $holderPrimaryMembership = '&nbsp;';
@@ -864,7 +919,7 @@ echo <<<EOS
     </div>
 EOS;
 
-// line 2 -change email
+// Block 2 - email
 echo <<<EOS
     <div class="row">
         <div class="col-sm-1">
@@ -892,13 +947,10 @@ EOS;
 }
 echo "</div>\n"; // end row 2
 
-// line 2a (managed disassociate)
+// Block 2 -  managed disassociate
 // if this person is managed, print a banner and let them disassociate from the manager if they do not have any membership of type managed
-$manager = $info['managedByName'] == null;
 if (!$manager) {
-    $managedByName= $info['managedByName'];
-
-echo <<<EOS
+    echo <<<EOS
     <div class='row mt-4 mb-2' id='managedByDiv'>
         <div class='col-sm-auto'><span class=h3'>Your record is managed by $managedByName</span></div>
 EOS;
@@ -912,18 +964,32 @@ EOS;
     echo "    </div>\n";
 }
 
-// line 3/3a payment info
+// Block 3 - Payments
+
 $totalDueFormatted = '';
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total ';
     if ($activePaymentPlans > 0)
         $totalDueFormatted .= 'non plan ';
     $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency) . ' for items purchased by you';
-    $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
-            $disablePay . '>Make Payment</button>';
+    if ($unpaidByOthers > 0) {
+        $totalDueFormatted .= ' or by others for you';
+}
+    if ($numCoupons > 0) {
+        $cols = 'auto';
+        $w = '';
+    } else {
+        $cols = '2';
+        $w = ' w-100';
+    }
+    $payHtml = "<button class='btn btn-sm btn-primary p-1 ps-2 pe-2 h-100 $w' name='payBalanceBTNs' onclick='portal.choosePay(" . $totalDue . ");'" .
+            $disablePay . ">Make Payment</button>";
+    if ($numCoupons > 0) {
+        $payHtml .= '<button class="btn btn-primary btn-sm p-1 ps-3 pe-3 ms-2 h-100" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
+    }
     echo <<<EOS
     <div class='row mt-4'>
-        <div class="col-sm-2">$payHtml</div>
+        <div class="col-sm-$cols">$payHtml</div>
         <div class='col-sm-auto'>
             <span class='h3'>$totalDueFormatted</span>
         </div>
@@ -931,18 +997,28 @@ if ($totalDue > 0) {
 EOS;
 }
 
+// create a div and bg color it to separate it logically from the other parts
+if (count($payorPlan) > 0) {
+?>
+    <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
+<?php
+}
+
 if ($activePaymentPlans > 0) {
-    $totalDueFormatted = "You have an active payment plan, check to see if it needs paying";
-    $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" onclick="portal.setFocus(\'paymentDiv\');"' .
-            $disablePay . '>Check Plan</button>';
-    echo <<<EOS
-    <div class='row mt-4'>
-        <div class="col-sm-2">$payHtml</div>
-        <div class='col-sm-auto'>
-            <span class='h3'>$totalDueFormatted</span>
+?>
+        <div class='row mt-5'>
+            <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
         </div>
+<?php
+    outputCustomText('main/plan');
+    drawPaymentPlans($info, $paymentPlansData, true);
+}
+
+setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
+if (count($payorPlan) > 0) {
+?>
     </div>
-EOS;
+    <?php
 }
 
 // HR - then line 4 - People you manage (if you are not managed by someone else)
@@ -1046,8 +1122,7 @@ EOS;
 EOS;
 }
 $totalMemberships = count($holderMembership);
-[$unpaidByOthers, $unpaidByMe, $unpaidByManager] = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership,
-        $policies, $interests, $now, $ageByDate,null);
+drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate,null);
 
 if ($info['managedByName'] == null) {
     // ending of the holder part
@@ -1069,9 +1144,7 @@ EOS;
     <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        $unpaids = drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate, $info);
-        $unpaidByOthers += $unpaids[1];
-        $unpaidByMe += $unpaids[0] + $unpaids[2];
+        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $now, $ageByDate, $info);
         // ending that managee
         echo <<<EOS
         </div>
@@ -1083,65 +1156,6 @@ EOS;
 
     // end of the block
     echo "</div>\n";
-}
-
-// create a div and bg color it to separate it logically from the other parts
-if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0) {
-?>
-    <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
-<?php
-}
-
-if ($activePaymentPlans > 0) {
-    ?>
-    <div class='row mt-5'>
-        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
-    </div>
-    <?php
-    outputCustomText('main/plan');
-    drawPaymentPlans($info, $paymentPlansData, true);
-}
-$totalDueFormatted = '';
-if ($manager) {
-    $forYou = ', for you and people you manage,';
-    $othersForYou = $forYou;
-} else {
-    $forYou = '';
-    $othersForYou = ', for you,';
-}
-if ($unpaidByMe > 0) {
-    $totalDueFormatted = "Purchased by you$forYou total: " . $dolfmt->formatCurrency((float) $unpaidByMe, $currency);
-    $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" id="payBalanceBTN" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', false);"' .
-        $disablePay . '>Pay Total Amount Due</button>';
-    setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
-    if ($numCoupons > 0) {
-        $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
-    }
-    echo <<<EOS
-    <div class='row mt-2'>
-        <div clss="col-sm-auto"><h1 class='size-h3'>$payHtml</h1></div>
-    </div>
-EOS;
-}
-
-if ($unpaidByOthers > 0) {
-    // compute a list of mem id's, and the total amount due
-    OutputCustomText('main/purchOthers');
-    $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $unpaidByOthers, $currency) . '</span>' .
-        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $unpaidByOthers . ');"' .
-        $disablePay . '>Optionally Pay All or Part</button>';
-?>
-    <div class='row mt-2'>
-        <div class='col-sm-12'><h1 class='size-h3'>Purchased by others<?php echo $othersForYou; ?> total: <?php echo $otherDueFormatted; ?></h1></div>
-    </div>
-
-<?php
-}
-if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0 ) {
-?>
-    </div>
-<?php
 }
 
 portalPageFoot();

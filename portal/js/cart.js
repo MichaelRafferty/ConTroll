@@ -42,9 +42,20 @@ class Cart {
     #vpModal = null;
     #vpBody = null;
 
+    // locale/currency
+    #currencyFmt = null;
+    #locale = null;
+
     constructor() {
         if (config.debug)
             this.#debug = config.debug;
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#currentAge = person.currentAgeType;
         this.#memberships = person.memberships;
         this.#allMemberships = person.allMemberships;
@@ -70,8 +81,37 @@ class Cart {
     buildMembershipButtons() {
         // now loop over memList and build each button
         let html = '';
-        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        let rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        let hasDesc = false;
 
+        for (let row in memList) {
+            if (memList[row].cartDesc != null && memList[row].cartDesc.length > 0) {
+                hasDesc = true;
+                break;
+            }
+        }
+
+        html = `
+<div class="row">
+    <div class='col-sm-12'>
+        <h2 class="size-h3">Items You Can Add to ` + person.fullName + `'s Cart for Purchase:</h2>
+    </div>
+</div>
+`;
+        if (hasDesc) {
+            html += `
+<div class="row">
+    <div class="col-sm-1" style="font-size: 130%; font-weight: bold; background-color: lightgray;"></div>
+    <div class="col-sm-1 text-center" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Price
+    </div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Item Name/Description
+    </div>
+</div>
+    `;
+        }
+        let rowColor = false;
         for (let row in memList) {
             let mem = memList[row];
             // apply implicit rules and membershipRules against memList entry
@@ -80,12 +120,46 @@ class Cart {
 
             // rules already applied age filter
             let memLabel = mem.label;
-            if (memCategories[mem.memCategory].variablePrice != 'Y') {
-                memLabel += ' (' + mem.price + ')';
+            let price = this.#currencyFmt.format(Number(mem.price).toFixed(2));
+            if  (memCategories[mem.memCategory].variablePrice == 'Y')
+                price = '';
+            if (hasDesc) {
+                let cartDesc = '';
+                if (mem.cartDesc != null && mem.cartDesc.length > 0)
+                    cartDesc = mem.cartDesc;
+                rowColor = !rowColor
+                html += `
+<div class="row mt-1">
+    <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
+        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` + ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + `)">
+            Add
+        </button>
+    </div> 
+    <div class="col-sm-1 text-end" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` + price +
+    `</div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` +  (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel  +
+    `</div>
+</div>
+`;
+                if (cartDesc && cartDesc != '') {
+                    html += `
+<div class="row">
+    <div class="col-sm-2" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;"></div>
+    <div class="col-sm-10 border-top border-2 border-dark" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">` +
+                        cartDesc +
+                        `</div>
+</div>
+`;
+                }
+            } else {
+                if (memCategories[mem.memCategory].variablePrice != 'Y')
+                    memLabel += ' (' + mem.price + ')';
+                html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
+                    ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
-            html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
-                ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
-                (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
         }
         this.#membershipButtonsDiv.innerHTML = html;
     }
@@ -104,7 +178,7 @@ class Cart {
         this.#unpaidMemberships = 0;
         var html = `
             <div class="row">
-                <div class="col-sm-2"><b>Remove/Delete</b></div>
+                <div class="col-sm-1"><b>Remove</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
                 <div class="col-sm-4"><b>Membership</b></div>
@@ -133,26 +207,22 @@ class Cart {
                 }
             }
 
-            var strike = false
             var btncolor = expired ? 'btn-danger' : 'btn-secondary';
             col1 = membershipRec.create_date;
-            if (membershipRec.toDelete) {
-                strike = true;
-                if (!expired) {
-                    col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRestore(' +
-                        row + ')">Restore</button>';
-                }
-            } else if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
-                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.membershipDelete(' + row + ')">Delete</button>';
+            if (membershipRec.toDelete)
+                continue;
+
+            if (membershipRec.status == 'unpaid' && membershipRec.price > 0 && membershipRec.paid == 0) {
+                col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.membershipDelete(' + row + ')">Remove</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.membershipRemove(' + row + ')">Remove</button>';
             }
             html += `
     <div class="row">
-        <div class="col-sm-2">` + col1 + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.status + (strike ? '</s>' : '') + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + (strike ? '<s>' : '') + membershipRec.price + (strike ? '</s>' : '') + `</div>
-        <div class="col-sm-8">` + (strike ? '<s>' : '') + label + (strike ? '</s>' : '') + `
+        <div class="col-sm-1">` + col1 + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.status + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
+        <div class="col-sm-9">` + label + `
         </div>
     </div>
 `;
@@ -168,9 +238,9 @@ class Cart {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-2"></div>
+        <div class="col-sm-1"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>` + this.#currencyFmt.format(Number(this.#totalDue).toFixed(2))+ `</b></div>
     </div>`
         }
         if (this.#countMemberships == 0) {
@@ -250,7 +320,7 @@ class Cart {
         this.#newMembershipSave = null;
         newMembership.price = price;
         this.membershipAddFinal(newMembership);
-        this,this.#vpModal.hide();
+        this.#vpModal.hide();
     }
 
     // finish membership add
@@ -290,7 +360,7 @@ class Cart {
                 continue;
             if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
-                show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
+                show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must remove " + nmbr.label + " first.", 'warn');
                 return;
             }
         }
@@ -311,12 +381,12 @@ class Cart {
 
         var mbr = this.#memberships[row];
         if (mbr.status != 'unpaid') {
-            show_message("Cannot remove that membership, only unpaid membershipd can be deleted.", "warn");
+            show_message("Cannot remove that membership, only unpaid membershipd can be removed.", "warn");
             return
         }
 
         if (mbr.price == 0) {
-            show_message("Please contact registration at " + config.regadminemail + "  to delete free memberships.", "warn");
+            show_message("Please contact registration at " + config.regadminemail + "  to remove free memberships.", "warn");
             return;
         }
 
@@ -339,37 +409,12 @@ class Cart {
             if (rules.testMembership(nmbr, true) == false) {
                 mbr.toDelete = undefined;
                 nmbr.toDelete = undefined;
-                show_message("You cannot delete " + mbr.label + " because " + nmbr.label + " requires it.  You must delete/remove " + nmbr.label + " first.", 'warn');
+                show_message("You cannot remove " + mbr.label + " because " + nmbr.label + " requires it.  You must remove " + nmbr.label + " first.", 'warn');
             }
             nmbr.toDelete = undefined;
         }
 
         this.#cartChanges++;
-        this.updateCart();
-        this.buildMembershipButtons();
-    }
-
-    membershipRestore(row) {
-        clear_message();
-        if (this.#memberships == null) {
-            show_message("No memberships found", "warn");
-            return;
-        }
-
-        var mbr = this.#memberships[row];
-        if (!mbr.toDelete) {
-            show_message("Cannot restore this membership, it is not marked deleted.", "warn");
-            return
-        }
-
-        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
-        if (rules.testMembership(mbr, false) == false) {
-            show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
-                " and restore its prerequesite", "warn");
-        } else {
-            mbr.toDelete = undefined;
-        }
-        this.#cartChanges--;
         this.updateCart();
         this.buildMembershipButtons();
     }

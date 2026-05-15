@@ -159,7 +159,7 @@ class Settings {
         var email = document.getElementById('identityEmailAddr').value;
 
         if (provider == null || provider == '')
-            provider = 'allow';
+            provider = 'token';
 
         if  (email == null || email == '' || validateAddress(email) == false) {
             show_message("A valid email address is required", "error");

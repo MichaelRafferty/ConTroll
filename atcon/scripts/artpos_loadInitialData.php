@@ -6,6 +6,7 @@
 // Retrieve load the mapping tables and session information into the javascript side
 
 require_once('../lib/base.php');
+require_once('../../lib/cc__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -29,6 +30,8 @@ if (!check_atcon('artsales', $conid)) {
     exit();
 }
 
+$cc = get_conf('cc');
+load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
 
@@ -39,5 +42,6 @@ $response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
 $response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
 $response['user_id'] = getSessionVar('user');
 $response['hasManager'] = check_atcon('manager', $conid);
+$response['cc_html'] = draw_cc_html($cc,'--','body');
 
 ajaxSuccess($response);

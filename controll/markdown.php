@@ -1,5 +1,6 @@
 <?php
 require_once "lib/base.php";
+require_once 'lib/releaseNotes.php';
 require_once 'lib/sessionAuth.php';
 
 $page = 'reports';
@@ -30,6 +31,14 @@ page_init($page,
 // create instance of markdown conversion
 $parsedown = new Parsedown();
 echo "<div class='container-fluid'>\n";
+if (array_key_exists('releaseNoteId', $_REQUEST)) {
+    $links = releaseNotesHeaderLinks($_REQUEST['releaseNoteId']);
+    if ($links != '') {
+        echo <<<EOS
+<div class='row mt-2 mb-4'>$links</div>
+EOS;
+    }
+}
 echo $parsedown->text($mdt) . PHP_EOL;
 echo "</div>\n";
 page_foot($page);

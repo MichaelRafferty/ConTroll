@@ -1,4 +1,8 @@
 <?php
+// Finance Plan related updates/gets
+// Driven by ajax_request_action
+//      getPayorPlans = just get the plan data
+//      cancelPlan = cancel the plan in id and return the updated data for all plans
 require_once "../lib/base.php";
 require_once '../../lib/paymentPlans.php';
 require_once '../lib/sessionAuth.php';
@@ -33,10 +37,68 @@ if (!array_key_exists('ajax_request_action', $_POST)) {
     exit();
 }
 $action=$_POST['ajax_request_action'];
-if ($action != 'payorPlans') {
-    $response['error'] = 'Request Error';
-    ajaxSuccess($response);
-    exit();
+switch ($action) {
+    case 'getPayorPlans':
+        // nothing special to do here
+        break;
+
+    case 'cancelPlan':
+        if (!array_key_exists('cancelId', $_POST)) {
+            $response['error'] = 'Request Error';
+            ajaxSuccess($response);
+            exit();
+        }
+        $cancelId = $_POST['cancelId'];
+        // check if status of this plan is 'active'
+        $checkQ = <<<EOS
+SELECT status
+FROM payorPlans
+WHERE id = ?;
+EOS;
+        $checkR = dbSafeQuery($checkQ, 'i', array($cancelId));
+        if ($checkR === false) {
+            $response['error'] = "Error: Unable to get status of plan to cancel";
+            ajaxSuccess($response);
+            exit();
+        }
+        $checkStatus = $checkR->fetch_row()[0];
+        $checkR->free();
+        if ($checkStatus != 'active') {
+            $response['error'] = "Error: Cannot cancel plan $cancelId, as it's status of $checkStatus is not active";
+            ajaxSuccess($response);
+            exit();
+        }
+        // cancel the plan
+        // step 1 - mark all items in that plan as 'unpaid' (uses planid index for speed)
+        $updReg = <<<EOS
+UPDATE reg
+SET status = 'unpaid'
+WHERE status = 'plan' AND planId = ?;
+EOS;
+        $numUpdated = dbSafeCmd($updReg, 'i', array($cancelId));
+        if ($numUpdated === false) {
+            $response['error'] = "Error: Cannot cancel plan $cancelId, unable to change the memberships from 'plan' to 'unpaid', seek assistance.";
+            ajaxSuccess($response);
+            exit();
+        }
+        $updPlan = <<<EOS
+UPDATE payorPlans
+SET status = 'cancelled'
+WHERE id = ?;
+EOS;
+        $numCancelled = dbSafeCmd($updPlan, 'i', array($cancelId));
+        if ($numCancelled === false) {
+            $response['error'] = "Error: Cannot cancel plan $cancelId, marked memberships to unpaid, but cannot change the status of the plan, seek assistance.";
+            ajaxSuccess($response);
+            exit();
+        }
+        $response['success'] = "$numUpdated registrations changed from 'plan' to 'unpaid' and $numCancelled plan(s) cancelled.";
+        break;
+
+    default:
+        $response['error'] = 'Request Error';
+        ajaxSuccess($response);
+        exit();
 }
 
 $payorQ = <<<EOS
@@ -80,7 +142,8 @@ while ($row = $payorR->fetch_assoc()) {
 $payorR->free();
 $numRows = count($payorPlans);
 
-$response['success'] = "$numRows Payor Plans Found";
+if (!array_key_exists('success', $response))
+    $response['success'] = "$numRows Payor Plans Found";
 $response['payorPlans'] = $payorPlans;
 $response['paymentPlans'] = getPlanConfig();
 

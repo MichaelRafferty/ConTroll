@@ -229,11 +229,11 @@ class interestsSetup {
             active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("interest").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("notifyList").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("description").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("csv").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("interest"));
+                setCellChanged(row.getCell("notifyList"));
+                setCellChanged(row.getCell("description"));
+                setCellChanged(row.getCell("csv"));
+                setCellChanged(row.getCell("active"));
                 _this.checkUndoRedo();
             });
         });

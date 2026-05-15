@@ -56,7 +56,7 @@ if ($currentPerson != -12345) {
 $person = $_POST['person'];
 
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPerson;
+$response['currentPerson'] = $currentPerson;
 $response['personId'] = $loginId;
 
 // insert into newPerson

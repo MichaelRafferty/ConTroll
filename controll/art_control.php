@@ -121,7 +121,7 @@ foreach ($regions as $region) {
             </div>
         </div>
         <div class='row mt-2 mb-3' id='artControl-csv-div' hidden>
-            <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='artControlPaginationDiv' style='background-color: #e5e5e5;'></div>
+            <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='artControlPaginationDiv'></div>
             <div class='col-sm-auto p-1 ms-4' id='artItems_buttons'>
                 <button id='item-undo' type='button' class='btn btn-secondary btn-sm' onclick="undoItem(); return false;" disabled>Undo</button>
                 <button id='item-redo' type='button' class='btn btn-secondary btn-sm' onclick="redoItem(); return false;" disabled>Redo</button>

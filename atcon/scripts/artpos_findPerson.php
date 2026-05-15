@@ -48,12 +48,21 @@ if (is_numeric($name_search)) {
     $inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
     $allowBid = $inlineInventory == 1 ? ", 'BID'" : '';
     $findPersonQ = <<<EOS
-SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone
+WITH regC AS (
+select perid, count(*) AS numReg
+FROM reg
+JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
+WHERE conid = ? AND perid = ?
+GROUP BY perid
+)
+SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone, 
+    IFNULL(r.numReg, 0) AS numReg
 FROM perinfo p
+LEFT OUTER JOIN regC r on r.perid = p.id
 WHERE p.id=?;
 EOS;
     $response['findPersonQ'] = $findPersonQ;
-    $personR = dbSafeQuery($findPersonQ, 'i', array($name_search));
+    $personR = dbSafeQuery($findPersonQ, 'iii', array($conid, $name_search, $name_search));
     $response['num_rows'] = $personR->num_rows;
     if($personR->num_rows == 0) {
         $response['status'] = "error";
@@ -62,7 +71,12 @@ EOS;
         $person = $personR->fetch_assoc();
         $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $response['person'] = $person;
-        $response['status'] = 'success';
+        if ($person['numReg'] == 0) {
+            $response['status'] = 'warn';
+            $response['warn'] = "Person does not have a badge printed for $conid";
+        } else {
+            $response['status'] = 'success';
+        }
         // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
         $findArtQ = <<<EOS
