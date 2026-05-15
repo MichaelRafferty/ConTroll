@@ -27,8 +27,8 @@ class AltPickupAuth {
 
     // dom elements
     #savebtn = null;
-    #undobtn = null;
-    #redobtn = null;
+    #undoBtn = null;
+    #redoBtn = null;
     #addbtn = null;
 
     // addnew items
@@ -48,8 +48,8 @@ class AltPickupAuth {
     constructor(debug = 0) {
         this.#debug = debug;
         this.#savebtn = document.getElementById('artalt_save_btn');
-        this.#undobtn = document.getElementById('artalt_undo_btn');
-        this.#redobtn = document.getElementById('artalt_redo_btn');
+        this.#undoBtn = document.getElementById('artalt_undo_btn');
+        this.#redoBtn = document.getElementById('artalt_redo_btn');
         this.#addbtn = document.getElementById('artalt_add_pickup_btn');
         let id = document.getElementById('AddNewPickup');
         if (id) {
@@ -322,6 +322,7 @@ class AltPickupAuth {
 
         // ok, we have both, now add them to the table
         let data = this.#authListTable.getData();
+        let _this = this;
         this.#authListTable.addRow({ ordinal: data.length, conid: config.conid, bidderPerid: bidder,
             bidderFullName: this.#bidderName.innerHTML.replace("Bidder: ", ""),
             pickupPerid: pickup, pickupFullName: this.#pickupName.innerHTML.replace("Pickup: ", ""),
@@ -377,7 +378,7 @@ class AltPickupAuth {
 
     // set undo / redo status for buttons
     checkUndoRedo() {
-        var undosize = this.#authList.getHistoryUndoSize();
+        var undosize = this.#authListTable.getHistoryUndoSize();
         this.#undoBtn.disabled = undosize <= 0;
         this.#redoBtn.disabled = this.#authListTable.getHistoryRedoSize() <= 0;
         return undosize;
