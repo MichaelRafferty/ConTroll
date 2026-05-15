@@ -326,6 +326,8 @@ setIsChanged(value,fieldName) {
                 bidder: Number(fieldValue),
                 action: 'ValidateBidder',
             }
+            clearError();
+            clear_message('ai_result_message');
             $.ajax({
                 url: script,
                 method: 'POST',

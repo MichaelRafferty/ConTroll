@@ -338,6 +338,7 @@ class ExhibitorProfile {
             return null;
         }
         clear_message('au_result_message');
+        clearError();
         tinyMCE.triggerSave();
 
         $.ajax({
