@@ -883,6 +883,7 @@ class AuctionItemRegistration {
         }
 
         this.#newArt = null;
+        this.#artItemsDirty = true;
         //console.log("addArt calling checkDups('art'), new art is not null");
         this.computeDups('art');
     }
@@ -967,6 +968,7 @@ class AuctionItemRegistration {
         }
 
         this.#newPrint = null;
+        this.#printItemsDirty = true;
         //console.log("addPrint calling checkDups('print'), new print is not null");
         this.computeDups('print');
     }
@@ -1048,6 +1050,7 @@ class AuctionItemRegistration {
         }
 
         this.#newNFS = null;
+        this.#nfsItemsDirty = false;
         //console.log("addNFS calling checkDups('nfs'), new nfs is not null");
         this.computeDups('nfs');
     }
