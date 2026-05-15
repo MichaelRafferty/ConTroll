@@ -477,6 +477,8 @@ class memsetup {
     open() {
         var _this = this;
         var script = "scripts/regadmin_getMemberSetupData.php";
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -586,6 +588,8 @@ class memsetup {
         } else {
             showError(data['success']);    
         }
+        clear_message();
+        clearError();
         this.#memtype_savebtn.innerHTML = "Save Changes";
         var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
@@ -624,6 +628,8 @@ class memsetup {
                 tablename: "memTypes",
                 indexcol: "memtypekey"
             };
+            clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -700,10 +706,11 @@ class memsetup {
             this.#category_savebtn.disabled = false;
             return false;
         } else {
-            showError(data['success']);
+            show_message(data['success']);
         }
         this.#category_savebtn.innerHTML = "Save Changes";
         var script = "scripts/regadmin_getMemberSetupData.php";
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -741,6 +748,8 @@ class memsetup {
                 indexcol: "memcatkey"
             };
             //console.log(postdata);
+            clear_message();
+            clearError();
             $.ajax({
                 url: script,
                 method: 'POST',
@@ -812,9 +821,10 @@ class memsetup {
             this.#curage_savebtn.disabled = false;
             return false;
         } else {
-            showError(data['success']);
+            show_message(data['success']);
         }
         this.#curage_savebtn.innerHTML = "Save Changes";
+        clearError();
         var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
@@ -844,6 +854,8 @@ class memsetup {
             this.#curage_savebtn.innerHTML = "Saving...";
             this.#curage_savebtn.disabled = true;
 
+            clear_message();
+            clearError();
             var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {

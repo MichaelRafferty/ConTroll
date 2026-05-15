@@ -534,6 +534,9 @@ class Find {
             who: link,
         }
         var _this = this;
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -811,6 +814,9 @@ class Find {
             who: index,
             manager: this.#editRow.id,
         }
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
         var _this = this;
         $.ajax({
             url: script,

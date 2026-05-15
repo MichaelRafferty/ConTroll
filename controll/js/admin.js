@@ -644,6 +644,8 @@ function clearAtconTable() {
 }
 
 function buildNewYear() {
+    clearError();
+    clear_message();
     let script = 'scripts/admin_buildNewYear.php'
     let postdata = {
         conid: conid,

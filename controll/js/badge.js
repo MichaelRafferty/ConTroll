@@ -745,6 +745,8 @@ function saveAdd2() {
         phone: profile.phone(),
         currentAgeType: profile.age() == '' ? null : profile.age(),
     };
+    clear_message();
+    clearError();
 
     var script = 'scripts/people_addNewPerson.php';
     $.ajax({

@@ -581,6 +581,8 @@ function receipt_email(addrchoice) {
     if (success == '')
         success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
 
+    clear_message();
+    clearError();
     let data = {
         email: email,
         okmsg: success,
@@ -618,6 +620,8 @@ function receipt(index) {
     if (transid == null || transid == '') {
         transid = row.getCell("create_trans").getValue();
     }
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: "scripts/getReceipt.php",
@@ -649,6 +653,8 @@ function receipt(index) {
 function history(index) {
     historyRow = registrationtable.getRow(index).getData();
 
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: "scripts/regadmin_getRegHistory.php",
@@ -772,6 +778,8 @@ function changeReg(index, clear = true) {
         limitConid: limitConid,
         action: 'regregs',
     };
+    clear_message();
+    clearError();
     let script = 'scripts/regadmin_getRegs.php';
     $.ajax({
         method: "POST",
@@ -1019,6 +1027,8 @@ function changeRevoke(direction) {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     let data = {
         cancelList: changeList,
         direction: direction,
@@ -1131,6 +1141,8 @@ function changeTransferFind() {
     // search for matching names
     $("button[name='transferSearch']").attr("disabled", true);
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
 
     $.ajax({
         method: "POST",
@@ -1238,6 +1250,8 @@ function transferReg(to, banned) {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     let script = 'scripts/regadmin_transferReg.php';
     let data = {
         action: 'transfer',
@@ -1413,6 +1427,9 @@ function changeRolloverExecute() {
     }
     let script= 'scripts/regadmin_rolloverReg.php';
 
+    clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: script,
@@ -1486,6 +1503,8 @@ function changeDonate() {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
 
     let data = {
         donateList: changeList,
@@ -1708,6 +1727,8 @@ function changeEditSave(override) {
             return;
         }
     }
+    clear_message();
+    clearError();
     // ok, a clean validition or an overide, do the save
     let data = {
         action: 'edit',

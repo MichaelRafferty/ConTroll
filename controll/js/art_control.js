@@ -78,6 +78,8 @@ function getData() {
         region: region,
         conYear: conYear,
     };
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: script,
@@ -317,6 +319,8 @@ function saveItem() {
         region: region
     }
 
+    clearError();
+    clear_message();
     $.ajax({
         url: script,
         method: 'POST',
@@ -374,6 +378,8 @@ function pdfSheets(type, email) {
 // display history: use the modal to show the history for this art item id
 function fetchArtItemHistory(index) {
     historyRow = itemTable.getRow(index).getData();
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: "scripts/artcontrol_getArtItemHistory.php",

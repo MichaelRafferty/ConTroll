@@ -641,6 +641,8 @@ class consetup {
 
     open() {
         let script = "scripts/regadmin_getCondata.php";
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'GET',
@@ -789,6 +791,7 @@ class consetup {
         this.#conlist_savebtn.innerHTML = "Save Changes";
 
         clear_message();
+        clearError();
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
@@ -834,6 +837,7 @@ class consetup {
                 indexcol: "id"
             };
             clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -875,6 +879,8 @@ class consetup {
         }
         this.#memlist_savebtn.innerHTML = "Save Changes";
 
+        clear_message();
+        clearError();
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
@@ -964,6 +970,7 @@ class consetup {
                 indexcol: "id"
             };
             clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,

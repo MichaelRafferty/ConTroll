@@ -289,6 +289,7 @@ class rulesSetup {
             indexcol: "rule"
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -1598,6 +1599,7 @@ class rulesSetup {
         }
         var script = 'scripts/regadmin_updateRules.php';
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',

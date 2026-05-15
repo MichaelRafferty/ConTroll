@@ -34,6 +34,7 @@ class Payors {
             ajax_request_action: 'getPayorPlans',
         };
         clear_message();
+        clearError();
         this.#dirty = false;
         //console.log(postdata);
         $.ajax({

@@ -253,9 +253,9 @@ class mergesetup {
             this.#mergeCandidatesTable = null;
         }
         if (clear_error) {
-            clearError();
             clear_message();
         }
+        clearError();
         let script = "scripts/mergeFindCandidates.php";
         let postdata = {
             remain: this.#remainPid.value,

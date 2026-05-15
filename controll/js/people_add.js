@@ -230,6 +230,8 @@ class Add {
         var script = 'scripts/people_addNewPerson.php';
         var _this = this;
 
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',

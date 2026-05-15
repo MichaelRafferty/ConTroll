@@ -149,6 +149,7 @@ class policySetup {
             indexcol: "policy"
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -368,6 +369,7 @@ class policySetup {
                 indexcol: "policy"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({

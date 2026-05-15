@@ -392,6 +392,8 @@ class exhibitorsAdm {
         if (this.#debug & 1)
             console.log("opening from " + newtabname + " as " + tabname + ", " + regionid);
 
+        clear_message();
+        clearError();
         // get the data for this tab
         $.ajax({
             url: "scripts/exhibitorsGetData.php",

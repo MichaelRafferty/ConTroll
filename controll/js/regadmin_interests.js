@@ -127,6 +127,7 @@ class interestsSetup {
             indexcol: "interest"
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -481,6 +482,7 @@ class interestsSetup {
                 indexcol: "interest"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({

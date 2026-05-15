@@ -72,6 +72,7 @@ class customTextSetup {
             page: config['page'],
         };
         clear_message();
+        clearError();
         this.#dirty = false;
         $.ajax({
             url: script,
@@ -240,6 +241,7 @@ class customTextSetup {
                 indexcol: "customText"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({
