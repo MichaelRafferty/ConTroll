@@ -293,15 +293,6 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         error_log("Mismatch between $personId and $personType:" . $person['id'] . ', ' . $person['personType']);
     }
 
-    $hr = <<<EOS
-<div class="row mt-2">
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
-        </div>
-    </div>
-EOS;
-
-
     $badgename = $person['badgename'];
     $fn = '';
     if ($person['first_name'] != '') {

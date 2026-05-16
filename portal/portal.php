@@ -872,7 +872,13 @@ if (count($paymentPlans) > 0) {
 //      purchases "buttons"
 //      profile section
 //      interests
-
+$hr = <<<EOS
+<div class="row mt-2">
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+EOS;
 // draw the top of page banner
 // Block 1: Virtual, Name/mem number, worldcon buttons
 $fullName = $info['fullName'];
@@ -1024,13 +1030,7 @@ if (count($payorPlan) > 0) {
 }
 
 // HR - then line 4 - People you manage (if you are not managed by someone else)
-echo <<<EOS
-    <div class='row mt-2 mb-2'>
-        <div class='col-sm-12 p-0 m-0 align-center'>
-            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
-        </div>
-    </div>
-EOS;
+echo $hr;
 
 // if we are not managed, we can be a manager, so use the tab structure
 // first - do the add another person line
@@ -1104,12 +1104,7 @@ EOS;
         var tabs=[$tabs];
         var hid = "$tab";
 </script>
-
-    <div class='row mt-2 mb-2'>
-        <div class='col-sm-12 p-0 m-0 align-center'>
-            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:var(--bs-primary);background-color:var(--bs-primary);'/>
-        </div>
-    </div>
+$hr
 <div class='tab-content ms-2' id='portal-content'>
 <!---- Start of holder: $fullName -->
     <div class='tab-pane fade show active' id='$hid-pane' role='tabpanel' aria-labelledby='$hid-tab' tabindex='0'>
