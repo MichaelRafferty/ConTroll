@@ -336,7 +336,7 @@ showConRoles=0 ;
 ;; N:defaultCountry
 ;; R:H,reg_staff
 ;; P:3 Character ISO Code
-;; H:For the country HTML selects, which country code is the default one selected.
+;; H:For the country HTML selects (country pulldown), which country code is the default one selected.
 ;; H+If the country is being set to the one already entered for this person, that will override this default.
 ;; D:s3
 ;; B:O
