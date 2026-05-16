@@ -176,6 +176,9 @@ if (getConfValue('con', 'conRoles', 0) == 1)
     drawConRolesList($conRoles);
 ?>
                     </form>
+                    <div class='row'>
+                        <div class='col-sm-12'><hr/></div>
+                    </div>
 <?php if ($regAdmin) { ?>
                     <div class='row mt-3' id='renumberHdr'>
                         <div class='col-sm-auto'><h2 class='size=h3'>Renumber This Person (change their perid)</h2></div>

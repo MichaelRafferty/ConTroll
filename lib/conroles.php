@@ -37,6 +37,9 @@ function drawConRolesList($conroles, $modal = false, $tabIndexStart = 900) {
     if ($header != '') {
 ?>
     <div class='row'>
+        <div class="col-sm-12"><hr/></div>
+    </div>
+    <div class='row'>
         <div class='col-sm-auto'>
             <?php  echo $header . PHP_EOL; ?>
         </div>
