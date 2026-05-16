@@ -21,9 +21,10 @@
     template=regTotals.php
     auth=reg_admin
     type=php
-    P001="prompt/~/startdate/~/Start Date: /~/YYYY-MM-DD format, eefaults to first record/~/"
-    P002="prompt/~/enddate/~/End Date: /~/YYYY-MM-DD format, defaults to last record/~/"
-    P003="prompt/~/monthly/~/Monthly or Totals Only: /~/m or t/~/t"
+    P001="prompt/~/conid/~/Totals for: /~/Conid (number only)/~/#con.id#"
+    P002="prompt/~/startdate/~/Start Date: /~/YYYY-MM-DD format, defaults to first record/~/"
+    P003="prompt/~/enddate/~/End Date: /~/YYYY-MM-DD format, defaults to last record/~/"
+    P004="prompt/~/monthly/~/Monthly or Totals Only: /~/m or t/~/t"
 [200RegHistory]
 	name="Registration History"
 	description="Registration History for a Person"

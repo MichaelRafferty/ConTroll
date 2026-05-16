@@ -34,6 +34,13 @@
 
     $errorMsg = '';
     $continue = true;
+
+    if (array_key_exists('conid', $postVars)) {
+        $conid = (int) $postVars['conid'];
+    } else {
+        $conid = getConfValue('con', 'id', '-1');
+    }
+
     if (array_key_exists("startdate", $postVars) && trim($postVars['startdate']) != '')
         $startDate = trim($postVars['startdate']);
     else
@@ -74,39 +81,58 @@
 
     $startStr = date_format($startDateObj, 'Y-m');
     $endStr = date_format($endDateObj, 'Y-m');
-    $conid = getConfValue('con', 'id', '-1');
+
+    // if grouping by month, need to get all before that month start, so totals are correct since we do uptake
+    $whereStartStr = $groupBy == 'm' ? "2001-01" : $startStr;
 
     // now load the data from the database
     $rQ = <<<EOS
 WITH compRegs AS (
-SELECT t.complete_date, r.id, m.memType, m.memCategory, m.memAge, r.paid, r.price, r.status,
-       m.label, m.glLabel, 
-       DATE_FORMAT(CASE 
-           WHEN r.price = 0 THEN r.create_date
-           ELSE IFNULL(t.complete_date, r.create_date)
-       END, '%Y-%m') AS month
-FROM reg r
-LEFT OUTER JOIN transaction t ON r.complete_trans = t.id
-LEFT OUTER JOIN perinfo p ON r.perid = p.id
-JOIN memList m ON r.memId = m.id
-JOIN ageList a ON a.conid = r.conid AND a.ageType = m.memAge
-WHERE r.conid IN (?, ?) AND IFNULL(p.deceased, 'N') != 'Y'
+    SELECT DATE_FORMAT(CASE 
+       WHEN r.price = 0 THEN r.create_date
+       ELSE IFNULL(t.complete_date, r.create_date)
+    END, '%Y-%m-%d') AS complete_date, 
+    r.id, m.memType, m.memCategory, m.memAge, r.paid, r.price, r.status, m.label, m.glLabel, 
+    DATE_FORMAT(CASE 
+       WHEN r.price = 0 THEN r.create_date
+       ELSE IFNULL(t.complete_date, r.create_date)
+    END, '%Y-%m') AS month
+    FROM reg r
+    LEFT OUTER JOIN transaction t ON r.complete_trans = t.id
+    LEFT OUTER JOIN perinfo p ON r.perid = p.id
+    JOIN memList m ON r.memId = m.id
+    JOIN ageList a ON a.conid = r.conid AND a.ageType = m.memAge
+    WHERE (r.conid = ? AND m.memCategory != 'yearahead' OR (r.conid = ? AND m.memCategory = 'yearahead')) 
+        AND IFNULL(p.deceased, 'N') != 'Y'
 )
-SELECT * FROM compRegs WHERE month BETWEEN ? AND ?; 
+SELECT * FROM compRegs WHERE month BETWEEN ? AND ?
+ORDER BY complete_date
 EOS;
 
-    $rR = dbSafeQuery($rQ, 'iiss', array($conid, $conid + 1, $startStr, $endStr));
+    $rR = dbSafeQuery($rQ, 'iiss', array($conid, $conid + 1, $whereStartStr, $endStr));
 
     // get the months (horizontal columns for the table while looping the actual data into the reg array
     $regs = [];
     $colTotals = [];
+    if ($startDate < '2001-01-02')
+        $minDate = null;
+    else
+        $minDate = $startDate;
+
     while ($rL = $rR->fetch_assoc()) {
         $regs[] = $rL;
+        if ($minDate == null)
+            $minDate = $rL['complete_date'];
+
         if ($groupBy == 'm') {
-            if (!array_key_exists($rL['month'], $colTotals)) {
-                $colTotals[$rL['month']] = 1;
+            $mon = $rL['month'];
+            if ($mon < $startStr) {
+                $mon = "Before $startStr";
+            }
+            if (!array_key_exists($mon, $colTotals)) {
+                $colTotals[$mon] = 1;
             } else {
-                $colTotals[$rL['month']]++;
+                $colTotals[$mon]++;
             }
         }
     }
@@ -120,30 +146,39 @@ EOS;
 
     // build the tabulator specs, for the columns across a row, col1 = the title of the row
     $columns = [];
-    $columns[] = [
-        'title' => "Registration Counts,<br/>Run: " . date('Y-m-d H-i-s'),
-        'field' => 'rowTitle',
-        'width' => '250',
-        'headerSort' => false,
-        'headerWordWrap' => true,
-        'formatter' => 'html',
-    ];
+
 
     $labelRowCols = ['rowTitle' => 'label'];
     // if doing it by month, loop over the months adding each column
     if ($groupBy == 'm') {
         foreach ($cols as $col) {
-            $columns[] = [
-                    'title' => $col,
-                    'field' => $col,
-                    'width' => 90,
-                    'headerSort' => false,
-                     'hozAlign' => 'right',
-                    'headerHozAlign' => 'right',
+            $field = [
+                'title' => $col,
+                'field' => $col,
+                'width' => 90,
+                'headerSort' => false,
+                'hozAlign' => 'right',
+                'headerHozAlign' => 'right',
+                'headerWordWrap' => true,
             ];
+            if (str_starts_with($col, 'B'))
+                array_unshift($columns, $field);
+            else
+                $columns[] = $field;
+
             $labelRowCols[$col] = '';
         }
     }
+
+    // put the label on the front
+    array_unshift($columns, [
+        'title' => 'Registration Counts,<br/>Run: ' . date('Y-m-d H-i-s'),
+        'field' => 'rowTitle',
+        'width' => '250',
+        'headerSort' => false,
+        'headerWordWrap' => true,
+        'formatter' => 'html',
+    ]);
 
     // and the last column is the total column
     $columns[] = [
@@ -181,6 +216,9 @@ EOS;
         $price =(float) $reg['price'];
         $age = $reg['memAge'];
         $month = $reg['month'];
+        if ($groupBy == 'm' && $month < $startStr) {
+            $month = "Before $startStr";
+        }
         $glLabel = $reg['glLabel'];
         $label = $reg['label'];
         if ($glLabel != '') { // Sections 1-5
@@ -271,7 +309,7 @@ EOS;
         
     }
     // header row showing date range
-    $labelRowCols['rowTitle'] = "Date Range:<br/>$startDate to $endDate";
+    $labelRowCols['rowTitle'] = "Date Range:<br/>$minDate to $endDate";
     $tableData[] = $labelRowCols;
 
     // Section 1 Attending
