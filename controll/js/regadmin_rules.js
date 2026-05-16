@@ -880,6 +880,7 @@ class rulesSetup {
             show_message("Rename the rule from 'new-row' before adding a rule step", 'error', 'result_message_editRule')
             return;
         }
+        clear_message('result_message_editRule');
         let _this = this;
         this.#ruleStepAddStepNum--;
         this.#ruleStepsTable.clearFilter(true);
