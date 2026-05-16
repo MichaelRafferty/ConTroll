@@ -728,12 +728,12 @@ class Pos {
 
         if (index >= 0) {
             if (rt[index].banned == 'Y') {
-                alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                alert("Please ask " + (rt[index].first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
                     "you cannot add them at this time.")
                 return;
             }
             if (rt[index].deceased == 'Y') {
-                alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                alert("Please ask " + (rt[index].first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
                     "you cannot add them at this time.")
                 return;
             }
@@ -762,9 +762,9 @@ class Pos {
                             " to talk to the Registration Administrator, you cannot add them at this time.")
                         continue;
                     }
-                    if (rt[index].deceased == 'Y') {
-                        alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
-                            "you cannot add them at this time.")
+                    if (prow.deceased == 'Y') {
+                        alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
+                            " to talk to the Registration Administrator, you cannot add them at this time.")
                         continue;
                     }
                     perid = prow.perid;
