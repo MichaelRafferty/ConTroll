@@ -208,10 +208,7 @@ class Find {
         }
         if (data.warn) {
             show_message(data.warn, 'warn');
-            return;
-        }
-
-        if (data.success) {
+        } else if (data.success) {
             show_message(data.success, 'success');
         }
 
