@@ -72,7 +72,7 @@ class Find {
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
         this.#findPersonBTN = document.getElementById('findPersonBTN');
 
-        var id  = document.getElementById('edit-person');
+        let id  = document.getElementById('edit-person');
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editTitle = document.getElementById('editTitle');
@@ -100,7 +100,7 @@ class Find {
             this.#renumberExisting = document.getElementById('renumberExistingPerid');
             this.#renumberNew = document.getElementById('f_renumberNewPerid');
         }
-        var id  = document.getElementById('person-history');
+        id  = document.getElementById('person-history');
         if (id) {
             this.#historyModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#historyTitle = document.getElementById('historyTitle');
@@ -118,6 +118,10 @@ class Find {
 
     getFindTable() {
         return this.#findTable;
+    }
+
+    getManagerLookupTable() {
+        return this.#managerLookupTable;
     }
 
     // called on open of the add window
@@ -165,12 +169,12 @@ class Find {
 
     // find matching records
     find() {
-        var postdata = {
+        let postdata = {
             type: 'find',
             pattern: this.#findPattern.value,
         };
-        var script = 'scripts/people_findPerson.php';
-        var _this = this;
+        let script = 'scripts/people_findPerson.php';
+        let _this = this;
         clear_message();
         clearError();
         this.close(true, false);
@@ -271,6 +275,15 @@ class Find {
         return value;
     }
 
+    idMStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  findPerson.getManagerLookupTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
+    }
+
     // addperson button - go to add person
     addPerson() {
         this.close();
@@ -279,14 +292,14 @@ class Find {
 
     // format action buttons
     actionButtons(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex()
+        let row = cell.getRow();
+        let index = row.getIndex()
 
-        var html = '<button class="btn btn-primary me-1" type="button" ' +
+        let html = '<button class="btn btn-primary me-1" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
 
-        var historyCount = row.getData().historyCount;
+        let historyCount = row.getData().historyCount;
         if (historyCount > 0) {
             html += '<button class="btn btn-secondary" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
@@ -297,13 +310,14 @@ class Find {
 
     // select manager: select this row as manager
     selectButton(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex()
-        var managerId = row.getData().managerId;
-        if (managerId != null && managerId != '') {
+        let row = cell.getRow();
+        let index = row.getIndex()
+        let data = row.getData();
+        if (data.managerId != null && data.managerId != '') {
             return '(managed)';
         }
-        return '<button class="btn btn-primary" type="button" ' +
+        let color = data.deceased == 'Y' ? 'btn-warning' : 'btn-primary';
+        return '<button class="btn ' + color + '" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.selectManager(' + index + ');">Select</button>';
     }
@@ -314,9 +328,9 @@ class Find {
     }
 
     managerBTN(cell){
-        var row = cell.getRow();
-        var index = row.getIndex()
-        var managerId = row.getData().managerId;
+        let row = cell.getRow();
+        let index = row.getIndex()
+        let managerId = row.getData().managerId;
         if (managerId == null || managerId == '') {
             return '<button class="btn btn-primary" type="button" ' +
                 'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
@@ -335,12 +349,12 @@ class Find {
         this.#editRow = this.#findTable.getRow(index).getData();
         this.#memAgeType = this.#editRow.memAgeType == '' ? null : this.#editRow.memAgeType
 
-        var postdata = {
+        let postdata = {
             type: 'details',
             perid: index,
         };
-        var script = 'scripts/people_findGetDetails.php';
-        var _this = this;
+        let script = 'scripts/people_findGetDetails.php';
+        let _this = this;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -361,7 +375,7 @@ class Find {
     }
 
     findDetailsSuccess(data) {
-        var i;  // index
+        let i;  // index
         if (data.error) {
             show_message(data.error, 'error');
             return;
@@ -402,10 +416,10 @@ class Find {
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
-            var keys = Object.keys(this.#memberPolicies);
+            let keys = Object.keys(this.#memberPolicies);
             for (i = 0; i < keys.length; i++) {
-                var policy = this.#memberPolicies[keys[i]];
-                var response = policy.response;
+                let policy = this.#memberPolicies[keys[i]];
+                let response = policy.response;
                 if (response === null || response === undefined) {
                     response = policy.defaultValue;
                 }
@@ -415,7 +429,7 @@ class Find {
 
         // now the interests
         if (this.#memberInterests && this.#memberInterests.length > 0) {
-            keys = Object.keys(this.#memberInterests);
+            let keys = Object.keys(this.#memberInterests);
             for (let i = 0; i < keys.length; i++) {
                 let interest = this.#memberInterests[keys[i]];
                 let endDateDays = interest.endDate;
@@ -451,7 +465,7 @@ class Find {
 
         // now the con roles
         if (this.#memberConRoles && this.#memberConRoles.length > 0) {
-            keys = Object.keys(this.#memberConRoles);
+            let keys = Object.keys(this.#memberConRoles);
             for (let i = 0; i < keys.length; i++) {
                 let conrole = this.#memberConRoles[keys[i]];
                 let id = document.getElementById('c_' + conrole.conRole);
@@ -481,9 +495,9 @@ class Find {
             this.#managerId.value = '';
             this.#managerName.innerHTML = '';
             // now the manages section
-            var html = '';
+            let html = '';
             for (i = 0; i < this.#managed.length; i++) {
-                var mper = this.#managed[i];
+                let mper = this.#managed[i];
                 html += '<div class="col-sm-1">' +
                     '<button class="btn btn-sm btn-warning" type="button" id="u_' + mper.type + mper.id + '" ' +
                     'onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
@@ -492,17 +506,18 @@ class Find {
                     '<div class="col-sm-10">' + mper.fullName + '</div>\n';
             }
             this.#managesRow.innerHTML = html;
+            this.#managerRow.hidden = true;
+            this.#managerRowTxt.hidden = true;
         }
         if (this.#managed.length == 0) {
             this.#managerHdr.hidden = false;
+            this.#managerRow.hidden = false;
             if (this.#editRow.hasManagedReg > 0) {
-                this.#managerRow.hidden = true;
                 this.#managerRowTxt.hidden = false;
                 this.#managerRowCol.innerHTML = "Managed by " +  this.#editRow.manager + " (" + this.#editRow.managerId +
                     ") and has a managed membership, cannot dissociate.";
             } else {
                 this.#managerRowTxt.hidden = true;
-                this.#managerRow.hidden = true;
                 this.#managerRowCol.innerHTML = 'Placeholder';
                 this.#managerId.value = this.#editRow.managerId;
                 this.#managerName.innerHTML = this.#editRow.manager;
@@ -525,12 +540,12 @@ class Find {
     // clear the managee
     unmanage(link) {
         console.log(link);
-        var script = 'scripts/people_unmanage.php';
-        var postdata = {
+        let script = 'scripts/people_unmanage.php';
+        let postdata = {
             action: 'unmanage',
             who: link,
         }
-        var _this = this;
+        let _this = this;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -562,7 +577,7 @@ class Find {
         }
 
         // change the button to be inactive and it's name to be unmanaged
-        var button = document.getElementById('u_' + data['who']);
+        let button = document.getElementById('u_' + data['who']);
         if (button) {
             button.innerHTML = 'cleared';
             button.disabled = true;
@@ -585,19 +600,19 @@ class Find {
 
     // lookup manager - preform the search and show the table
     lookupManager() {
-        var searchStr = this.#newManagerLookup.value;
+        let searchStr = this.#newManagerLookup.value;
         if (searchStr == '') {
             show_message("Enter a search string in the Lookup New Manager text box", 'error', 'find_edit_message')
         }
-        var postdata = {
+        let postdata = {
             type: 'manager',
             pattern: searchStr,
         }
-        var script = 'scripts/people_findPerson.php';
+        let script = 'scripts/people_findPerson.php';
         clear_message('find_edit_message');
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -636,7 +651,7 @@ class Find {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Select", formatter: findPerson.selectButton, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.idMStatus,},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
@@ -664,6 +679,7 @@ class Find {
                 {field: 'banned', visible: false,},
                 {field: 'admin_notes', visible: false,},
                 {field: 'open_notes', visible: false,},
+                {field: 'deceased', visible: false,},
             ],
         });
         if (data.success) {
@@ -693,19 +709,19 @@ class Find {
 
     // lookup managea - preform the search and show the table
     lookupManages() {
-        var searchStr = this.#newManagesLookup.value;
+        let searchStr = this.#newManagesLookup.value;
         if (searchStr == '') {
             show_message("Enter a search string in the Find Person to Manage text box", 'error', 'find_edit_message')
         }
-        var postdata = {
+        let postdata = {
             type: 'managed',
             pattern: searchStr,
         }
-        var script = 'scripts/people_findPerson.php';
+        let script = 'scripts/people_findPerson.php';
         clear_message('find_edit_message');
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -805,8 +821,8 @@ class Find {
             return;
         }
 
-        var script = 'scripts/people_manage.php';
-        var postdata = {
+        let script = 'scripts/people_manage.php';
+        let postdata = {
             action: 'manage',
             who: index,
             manager: this.#editRow.id,
@@ -814,7 +830,7 @@ class Find {
         clear_message('find_edit_message');
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -849,12 +865,12 @@ class Find {
 
     // personHistory - call up display of the history for this person
     personHistory(index) {
-        var postdata = {
+        let postdata = {
             type: 'history',
             perid: index,
         };
-        var script = 'scripts/people_getHistory.php';
-        var _this = this;
+        let script = 'scripts/people_getHistory.php';
+        let _this = this;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -875,7 +891,7 @@ class Find {
     }
 
     personHistorySuccess(data) {
-        var i;  // index
+        let i;  // index
         if (data.error) {
             show_message(data.error, 'error');
             return;
@@ -885,16 +901,16 @@ class Find {
             return;
         }
 
-        var  title = "Person Change History for " + data.perid;
+        let  title = "Person Change History for " + data.perid;
         historyTitle.innerHTML = title
         // build the history map
         this.#historyMap = {};
         this.#historyData = data.history;
-        for (var index = 0; index < data.history.length; index++) {
+        for (let index = 0; index < data.history.length; index++) {
             this.#historyMap[data.history[index].historyId] = index;
         }
         // build the history display
-        var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+        let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
 
         // format the heading line
         if (this.#historyTable) {
@@ -947,18 +963,18 @@ class Find {
     }
 
     colorSet(cell, formatterParams, onRendered) {
-        var histId = cell.getRow().getIndex();
-        var index = findPerson.getHistoryMap(histId);
-        var priorIndex = index - 1;
+        let histId = cell.getRow().getIndex();
+        let index = findPerson.getHistoryMap(histId);
+        let priorIndex = index - 1;
         if (priorIndex < 0) {
             return cell.getValue();
         }
 
-        var field = cell.getField();
-        var color = ''
-        var priorRow = findPerson.getHistoryRow(priorIndex);
-        var prior = priorRow[field];
-        var current = cell.getValue();
+        let field = cell.getField();
+        let color = ''
+        let priorRow = findPerson.getHistoryRow(priorIndex);
+        let prior = priorRow[field];
+        let current = cell.getValue();
         if (prior == current)
             return current;
 
@@ -1000,11 +1016,11 @@ class Find {
             }
         }
         // first we need the perid we are editing, this.#editRow has the row
-        var script = 'scripts/people_updateEdit.php';
+        let script = 'scripts/people_updateEdit.php';
 
         // we need to pass each section, the profile, the policies, the interests, the manager, the manages, the active/banned, and the notes
         // first the edit fields on the form directly
-        var postdata = {
+        let postdata = {
             action: 'saveedit',
             perid: this.#editRow.id,
             firstName: profile.fname(),
@@ -1040,11 +1056,11 @@ class Find {
         };
         // now the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
-            var keys = Object.keys(this.#memberPolicies);
-            var i;
-            var newPolicies = {};
+            let keys = Object.keys(this.#memberPolicies);
+            let i;
+            let newPolicies = {};
             for (i = 0; i < keys.length; i++) {
-                var policy = this.#memberPolicies[keys[i]];
+                let policy = this.#memberPolicies[keys[i]];
                 if (document.getElementById('f_p_' + policy.policy).checked) {
                     newPolicies['p_' + policy.policy] = 'Y';
                 }
@@ -1053,11 +1069,11 @@ class Find {
         postdata['newPolicies'] = JSON.stringify(newPolicies);
 
         // now the interests
-        var newInterests = {};
+        let newInterests = {};
         if (this.#memberInterests && this.#memberInterests.length > 0) {
-            var keys = Object.keys(this.#memberInterests);
-            for (var i = 0; i < keys.length; i++) {
-                var interest = this.#memberInterests[keys[i]];
+            let keys = Object.keys(this.#memberInterests);
+            for (let i = 0; i < keys.length; i++) {
+                let interest = this.#memberInterests[keys[i]];
                 if (document.getElementById('i_' + interest.interest).checked) {
                     newInterests[interest.interest] = 'Y';
                 }
@@ -1066,11 +1082,11 @@ class Find {
         postdata['newInterests'] = JSON.stringify(newInterests);
 
         // now the con roles
-        var newConRoles = {};
+        let newConRoles = {};
         if (this.#memberConRoles && this.#memberConRoles.length > 0) {
-            var keys = Object.keys(this.#memberConRoles);
-            for (var i = 0; i < keys.length; i++) {
-                var conrole = this.#memberConRoles[keys[i]];
+            let keys = Object.keys(this.#memberConRoles);
+            for (let i = 0; i < keys.length; i++) {
+                let conrole = this.#memberConRoles[keys[i]];
                 if (document.getElementById('c_' + conrole.conRole).checked) {
                     newConRoles[conrole.conRole] = 'Y';
                 }
@@ -1086,7 +1102,7 @@ class Find {
         // manages
         postdata['managed'] = this.#managed;
 
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
