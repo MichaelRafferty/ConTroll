@@ -1694,7 +1694,7 @@ class exhibitssetup {
             } else {
                 setCellChanged(row.getCell("shortname"));
                 _this.checkSpacesUndoRedo();
-            });
+            }
         });
     }
 
@@ -1852,7 +1852,7 @@ class exhibitssetup {
                 setCellChanged(row.getCell("code"));
                 setCellChanged(row.getCell("requestable"));
                 _this.checkSpacePricesUndoRedo();
-            });
+            }
         });
     }
 
