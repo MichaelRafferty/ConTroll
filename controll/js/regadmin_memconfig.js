@@ -562,11 +562,9 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            if (_this.#mem) {
-                setCellChanged(row.getCell("memType"));
-                setCellChanged(row.getCell("active"));
-                _this.checkTypeUndoRedo();
-            }
+            setCellChanged(row.getCell("memType"));
+            setCellChanged(row.getCell("active"));
+            _this.checkTypeUndoRedo();
         });
     }
 

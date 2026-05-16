@@ -367,7 +367,7 @@ class rulesSetup {
             data: this.#memRules,
             layout: "fitDataTable",
             index: "origName",
-            pagination: this.#memRulesPagination,
+            pagination: this.#rulesPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
