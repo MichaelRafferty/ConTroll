@@ -166,7 +166,7 @@ class ConRolesSetup {
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'conroles' }, hozAlign:"left", headerSort: false },
                 {title: "Con Role", field: "conRole", width: 200, headerSort: true},
                 {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
-                {title: "Mem Label", field: "memLabel", headerSort: false, width: 200, headerFilter: true, },
+                {title: "Label", field: "memLabel", headerSort: false, width: 200, headerFilter: true, },
                 {
                     title: "Active", field: "active", headerWordWrap: true, headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"

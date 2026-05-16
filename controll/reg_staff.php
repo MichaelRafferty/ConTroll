@@ -615,10 +615,10 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row'>
                         <div class='col-sm-1'>
-                            <label for='cMemlabel'>Mem Label:</label>
+                            <label for='cMemlabel'>Label:</label>
                         </div>
                         <div class='col-sm-11'>
-                            <input type='text' id='cMemlabel' name='cMemlabel' size='64' maxlength='64' placeholder='mem Label'/>
+                            <input type='text' id='cMemlabel' name='cMemlabel' size='64' maxlength='64' placeholder='Role Label'/>
                         </div>
                     </div>
 
