@@ -165,8 +165,9 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     if (array_key_exists('existingInterests', $_POST)) {
         $existingInterestsArray = json_decode($_POST['existingInterests'], true);
         if ($existingInterestsArray == null) {
-            $existingInterestsArray = array ();
+            $existingInterests = array ();
         } else {
+            $existingInterests = array();
             // convert the existing interests array to associative array
             foreach ($existingInterestsArray as $existingInterest) {
                 $existingInterests[$existingInterest['interest']] = $existingInterest;
