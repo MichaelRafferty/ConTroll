@@ -69,13 +69,13 @@ function drawConRolesList($conroles, $modal = false, $tabIndexStart = 900) {
 }
 
 // drawConRolesDisplay: draw a read-only (display only) version of the policies and answers
-function drawConRolesDisplay($conroles, $personConRoles, $id) {
+function drawConRolesDisplay($conroles, $personConRoles, $id) : string {
     if ($conroles == null || count($conroles) == 0) // null? no conroles, nothing to draw
-        return;
+        return '';
 
     $display = getConfValue('con', 'showConRoles', '0');
     if ($display == 0)
-        return;
+        return '';
     if ($display == 1) {
         // loop over roles, counting checked, if none checked, display nothing
         $checked = 0;
@@ -86,20 +86,21 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
             }
         }
         if ($checked == 0)
-            return;
+            return '';
     }
 
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('conroles/header', 'profile/all/');
     $footer = returnCustomText('conroles/footer', 'profile/all/');
+    $html = '';
     if ($header != '') {
-        ?>
+        $html .= <<<EOS
         <div class='row mt-2'>
             <div class='col-sm-auto'>
-                <?php  echo $header . PHP_EOL; ?>
+                $header
             </div>
         </div>
-        <?php
+EOS;
     }
     foreach ($conroles as $conrole) {
         $name = $conrole['conRole'];
@@ -118,28 +119,27 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
             $box = '✅:';
         else
             $box = '❌:';
-        ?>
+        $html .= <<<EOS
         <div class='row'>
-            <div class='col-sm-auto'>
-                <?php echo $box; ?>
-            </div>
+            <div class='col-sm-auto'>$box</div>
             <div class='col-sm-auto'>
                 <p class='text-body'>
-                    <?php echo $description; ?>
+                    $description
                 </p>
             </div>
         </div>
-        <?php
+  EOS;
     }
     if ($footer != '') {
-        ?>
+        $html .= <<<EOS
         <div class='row'>
             <div class='col-sm-auto'>
-                <?php  echo $footer . PHP_EOL; ?>
+               $footer
             </div>
         </div>
-        <?php
+EOS;
     }
+    return $html;
 }
 
 // updateMemberConRoles - update/insert the conroles

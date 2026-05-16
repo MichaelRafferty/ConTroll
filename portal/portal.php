@@ -1124,7 +1124,7 @@ EOS;
 EOS;
 }
 $totalMemberships = count($holderMembership);
-drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $conroles, $now, $ageByDate);
+drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $conroles, $hr, $now, $ageByDate);
 
 if ($info['managedByName'] == null) {
     // ending of the holder part
@@ -1146,7 +1146,8 @@ EOS;
     <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $conroles, $now, $ageByDate);
+        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $conroles, $hr,
+                $now, $ageByDate);
         // ending that managee
         echo <<<EOS
         </div>

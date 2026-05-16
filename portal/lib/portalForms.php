@@ -285,7 +285,7 @@ EOS;
 <?php
 }
 // drawPersonTab: draw memberships and profile for a managed person or yourself
-function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $conroles, $now, $ageByDate) : void {
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $conroles, $hr, $now, $ageByDate) : void {
     global $membershipButtonColors;
     $portal_conf = get_conf('portal');
 
@@ -569,8 +569,15 @@ $hr
 </div>
 EOS;
         drawInterestsDisplay($interests, $person['interests'], $id);
-        if (array_key_exists('conroles', $person))
-            drawConRolesDisplay($conroles, $person['conroles'], $id);
+        if (array_key_exists('conroles', $person)) {
+            $html = drawConRolesDisplay($conroles, $person['conroles'], $id);
+            if ($html != '') {
+                echo <<<EOS
+$hr
+$html
+EOS;
+            }
+        }
     }
 }
 
