@@ -121,9 +121,13 @@ echo getConfValue('reg', 'logotext');
         </div>
     </div>
     <?php
-if (getConfValue('vendor', 'open') != 1) { ?>
-    <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
-<?php
+$globalOpen = getConfValue('vendor', 'open', '0'); // this allows a global override to [global];
+$portalOpen = getConfValue('vendor', $portalType . 'Open', '0'); // also allows a global overide
+$otherPortalOpen = getConfValue('vendor', ($portalType == 'artist' ? 'vendor' : 'artist') . 'Open', '0'); // also allows a global overide
+if ($globalOpen != 1 || $portalOpen != 1) {
+    echo <<<EOS
+    <p class='text-primary'>The $portalName portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+EOS;
     exit;
 }
 ?>
@@ -529,7 +533,13 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
                     </button>
                 <?php } ?>
                 <button class='btn btn-secondary m-1 h-100' onclick='changePasswordOpen();'>Change your password</button>
+                <?php
+if ($otherPortalOpen == 1) {
+    echo <<<EOS
                 <button class='btn btn-secondary m-1 h-100' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
+EOS;
+}
+                ?>
                 <button class="btn btn-secondary m-1 h-100" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
