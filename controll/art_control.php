@@ -68,8 +68,14 @@ $yearR->free();
 
 // build the year select
 $yearSelect = '';
+$conidFound = false;
 foreach ($years as $year) {
+    if ($year == $conid)
+        $conidFound = true;
     $yearSelect .= "<option value=$year>$year</option>\n";
+}
+if (!$conidFound) {
+    $yearSelect = "<option value=$conid>$conid</option>\n" . $yearSelect;
 }
 
 ?>
