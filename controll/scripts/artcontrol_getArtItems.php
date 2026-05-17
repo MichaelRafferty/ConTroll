@@ -52,19 +52,22 @@ WITH historyCount AS (
 )
 SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
     I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, I.conid, h.historyCount,
-    ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
+    ey.id AS exhibitorYearId, ery.exhibitsRegionYearId, S.status AS saleStatus, S.transid,
+    t.perid AS transPerid, t.complete_date AS transDate, S.paid, S.quantity AS saleQuantity,
     ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,
     concat(I.exhibitorRegionYearId, '_', I.item_key) as extendedKey
 FROM artItems I 
-    JOIN exhibitorRegionYears ery ON ery.id = I.exhibitorRegionYearId
-    JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
-    JOIN exhibitors e ON e.id=ey.exhibitorId
-    JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
-    JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
-    LEFT JOIN perinfo p ON p.id=I.bidder
-    LEFT JOIN historyCount h on h.id = I.id
+LEFT OUTER JOIN artSales S ON S.artid = I.id
+LEFT OUTER JOIN transaction t ON t.id = S.transid
+JOIN exhibitorRegionYears ery ON ery.id = I.exhibitorRegionYearId
+JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
+JOIN exhibitors e ON e.id=ey.exhibitorId
+JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+JOIN exhibitsRegions exR ON exR.id=exRY.exhibitsRegion
+LEFT JOIN perinfo p ON p.id=I.bidder
+LEFT JOIN historyCount h ON h.id = I.id
 WHERE ey.conid=? and exRY.exhibitsRegion=?
 ORDER BY ery.exhibitorNumber, I.item_key;
 EOS;

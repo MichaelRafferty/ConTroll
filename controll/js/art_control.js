@@ -199,7 +199,11 @@ function draw(data, textStatus, jqXHR) {
                     title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
                     headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
                 },
-                {title: 'Notes', field: 'notes', formatter: "textarea",}
+                {title: 'Notes', field: 'notes', formatter: "textarea",},
+                {title: 'Sale Status', field: 'saleStatus', headerSort: false, headerWordWrap: true, width: 100, },
+                {title: 'Sale Date', field: 'transDate', headerSort: false, headerWordWrap: true, width: 100, },
+                {title: 'Sale Paid', field: 'paid', headerSort: false, headerWordWrap: true, width: 100, formatter: localeMoney, },
+                {title: 'Sale Qty', field: 'saleQuantity', headerSort: false, headerWordWrap: true, width: 80, },
             ]
         });
 
@@ -495,7 +499,7 @@ function displayArtItemHistory(data) {
 
 function localeMoney(cell, formatParams, onRendered) {
     let value = cell.getValue();
-    if (value == '')
+    if (value == '' || value == null || value == undefined)
         return value;
 
     return currencyFmt.format(Number(value).toFixed(2));
