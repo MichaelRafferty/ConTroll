@@ -74,6 +74,8 @@ $config_vars['interests'] = $interests;
 $config_vars['conRoles'] = $conRoles;
 $config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['ra'] = $regAdmin;
+
 $policiesCell = drawPoliciesCell($policies);
 ?>
 <script type='text/javascript'>
