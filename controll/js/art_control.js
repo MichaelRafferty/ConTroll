@@ -156,7 +156,7 @@ function draw(data, textStatus, jqXHR) {
                 {title: 'exhibitorYearId', field: 'exhibitorYearId', visible: false},
                 {title: 'locations', field: 'locations', visible: false},
                 {
-                    title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: {
+                    title: 'Name', field: 'exhibitorName', headerSort: true, formatter: 'textarea', headerFilter: 'list', headerFilterParams: {
                         values: data.artists.map(function (a) {
                             return a.exhibitorName;
                         })
@@ -173,8 +173,8 @@ function draw(data, textStatus, jqXHR) {
                 },
                 {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
                 {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: {values: ['art', 'print', 'nfs']}, width: 75,},
-                {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
-                {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
+                {title: 'Title', field: 'title', headerSort: true, headerFilter: true, formatter: 'textarea', },
+                {title: 'Material', field: 'material', headerSort: true, headerFilter: true,formatter: 'textarea' },
                 {
                     title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
                     headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
@@ -185,25 +185,25 @@ function draw(data, textStatus, jqXHR) {
                 },
                 {
                     title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
-                    headerWordWrap: true, width: 70, hozAlign: "right",
+                    headerWordWrap: true, width: 60, hozAlign: "right",
                 },
                 {
                     title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
-                    headerWordWrap: true, width: 70, hozAlign: "right",
+                    headerWordWrap: true, width: 60, hozAlign: "right",
                 },
                 {title: 'Status', field: 'status', headerSort: true, headerFilter: 'list', headerFilterParams: {values: statusList.getStatuses()}},
-                {title: 'Location', field: 'location', headerSort: true, headerFilter: true,},
+                {title: 'Loc', field: 'location', headerSort: true, headerFilter: true, formatter: 'textarea', width: 80},
                 {title: 'BidderNum', field: 'bidder', visible: false,},
                 {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter: true,},
                 {
                     title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
                     headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
                 },
-                {title: 'Notes', field: 'notes', formatter: "textarea",},
                 {title: 'Sale Status', field: 'saleStatus', headerSort: false, headerWordWrap: true, width: 100, },
                 {title: 'Sale Date', field: 'transDate', headerSort: false, headerWordWrap: true, width: 100, },
                 {title: 'Sale Paid', field: 'paid', headerSort: false, headerWordWrap: true, width: 100, formatter: localeMoney, },
-                {title: 'Sale Qty', field: 'saleQuantity', headerSort: false, headerWordWrap: true, width: 80, },
+                {title: 'Sale Qty', field: 'saleQuantity', headerSort: false, headerWordWrap: true, width: 60, },
+                {title: 'Notes', field: 'notes', formatter: "textarea",},
             ]
         });
 
