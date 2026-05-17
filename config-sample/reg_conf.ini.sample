@@ -498,6 +498,44 @@ precon=0
 
 ;;;;; Exhibitor Portals (Artist, Exhibitor, Fan, Vendor)
 [vendor]
+;;; local open/close flags
+;; N:artistOpen
+;; R:H,exhibitor
+;; H:specific artist portal open/close flag, the global vendor open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for artist portal closed, 1 to allow artist portal to open based on overall open flag
+;; D:l:0,1
+;; B:M
+;;; artistOpen
+artistOpen=1
+;;; vendorOpen
+;; N:vendorOpen
+;; R:H,exhibitor
+;; H:specific vendor (dealers) portal open/close flag, the global vendor open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for vendor portal closed, 1 to allow vendor portal to open based on overall open flag
+;; D:l:0,1
+;; B:M
+;;; vendorOpen
+vendorOpen=1
+;;; exhibitOpen
+;; N:exhibitOpen
+;; R:H,exhibitor
+;; H:specific exhibit (exhibit hall) portal open/close flag, the global exhibit open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for exhibit portal closed, 1 to allow exhibit portal to open based on overall open flag
+;; H+NOTE: this is a future feature
+;; D:l:0,1
+;; B:M
+;;; exhibitOpen
+exhibitOpen=0
+;;; fanOpen
+;; N:fanOpen
+;; R:H,fanor
+;; H:specific fan (fan tables hall) portal open/close flag, the global fan open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for fan portal closed, 1 to allow fan portal to open based on overall open flag
+;; H+NOTE: this is a future feature
+;; D:l:0,1
+;; B:M
+;;; fanOpen
+fanOpen=0
 ;;; overrides
 ;; N:customtext
 ;; R:H,exhibitor

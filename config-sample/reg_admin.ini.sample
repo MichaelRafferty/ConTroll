@@ -200,14 +200,8 @@ creditonline=0
 ;; test=1
 ;; open=1
 ;; close=0
-;;; specific portal open/close flags, slave to open global flag (open=0 drives its not open for all)
-;;; vendorOpen, artistOpen, exhibitOpen, fanOpen
-;;; it takes both open and vendorOpen to be 1 to allow access to vendor portal
-;;; it takes both open and artistOpen to be 1 to allow access to artist portal
-vendorOpen=1
-artistOpen=1
-exhibitOpen=1
-fanOpen=1
+;;; specific portal open/close flags, slave to open global flag (open=0 drives its not open for all), are in reg_conf.ini
+
 ;;; vendorsite: url to vendor portal website (for Regions Types with portal type 'vendor' in Exhibits Setup)
 vendorsite="http://vendor"
 ;;; artistsite: url to artist portal website (for Regions Types with portal type 'artshow' in Exhibits Setup)
