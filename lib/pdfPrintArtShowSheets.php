@@ -8,7 +8,7 @@ require_once ("pdfFunctions.php");
 global $pdf;
 $pdf = null;
 
-function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
+function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -44,8 +44,11 @@ EOS;
     if ($itemR->num_rows == 0) {
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
-            $response['status'] = 'No art found requiring price tags';
-            echo "<h1>No art found requiring price tags</h1>\n";
+            $response['success'] = true;
+            $response['message'] = 'No art found requiring price tags';
+
+            if ($returnData == false)
+                echo "<h1>No art found requiring price tags</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -206,23 +209,33 @@ EOS;
         }
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output();
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$numTags output on $pages pages";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$numTags output on $pages pages";
+        }
     }
+
     return $response;
 }
 
-function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
+function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -307,8 +320,11 @@ EOS;
 
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
-            $response['status'] = 'No art found requiring bid sheets';
-            echo "<h1>No art found requiring bid sheets</h1>\n";
+            $response['success'] = true;
+            $response['message'] = 'No art found requiring bid sheets';
+
+            if ($returnData == false)
+                echo "<h1>No art found requiring bid sheets</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -541,25 +557,34 @@ EOS;
         }
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output();
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$page pages output";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$page pages output";
+        }
     }
     return $response;
 }
 
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
-function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
+function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -1247,18 +1272,27 @@ EOS;
         popFont();
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output();
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$page pages output";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$page pages output";
+        }
     }
     return $response;
 }
