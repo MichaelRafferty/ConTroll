@@ -24,7 +24,7 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = tru
 
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name, 
-       aI.id AS itemId, e.artistName
+       aI.id AS itemId, e.artistName, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -80,6 +80,10 @@ EOS;
     } else {
         $artistName = $artItems[0]['artistName'];
     }
+
+    $response['artistName'] = $artistName;
+    $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+    $response['ownerName'] = $artItems[0]['ownerName'];
 
     $pages = ceil($numTags / ($numrows * $numcols));
 
@@ -210,7 +214,7 @@ EOS;
     }
 
     if ($returnData) {
-        $response['pdf'] = $pdf->Output();
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
         $response['filename'] = $filename;
@@ -297,7 +301,7 @@ function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $la
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
        aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type,
-       aI.id AS itemId, e.id, eR.name, e.artistName
+       aI.id AS itemId, e.id, eR.name, e.artistName, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -343,6 +347,10 @@ EOS;
     } else {
         $artistName = $artItems[0]['artistName'];
     }
+
+    $response['artistName'] = $artistName;
+    $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+    $response['ownerName'] = $artItems[0]['ownerName'];
 
     $pages = ceil($numSheets / ($numrows * $numcols));
 
@@ -558,7 +566,7 @@ EOS;
     }
 
     if ($returnData) {
-        $response['pdf'] = $pdf->Output();
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
         $response['filename'] = $filename;
@@ -629,6 +637,8 @@ EOS;
     } else {
         $artistName = $artist['artistName'];
     }
+    $response['artistName'] = $artistName;
+
     $showContact = $artist['contactName'] != $artistName || $artist['contactPhone'] != $artist['exhibitorPhone'] ||
         $artist['exhibitorEmail'] != $artist['contactEmail'];
     $showShip = $artist['mailin'] == 'Y';
@@ -897,7 +907,7 @@ EOS;
 SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
        aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.quantity, aI.material, aI.type,
        aI.status, aI.bidder, aI.final_price, e.id, eR.name, e.artistName,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -927,6 +937,10 @@ EOS;
             $artItems[] = $artItem;
         }
         $itemR->free();
+
+        $response['artistName'] = $artistName;
+        $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+        $response['ownerName'] = $artItems[0]['ownerName'];
 
         pushFont('Roboto', '', 10);
         $numwidth = $pdf->GetStringWidth("123");
@@ -1273,7 +1287,7 @@ EOS;
     }
 
     if ($returnData) {
-        $response['pdf'] = $pdf->Output();
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
         $response['filename'] = $filename;

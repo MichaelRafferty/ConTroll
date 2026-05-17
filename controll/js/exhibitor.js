@@ -1912,6 +1912,51 @@ class exhibitorsAdm {
         window.open(script, "_blank")
     }
 
+    emailControlSheet(id, email) {
+        this.#spaceRow = this.#spacesTable.getRow(id);
+        let exhibitorData = this.#spaceRow.getData();
+        let emailTo = exhibitorData.exhibitorEmail;
+        let sendTo = prompt("Send the control sheet as an email to the name below:" +
+            "\n(Clicking cancel will cancel the sending of this email.)\n", emailTo);
+
+        if (sendTo == null)
+            return false;
+
+        if (sendTo == '') {
+            show_message();
+            return false;
+        }
+
+        let script = 'scripts/exhibitorsBidSheets.php';
+        let postData = {
+            type: 'control',
+            region: exhibitorData.regionYearId,
+            eyid: exhibitorData.exhibitorYearId,
+            email: email,
+            emailTo: sendTo,
+        }
+        $.ajax({
+            url: script,
+            method: "POST",
+            data: postData,
+            success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
+                exhibitors.emailControlSheetSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    emailControlSheetSuccess(data) {
+        if (data.error) {
+            show_message(data.message, 'error');
+            return;
+        } else {
+            if (data.message)
+                show_message(data.message, 'success')
+        }
+    }
+
 
     // process appove requested
     spaceApprovalReq(id) {
