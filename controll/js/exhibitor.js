@@ -1440,72 +1440,119 @@ class exhibitorsAdm {
         let margin = (invBtns || agentBtns) ? ' mb-2' : '';
 
         // details button
-        buttons += '<button class="btn btn-sm btn-info' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-            'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
+        buttons += '<button class="btn btn-sm btn-info ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size:' +
+            ' .75rem;" ' +
+            'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>';
+        let needEnsp = true;
 
         // approval buttons
         if (config.exhibitorConid == config.conid) {
             if (approvalBtns) {
                 if (data.approved != data.requested) {
-                    if (app == 0) {
-                        buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
-                    } else {
-                        buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                            ' --bs-btn-font-size: .75rem;" ' +
-                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
+                    if (needEnsp) {
+                        buttons += '&ensp;';
+                        needEnsp = false;
                     }
+                    if (app == 0) {
+                        buttons += '<button class="btn btn-sm btn-primary ' + margin +
+                            '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>';
+                    } else {
+                        buttons += '<button class="btn btn-sm btn-warning ' + margin +
+                            '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                            ' --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>';
+                    }
+                    needEnsp = true;
                 }
                 if (app > 0) {
-                    buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
-                        '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
+                    if (needEnsp)
+                        buttons += '&ensp;';
+                    buttons += '<button class="btn btn-sm btn-warning ' + margin +
+                        '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>' +
+                        '&ensp;<button class="btn btn-sm btn-warning ' + margin +
+                        '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>';
+                    needEnsp = true;
                 }
-                if (app == 0)
-                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
-                // force a break after the approval buttons
+                if (app == 0) {
+                    if (needEnsp)
+                        buttons += '&ensp;';
+                    buttons += '<button class="btn btn-sm btn-primary ' + margin +
+                        '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>';
+                    needEnsp = true;
+                    // force a break after the approval buttons
+                }
                 buttons += "<br/>";
+                needEnsp = false;
             }
         }
 
         margin = (invBtns || agentBtns) ? 'mb-2' : '';
         // receipt button and locations
         if (paidBtns) {
-            buttons += '<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+            if (needEnsp) {
+                buttons += '&ensp;';
+            }
+            needEnsp = true;
+            buttons += '<button class="btn btn-sm btn-info ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
                 ' --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
+                'onclick="exhibitors.showReceipt(' + id + ')" >Receipt</button>';
+            buttons += '&ensp;<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>';
             if (config.exhibitorConid == config.conid) {
-                buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                buttons += '&ensp;<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
                     ' --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+                    'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>';
             }
 
             buttons += "<br/>";
+            needEnsp = false;
         }
 
         margin = agentBtns ? 'mb-2' : '';
         // inventory button
         if (invBtns) {
             if (config.exhibitorConid == config.conid) {
-                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
-                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+                if (needEnsp) {
+                    buttons += '&ensp;';
+                }
+                buttons += '<button class="btn btn-sm btn-secondary ' + margin + ' mb-2" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                    ' --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>';
+                buttons += '&ensp;<button class="btn btn-sm btn-secondary ' + margin + ' mb-2" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                    ' --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>';
+                needEnsp = true;
             }
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>&nbsp;';
+            if (needEnsp) {
+                buttons += '&ensp;';
+            }
+            buttons += '<button class="btn btn-sm btn-secondary ' + margin + ' mb-2" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button><br/>';
+            buttons += '&ensp;<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.emailControlSheet(' + id + ', false)" >Email Control Sheet</button>';
+            buttons += '&ensp;<button class="btn btn-sm btn-warning ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
+                'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>';
 
             buttons += "<br/>";
+            needEnsp = false;
         }
 
         // agent
         if (agentBtns && config.exhibitorConid == config.conid) {
+            if (needEnsp) {
+                buttons += '&ensp;';
+            }
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>&nbsp;';
+                'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>';
+            needEnsp = true;
         }
 
         return buttons;
