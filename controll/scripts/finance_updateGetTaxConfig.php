@@ -50,6 +50,7 @@ if (array_key_exists('tablename', $_POST)) {
     $tablename = 'none';
 }
 $data = [];
+$response['message'] = '';
 
 if ($tablename != 'none') {
     try {
@@ -106,33 +107,32 @@ EOS;
         $updated += $numrows;
     }
 
-    $response['message'] = "$tablename updated: $updated tax rates changed.";
+    $response['message'] .= "$tablename updated: $updated tax rates changed.<br/>";
 }
 
 
 // build new year auto copies the tax list from last year.  This code will just upconvert an interim year from the config variables to the tax list entry.
-
-$yearcheckR = dbSafeQuery("SELECT conid, COUNT(*) AS numRows FROM taxList WHERE conid IN (?, ?) GROUP BY conid;", 'ii', array($conid-1, $conid));
-if ($yearcheckR == false) {
-    $response['error'] = "Year check query failed";
-    ajaxSuccess($response);
-    exit();
-}
-$years = [];
-while ($yearL = $yearcheckR->fetch_assoc()) {
-    $years[$yearL['conid']] = $yearL['numRows'];
-}
-$yearcheckR->free();
-if (count($years) == 1 && array_key_exists($conid - 1, $years)) {
-    // There is data from last year and not this year..., so insert the new year data.
-    $ins = <<<EOS
-INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
-SELECT ?, taxField, label, rate, active, glNum, glLabel, now(), ?
-FROM taxList
-WHERE conid = ?;
+$checkTaxQ = <<<EOS
+SELECT COUNT(*) FROM taxList WHERE conid = ?;
 EOS;
-    $numRows=dbSafeCmd($ins, 'iii', array($conid, $user_perid, $conid - 1));
+$checkTaxR = dbSafeQuery($checkTaxQ, 'i', array ($conid));
+$taxCount = $checkTaxR->fetch_row()[0];
+$checkTaxR->free();
+if ($taxCount == 0) {
+    $taxRate = getConfValue('con', 'taxRate', null);
+    $taxLabel = getConfValue('con', 'taxLabel', null);
+    if ($taxRate != null && $taxLabel != null) {
+        $insQ = <<<EOS
+        INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
+        VALUES(?, 'tax1', ?, ?, 'Y', NOW(), NULL);
+EOS;
+        $numRows = dbSafeCmd($insQ, 'issd', array ($nextConid, $taxLabel, $taxRate));
+        if ($numRows > 0) {
+            $response['message'] .= 'converted obsolete configuration tax rate variables to taxList<br/>';
+        }
+    }
 }
+
 // now get the current list
 $taxList = getTaxConfig();
 $response['taxList'] = $taxList;

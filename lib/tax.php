@@ -147,21 +147,30 @@ ORDER BY taxField;
 EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
-        $taxConfig[] = $row;
+        $row['taxItems'] = [];
+        $taxField = $row['taxField'];
+        $taxConfig[$taxField] = $row;
     }
     $QR->free();
 
-    if (count($taxConfig) == 0) {
-        // default to the older configuration file based tax rates
-        $taxRate = getConfValue('con', 'taxRate', 0);
-        if ($taxRate > 0) {
-            $taxLabel = getConfValue('con', 'taxLabel');
-            $taxConfig[] = array('conid' => $conid, 'taxField' => 'tax1', 'label' => $taxLabel, 'rate' => $taxRate,
-                'active' => 'Y', 'glNum' => null, 'lastUpdate' => null, 'updatedBy' => -1);
-        }
+    // now add tax items to taxConfig
+    $QQ = <<<EOS
+SELECT *
+FROM taxItems
+WHERE conid = ?
+ORDER BY sortOrder;
+EOS;
+    $QR = dbSafeQuery($QQ, 'i', array($conid));
+    while ($row = $QR->fetch_assoc()) {
+        $taxField = $row['taxField'];
+        $taxConfig[$taxField]['taxItems'][] = $row;
     }
+    $QR->free();
 
-    return $taxConfig;
+    // now convert the associative array to a normal array
+    $taxConfigArray = array_values($taxConfig);
+
+    return $taxConfigArray;
 }
 
 function computeTax($taxableAmt) : array {

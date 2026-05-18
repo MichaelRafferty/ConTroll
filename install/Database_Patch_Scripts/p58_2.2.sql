@@ -111,6 +111,7 @@ ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_deactuser`  FOREIGN KEY (de
 /*
  * Taxable items split out by type of items sold for auto tax computes
  */
+DROP TABLE IF EXISTS taxItems;
 DROP TABLE IF EXISTS taxable;
 CREATE TABLE taxable (
     item varchar(16) NOT NULL PRIMARY KEY COMMENT 'type of item being sold',
@@ -120,34 +121,29 @@ CREATE TABLE taxable (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO taxable (item, label, defaultValue, sortOrder) VALUES
-    ('taxableMem', 'Taxable Memberships', 'Y', 10),
-    ('nontaxMem', 'Non Taxable Memberships', 'N', 20),
-    ('artSales', 'Art Sales', 'Y', 30),
-    ('artSpace', 'Art Space', 'N', 40),
-    ('artShipping', 'Art Shipping Fees', 'N', 50),
-    ('vendorSpace', 'Vendor Space', 'N', 60),
-    ('exhibitSpace', 'Exhibits Space', 'N', 70),
-    ('fanSpace', 'Fan Table Space', 'N', 80),
-    ('otherFees', 'Other Fees', 'N', 10000);
+                                                               ('taxableMem', 'Taxable Memberships', 'Y', 10),
+                                                               ('nontaxMem', 'Non Taxable Memberships', 'N', 20),
+                                                               ('artSales', 'Art Sales', 'Y', 30),
+                                                               ('artSpace', 'Art Space', 'N', 40),
+                                                               ('artShipping', 'Art Shipping Fees', 'N', 50),
+                                                               ('vendorSpace', 'Vendor Space', 'N', 60),
+                                                               ('exhibitSpace', 'Exhibits Space', 'N', 70),
+                                                               ('fanSpace', 'Fan Table Space', 'N', 80),
+                                                               ('otherFees', 'Other Fees', 'N', 10000);
 
-DROP TABLE IF EXISTS taxItems;
 CREATE TABLE taxItems (
     conid int NOT NULL COMMENT 'applicable convention year',
+    taxField enum('tax1','tax2','tax3','tax4','tax5') NOT NULL COMMENT 'referecne to taxList',
     item varchar(16) NOT NULL COMMENT 'type of item being sold',
     taxable enum('N', 'Y') NOT NULL DEFAULT 'N' COMMENT 'default value for is this item taxable',
     `lastUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `updatedBy` int DEFAULT NULL COMMENT 'perid of signed in user that made change, null if done directly in SQL',
     sortOrder int NOT NULL DEFAULT 0 COMMENT 'Copied from taxable table',
-    PRIMARY KEY (conid, item)
+    PRIMARY KEY (conid, taxfield, item)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
 ALTER TABLE taxItems ADD CONSTRAINT ti_item_taxable FOREIGN KEY (item) REFERENCES taxable(item);
-ALTER TABLE taxItems ADD CONSTRAINT ti_conid_conlist FOREIGN KEY (conid) REFERENCES conlist(id);
-
-
-
-
-
-
+ALTER TABLE taxItems ADD CONSTRAINT ti_taxlist FOREIGN KEY (conid, taxField) REFERENCES taxList(conid, taxField);
 
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');
