@@ -92,9 +92,14 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                         </div>
                         <div class='row'>
                             <div class='col-sm-auto' id='print_buttons'>
-                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
-                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
-                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
+                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
+                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                                <button id='email_controlsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.emailSheets('control'); return false;">Email Control Sheet</button>
                             </div>
                             <div class='col-sm-auto ms-4' id='import_buttons'>
                                 <button id='inventoryImportPriorBtn' class='btn btn-primary btn-sm' onclick='auctionItemRegistration.import(null);'>

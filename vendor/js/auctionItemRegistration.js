@@ -101,6 +101,42 @@ class AuctionItemRegistration {
         window.open(script, "_blank")
     }
 
+    emailSheets(type, region = null, conid = null) {
+        if (region == null)
+            region = this.#region;
+
+        let script = 'scripts/bidsheets.php';
+        let postData = {
+            type: type,
+            region: this.#region,
+            conid: conid,
+            email: true,
+            emailTo: exhibitor_info.exhibitorEmail,
+        }
+
+        let _this = this;
+        $.ajax({
+            url: script,
+            method: "POST",
+            data: postData,
+            success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
+                _this.emailSheetSuccess(data);
+            },
+            error: showAjaxError
+        });
+    }
+
+    emailSheetSuccess(data) {
+        if (data.error) {
+            show_message(data.message, 'error', 'ir_message_div');
+            return;
+        } else {
+            if (data.message)
+                show_message(data.message, 'success', 'ir_message_div')
+        }
+    }
+
     // check if there are unsaved changes, and if so, promptuser to save, or close if second press
     closeModal() {
         if ((!this.#closeAnyway) && (this.#artItemsDirty || this.#printItemsDirty || this.#nfsItemsDirty)) {
