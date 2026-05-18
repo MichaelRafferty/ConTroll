@@ -528,7 +528,7 @@ vendorOpen=1
 exhibitOpen=0
 ;;; fanOpen
 ;; N:fanOpen
-;; R:H,fanor
+;; R:H,exhibitor
 ;; H:specific fan (fan tables hall) portal open/close flag, the global fan open flag must also be open (1) for this to open the specific portal
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for fan portal closed, 1 to allow fan portal to open based on overall open flag
 ;; H+NOTE: this is a future feature
