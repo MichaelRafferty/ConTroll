@@ -75,9 +75,12 @@ conname="ConTroll"
 ;   and in exhibits configuration under owner email field.  No blanks are alloed in the list of email domains. (use ",", not ", ")
 emailDomains="convention.org,club.org"
 ;;; Sales Tax Payment Items
-; This is the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
-;   The uid is used by Square and must be the same as the tax id with any space or other non alphanumeric characters replaced by a '-'. (dash)
-;   these fields are for historical purposes only, the tax table now superceeds this
+; This used to contaon the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
+; This is now superceeded by the tax table under finance.
+; Do not use these three fields and delete from from the configuration file.
+;   The year roll over will automatically create the tax table entry from them, and uid it as tax1.
+;   if they are present and the tax table is empty.
+;   they are included only by reference.
 ;taxRate=6
 ;taxLabel="NJ Sales Tax"
 ;taxuid="NJ-Sales-Tax"
