@@ -547,6 +547,97 @@ EOS;
         </div>
     </div>
 </div>
+
+<!-- tax row edit modal -->
+<div id='editTax' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Sales Tax' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong>Edit Sales Tax: <span id="tax-title"></span></strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'>
+                            <h1 class='h3'>Edit Sales Tax: <span id="tax-heading"></span></h1>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
+                            <label for='taxActive' class='form-label-sm'>
+                                <span class='text-dark'><?php echo $star; ?>Active</span>
+                            </label>
+                        </div>
+                        <div class="col-sm-auto">
+                            <select name="taxActive" id="taxActive"  Tabindex=" <?php echo $tabindex; $tabindex += 10; ?>">
+                                <option value="Y">Yes</option>
+                                <option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-sm">Is this tax rate applicable to this year?</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
+                            <label for='taxLabel' class='form-label-sm'>
+                                <span class='text-dark'><?php echo $star; ?>Receipt Label</span>
+                            </label>
+                        </div>
+                        <div class="col-sm-auto">
+                            <input class="form-control-sm" type="text" name="taxLabel" id="taxLabel" size="64" maxlength="64"
+                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        </div>
+                        <div class="col-sm">Label to print on the receipt (up to 64 characters).</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
+                            <label for='taxRate' class='form-label-sm'>Tax Rate</label>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <input class='form-control-sm no-spinners' type='number' name='taxRate' id='taxRate'
+                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        </div>
+                        <div class='col-sm'>Optional for Accounting</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
+                            <label for='taxGLNum' class='form-label-sm'>GL Number</label>
+                        </div>
+                        <div class="col-sm-auto">
+                            <input class='form-control-sm' type='text' name='taxGLNum' id='taxGLNum' size='16' maxlength='16'
+                               tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        </div>
+                        <div class="col-sm">Optional for Accounting</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
+                            <label for='taxGLLabel' class='form-label-sm'>GL Label</label>
+                        </div>
+                        <div class="col-sm-auto">
+                            <input class='form-control-sm' type='text' name='taxGLLabel' id='taxGLLabel' size='64' maxlength='64'
+                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        </div>
+                        <div class='col-sm'>Optional for Accounting</div>
+                    </div>
+                    <div class='row mt-4'>
+                        <div class="col-sm-auto">
+                            <h2 class='h4'>Which Items are Taxable:</h2>
+                        </div>
+                    </div>
+                    <div id="taxItemsDiv"></div>
+                    <div class='row' id='tax_message_div'></div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='tax-saveRow-btn' onclick='tax.saveEdit()'>Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid" id='main'>
     <ul class='nav nav-tabs mb-3' id='finance-tab' role='tablist'>
         <li class='nav-item' role='presentation'>

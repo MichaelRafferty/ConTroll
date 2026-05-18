@@ -148,6 +148,7 @@ EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
         $row['taxItems'] = [];
+        $row['taxItemsDisplay'] = '';
         $taxField = $row['taxField'];
         $taxConfig[$taxField] = $row;
     }
@@ -164,11 +165,17 @@ EOS;
     while ($row = $QR->fetch_assoc()) {
         $taxField = $row['taxField'];
         $taxConfig[$taxField]['taxItems'][] = $row;
+        $taxConfig[$taxField]['taxItemsDisplay'] .= ',' . $row['taxItem'] . '=' . $row['taxable'];
     }
     $QR->free();
 
-    // now convert the associative array to a normal array
-    $taxConfigArray = array_values($taxConfig);
+    // strip the leading comma from each taxItemsDisplay while copying over the array
+    $taxConfigArray = array();
+    foreach ($taxConfig as $taxField => $tax) {
+        if ($tax['taxItemsDisplay'] != '')
+            $tax['taxItemsDisplay'] = substr($tax['taxItemsDisplay'], 1);
+        $taxConfigArray[] = $tax;
+    }
 
     return $taxConfigArray;
 }

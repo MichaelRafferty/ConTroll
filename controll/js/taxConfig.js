@@ -8,6 +8,18 @@ class taxConfig {
     #taxSaveBTN = null;
     #taxAddNewBTN = null;
 
+    // edit modal fields
+    #taxEditModal = null;
+    #taxTitle = null;
+    #taxHeading = null;
+    #taxField = null;
+    #taxLabel = null;
+    #taxRate = null;
+    #taxGLNum = null;
+    #taxGLLabel = null;
+    #taxItemsDiv = null;
+    #taxActive = null;
+
     #dirty = false;
 
     // constants
@@ -18,12 +30,25 @@ class taxConfig {
         this.#conid = conid;
         this.#taxSaveBTN = document.getElementById('taxSaveBtn');
         this.#taxAddNewBTN = document.getElementById('taxAddNewBtn');
+
+        let id = document.getElementById('editTax');
+        if (id) {
+            this.#taxEditModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#taxTitle = document.getElementById('tax-title');
+            this.#taxHeading = document.getElementById('tax-heading');
+            this.#taxRate = document.getElementById('taxRate');
+            this.#taxLabel = document.getElementById('taxLabel');
+            this.#taxActive = document.getElementById('taxActive');
+            this.#taxGLNum = document.getElementById('taxGLNum');
+            this.#taxGLLabel = document.getElementById('taxGLLabel');
+            this.#taxItemsDiv = document.getElementById('taxItemsDiv');
+        }
     }
 
     open() {
-        var script = "scripts/finance_updateGetTaxConfig.php";
+        let script = "scripts/finance_updateGetTaxConfig.php";
 
-        var postdata = {
+        let postdata = {
             ajax_request_action: 'getTax',
         };
         clear_message();
@@ -51,7 +76,7 @@ class taxConfig {
     }
 
     draw(data) {
-        var _this = this;
+        let _this = this;
         // if this is from the config file, change updated by and set things to dirty
         if (data.taxList.length == 1) {
             if (Number(data.taxList[0].updatedBy) < 0) {
@@ -66,15 +91,18 @@ class taxConfig {
             layout: "fitDataTable",
             index: "taxField",
             columns: [
+                {title: 'Edit', formatter: this.editbutton, hozAlign:"center", headerHozAlign: "center", headerSort: false },
+                {title: "Active", field: "active", editor: 'list', editorParams: { values: ['Y', 'N'], }, headerSort:false, },
                 {title: "Con Id", field: "conid", headerSort:false },
                 {title: "taxField", field: "taxField", headerSort:false , },
-                {title: "Receipt Label", field: "label", width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
+                {title: "Receipt Label", field: "label", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
                 {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, },
-                {title: "Active", field: "active", editor: 'list', editorParams: { values: ['Y', 'N'], }, headerSort:false, },
+                {title: "Taxable", field: "taxItemsDisplay", headerSort:false, width: 300, formatter: 'textarea', },
                 {title: "GL Num", field: "glNum", headerSort: false, editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "GL Label", field: "glLabel", headerSort: false, editor: "input", editorParams: {maxlength: "64"}, width: 600, },
+                {title: "GL Label", field: "glLabel", headerSort: false, editor: "input", editorParams: {maxlength: "64"}, width: 300, },
                 {title: "Last Update", field: "lastUpdate", headerSort:false, },
                 {title: "Updated By", field: "updatedBy", headerSort:false , },
+                { field: "taxItems", visible: false, },
             ]});
 
         this.#taxTable.on("dataChanged", function (data) {
@@ -82,6 +110,29 @@ class taxConfig {
         });
         this.#taxTable.on("cellEdited", cellChanged);
         this.#taxAddNewBTN.disabled = data['taxList'].length >= 5;
+    }
+
+    editbutton(cell, formatterParams, onRendered) {
+        let row = cell.getRow();
+        let taxField = row.getData().taxField;
+        return '<button class="btn btn-primary btn-sm" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                    ' onclick="tax.editTax(\'' + taxField + '\');">Edit</button>';
+    }
+
+    editTax(row) {
+        console.log("editTax: " + row);
+        let taxrow = this.#taxTable.getRow(row);
+        let rowData = taxrow.getData();
+        console.log(rowData);
+        this.#taxTitle.innerHTML = rowData.taxField;
+        this.#taxHeading.innerHTML = rowData.taxField + ' for ' + rowData.conid;
+        this.#taxLabel.value = rowData.label;
+        this.#taxRate.value = rowData.rate;
+        this.#taxActive.value = rowData.active;
+        this.#taxGLNum.value = rowData.glNum;
+        this.#taxGLLabel.value = rowData.glLabel;
+        this.#taxItemsDiv.innerHTML = rowData.taxItemsDisplay;
+        this.#taxEditModal.show();
     }
 
     close() {
@@ -128,15 +179,15 @@ class taxConfig {
 
     // save the table back to the database
     save() {
-        var _this = this;
+        let _this = this;
 
         if (this.#taxTable != null) {
             this.#taxSaveBTN.innerHTML = "Saving...";
             this.#taxSaveBTN.disabled = true;
 
-            var script = "scripts/finance_updateGetTaxConfig.php";
+            let script = "scripts/finance_updateGetTaxConfig.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'updateTax',
                 tabledata: JSON.stringify(this.#taxTable.getData()),
                 tablename: 'taxList',
