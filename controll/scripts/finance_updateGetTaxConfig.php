@@ -110,7 +110,8 @@ EOS;
 }
 
 
-// check to see if this is the first time in a new year
+// build new year auto copies the tax list from last year.  This code will just upconvert an interim year from the config variables to the tax list entry.
+
 $yearcheckR = dbSafeQuery("SELECT conid, COUNT(*) AS numRows FROM taxList WHERE conid IN (?, ?) GROUP BY conid;", 'ii', array($conid-1, $conid));
 if ($yearcheckR == false) {
     $response['error'] = "Year check query failed";
