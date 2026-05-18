@@ -153,6 +153,36 @@ WHERE conid = ?;
 EOS;
         $numRows = dbSafeCmd($taxInsQ, 'ii', array($nextConid, $conid));
         $message .= "$numRows taxList entries inserted for $nextConid<br/>\n";
+// build taxable items
+        $taxInsQ = <<<EOS
+INSERT INTO taxItems(conid, item, taxable, lastUpdate, updatedBy, sortorder)
+SELECT ?, item, taxable, now(), NULL, sortorder
+FROM taxItems
+WHERE conid = ?;
+EOS;
+        $numRows = dbSafeCmd($taxInsQ, 'ii', array($nextConid, $conid));
+        $message .= "$numRows taxItems entries inserted for $nextConid<br/>\n";
+    }
+// now check if they are useing the older config file variables and replace it with the tax list items instead
+    $checkTaxQ = <<<EOS
+SELECT count(*) FROM taxList WHERE conid = ?;
+EOS;
+    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array($nextConid));
+    $taxCount = $checkTaxR->fetch_row()[0];
+    $checkTaxR->free();
+    if ($taxCount == 0) {
+        $taxRate = getConfValue('con', 'taxRate', null);
+        $taxLabel = getConfValue('con', 'taxLabel', null);
+        if ($taxRate != null && $taxLabel != null) {
+            $insQ = <<<EOS
+            INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
+            VALUES(?, 'tax1', ?, ?, 'Y', now(), NULL);
+EOS;
+            $numRows = dbSafeCmd($insQ, 'issd', array($nextConid, $taxLabel, $taxRate));
+            if ($numRows > 0) {
+                $message .= "converted obsolete configuration tax rate variables to taxlist;";
+            }
+        }
     }
 
 // build the agelist if needed
