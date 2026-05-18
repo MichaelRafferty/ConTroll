@@ -102,6 +102,7 @@ class AuctionItemRegistration {
     }
 
     emailSheets(type, region = null, conid = null) {
+        clear_message('ir_message_div');
         if (region == null)
             region = this.#region;
 
