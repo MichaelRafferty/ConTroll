@@ -165,9 +165,9 @@ EOS;
     }
 // now check if they are useing the older config file variables and replace it with the tax list items instead
     $checkTaxQ = <<<EOS
-SELECT count(*) FROM taxList WHERE conid = ?;
+SELECT COUNT(*) FROM taxList WHERE conid = ?;
 EOS;
-    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array($nextConid));
+    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array ($nextConid));
     $taxCount = $checkTaxR->fetch_row()[0];
     $checkTaxR->free();
     if ($taxCount == 0) {
@@ -176,11 +176,11 @@ EOS;
         if ($taxRate != null && $taxLabel != null) {
             $insQ = <<<EOS
             INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
-            VALUES(?, 'tax1', ?, ?, 'Y', now(), NULL);
+            VALUES(?, 'tax1', ?, ?, 'Y', NOW(), NULL);
 EOS;
-            $numRows = dbSafeCmd($insQ, 'issd', array($nextConid, $taxLabel, $taxRate));
+            $numRows = dbSafeCmd($insQ, 'issd', array ($nextConid, $taxLabel, $taxRate));
             if ($numRows > 0) {
-                $message .= "converted obsolete configuration tax rate variables to taxlist;";
+                $message .= 'converted obsolete configuration tax rate variables to taxList;';
             }
         }
     }
