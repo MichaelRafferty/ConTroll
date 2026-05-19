@@ -572,7 +572,8 @@ EOS;
                             </label>
                         </div>
                         <div class="col-sm-auto">
-                            <select name="taxActive" id="taxActive"  Tabindex=" <?php echo $tabindex; $tabindex += 10; ?>">
+                            <select name="taxActive" id="taxActive" onchange="tax.editFieldChanged('taxActive')"
+                                    tabindex=" <?php echo $tabindex; $tabindex += 10; ?>">
                                 <option value="Y">Yes</option>
                                 <option value="N">No</option>
                             </select>
@@ -587,17 +588,17 @@ EOS;
                         </div>
                         <div class="col-sm-auto">
                             <input class="form-control-sm" type="text" name="taxLabel" id="taxLabel" size="64" maxlength="64"
-                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                                   onchange="tax.editFieldChanged('taxLabel')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                         <div class="col-sm">Label to print on the receipt (up to 64 characters).</div>
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-2'>
-                            <label for='taxRate' class='form-label-sm'>Tax Rate</label>
+                            <label for='taxRate' class='form-label-sm'><span class='text-dark'><?php echo $star; ?>Tax Rate</span></label>
                         </div>
                         <div class='col-sm-auto'>
                             <input class='form-control-sm no-spinners' type='number' name='taxRate' id='taxRate'
-                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                                   onchange="tax.editFieldChanged('taxRate')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                         <div class='col-sm'>Optional for Accounting</div>
                     </div>
@@ -607,7 +608,7 @@ EOS;
                         </div>
                         <div class="col-sm-auto">
                             <input class='form-control-sm' type='text' name='taxGLNum' id='taxGLNum' size='16' maxlength='16'
-                               tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                                   onchange="tax.editFieldChanged('taxGLNum')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                         <div class="col-sm">Optional for Accounting</div>
                     </div>
@@ -617,7 +618,7 @@ EOS;
                         </div>
                         <div class="col-sm-auto">
                             <input class='form-control-sm' type='text' name='taxGLLabel' id='taxGLLabel' size='64' maxlength='64'
-                                   tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                                   onchange="tax.editFieldChanged('taxGLLabel')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                         <div class='col-sm'>Optional for Accounting</div>
                     </div>
@@ -626,7 +627,18 @@ EOS;
                             <h2 class='h4'>Which Items are Taxable:</h2>
                         </div>
                     </div>
-                    <div id="taxItemsDiv"></div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'></div>
+                        <div class='col-sm-auto'>
+                            Note: rows with a '-' in this column will act as the same as the default taxable value for that row.<br/>
+                            Rows with a Y or N will override the default taxable value and use the value in the taxable column.<br/>
+                            To change a taxable entry, click on the cell and choose the new value from the dropdown list.
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8  m-0 p-0" id="taxItemsDiv"></div>
+                    </div>
                     <div class='row' id='tax_message_div'></div>
                 </div>
             </div>

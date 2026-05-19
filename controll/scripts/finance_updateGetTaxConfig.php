@@ -134,8 +134,9 @@ EOS;
 }
 
 // now get the current list
-$taxList = getTaxConfig();
+    [$taxList, $taxable] = getTaxConfig();
 $response['taxList'] = $taxList;
+$response['taxable'] = $taxable;
 
 if ($hrtime) {
     $endHRtime = hrtime(true);

@@ -7,6 +7,8 @@ class taxConfig {
     #conid = null;
     #taxSaveBTN = null;
     #taxAddNewBTN = null;
+    #taxList = null;
+    #taxable = null;
 
     // edit modal fields
     #taxEditModal = null;
@@ -19,6 +21,10 @@ class taxConfig {
     #taxGLLabel = null;
     #taxItemsDiv = null;
     #taxActive = null;
+    #taxItemsTable = null;
+    #editFieldsDirty = false;
+    #taxSaveRowBtn = null;
+    #taxRowBeforeEdit = null;
 
     #dirty = false;
 
@@ -42,6 +48,7 @@ class taxConfig {
             this.#taxGLNum = document.getElementById('taxGLNum');
             this.#taxGLLabel = document.getElementById('taxGLLabel');
             this.#taxItemsDiv = document.getElementById('taxItemsDiv');
+            this.#taxSaveRowBtn = document.getElementById('tax-saveRow-btn');
         }
     }
 
@@ -85,6 +92,8 @@ class taxConfig {
                 this.dataChanged();
             }
         }
+        this.#taxable = data.taxable;
+        this.#taxList = data.taxList;
         // show initial tax Config table
         this.#taxTable = new Tabulator('#taxConfigTable', {
             data: data.taxList,
@@ -108,8 +117,13 @@ class taxConfig {
         this.#taxTable.on("dataChanged", function (data) {
             _this.dataChanged();
         });
-        this.#taxTable.on("cellEdited", cellChanged);
+        this.#taxTable.on("cellEdited", taxCellChanged);
         this.#taxAddNewBTN.disabled = data['taxList'].length >= 5;
+    }
+
+    cellChanged(cell) {
+        this.#dirty = true;
+        cellChanged(cell);
     }
 
     editbutton(cell, formatterParams, onRendered) {
@@ -120,19 +134,163 @@ class taxConfig {
     }
 
     editTax(row) {
-        console.log("editTax: " + row);
+        clear_message('tax_message_div');
+        //console.log("editTax: " + row);
         let taxrow = this.#taxTable.getRow(row);
-        let rowData = taxrow.getData();
-        console.log(rowData);
-        this.#taxTitle.innerHTML = rowData.taxField;
-        this.#taxHeading.innerHTML = rowData.taxField + ' for ' + rowData.conid;
-        this.#taxLabel.value = rowData.label;
-        this.#taxRate.value = rowData.rate;
-        this.#taxActive.value = rowData.active;
-        this.#taxGLNum.value = rowData.glNum;
-        this.#taxGLLabel.value = rowData.glLabel;
-        this.#taxItemsDiv.innerHTML = rowData.taxItemsDisplay;
+        this.#taxField = row;
+        this.#taxRowBeforeEdit = taxrow.getData();
+        this.#taxTitle.innerHTML = this.#taxRowBeforeEdit.taxField;
+        this.#taxHeading.innerHTML = this.#taxRowBeforeEdit.taxField + ' for ' + this.#taxRowBeforeEdit.conid;
+        this.#taxLabel.value = this.#taxRowBeforeEdit.label;
+        this.#taxRate.value = this.#taxRowBeforeEdit.rate;
+        this.#taxActive.value = this.#taxRowBeforeEdit.active;
+        this.#taxGLNum.value = this.#taxRowBeforeEdit.glNum;
+        this.#taxGLLabel.value = this.#taxRowBeforeEdit.glLabel;
+        //this.#taxItemsDiv.innerHTML = this.#taxRowBeforeEdit.taxItemsDisplay;
+        // build the edit area for the taxable items
+        let taxables = this.#taxRowBeforeEdit.taxItems;
+        for (let i = 0; i < this.#taxable.length; i++) {
+            let tax = this.#taxable[i];
+            if (taxables.hasOwnProperty(tax.item)) {
+                this.#taxable[i].taxable = taxables[tax.item].taxable;
+            } else {
+                this.#taxable[i].taxable = '-';
+            }
+        }
+
+        if (this.#taxItemsTable != null) {
+            this.#taxItemsTable.replaceData(this.#taxable);
+        } else {
+            this.#taxItemsTable = new Tabulator('#taxItemsDiv', {
+                data: this.#taxable,
+                layout: "fitData",
+                index: "item",
+                columns: [
+                    {title: 'Item', field: "item", headerSort:false, visible: false, },
+                    {title: "Label", field: "label", headerSort:false, minWidth: 410, },
+                    {title: "Taxable (editable)", headerWordWrap: true, field: "taxable", editor: 'list', editorParams: { values: ['-', 'Y', 'N'], },
+                        headerSort:false, hozAlign: "center", width: 100 },
+                    {title: "Default Taxable", headerWordWrap: true, field: "defaultValue",
+                        headerSort:false,  hozAlign: "center", width: 100, },
+                ],
+            });
+            this.#taxItemsTable.on("cellEdited", taxItemCellChanged);
+        }
+        this.#editFieldsDirty = false;
+        clearFieldChanged(this.#taxActive);
+        clearFieldChanged(this.#taxLabel);
+        clearFieldChanged(this.#taxRate);
+        clearFieldChanged(this.#taxGLNum);
+        clearFieldChanged(this.#taxGLLabel);
+        this.#taxSaveRowBtn.disabled = true;
+        this.#taxSaveRowBtn.innerHTML = "Save Changes";
         this.#taxEditModal.show();
+    }
+
+    itemCellChanged(cell) {
+        this.#editFieldsDirty = true;
+        cellChanged(cell);
+        this.#taxSaveRowBtn.disabled = false;
+        this.#taxSaveRowBtn.innerHTML = "Save Changes*";
+    }
+
+    editFieldChanged(field) {
+        this.#editFieldsDirty = true;
+        setFieldChanged(document.getElementById(field));
+        this.#taxSaveRowBtn.disabled = false;
+        this.#taxSaveRowBtn.innerHTML = "Save Changes*";
+    }
+    
+    saveEdit() {
+        clear_message('tax_message_div');
+
+        // build the current values to update the table, only use the changed values
+        let active = this.#taxActive.value;
+        let label = this.#taxLabel.value.trim();
+        let rate = this.#taxRate.value;
+        let glNum = this.#taxGLNum.value.trim();
+        let glLabel = this.#taxGLLabel.value;
+        let taxItemsData = this.#taxItemsTable.getData();
+        let taxItems = {};
+        for (let i = 0; i < taxItemsData.length; i++) {
+            let item = taxItemsData[i];
+            taxItems[item.item] = item;
+        }
+        let oldItemsData = this.#taxRowBeforeEdit.taxItems;
+        let oldItems = {};
+        for (let i = 0; i < oldItemsData.length; i++) {
+            let item = oldItemsData[i];
+            oldItems[item.item] = item;
+        }
+
+        let valid = true;
+        let message = '';
+        // some validation
+        if (label.trim() == '') {
+            message += "Receipt Label cannot be empty<br/>";
+            valid = false;;
+        }
+        if (rate <= 0 || rate >= 100) {
+            message += "Rate must be greather than 0 and less than 100<br/>";
+            valid = false;
+        }
+
+        if (!valid) {
+            show_message(message, 'error', 'tax_message_div');
+            return;
+        }
+
+        if (glNum == '') {
+            glNum = null;
+        }
+
+        if (glLabel == '') {
+            glLabel = null;
+        }
+
+        //console.log("oldItems: " + JSON.stringify(oldItems));
+        //console.log("taxItems: " + JSON.stringify(taxItems));
+
+        let update = {};
+        update.taxField = this.#taxField;
+        if (this.#taxRowBeforeEdit.active != active)
+            update.active = active;
+        if (this.#taxRowBeforeEdit.label != label)
+            update.label = label;
+        if (this.#taxRowBeforeEdit.rate != rate)
+            update.rate = rate;
+        if (this.#taxRowBeforeEdit.glNum != glNum)
+            update.glNum = glNum;
+        if (this.#taxRowBeforeEdit.glLabel != glLabel)
+            update.glLabel = glLabel;
+
+        // now build the taxItems[] and taxItemsDisplay
+        let newItems = [];
+        let changed = false;
+        let sortOrder = 10;
+        let taxItemsDisplay = '';
+        for (let i = 0; i < this.#taxable.length; i++) {
+            let item = this.#taxable[i];
+           //console.log("item: " + JSON.stringify(item));
+            let newItem = taxItems[item.item].taxable
+            let oldItem = '-';
+            if (oldItems.hasOwnProperty(item.item)) {
+                oldItem = oldItems[item.item].taxable;
+            }
+            if (newItem != oldItem)
+                changed = true;
+            if (newItem != '-' && newItem != item.defaultValue) {
+                taxItemsDisplay += ',' + item.item + '=' + newItem;
+                newItems.push({conid: this.#conid, taxField: this.#taxField, item: item.item, taxable: newItem, sortOrder: sortOrder});
+            }
+            sortOrder += 10;
+        }
+        update.taxItems = newItems;
+        update.taxItemsDisplay = taxItemsDisplay.substring(1);
+        let updates = [];
+        updates.push(update);
+        //console.log("update: " + JSON.stringify(update));
+        this.#taxTable.updateData(updates);
     }
 
     close() {
@@ -225,3 +383,11 @@ class taxConfig {
         }
     }
 };
+
+function taxCellChanged(cell) {
+    tax.cellChanged(cell);
+}
+
+function taxItemCellChanged(cell) {
+    tax.itemCellChanged(cell);
+}

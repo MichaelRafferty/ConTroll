@@ -17,6 +17,7 @@ ORDER BY taxField;
 EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
+        $row['taxItems'] = array();
         $taxRates[$row['taxField']] = $row;
     }
     $QR->free();
@@ -26,8 +27,22 @@ EOS;
         $taxRate = getConfValue('con', 'taxRate', 0);
         if ($taxRate > 0) {
             $taxLabel = getConfValue('con', 'taxLabel');
-            $taxRates[] = array('taxField' => 'tax', 'rate' => $taxRate, 'label' => $taxLabel);
+            $taxRates[] = array('taxField' => 'tax', 'rate' => $taxRate, 'label' => $taxLabel, 'taxItems' => array());
         }
+    } else {
+        // get the tax items for each tax rate
+        $QQ = <<<EOS
+SELECT *
+FROM taxItems
+WHERE conid = ?
+ORDER BY sortOrder;
+EOS;
+        $QR = dbSafeQuery($QQ, 'i', array($conid));
+        while ($row = $QR->fetch_assoc()) {
+            $taxField = $row['taxField'];
+            $taxRates[$taxField]['taxItems'][] = $row;
+        }
+        $QR->free();
     }
 
     return $taxRates;
@@ -177,7 +192,19 @@ EOS;
         $taxConfigArray[] = $tax;
     }
 
-    return $taxConfigArray;
+    $QQ = <<<EOS
+SELECT item, label, defaultValue
+FROM taxable
+ORDER BY sortOrder;
+EOS;
+    $QR = dbQuery($QQ);
+    $taxable = array();
+    while ($row = $QR->fetch_assoc()) {
+        $taxable[] = $row;
+    }
+    $QR->free();
+
+    return array($taxConfigArray, $taxable);
 }
 
 function computeTax($taxableAmt) : array {
