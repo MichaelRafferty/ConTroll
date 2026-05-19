@@ -80,7 +80,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNfs(); return false;" disabled>Undo</button>
                                 <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
                                 <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
-                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNfs(); return false;" disabled>Save Changes</button>
+                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNFS(); return false;
+" disabled>Save Changes</button>
                             </div>
                         </div>
                         <?php outputCustomText('items/bottom');?>

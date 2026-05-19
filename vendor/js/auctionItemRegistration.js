@@ -1247,8 +1247,6 @@ function deleteicon(cell, formatParams, onRendered) {
     let value = cell.getValue();
     if (value == null) {
         value = 0;
-    } else {
-        value = Number(value);
     }
     let status = cell.getData().status;
     if (status == 'Entered' && value == 0)
@@ -1259,7 +1257,7 @@ function deleteicon(cell, formatParams, onRendered) {
 // process the row deletion (clicking on the trashcan).
 function deleterow(e, row) {
     let count = row.getCell("uses").getValue();
-    let status = row.getCell("status")
+    let status = row.getCell("status").getValue();
     if (count == null && status == 'Entered') {
         row.delete();
         return;
