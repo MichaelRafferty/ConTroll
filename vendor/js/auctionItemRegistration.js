@@ -1245,8 +1245,13 @@ function auctionItemRegistrationOnLoad(region) {
 // tabulator format function for the delete item button
 function deleteicon(cell, formatParams, onRendered) {
     let value = cell.getValue();
-    let status = cell.getRow().getData('status');
-    if (status == 'Entered' && (value == 0 || value == null))
+    if (value == null) {
+        value = 0;
+    } else {
+        value = Number(value);
+    }
+    let status = cell.getData().status;
+    if (status == 'Entered' && value == 0)
         return "&#x1F5D1;";
     return value;
 }
