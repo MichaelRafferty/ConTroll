@@ -146,4 +146,21 @@ CREATE TABLE taxItems (
 ALTER TABLE taxItems ADD CONSTRAINT ti_item_taxable FOREIGN KEY (item) REFERENCES taxable(item);
 ALTER TABLE taxItems ADD CONSTRAINT ti_taxlist FOREIGN KEY (conid, taxField) REFERENCES taxList(conid, taxField);
 
+UPDATE controllTxtItems SET contents = '<p>After your payment has been confirmed,
+please log in to the <a href="#vendor.artistsite#">artist portal</a> to enter your inventory into our system.</p>'
+WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'invoice' AND txtItem = 'payDisclaimerArtist'
+    AND (contents like '<p>Please log in to the%' OR contents like 'Controll-Default:%');
+
+UPDATE controllTxtItems SET contents =
+'<p>By purchasing this space I certify that I have read and agree to this statement.
+I agree that #label# and the #org# will not be responsible for goods and/or services sold by me during the course of #label#.
+By placing goods in the Dealers'' Room, I agree to indemnify and hold harmless #label# and the #org# from all claims
+and liabilities resulting from my negligence.
+Although #label# and the #org# will take reasonable security measures, neither #label# nor the #org# will be responsible
+for items placed in the Dealers'' Room.
+I also understand that once payment is made, no refund will be issued unless the convention is able to resell
+my space.</p>'
+WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'invoice' AND txtItem = 'payDisclaimerVendor'
+    AND (contents like '%By purchasing this space I certify%' OR contents like 'Controll-Default:%');
+
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');

@@ -589,7 +589,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $pNonce = 'cc_test';
     }
 
-    $desc = 'cc_test: ' . $ccParams['desc'];
+    if (array_key_exists('desc', $ccParams))
+        $desc = 'cc_test: ' . $ccParams['desc'];
+    else
+        $desc = 'cc_test';
+
     $paymentType = 'credit';
     $sourceId = $ccParams['nonce'];
     if ($sourceId == 'CASH') {

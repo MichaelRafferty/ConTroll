@@ -80,6 +80,9 @@ $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
 $config_vars['regserver'] = getConfValue('reg','server');
+if (array_key_exists('msg', $_REQUEST)) {
+    $config_vars['msg'] = $_REQUEST['msg'];
+}
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
 $config_vars['termsArtistMailin'] = returnCustomText('invoice/termsArtistMailin');

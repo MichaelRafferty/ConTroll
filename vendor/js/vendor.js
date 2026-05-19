@@ -61,6 +61,9 @@ window.onload = function () {
     }
     pwEyeToggle('newPw');
     pwEyeToggle('newPw2');
+
+    if (config.msg)
+        show_message(config.msg, 'success');
 }
 
 // execute the change password request

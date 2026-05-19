@@ -267,12 +267,10 @@ class VendorInvoice {
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
                     hideElement.hide();
-                    show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
-                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
-                    if (data['exhibitor_spacelist']) {
-                        exhibitor_spacelist = data['exhibitor_spacelist'];
-                    }
-                    updatePaidStatusBlock();
+                    let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
+                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
+                    window.location.href = '/index.php?msg=' + encodeURIComponent(message);
+                    return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                     let submitId = document.getElementById(purchaseLabel);
