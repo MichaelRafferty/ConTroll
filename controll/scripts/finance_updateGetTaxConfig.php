@@ -40,6 +40,7 @@ if (!isset($_POST) || !isset($_POST['ajax_request_action'])) {
 $action = $_POST['ajax_request_action'];
 $response['action'] = $action;
 $updated = 0;
+$itemsUpdated = 0;
 
 $first = true;
 
@@ -50,7 +51,7 @@ if (array_key_exists('tablename', $_POST)) {
     $tablename = 'none';
 }
 $data = [];
-$response['message'] = '';
+$response['success'] = '';
 
 if ($tablename != 'none') {
     try {
@@ -96,8 +97,17 @@ if ($tablename != 'none') {
     $insupdsql = <<<EOS
 INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
-ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, lastUpdate = NOW(), updatedBy = ?;
+ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, updatedBy = ?;
 EOS;
+    $insItemsql = <<<EOS
+INSERT INTO taxItems(conid, taxField, item, taxable, lastUpdate, updatedBy, sortorder)
+VALUES (?, ?, ?, ?, NOW(), ?, ?);
+EOS;
+    $delItemSql = <<<EOS
+DELETE FROM taxItems WHERE conid = ? AND taxField = ?;
+EOS;
+
+
 
     // now the updates, do the updates first in case we need to insert a new row with the same older key
     foreach ($data as $row) {
@@ -105,9 +115,17 @@ EOS;
             array ($conid, $row['taxField'], $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid,
                 $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid));
         $updated += $numrows;
+
+        // now rebuild the tax items from what was passed
+        $taxItems = $row['taxItems'];
+        $numDel = dbSafeCmd($delItemSql, 'is', array ($conid, $row['taxField']));
+        foreach ($taxItems as $item) {
+            $numrows = dbSafeCmd($insItemsql, 'isssii', array ($conid, $row['taxField'], $item['item'], $item['taxable'], $user_perid, $item['sortOrder']));
+            $itemsUpdated += $numrows;
+        }
     }
 
-    $response['message'] .= "$tablename updated: $updated tax rates changed.<br/>";
+    $response['success'] .= "$tablename updated: $updated tax rates changed, $itemsUpdated tax items updated.<br/>";
 }
 
 
@@ -128,7 +146,7 @@ if ($taxCount == 0) {
 EOS;
         $numRows = dbSafeCmd($insQ, 'issd', array ($nextConid, $taxLabel, $taxRate));
         if ($numRows > 0) {
-            $response['message'] .= 'converted obsolete configuration tax rate variables to taxList<br/>';
+            $response['success'] .= 'converted obsolete configuration tax rate variables to taxList<br/>';
         }
     }
 }
@@ -143,6 +161,6 @@ if ($hrtime) {
     $intervalTime = $endHRtime - $startHRtime;
     $secs = intval($intervalTime / 1000000000);
     $ns = $intervalTime % 1000000000;
-    $response['success'] = sprintf("Call took %d.%09d seconds", $secs, $ns);
+    $response['success'] .= sprintf("Call took %d.%09d seconds", $secs, $ns);
 }
 ajaxSuccess($response);

@@ -180,7 +180,11 @@ EOS;
     while ($row = $QR->fetch_assoc()) {
         $taxField = $row['taxField'];
         $taxConfig[$taxField]['taxItems'][] = $row;
-        $taxConfig[$taxField]['taxItemsDisplay'] .= ',' . $row['taxItem'] . '=' . $row['taxable'];
+        if (array_key_exists('taxItemsDisplay', $taxConfig[$taxField])) {
+            $taxConfig[$taxField]['taxItemsDisplay'] .= ',' . $row['item'] . '=' . $row['taxable'];
+        } else {
+            $taxConfig[$taxField]['taxItemsDisplay'] = ',' . $row['item'] . '=' . $row['taxable'];
+        }
     }
     $QR->free();
 

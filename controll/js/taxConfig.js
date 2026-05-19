@@ -148,7 +148,12 @@ class taxConfig {
         this.#taxGLLabel.value = this.#taxRowBeforeEdit.glLabel;
         //this.#taxItemsDiv.innerHTML = this.#taxRowBeforeEdit.taxItemsDisplay;
         // build the edit area for the taxable items
-        let taxables = this.#taxRowBeforeEdit.taxItems;
+        let taxablesArray = this.#taxRowBeforeEdit.taxItems;
+        // convert taxables to indexed array
+        let taxables = {};
+        for (let i = 0; i < taxablesArray.length; i++) {
+            taxables[taxablesArray[i].item] = taxablesArray[i];
+        }
         for (let i = 0; i < this.#taxable.length; i++) {
             let tax = this.#taxable[i];
             if (taxables.hasOwnProperty(tax.item)) {
@@ -291,6 +296,7 @@ class taxConfig {
         updates.push(update);
         //console.log("update: " + JSON.stringify(update));
         this.#taxTable.updateData(updates);
+        this.#taxEditModal.hide();
     }
 
     close() {
