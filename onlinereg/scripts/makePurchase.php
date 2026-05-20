@@ -213,7 +213,7 @@ foreach ($badges as $badge) {
             $badge['country'],
             array_key_exists('contact', $badge) ? $badge['contact'] : 'Y',
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
-            $badge['age'],
+            $badge['age'] == '' ? null : $badge['age'],
             $conid
         );
 
