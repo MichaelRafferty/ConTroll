@@ -339,6 +339,7 @@ EOS;
             }
         }
     }
+
     function returnCustomText($key, $overridePrefix = null) : string {
         global $customTexT, $keyPrefix, $customTextFilter;
 
@@ -356,17 +357,24 @@ EOS;
         }
 
         if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $show = true;
             $contents = $customTexT[$usePrefix . $key];
+            $prefixStr = 'Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+            $prefixStr = '<p>Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
-                    $prefixStr = 'Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
-                        return '';
-                    $prefixStr = '<p>Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
+                   if (!$show)
                         return '';
                 }
 
+                if ($customTextFilter == 'all') {
+                    $contents = 'Start Custom: ' . $usePrefix . $key . PHP_EOL . $contents . PHP_EOL . 'End Custom: ' . $usePrefix . $key . PHP_EOL;
+                }
                 return replaceConfigTokens($contents);
             }
         }
