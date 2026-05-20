@@ -83,7 +83,7 @@ function redoAddress() {
 
 function addMembership(formData) {
     // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
-    profile.clearNext();
+    profile.clearNext(true);
     clear_message('addMessageDiv');
 
     // build name and legal name
@@ -264,7 +264,7 @@ function makePurchase(token, label) {
 
 function newBadgeModalOpen() {
     if (newBadge != null) {
-        profile.clearNext();
+        profile.clearNext(true);
         newBadge.show();
         profile.setFocus('fname');
     }

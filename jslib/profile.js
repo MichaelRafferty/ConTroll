@@ -34,6 +34,7 @@ class Profile {
 // online reg - membership filtering
     #memIdField = null;
     #ageasofLabel = null;
+    #mtypeAge = null;
 
 // USPS fields
     #formData = null;
@@ -390,6 +391,7 @@ class Profile {
         let overrideAllowed = false;
         let required = config.required;
         this.#uspsAddress = null;
+        this.#mtypeAge = null;
 
         if (this.#memIdField) {
             if (this.#memIdField.value != '') {
@@ -398,6 +400,7 @@ class Profile {
                     let mtype = membershipTypes[i];
                     if (mtype.id == memId) {
                         this.#ageField.value = mtype.memAge;
+                        this.#mtypeAge = mtype.memAge;
                         break;
                     }
                 }
@@ -517,10 +520,14 @@ class Profile {
             }
         }
 
-        // age is always required
+        // age is always required, but if memAge is all, it can't be checked right now
         if (person.age === undefined || person.age == '') {
-            valid = false;
-            this.#ageField.classList.add(this.#alert);
+            if (this.#mtypeAge != null) {
+                person.age = this.#mtypeAge == 'all' ? '' : this.#mtypeAge;
+            } else {
+                valid = false;
+                this.#ageField.classList.add(this.#alert);
+            }
         } else {
             if (this.#memberAge != '' && person.age != '' && person.age != this.#memberAge) {
                 message += '<br/>Memerships have age ' + this.#memberAge + ' which does not match current age of ' + person.age + '.';
@@ -685,7 +692,7 @@ class Profile {
     }
 
     // clearnext - clear the fields for another membership to be added
-    clearNext() {
+    clearNext(ageFieldHidden = false) {
         this.#fnameField.value = '';
         this.#mnameField.value = '';
         this.#suffixField.value = '';
@@ -710,7 +717,7 @@ class Profile {
             this.#formerGoHTxtSpan.innerHTML = 'No';
         this.#ageText.hidden = true;
         this.#ageDiv.hidden = true;
-        this.#ageField.hidden = false;
+        this.#ageField.hidden = ageFieldHidden;
 
         this.#fnameField.classList.remove(this.#alert);
         this.#lnameField.classList.remove(this.#alert);
