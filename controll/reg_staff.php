@@ -1359,7 +1359,7 @@ page_foot($page);
 function drawFilters() {
 ?>
 <div class="container-fluid" id="regListFilters">
-    <div class="row mb-2" hidden>
+    <div class="row mb-2">
         <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
         <div class="col-sm-auto me-1 p-0">
             <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>

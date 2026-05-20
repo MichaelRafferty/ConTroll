@@ -406,6 +406,7 @@ function draw_stats(data) {
         statusTable = null;
     }
 
+    document.getElementById('regListFilters').hidden = curRegListSearch != '';
     if (curRegListSearch == '') {
         category = new Tabulator('#category-table', {
             data: data.categories,
