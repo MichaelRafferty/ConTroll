@@ -310,19 +310,32 @@ EOS;
 
         if (array_key_exists($usePrefix . $key, $customTexT)) {
             $contents = $customTexT[$usePrefix . $key];
+            $show = true;
+            $prefixStr = 'Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+            $prefixStr = '<p>Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
-                    $prefixStr = 'Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
-                        return;
-                    $prefixStr = '<p>Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
+                    if (!$show)
                         return;
                 }
 
-                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
-                    replaceConfigTokens($contents) . PHP_EOL .
-                    '</div>' . PHP_EOL;
+                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL;
+                if ($customTextFilter == 'all') {
+                    echo '<span class="text-muted" style="background-color: #E0FFE0;"><b>Start Custom: ' . $usePrefix . $key . '</b></span>' .
+                        ($show ? '<br/>' : '') . PHP_EOL;
+                }
+
+                if ($show)
+                    echo replaceConfigTokens($contents) . PHP_EOL;
+
+                if ($customTextFilter == 'all') {
+                    echo '<br/><span class="text-muted" style="background-color: #E0FFE0;"><b>End Custom: ' . $usePrefix . $key . '</b></span>' . PHP_EOL;
+                }
+                echo '</div>' . PHP_EOL;
             }
         }
     }
