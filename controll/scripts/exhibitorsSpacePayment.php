@@ -391,7 +391,7 @@ $status_msg = '';
 $error_msg = '';
 $badges = array();
 $transid = null;
-$managedByNew = null
+$managedByNew = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
         $badge = buildBadge($authToken, $membership_fields, 'i', $i, $region, $conid, $transid, $portalName, $managedByNew);
