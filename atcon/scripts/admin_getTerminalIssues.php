@@ -36,8 +36,8 @@ SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.comp
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN payments y ON t.id = y.transid AND y.type NOT IN ('coupon', 'discount')
-WHERE t.conid = ? AND (t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
-   OR IFNULL(y.status,'') = 'APPROVED'
+WHERE t.conid = ? AND ((t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
+   OR IFNULL(y.status,'') = 'APPROVED')
 ORDER BY minutes DESC;
 EOS;
 
