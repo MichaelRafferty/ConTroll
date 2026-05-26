@@ -144,7 +144,7 @@ if ($taxCount == 0) {
         INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
         VALUES(?, 'tax1', ?, ?, 'Y', NOW(), NULL);
 EOS;
-        $numRows = dbSafeCmd($insQ, 'issd', array ($conid, $taxLabel, $taxRate));
+        $numRows = dbSafeCmd($insQ, 'isd', array ($conid, $taxLabel, $taxRate));
         if ($numRows > 0) {
             $response['success'] .= 'converted obsolete configuration tax rate variables to taxList<br/>';
         }
