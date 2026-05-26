@@ -588,11 +588,25 @@ EOS;
         $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
 
         if ($priceType == 'Quick Sale') {
-            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
-            $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
+            $urows = dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
+            if ($urows != 1) {
+                web_error_log("Error updating art item status for art $artId, art sales $artSalesId, 'Quicksale' of $paid", '', true);
+            }
+            $upd_cart += $urows;
+
+            $urows = dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
+            if ($urows != 1) {
+                web_error_log("Error updating art item status for art $artId, art sales $artSalesId, 'Quicksale' of $paid", '', true);
+            }
+            $upd_rows += $urows;
         } else {
-            if ($type == 'art')
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+            if ($type == 'art') {
+                $urows = dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+                if ($urows != 1) {
+                    web_error_log("Error updating art item status for art $artId, art sales $artSalesId, art of $paid", '', true);
+                }
+                $upd_cart += $urows;
+            }
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
         }
 
