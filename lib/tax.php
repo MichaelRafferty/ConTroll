@@ -22,14 +22,8 @@ EOS;
     }
     $QR->free();
 
-    if (count($taxRates) == 0) {
-        // default to the older configuration file based tax rates
-        $taxRate = getConfValue('con', 'taxRate', 0);
-        if ($taxRate > 0) {
-            $taxLabel = getConfValue('con', 'taxLabel');
-            $taxRates[] = array('taxField' => 'tax', 'rate' => $taxRate, 'label' => $taxLabel, 'taxItems' => array());
-        }
-    } else {
+    // NOTE: the code to use the config variables is obsolete, the editing of the sales tax configuration will import it if the tax table is empty.
+    if (count($taxRates) > 0) {
         // get the tax items for each tax rate
         $QQ = <<<EOS
 SELECT l.taxField, t.item, IFNULL(i.taxable, t.defaultValue) AS taxable
@@ -58,8 +52,14 @@ function hasTaxRates() {
         getTaxRates();
     }
     foreach ($taxRates as $tax) {
-        if ($tax['rate'] > 0)
-            return true;
+        if ($tax['rate'] > 0) {
+            foreach ($tax['taxItems'] as $taxItem) {
+                // check if anything is taxable using this rate
+                if ($taxItem['taxable'] == 'Y') {
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }
