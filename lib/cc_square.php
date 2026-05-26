@@ -358,7 +358,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ]);
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('art', $lineid));
+                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('artSales', $lineid));
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $art['amount'];
@@ -468,11 +468,22 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                     ]),
                 ]);
-                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+
+                // apply taxes to badge memberships based on the taxable override flags for taxable vs. non taxable
+                if ($hasTax)  {
+                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                        $badgeTaxable = 'taxableMem';
+                    } else {
+                        $badgeTaxable = 'nontaxMem';
+                    }
+
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = $hasTax;
-                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('badge', $lineid));
+                    $taxArray = buildSquareAppliedTaxArray($badgeTaxable, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
                 }
+
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
                     if ($badge['inPlan'])
                         $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
@@ -514,10 +525,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
                     ' for ';
-                if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
-                    $itemName .= $space['artistName'];
+                if ($results['exhibits'] == 'artist') {
+                    if ($space['artistName'] != '')
+                        $itemName .= $space['artistName'];
+                    else
+                        $itemName .= $space['exhibitorName'];
+                    $spaceType = 'artSpace';
                 } else {
                     $itemName .= $space['exhibitorName'];
+                    $spaceType = 'exhibitSpace';
                 }
                 $incCount = 0;
                 $addCount = 0;
@@ -528,6 +544,16 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $addCount++;
                 }
                 $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
+
+                // apply taxes to spaces based on the space taxable flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildSquareAppliedTaxArray($spaceType, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
+                }
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
@@ -555,6 +581,17 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
+
+                // apply taxes to maiul in fees based on the artShipping flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildSquareAppliedTaxArray('artShipping', $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
+                }
+
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'region-' . str_replace(' ', '-', $fee['name']),

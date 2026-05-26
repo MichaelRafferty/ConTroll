@@ -89,14 +89,15 @@ function buildTaxUpdate($taxes) : array {
 
 // build square tax arrays
 // item applied tax
-function buildSquareAppliedTaxArray($prefix = '', $lineid = 0) : array {
+function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     global $taxRates;
     $taxArray = array();
+    $prefix = $taxitem;
     if ($prefix != '')
         $prefix .= '-';
 
     foreach ($taxRates as $tax) {
-        if ($tax['rate'] > 0) {
+        if ($tax['rate'] > 0 && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
             $taxArray[] = new Square\Types\OrderLineItemAppliedTax([
                 'uid' => $prefix . $tax['taxField'] . '-' . ($lineid + 1),
                 'taxUid' => $tax['taxField']
