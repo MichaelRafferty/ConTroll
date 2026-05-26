@@ -179,9 +179,9 @@ EOF;
         $staffing = array();
         while($staff = $staffR->fetch_assoc()) {
             array_push($staffing, $staff);
-	    if($staff['cashier'] + $staff['checkin'] > $max_staff) {
-	        $max_staff = $staff['cashier'] + $staff['checkin'];
-	    }
+            if($staff['cashier'] + $staff['checkin'] > $max_staff) {
+                $max_staff = $staff['cashier'] + $staff['checkin'];
+            }
         }
 	$con['max_staff'] = $max_staff;
 
@@ -196,7 +196,7 @@ EOF;
         $response['tracking']=$track;
         $response['staffing']=$staffing;
         $response['con']=$con;
-	$response['total']=$total;
+	    $response['total']=$total;
         break;
     case "totalMembership": //updated 2025-01-09
         $maxRegQ = <<<EOQ
