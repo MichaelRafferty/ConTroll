@@ -32,9 +32,11 @@ EOS;
     } else {
         // get the tax items for each tax rate
         $QQ = <<<EOS
-SELECT *
-FROM taxItems
-WHERE conid = ?
+SELECT l.taxField, t.item, IFNULL(i.taxable, t.defaultValue) AS taxable
+FROM taxList l
+JOIN taxable t
+LEFT OUTER JOIN taxItems i ON i.taxfield = l.taxfield AND i.conid = l.conid AND i.item = t.item
+WHERE i.conid = ? AND l.active = 'Y'
 ORDER BY sortOrder;
 EOS;
         $QR = dbSafeQuery($QQ, 'i', array($conid));
