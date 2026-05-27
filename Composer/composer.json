@@ -12,5 +12,10 @@
         "erusev/parsedown": "^1.7",
         "phpoffice/phpspreadsheet": "^5",
         "lbuchs/webauthn": "^2.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
