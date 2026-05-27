@@ -65,6 +65,9 @@ class consetup {
     #memListPagination = false;
     #memTablePagination = false;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     constructor(setup_type) {
         this.#debug = Number(config.debug);
         this.#locale = config.locale;
@@ -428,12 +431,12 @@ class consetup {
                 {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
                     headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
                 {
-                    title: "At", field: "atcon", editor: "list", editorParams: {values: ["Y", "N"],},
-                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
+                    title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
-                    title: "On", field: "online", editor: "list", editorParams: {values: ["Y", "N"],},
-                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
+                    title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
                     title: "Notes", field: "notes", width: 200,

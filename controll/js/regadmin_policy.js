@@ -34,6 +34,9 @@ class policySetup {
     #debug = 0;
     #debugVisible = false;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     // globals before open
     constructor(debug) {
         this.#debug = debug;
@@ -201,16 +204,18 @@ class policySetup {
                 {title: "Prompt", field: "prompt", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
                 {title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600, validator: "required", formatter: this.toHTML },
                 {
-                    title: "Req", field: "required", headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    title: "Req", field: "required", headerSort: true, headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {
                     title: "Default Value", field: "defaultValue", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {
                     title: "Active", field: "active", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "policyKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},

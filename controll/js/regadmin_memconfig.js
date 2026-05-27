@@ -32,6 +32,9 @@ class memsetup {
     #current_conid = null;
     #next_conid = null;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     constructor() {
         this.#message_div = document.getElementById('test');
         this.#memsetup_pane = document.getElementById('memconfig-pane');
@@ -221,8 +224,8 @@ class memsetup {
                         editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     },
                     {
-                        title: "Active", field: "active", headerSort: true, editable: true,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                        title: "Active", field: "active", headerSort: true, editable: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editor: "list", editorParams: {values: this.#enumYN,}, validator: "required"
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
@@ -277,28 +280,33 @@ class memsetup {
                         editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     },
                     {
-                        title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Only One", field: "onlyOne",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
-                        title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 75, validator: "required"
+                        title: "Stand Alone", field: "standAlone",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 75, validator: "required"
                     },
                     {
-                        title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Var. Price", field: "variablePrice",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
-                        title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Tax", field: "taxable",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
                         title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: true,
                         editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, validator: "required"
                     },
                     {
-                        title: "Active", field: "active", headerSort: true, editable: actEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                        title: "Active", field: "active",
+                        headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: actEditable, editor: "list", editorParams: {values: this.#enumYN,}, validator: "required"
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
@@ -374,8 +382,9 @@ class memsetup {
                         validator: "required"
                     },
                     {
-                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                        title: "Verify Annually", field: "verify",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
                     },
                     {
                         title: "Badge Flag",
@@ -439,8 +448,9 @@ class memsetup {
                         editorParams: {elementAttributes: {maxlength: "16"}}
                     },
                     {
-                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                        title: "Verify Annually", field: "verify",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
                     },
                     {
                         title: "Badge Flag",

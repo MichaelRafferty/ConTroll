@@ -29,6 +29,9 @@ class ConRolesSetup {
     #debug = 0;
     #debugVisible = false;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     // globals before open
     constructor() {
         this.#debug = debug;
@@ -168,8 +171,8 @@ class ConRolesSetup {
                 {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
                 {title: "Label", field: "memLabel", headerSort: false, width: 200, headerFilter: true, },
                 {
-                    title: "Active", field: "active", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    title: "Active", field: "active", headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "conrolesKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},

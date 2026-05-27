@@ -30,6 +30,7 @@ class taxConfig {
 
     // constants
     #taxFields = ['tax1', 'tax2', 'tax3', 'tax4', 'tax5'];
+    #enumYN = ['Y', 'N'];
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -101,7 +102,8 @@ class taxConfig {
             index: "taxField",
             columns: [
                 {title: 'Edit', formatter: this.editbutton, hozAlign:"center", headerHozAlign: "center", headerSort: false },
-                {title: "Active", field: "active", editor: 'list', editorParams: { values: ['Y', 'N'], }, headerSort:false, },
+                {title: "Active", field: "active", editor: 'list', editorParams: { values: this.#enumYN, },
+                    headerSort:false, headerFilter: true, headerFilterParams: { values: this.#enumYN, }, },
                 {title: "Con Id", field: "conid", headerSort:false },
                 {title: "taxField", field: "taxField", headerSort:false , },
                 {title: "Receipt Label", field: "label", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },

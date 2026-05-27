@@ -32,6 +32,9 @@ class interestsSetup {
     #debug = 0;
     #debugVisible = false;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     // globals before open
     constructor() {
         this.#debug = debug;
@@ -181,12 +184,12 @@ class interestsSetup {
                 {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 400, validator: "required", formatter: "textarea", },
                 {title: "End Date", field: "endDate", headerWordWrap: true, headerSort: false, headerFilter: true, width: 100, formatter: this.toDateFromDays, },
                 {
-                    title: "CSV", field: "csv", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    title: "CSV", field: "csv", headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {
-                    title: "Active", field: "active", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    title: "Active", field: "active", headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "interestsKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
