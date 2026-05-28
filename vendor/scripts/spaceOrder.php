@@ -454,6 +454,8 @@ $results = array(
     'eryID' => $eryID,
 );
 
+$response['orderResults'] = $results;
+
 //log requested badges
 logWrite(array('Title' => 'Pre cc_makeOrder', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces,
     'trans' => $transId, 'results' => $results, 'request' => $badges));
@@ -470,6 +472,36 @@ if ($totprice > 0) {
         ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
         exit();
     }
+    $order = $rtn['order'];
+    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    $referenceId = $transId . '-' . 'pay-' . time();
+    $results = array(
+        'source' => $portalType,
+        'totalAmt' => $rtn['totalAmt'],
+        'orderId' => $rtn['orderId'],
+        'customerId' => $custId,
+        'locationId' => $ccLocation,
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $rtn['preTaxAmt'],
+        'taxAmt' => $rtn['taxAmt'],
+        'taxes' => $rtn['taxes'],
+        'vendorId' => $exhId,
+        'salesTaxId' => $salesTaxId,
+        'specialrequests' => $specialRequests,
+        'region' => $region,
+        'vendor' => $exhibitor,
+        'exhibits' => $portalType,
+        'counts' => null,
+        'spaces' => $spaces,
+        'mailInFee' => [$mailIn],
+        'price' => $totprice,
+        'badges' => $badgeResults,
+        'formbadges' => $badges,
+        'total' => $totprice,
+    );
+
+
     $response['results'] = $results;
     $response['rtn'] = $rtn;
     $response['orderId'] = $rtn['orderId'];

@@ -90,6 +90,7 @@ $missing_msg = '';
 $valid = true;
 $allrequired = true;
 $error_msg = '';
+$status_msg = '';
 $notfound = array();
 // validate credit card fields
 foreach($membership_fields as $field => $required) {
@@ -137,16 +138,19 @@ if (!$valid) {
 }
 
 $results = $data['results'];
+$orderResults = $data['orderResults'];
 $totprice = $results['total'];
 $spaces = $results['spaces'];
 $badgeResults = $results['badges'];
 $badges = $results['formbadges'];
 $transId = $results['transid'];
 $exhibitor = $results['vendor'];
-$regionYearId = $results['regionYearId'];
-$region = $results['region'];
-$eryID = $results['eryID'];
+$regionYearId = $orderResults['regionYearId'];
+$region = $orderResults['region'];
+$eryID = $orderResults['eryID'];
 $specialRequests = $results['specialrequests'];
+$results['nonce'] = $_POST['nonce'];
+$results['buyer'] = $buyer;
 
 if ($totprice > 0) {
 // call the credit card processor to make the payment
@@ -189,7 +193,7 @@ if ($totprice > 0) {
 
 // now the main payment
     if ($taxAmt > 0) {
-        $taxes = $order['taxes'];
+        $taxes = $rtn['taxes'];
         [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
         if ($taxFields != '')
             $taxFields = ", $taxFields";
