@@ -59,6 +59,7 @@ class Find {
     #editRow = null;
     #historyTable = null;
     #prefix = 'f_'; // find's prefix for fields in edit
+    #findPagination = false;
 
     // globals before open
     constructor(debug) {
@@ -217,11 +218,12 @@ class Find {
         }
 
         this.#matched = data.matches;
+        this.#findPagination = this.#matched.length > 25;
         this.#findTable = new Tabulator('#findTable', {
             data: this.#matched,
             layout: "fitDataTable",
             index: "id",
-            pagination: this.#matched.length > 25,
+            pagination: this.#findPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1129,15 +1131,28 @@ class Find {
             return;
         }
 
+        let peridChanged = data.hasOwnProperty('newPerid');
         // update the underlying row in the table
-        if (data.hasOwnProperty('newPerid')) {
+        if (peridChanged) {
+            data.updated.id = data.newPerid;
             this.#findTable.updateOrAddData(data.updated);
             this.#findTable.deleteRow(this.#editRow.id);
             this.#editRow.id = data.newPerId;
         } else {
             this.#findTable.updateData(data.updated);
         }
-        this.#findTable.getRow(this.#editRow.id).reformat();
+        let row = this.#findTable.getRow(data.updated.id);
+        if (row) {
+            if (peridChanged) {
+                let sorters = this.#findTable.getSorters();
+                this.#findTable.setSort(sorters);
+            }
+            this.#findPagination.set
+            if (this.#findPagination)
+                this.#findTable.setPageToRow(row);
+            row.getElement().scrollIntoView();
+            row.reformat();
+        }
 
         this.clearForm();
         this.#memAgeType = null;
