@@ -76,6 +76,27 @@ $formerGoH = $_POST['formerGoH'] == null ? 'N' : trim($_POST['formerGoH']);
 $currentAgeType = $_POST['currentAgeType'];
 $origAgeType = $_POST['origAgeType'];
 
+// check that renumber id is available
+if (array_key_exists('renumberNew', $_POST)) {
+    $renumberNew = $_POST['renumberNew'];
+    $checkSQL = <<<EOS
+SELECT COUNT(*) FROM perinfo WHERE id = ?;
+EOS;
+    $checkR = dbSafeQuery($checkSQL, 'i', array($renumberNew));
+    if ($checkR === false) {
+        $response['error'] = 'SQL Error checking for renumber availability<br/>Nothing updated.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $count = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($count > 0) {
+        $response['error'] = "Cannnot renumber $perid to $renumberNew as it is already in use<br/>Nothing updated.";
+        ajaxSuccess($response);
+        exit();
+    }
+}
+
 // get prior deceased value
 $chkQ = <<<EOS
 SELECT deceased
