@@ -450,6 +450,8 @@ $results = array(
     'region' => $region,
     'vendor' => $exhibitor,
     'exhibits' => $portalType,
+    'regionYearId' => $regionYearId,
+    'eryID' => $eryID,
 );
 
 //log requested badges

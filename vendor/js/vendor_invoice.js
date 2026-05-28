@@ -21,6 +21,7 @@ class VendorInvoice {
     #token = null;
     #purchaseLabel = null;
     #paymentForDiv = null;
+    #orderData = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
@@ -78,12 +79,6 @@ class VendorInvoice {
         setTimeout(() => {
             document.getElementById('agreeNone').focus({focusVisible: true});
         }, 600);
-        $('#vendor_invoice_form input[type=text]').off('keypress');
-        $('#vendor_invoice_form input[type=text]').on('keypress', function (event) {
-            if (event.key == 'Enter') {
-                event.preventDefault();
-            }
-        });
     }
 
     // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -109,6 +104,7 @@ class VendorInvoice {
     makePurchase(token, label) {
         this.#token = token;
         this.#purchaseLabel = label;
+        this.processPay();
     }
 
     orderValidate() {
@@ -126,6 +122,7 @@ class VendorInvoice {
 
     payValidate() {
         clear_message('inv_result_message');
+        clear_message('pay_result_message');
         this.#validateMessage = '';
         let numInclUsed = 0;
         let numAddlUsed = 0;
@@ -155,7 +152,7 @@ class VendorInvoice {
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
                 profile = addlProfiles[this.#currentOrdinal];
-                let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                let message = profile.validate(null, 'inv_message', incrPayValidate, payValidate, '', true);
                 if (message == 'stop') // usps is doing it's work, don't proceed
                     return;
 
@@ -359,12 +356,17 @@ class VendorInvoice {
 
         }
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        this.#orderData = data;
         this.#vendorPayment.show();
 
     }
-    approvePay(data) {
-        console.log("in approvePay - need to display payment amount with tax and get cc info");
-        return;
+
+    processPay() {
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
+
+        let data = this.#orderData;
+        this.#validateMessage = '';
 
         let cc_fields = {
             cc_fname: 'First Name',
@@ -389,9 +391,12 @@ class VendorInvoice {
                 field.classList.remove('need');
             }
         }
-    }
 
-    processPay(data) {
+        if (this.#validateMessage != '') {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'pay_result_message')
+            return;
+        }
+
         if (!this.#token)
             this.#token = 'test';
 
@@ -399,11 +404,13 @@ class VendorInvoice {
             this.#token = document.getElementById(this.#token).value;
         }
 
+        let postData = URLparamsToArray($('#vendor_pay_form').serialize());
+        postData['nonce'] = this.#token;
+        postData['orderData'] = JSON.stringify(data);
+        postData['portalType'] = config.portalType;
+        postData['portalName'] = config.portalName;
         let submitId = document.getElementById(this.#purchaseLabel);
         submitId.disabled = true;
-        let postData = {
-            'nonce': this.#token,
-        }
         clear_message('inv_result_message');
         let purchaseLabel = this.#purchaseLabel;
         let hideElement = this.#vendorInvoice;
@@ -415,11 +422,11 @@ class VendorInvoice {
                 if (config['debug'] & 1)
                     console.log(data);
                 if (data['error']) {
-                    show_message(data['error'], 'error', 'inv_result_message');
+                    show_message(data['error'], 'error', 'pay_result_message');
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error', 'inv_result_message');
+                    show_message(data['data'], 'error', 'pay_result_message');
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {

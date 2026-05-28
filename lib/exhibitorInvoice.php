@@ -42,7 +42,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
                         <?php outputCustomText('invoice/top'); outputCustomText('invoice/top' . $portalName); ?>
-                        <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
+                        <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'  onsubmit='return false;'>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
@@ -217,7 +217,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
-                             <form>
+                             <form id='vendor_pay_form' class='form-floating' action='javascript:void(0);' onsubmit='return false;'>
                              <div class='row'>
                                  <div class='col-sm-2'>
                                      <label for='cc_fname'>
@@ -385,9 +385,15 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             }
 ?>
                         <div class='row'>
-                            <div class='col-sm-12' id="inv_result_message"></div>
+                            <div class='col-sm-12' id="pay_result_message"></div>
                         </div>
                     </div>
+                </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-secondary' id='pay_cancel_button' onclick='orderCancel()'>
+                        Cancel Payment
+                    </button>
                 </div>
             </div>
         </div>
