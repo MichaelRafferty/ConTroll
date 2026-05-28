@@ -42,7 +42,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
                         <?php outputCustomText('invoice/top'); outputCustomText('invoice/top' . $portalName); ?>
-                    <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
+                        <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
@@ -170,12 +170,39 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                 </div>
                             </div>
                             <hr/>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                Total: <span id='vendor_inv_cost'></span>
+                            <div class='row'>
+                                <div class='col-sm-auto'>
+                                    Total Pre Tax Order: <span id='vendor_inv_cost'></span>
+                                </div>
                             </div>
                         </div>
+                        </form>
+                        <div class='row'>
+                            <div class='col-sm-12' id='inv_result_message'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel Order</button>
+                    <button type='button' class='btn btn-primary' id='total_with_tax_btn' onclick="orderValidate()">
+                        Compute Total With Tax and Pay
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- payment -->
+        <div id='vendor_payment' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Payment' aria-hidden='true' style='--bs-modal-width: 90%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title' id='vendor_payment_title'>
+                            <strong><?php echo $portalName; ?> Invoice Payment</strong>
+                        </div>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="container-fluid form-floating">
                         <div class='container-fluid' id='paymentDiv'>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -186,6 +213,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
+                             <form>
                              <div class='row'>
                                  <div class='col-sm-2'>
                                      <label for='cc_fname'>
@@ -287,6 +315,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     <input type='reset'/>
                                 </div>
                             </div>
+                            </form>
 <?php
                                 outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);
                             } else { // exhibitors module in ConTroll - cash/check/offline cc
@@ -351,7 +380,6 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
 <?php
                             }
 ?>
-                    </form>
                         <div class='row'>
                             <div class='col-sm-12' id="inv_result_message"></div>
                         </div>

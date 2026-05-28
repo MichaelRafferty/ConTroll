@@ -102,6 +102,9 @@ class VendorInvoice {
     makePurchase(token, label) {
         this.#token = token;
         this.#purchaseLabel = label;
+    }
+
+    orderValidate() {
         this.#currentOrdinal = 0;
         this.#currentType = 'i';
         this.#formValid = true;
@@ -200,6 +203,51 @@ class VendorInvoice {
             }
         }
 
+        if (!this.#formValid) {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
+            return;
+        }
+
+        this.buildOrder();
+    }
+
+    buildOrder() {
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = true;
+        let formData = $('#vendor_invoice_form').serialize()
+        clear_message('inv_result_message');
+        let _this = this;
+        $.ajax({
+            url: 'scripts/spaceOrder.php',
+            method: 'POST',
+            data: formData,
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    _this.approvePay(data);
+                    return;
+                } else {
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                }
+            }
+        });
+    }
+
+    approvePay(data) {
+        console.log("in approvePay - need to display payment amount with tax and get cc info");
+        console.log(data);
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = false;
+        return;
+
         let cc_fields = {
             cc_fname: 'First Name',
             cc_lname: 'Last Name',
@@ -223,19 +271,9 @@ class VendorInvoice {
                 field.classList.remove('need');
             }
         }
-
-        if (!this.#formValid) {
-            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
-            return;
-        }
-
-        this.processPay();
     }
 
-    processPay() {
-        if (!this.#purchaseLabel || this.#purchaseLabel == '') {
-            this.#purchaseLabel = 'unknown';
-        }
+    processPay(data) {
         if (!this.#token)
             this.#token = 'test';
 
@@ -245,15 +283,16 @@ class VendorInvoice {
 
         let submitId = document.getElementById(this.#purchaseLabel);
         submitId.disabled = true;
-        let formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + this.#token;
+        let postData = {
+            'nonce': this.#token,
+        }
         clear_message('inv_result_message');
         let purchaseLabel = this.#purchaseLabel;
         let hideElement = this.#vendorInvoice;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
-            data: formData,
+            data: postData,
             success: function (data, textStatus, jqXhr) {
                 if (config['debug'] & 1)
                     console.log(data);
@@ -278,8 +317,8 @@ class VendorInvoice {
                 }
             }
         });
-    }
 
+    }
     // update the paid status block to show the confirmed space
     updatePaidStatusBlock() {
         let blockname = region_list[this.#regionYearId].shortname + '_div';
@@ -325,11 +364,11 @@ function updateCost(regionYearId, item) {
     vendorInvoice.updateCost(regionYearId, item);
 }
 
-function payValidate() {
+function orderValidate() {
     if (vendorInvoice == null)
         return;
 
-    vendorInvoice.payValidate();
+    vendorInvoice.orderValidate();
 }
 
 function incrPayValidate() {

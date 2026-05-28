@@ -61,6 +61,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //  b. add line items
     //      i. assign which tax line items to ignore
     //      ii. assign which discount line items to ignore
+    //      iii. skip over already complete items and not add them to the square order
     //  c. create order
     //  add order id to return items
 
@@ -198,7 +199,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item['taxable'] = 'Y';
+                    $item['taxes'] = buildTestAppliedTaxArray('artSales', $lineid);
+                    $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
                 }
                 $orderLineItems[$lineid] = $item;
                 $orderValue += $artItem['amount'];
@@ -294,10 +296,19 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'basePriceMoney' => round($amount * 100),
                     'metadata' => $notesData['metadata'],
                 ];
-                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax)  {
+                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                        $badgeTaxable = 'taxableMem';
+                    } else {
+                        $badgeTaxable = 'nontaxMem';
+                    }
+
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = $hasTax;
-                    $item['taxable'] = 'Y';
+                    $taxArray = buildTestAppliedTaxArray($badgeTaxable, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
 
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -364,10 +375,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
                     ' for ';
-                if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
-                    $itemName .= $space['artistName'];
+                if ($results['exhibits'] == 'artist') {
+                    if ($space['artistName'] != '')
+                        $itemName .= $space['artistName'];
+                    else
+                        $itemName .= $space['exhibitorName'];
+                    $spaceType = 'artSpace';
                 } else {
                     $itemName .= $space['exhibitorName'];
+                    $spaceType = 'exhibitSpace';
                 }
                 $incCount = 0;
                 $addCount = 0;
@@ -387,6 +403,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
+
+                // apply taxes to spaces based on the space taxable flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildTestAppliedTaxArray($spaceType, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+                }
+
                 $orderLineItems[$lineid] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
@@ -410,6 +438,19 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($itemPrice * 100),
                 ];
+
+                // apply taxes to mail in fees based on the artShipping flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildTestAppliedTaxArray('artShipping', $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+                }
+
+
                 $order_lineitems[$lineid] = $item;
                 $orderValue += $itemPrice;
                 $lineid++;
@@ -457,21 +498,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $itemTaxTotal = 0;
     $taxAmounts = [];
     if ($needTaxes) {
-        foreach ($orderLineItems as $item) {
+        foreach ($orderLineItems as $ord => $item) {
             if (array_key_exists('taxable', $item)) {
-                $item['taxAmount'] = computeTax($item['basePriceMoney']);
-                $itemTaxTotal += array_sum($item['taxAmount']);
-                $taxAbleBase += $item['basePriceMoney'];
+                $orderLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTax($taxAbleBase);
-        $taxAmount = array_sum($taxAmounts);
-        if ($taxAmount != $itemTaxTotal) { // fudge last item in list to make the pennies add up
-            $last = count($taxAmounts) - 1;
-            $item = $orderLineItems[$last];
-            $item['taxAmount'] += $taxAmount - $itemTaxTotal;
-            $taxAmounts[$last] += $taxAmount - $itemTaxTotal;
-        }
+        $taxAmounts = computeTotalTax($orderLineItems);
     }
 
     $rtn = array ();
@@ -481,12 +513,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
+
+    $rtnTaxes = [];
+    foreach ($taxAmounts as $taxField => $amt) {
+        $rtnTaxes[$taxField] = $amt / 100;
+        $taxAmount += $amt;
+    }
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['taxAmt'] = $taxAmount / 100;
     $rtn['taxAmount'] = $taxAmount / 100;
-    $rtnTaxes = [];
-    foreach ($taxAmounts as $key => $amt)
-        $rtnTaxes[$key] = $amt / 100;
-    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly

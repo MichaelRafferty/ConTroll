@@ -36,7 +36,7 @@ EOS;
         $QR = dbSafeQuery($QQ, 'i', array($conid));
         while ($row = $QR->fetch_assoc()) {
             $taxField = $row['taxField'];
-            $taxRates[$taxField]['taxItems'][] = $row;
+            $taxRates[$taxField]['taxItems'][$row['item']] = $row;
         }
         $QR->free();
     }
@@ -53,7 +53,7 @@ function hasTaxRates() {
     }
     foreach ($taxRates as $tax) {
         if ($tax['rate'] > 0) {
-            foreach ($tax['taxItems'] as $taxItem) {
+            foreach ($tax['taxItems'] as $taxItemName => $taxItem) {
                 // check if anything is taxable using this rate
                 if ($taxItem['taxable'] == 'Y') {
                     return true;
@@ -108,6 +108,26 @@ function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     return $taxArray;
 }
 
+function buildTestAppliedTaxArray($taxitem = '', $lineid = 0) : array {
+    global $taxRates;
+    $taxArray = array();
+    $prefix = $taxitem;
+    if ($prefix != '')
+        $prefix .= '-';
+
+    foreach ($taxRates as $tax) {
+        if ($tax['rate'] > 0 && array_key_exists($taxitem, $tax['taxItems']) && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
+            $taxArray[] = [
+                'percentage' => $tax['rate'],
+                'taxUid' => $tax['taxField'],
+                'taxName' => $tax['label'],
+            ];
+        }
+    }
+
+    return $taxArray;
+}
+
 function buildSquareOrderTaxArray() : array {
     global $taxRates;
     $taxArray = array();
@@ -128,6 +148,23 @@ function buildSquareOrderTaxArray() : array {
     return $taxArray;
 }
 
+function buildTestOrderTaxArray() : array {
+    global $taxRates;
+    $taxArray = array();
+
+    foreach ($taxRates as $tax) {
+        if ($tax['rate'] > 0) {
+
+            $taxArray[] = [
+                'uid' => $tax['taxField'],
+                'name' => $tax['label'],
+                'percentage' => $tax['rate'],
+            ];
+        }
+    }
+
+    return $taxArray;
+}
 
 // build payment and transaction insert sections
 function buildTaxInsert($taxes) : array {
@@ -214,16 +251,57 @@ EOS;
     return array($taxConfigArray, $taxable);
 }
 
-function computeTax($taxableAmt) : array {
-    global $taxRates;
-
-    if ($taxRates == null) {
-        getTaxRates();
+function computeTax($item) : array {
+    // item has taxable Y/N and taxes for each tax rage
+    $taxes = array();
+    $taxes['totalTax'] = 0;
+    $taxes['totalTax_base'] = 0;
+    foreach ($item['taxes'] as $tax) {
+        $taxField  = $tax['taxUid'];
+        $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 2);
+        $taxes[$taxField] = $amt;
+        $taxes[$taxField . '_base'] = $item['basePriceMoney'];
+        $taxes['totalTax'] += $amt;
+        $taxes['totalTax_base'] += $item['basePriceMoney'];
     }
 
+    return $taxes;
+}
+
+function computeTotalTax(&$items) {
+    $taxableAmounts = array();
     $taxes = array();
-    foreach ($taxRates as $taxField => $tax) {
-        $taxes[$taxField] = round($taxableAmt * $tax['rate'] / 100.0, 2);
+    $rates = array();
+    $maxItem = array();
+    $maxes = array();
+    // compute the total of each line item taxes as computed by computeTax
+    foreach ($items as $item) {
+        foreach ($item['taxes'] as $tax) {
+            $taxField  = $tax['taxUid'];
+            if (array_key_exists($taxField, $taxableAmounts)) {
+                $taxableAmounts[$taxField] += $item['basePriceMoney'];
+                $taxes[$taxField] += $item['taxAmounts'][$taxField];
+                if ($item['basePriceMoney'] > $maxes[$taxField]) {
+                    $maxItem[$taxField] = $item;
+                    $maxes[$taxField] = $item['basePriceMoney'];
+                }
+            } else {
+                $taxableAmounts[$taxField] = $item['basePriceMoney'];
+                $taxes[$taxField] = $item['taxAmounts'][$taxField];
+                $rates[$taxField] = $tax['percentage'];
+                $maxItem[$taxField] = $item;
+                $maxes[$taxField] = $item['basePriceMoney'];
+            }
+        }
+    }
+
+    // now recompute the total tax and fudge the
+    foreach ($taxes as $taxField => $tax) {
+        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100;
+        if ($totalTax != $tax) { // fudge last item in list to make the pennies add up
+            $item = $maxItem[$taxField];
+            $item['taxes'][$taxField] += $tax[$taxField] - $taxes[$taxField];
+        }
     }
 
     return $taxes;
