@@ -5,6 +5,7 @@
 class VendorInvoice {
     // Items related to building and paying the vendor invoice
     #vendorInvoice = null;
+    #vendorPayment = null;
     #regionYearId = null;
     #membershipCostDiv = null;
     #regionName = '';
@@ -19,13 +20,19 @@ class VendorInvoice {
     #validateMessage = '';
     #token = null;
     #purchaseLabel = null;
+    #paymentForDiv = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
         if (id != null) {
             this.#vendorInvoice = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
+        id = document.getElementById('vendor_payment');
+        if (id != null) {
+            this.#vendorPayment = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        }
         this.#membershipCostDiv = document.getElementById("membershipCost");
+        this.#paymentForDiv = document.getElementById("paymentForDiv");
     }
 
     // openInvoice: display the vendor invoice (and registration items)
@@ -56,7 +63,7 @@ class VendorInvoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice</strong>';
 
         // refresh the items spaces purchased area
-        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
+        let ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
             'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr');
         this.#includedMemberships = ret[0];
         this.#additionalMemberships = ret[1];
@@ -231,7 +238,7 @@ class VendorInvoice {
                     show_message(data['data'], 'error', 'inv_result_message');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    _this.approvePay(data);
+                    _this.getPaymentInfo(data);
                     return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
@@ -241,11 +248,122 @@ class VendorInvoice {
         });
     }
 
-    approvePay(data) {
-        console.log("in approvePay - need to display payment amount with tax and get cc info");
-        console.log(data);
+    getPaymentInfo(data) {
+        if (config['debug'] & 1)
+            console.log(data);
         let submitId = document.getElementById('total_with_tax_btn');
         submitId.disabled = false;
+        if (data.rtn == null) {
+            show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+            return;
+        }
+        this.#vendorInvoice.hide();
+
+        // title of payment modal
+        let name = data.results.source == 'artist' ?
+            ((data.results.vendor.artistName != null && data.results.vendor.artistName != '') ? data.results.vendor.artistName : data.results.vendor.exhibitorName) :
+            data.results.vendor.exhibitorName;
+        document.getElementById("vendor_payment_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice for ' + name + '</strong>';
+
+        // loop over the taxes computing the output lines
+        let taxHtml = '';
+        for (let taxid in data.rtn.taxes) {
+            let tax = data.rtn.taxes[taxid];
+            taxHtml += tax.name + ': ' + currencyFmt.format(Number(tax.tax).toFixed(2)) + '<br/>\n';
+        }
+
+        let html = `
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <h4>Payment Details for ${name}</h4>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-sm-12" id="vendor_pay_approved_for"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto">
+                    Total price for memberships:
+                </div>
+                <div class="col-sm-auto p-0">
+                    <span id='vendor_pay_mbr_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+`;
+            if (taxHtml != '') {
+                html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    Total Pre Tax Order: <span id='vendor_pay_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                    <div class='col-sm-12' id="vendor_pay_tax_div"></div> 
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due with Tax: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div>
+`;
+            } else {
+                html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+           <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div> 
+`;
+            }
+            html += `
+            <div class='row'>
+                <div class='col-sm-12'><hr/></div> 
+            </div>          
+`;
+
+        this.#paymentForDiv.innerHTML = html;
+        let region = exhibits_spaces[this.#regionYearId];
+        let regionList = region_list[this.#regionYearId];
+        let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
+        let membershipCost = data.results.pretax - totalSpacePrice;
+        document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
+        let totalPreOrder = data.results.pretax;
+        let totalWithTax = data.rtn.totalAmt;
+        // loop over the taxes outputting them
+        html = '';
+        for (let taxid in data.rtn.taxes) {
+            let tax = data.rtn.taxes[taxid];
+            html += tax.name + ': ' + currencyFmt.format(Number(tax.tax).toFixed(2)) + '<br/>\n';
+        }
+
+        if (html != '') {
+            document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
+            document.getElementById('vendor_pay_tax_div').innerHTML = html;
+        } else {
+
+        }
+        document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        this.#vendorPayment.show();
+
+    }
+    approvePay(data) {
+        console.log("in approvePay - need to display payment amount with tax and get cc info");
         return;
 
         let cc_fields = {

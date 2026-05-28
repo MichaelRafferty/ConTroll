@@ -162,17 +162,20 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                         <div id="vendor_inv_additional_mbr"></div>
                         <div class="container-fluid" id="membershipCost">
                             <div class="row">
-                                <div class="col-sm-2">
-                                    Cost for Memberships:
+                                <div class="col-sm-auto">
+                                    Total price for memberships:
                                 </div>
-                                <div class="col-sm-10 p-0">
+                                <div class="col-sm-auto p-0">
                                     <span id='vendor_inv_mbr_cost'><?php echo $dolfmt->formatCurrency(0.00, $currency) ;?></span>
                                 </div>
                             </div>
                             <hr/>
                             <div class='row'>
                                 <div class='col-sm-auto'>
-                                    Total Pre Tax Order: <span id='vendor_inv_cost'></span>
+                                    Total Pre Tax Order:
+                                </div>
+                                <div class='col-sm-auto p-0' id='vendor_inv_cost'>
+                                    <?php echo $dolfmt->formatCurrency(0.00, $currency) ;?>
                                 </div>
                             </div>
                         </div>
@@ -203,6 +206,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                     </div>
                     <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                         <div class="container-fluid form-floating">
+                            <div class='container-fluid' id='paymentForDiv'></div>
                         <div class='container-fluid' id='paymentDiv'>
                             <div class="row">
                                 <div class="col-sm-12">

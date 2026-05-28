@@ -287,7 +287,8 @@ function computeTotalTax(&$items) {
                 }
             } else {
                 $taxableAmounts[$taxField] = $item['basePriceMoney'];
-                $taxes[$taxField] = $item['taxAmounts'][$taxField];
+                $taxes[$taxField]['tax'] = $item['taxAmounts'][$taxField];
+                $taxes[$taxField]['name'] = $tax['taxName'];
                 $rates[$taxField] = $tax['percentage'];
                 $maxItem[$taxField] = $item;
                 $maxes[$taxField] = $item['basePriceMoney'];
@@ -298,9 +299,9 @@ function computeTotalTax(&$items) {
     // now recompute the total tax and fudge the
     foreach ($taxes as $taxField => $tax) {
         $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100;
-        if ($totalTax != $tax) { // fudge last item in list to make the pennies add up
+        if ($totalTax != $tax['tax']) { // fudge last item in list to make the pennies add up
             $item = $maxItem[$taxField];
-            $item['taxes'][$taxField] += $tax[$taxField] - $taxes[$taxField];
+            $item['taxes'][$taxField] += $totalTax - $tax['tax'];
         }
     }
 

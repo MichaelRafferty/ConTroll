@@ -4,27 +4,50 @@
 var inclProfiles = [];
 var addlProfiles = [];
 
-function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, regionYearId,
-                              approved, included, members, doTerms = true, warnType = 'need') {
-    var includedMemberships = 0;
-    var additionalMemberships = 0;
-    var spacePriceName
-    var totalSpacePrice = 0;
-    var regionName = regionList.name;
-    var portalType = regionList.portalType
-    var mailin = exhibitor_info['mailin'];
-    var tabindex = 10;
-
-    var html = "You are approved for:<br/>\n";
-    var exSpaceKeys = Object.keys(exhibitor_spacelist);
-    for (var exSpaceIdx in exSpaceKeys) {
+function drawExhibitorApprovedSpaces(name, exhibitor_spacelist, region, regionList, approved) {
+    let html = "You are approved for:<br/>\n";
+    let exSpaceKeys = Object.keys(exhibitor_spacelist);
+    let totalSpacePrice = 0;
+    let regionName = regionList.name;
+    for (let exSpaceIdx in exSpaceKeys) {
         if (region[exSpaceKeys[exSpaceIdx]]) { // space is in our region
-            var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
-            var prices = region[exSpaceKeys[exSpaceIdx]].prices;
+            let space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+            let prices = region[exSpaceKeys[exSpaceIdx]].prices;
             if (space.item_approved) {
                 html += space.approved_description + " in " + regionName + " for " +
                     currencyFmt.format(Number(space.approved_price).toFixed(2)) + "<br/>";
                 totalSpacePrice += Number(space.approved_price);
+            }
+        }
+    }
+    if (regionList['mailinFee'] > 0 && exhibitor_info['mailin'] == 'Y') {
+        html += "Mail in fee of " +
+            currencyFmt.format(Number(regionList['mailinFee']).toFixed(2))+ "<br/>\n";
+        totalSpacePrice += Number(regionList['mailinFee']);
+    }
+    html += "&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br/>\n" +
+        "Total price for spaces " + currencyFmt.format(Number(totalSpacePrice).toFixed(2)) + "\n";
+    document.getElementById(approved).innerHTML = html;
+    return totalSpacePrice;
+}
+
+function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, regionYearId,
+                              approved, included, members, doTerms = true, warnType = 'need') {
+    let includedMemberships = 0;
+    let additionalMemberships = 0;
+    let spacePriceName = '';
+    let regionName = regionList.name;
+    let portalType = regionList.portalType
+    let mailin = exhibitor_info['mailin'];
+    let tabindex = 10;
+
+    let totalSpacePrice = drawExhibitorApprovedSpaces(name, exhibitor_spacelist, region, regionList, approved);
+    let exSpaceKeys = Object.keys(exhibitor_spacelist);
+    for (let exSpaceIdx in exSpaceKeys) {
+        if (region[exSpaceKeys[exSpaceIdx]]) { // space is in our region
+            let space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+            let prices = region[exSpaceKeys[exSpaceIdx]].prices;
+            if (space.item_approved) {
                 // find price item in prices
                 for (priceIdx = 0; priceIdx < prices.length; priceIdx++) {
                     if (prices[priceIdx].id == space.item_approved)
@@ -41,16 +64,8 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             }
         }
     }
-    if (regionList['mailinFee'] > 0 && exhibitor_info['mailin'] == 'Y') {
-        html += "Mail in fee of " +
-            currencyFmt.format(Number(regionList['mailinFee']).toFixed(2))+ "<br/>\n";
-        totalSpacePrice += Number(regionList['mailinFee']);
-    }
-    html += "____________________________<br/>\nTotal price for spaces " +
-        currencyFmt.format(Number(totalSpacePrice).toFixed(2)) + "<br/>&nbsp;<br/>\n";
-    document.getElementById(approved).innerHTML = html;
 
-    var spaces = includedMemberships + additionalMemberships;
+    let spaces = includedMemberships + additionalMemberships;
     // make the strings for the number of included additional memberships available to purchase
     html = '<p>';
     if (spaces == 0) { // no additional or included memberships
@@ -84,8 +99,8 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
     }
     if (spaces > 0) {
         if (doTerms) {
-            var terms = '';
-            var defterms = '';
+            let terms = '';
+            let defterms = '';
             switch (portalType) {
                 case 'artist':
                     if (mailin == 'N') {
@@ -120,8 +135,9 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             } else {
                 html += terms;
             }
-            html += "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone' tabindex=" + tabindex + "> &nbsp;&nbsp;" +
-                "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
+            html += "<label class='mb-3'><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone' tabindex=" + tabindex + "> &nbsp;&nbsp;" +
+                "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for" +
+                " memberships above.</label>";
             tabindex += 2;
         }
 
@@ -138,8 +154,9 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
                 "&nbsp;&nbsp;&nbsp;The first membership below is for myself or my agent.</span></label><br/>";
             tabindex += 4;
 
+            let ry = null;
             if (doTerms) {
-                var ry = exhibitor_regionyears[regionYearId];
+                ry = exhibitor_regionyears[regionYearId];
             }
             if (doTerms && ry['perid']) {
                 html += "<label for='agent_perid'><span name='agent'>" +
@@ -236,11 +253,11 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
 }
 
 function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regionYearId, tabindex, doOnChange, className = '') {
-    var reqFirstStar = config['firstStar'];
-    var reqAddrStar = config['addrStar'];
-    var reqAllStar = config['allStar'];
+    let reqFirstStar = config['firstStar'];
+    let reqAddrStar = config['addrStar'];
+    let reqAllStar = config['allStar'];
 
-    var html = `
+    let html = `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">` + label + ' Member ' + (mnum + 1) + `:</div>
 </div>

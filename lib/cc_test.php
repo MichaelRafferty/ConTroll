@@ -515,9 +515,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['discountAmt'] = $discountAmt / 100;
 
     $rtnTaxes = [];
-    foreach ($taxAmounts as $taxField => $amt) {
-        $rtnTaxes[$taxField] = $amt / 100;
-        $taxAmount += $amt;
+    foreach ($taxAmounts as $taxField => $tax) {
+        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / 100;
+        $rtnTaxes[$taxField]['name'] = $tax['name'];
+        $taxAmount += $tax['tax'];
     }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['taxAmt'] = $taxAmount / 100;
