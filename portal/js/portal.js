@@ -1169,7 +1169,7 @@ class Portal {
                     let taxTypeof = typeof amt;
                     if (!['string', 'number', 'bigint', 'undefined'].includes(taxTypeof))
                         amt = amt.tax;
-                    if (amt != null) {
+                    if (amt != null && Number(amt) > 0) {
                         html += `
     <div class="row mt-1">
         <div class="col-sm-4">` + rate.label + `:</div>
