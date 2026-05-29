@@ -202,7 +202,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                         <div class='modal-title' id='vendor_payment_title'>
                             <strong><?php echo $portalName; ?> Invoice Payment</strong>
                         </div>
-                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                        <button type='button' class='btn-close' onclick='orderCancel();' aria-label='Close'></button>
                     </div>
                     <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                         <div class="container-fluid form-floating">
