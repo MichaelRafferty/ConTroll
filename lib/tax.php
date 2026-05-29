@@ -280,7 +280,7 @@ function computeTotalTax(&$items) {
             $taxField  = $tax['taxUid'];
             if (array_key_exists($taxField, $taxableAmounts)) {
                 $taxableAmounts[$taxField] += $item['basePriceMoney'];
-                $taxes[$taxField] += $item['taxAmounts'][$taxField];
+                $taxes[$taxField]['tax'] += $item['taxAmounts'][$taxField];
                 if ($item['basePriceMoney'] > $maxes[$taxField]) {
                     $maxItem[$taxField] = $item;
                     $maxes[$taxField] = $item['basePriceMoney'];

@@ -319,7 +319,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'currency' => $currency,
             ]),
         ]);
-        $orderLineitems[$lineid] = $item;
+        $orderLineitems[] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
@@ -359,7 +359,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     // create the Line Item tax record, art sales are taxable
                     $item->setAppliedTaxes(buildSquareAppliedTaxArray('artSales', $lineid));
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 $orderValue += $art['amount'];
                 $lineid++;
             }
@@ -508,7 +508,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'discountUid' => 'discount' ,
                     ])));
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
@@ -567,7 +567,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item->setAppliedTaxes($taxArray);
                 }
 
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -605,7 +605,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item->setAppliedTaxes($taxArray);
                 }
 
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 $orderValue += $itemPrice;
                 $lineid++;
             }

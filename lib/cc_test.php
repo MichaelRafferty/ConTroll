@@ -165,7 +165,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'metadata' => $notesData['metadata'],
             'basePriceMoney' => round($results['total'] * 100),
         ];
-        $orderLineItems[$lineid] = $item;
+        $orderLineItems[] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
@@ -202,7 +202,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item['taxes'] = buildTestAppliedTaxArray('artSales', $lineid);
                     $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
                 }
-                $orderLineItems[$lineid] = $item;
+                $orderLineItems[] = $item;
                 $orderValue += $artItem['amount'];
                 $lineid++;
             }
@@ -329,7 +329,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item['applied_discounts'][] = array ('uid' => 'managerDiscount', 'applied_amount' => 0);
                     $totalDiscountable += $item['basePriceMoney'];
                 }
-                $orderLineItems[$lineid] = $item;
+                $orderLineItems[] = $item;
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
@@ -415,7 +415,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
 
-                $orderLineItems[$lineid] = $item;
+                $orderLineItems[] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -451,7 +451,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
 
-                $order_lineitems[$lineid] = $item;
+                $orderLineItems[] = $item;
                 $orderValue += $itemPrice;
                 $lineid++;
             }
