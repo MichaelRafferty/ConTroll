@@ -97,7 +97,7 @@ function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
         $prefix .= '-';
 
     foreach ($taxRates as $tax) {
-        if ($tax['rate'] > 0 && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
+        if ($tax['rate'] > 0 && array_key_exists($taxitem, $tax['taxItems']) && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
             $taxArray[] = new Square\Types\OrderLineItemAppliedTax([
                 'uid' => $prefix . $tax['taxField'] . '-' . ($lineid + 1),
                 'taxUid' => $tax['taxField']
