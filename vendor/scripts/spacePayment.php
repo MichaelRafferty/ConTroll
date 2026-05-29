@@ -37,6 +37,14 @@ if(!isSessionVar('id')) { ajaxSuccess(array('status'=>'error', 'message'=>'Sessi
 $exhId = getSessionVar('id');
 $eyID = getSessionVar('eyID');
 
+$data = json_decode($_POST['orderData'], true);
+if (array_key_exists('nonce', $_POST) && $_POST['nonce'] == 'c') {
+    $results = $data['results'];
+    cleanRegs($results['badges'], $results['transid']);
+    ajaxSuccess(array('status'=>'success', 'message'=>'Payment canceled'));
+    exit;
+}
+
 if (array_key_exists('portalType', $_POST))
     $portalType = $_POST['portalType'];
 else
@@ -64,8 +72,6 @@ $buyer['zip'] = $_POST['cc_zip'];
 $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
 $buyer['phone'] = $_POST['cc_phone'];
-
-$data = json_decode($_POST['orderData'], true);
 
 $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0,
     'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1, 'country' => 1,

@@ -413,11 +413,11 @@ class VendorInvoice {
         submitId.disabled = true;
         clear_message('inv_result_message');
         let purchaseLabel = this.#purchaseLabel;
-        let hideElement = this.#vendorInvoice;
+        let hideElement = this.#vendorPayment;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
-            data: postData,
+            data: { nonce: 'c', orderData: JSON.stringify(data), },
             success: function (data, textStatus, jqXhr) {
                 if (config['debug'] & 1)
                     console.log(data);
@@ -436,13 +436,43 @@ class VendorInvoice {
                     window.location.href = '/index.php?msg=' + encodeURIComponent(message);
                     return;
                 } else {
+                    hideElement.hide();
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
+                    returnl
+                }
+            }
+        });
+
+    }
+
+    orderCancel() {
+        let hideElement = this.#vendorPayment;
+        $.ajax({
+            url: 'scripts/spacePayment.php',
+            method: 'POST',
+            data: { nonce: 'c', orderData: JSON.stringify(this.#orderData), },
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    hideElement.hide();
+                    show_message(data['message'], 'success');
+                    return;
+                } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 }
             }
         });
-
     }
     // update the paid status block to show the confirmed space
     updatePaidStatusBlock() {
@@ -501,6 +531,13 @@ function incrPayValidate() {
         return;
 
     vendorInvoice.incrPayValidate();
+}
+
+function orderCancel() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.orderCancel();
 }
 
 function updatePaidStatusBlock() {
