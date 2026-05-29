@@ -157,6 +157,7 @@ $eryID = $orderResults['eryID'];
 $specialRequests = $results['specialrequests'];
 $results['nonce'] = $_POST['nonce'];
 $results['buyer'] = $buyer;
+$results['total'] = $results['totalAmt'];
 
 if ($totprice > 0) {
 // call the credit card processor to make the payment
@@ -224,12 +225,17 @@ EOS;
     $approved_amt = $ccrtn['amount'];
 
     // update the transaction status with the payment details
+    $tax = 0;
+    for ($i = 0; $i < count($taxValues); $i++) {
+        if ($taxValues)
+            $tax += $taxValues[$i];
+    }
     $updTrans = <<<EOS
 UPDATE transaction
-SET ccPaymentId = ?, paymentStatus = ?
+SET tax1 = ?, tax2 = ?, tax3 = ?, tax4 = ?, tax5 = ?, tax = ?, ccPaymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'], $transId));
+    $numUpd = dbSafeCmd($updTrans, 'ddddddssi', array_merge($taxValues,array($tax, $ccrtn['paymentId'], $ccrtn['status'], $transId)));
 } else {
     $approved_amt = 0;
     $ccrtn = array('url' => '');

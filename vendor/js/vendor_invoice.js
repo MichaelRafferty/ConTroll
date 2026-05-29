@@ -38,6 +38,9 @@ class VendorInvoice {
 
     // openInvoice: display the vendor invoice (and registration items)
     openInvoice(id) {
+        clear_message();
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
         this.#regionName = '';
         this.#includedMemberships = 0;
         this.#additionalMemberships = 0;
@@ -338,9 +341,9 @@ class VendorInvoice {
         let region = exhibits_spaces[this.#regionYearId];
         let regionList = region_list[this.#regionYearId];
         let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
-        let membershipCost = data.results.pretax - totalSpacePrice;
+        let membershipCost = data.results.preTaxAmt - totalSpacePrice;
         document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
-        let totalPreOrder = data.results.pretax;
+        let totalPreOrder = data.results.preTaxAmt;
         let totalWithTax = data.rtn.totalAmt;
         // loop over the taxes outputting them
         html = '';
@@ -357,6 +360,9 @@ class VendorInvoice {
         }
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
+        let id = document.getElementById(this.#purchaseLabel);
+        if (id)
+            id.disabled = false;
         this.#vendorPayment.show();
 
     }
@@ -417,7 +423,7 @@ class VendorInvoice {
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
-            data: { nonce: 'c', orderData: JSON.stringify(data), },
+            data: postData,
             success: function (data, textStatus, jqXhr) {
                 if (config['debug'] & 1)
                     console.log(data);
@@ -438,7 +444,7 @@ class VendorInvoice {
                 } else {
                     hideElement.hide();
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
-                    returnl
+                    return;
                 }
             }
         });

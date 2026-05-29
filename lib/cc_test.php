@@ -494,8 +494,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // compute the fields the credit card company would compute
     $taxAmount = 0;
-    $taxAbleBase = 0;
-    $itemTaxTotal = 0;
     $taxAmounts = [];
     if ($needTaxes) {
         foreach ($orderLineItems as $ord => $item) {
