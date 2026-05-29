@@ -266,10 +266,16 @@ class VendorInvoice {
         document.getElementById("vendor_payment_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice for ' + name + '</strong>';
 
         // loop over the taxes computing the output lines
+        console.log(config.taxRates);
         let taxHtml = '';
         for (let taxid in data.rtn.taxes) {
             let tax = data.rtn.taxes[taxid];
-            taxHtml += tax.name + ': ' + currencyFmt.format(Number(tax.tax).toFixed(2)) + '<br/>\n';
+            let taxLabel = config.taxRates[taxid].label;
+            let taxTypeof = typeof tax;
+            if (!['string', 'number', 'bigint', 'undefined'].includes(taxTypeof))
+                tax = tax.tax;
+
+            taxHtml += taxLabel + ': ' + currencyFmt.format(Number(tax).toFixed(2)) + '<br/>\n';
         }
 
         let html = `
@@ -303,7 +309,7 @@ class VendorInvoice {
                 </div>
             </div>
             <div class='row'>
-                    <div class='col-sm-12' id="vendor_pay_tax_div"></div> 
+                    <div class='col-sm-12' id="vendor_pay_tax_div">${taxHtml}</div> 
                 </div>
             </div>
             <div class='row'>
@@ -345,19 +351,6 @@ class VendorInvoice {
         document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
         let totalPreOrder = data.results.preTaxAmt;
         let totalWithTax = data.rtn.totalAmt;
-        // loop over the taxes outputting them
-        html = '';
-        for (let taxid in data.rtn.taxes) {
-            let tax = data.rtn.taxes[taxid];
-            html += tax.name + ': ' + currencyFmt.format(Number(tax.tax).toFixed(2)) + '<br/>\n';
-        }
-
-        if (html != '') {
-            document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
-            document.getElementById('vendor_pay_tax_div').innerHTML = html;
-        } else {
-
-        }
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
         let id = document.getElementById(this.#purchaseLabel);

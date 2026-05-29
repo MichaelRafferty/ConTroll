@@ -181,7 +181,12 @@ function buildTaxInsert($taxes) : array {
     foreach ($taxFields as $taxField) {
         $sqlStr[] = "?";
         if (array_key_exists($taxField, $taxRates) && array_key_exists($taxField, $taxes)) {
-            $values[] = $taxes[$taxField]['tax'];
+            $taxItem = $taxes[$taxField];
+            if (is_array($taxItem)) {
+                $values[] = $taxItem['tax'];
+            } else {
+                $values[] = $taxItem;
+            }
         } else {
             $values[] = null;
         }
