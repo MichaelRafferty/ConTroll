@@ -61,7 +61,15 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
             $body .= 'The pre sales tax price for your order was ' . $dolfmt->formatCurrency((float)$preTaxAmt, $currency) . "\n";
             foreach ($taxList as $tax) {
                 if ($tax['rate'] > 0) {
+                    if (!array_key_exists('taxField', $tax))
+                        continue; // tax not applicable
+                    if (!array_key_exists($tax['taxField'], $taxes))
+                        continue; // no tax chanrged
                     $stax = $taxes[$tax['taxField']];
+                    if (is_array($stax))
+                        $stax = $stax['tax'];
+                    if ($stax == 0)
+                        continue;
                     $label = $tax['label'];
                     $body .= "$label: " . $dolfmt->formatCurrency((float) $stax, $currency) . "\n";
                 }

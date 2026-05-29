@@ -1166,6 +1166,9 @@ class Portal {
                 for (let tax in config.taxRates) {
                     let rate = config.taxRates[tax];
                     let amt = this.#taxes[tax];
+                    let taxTypeof = typeof amt;
+                    if (!['string', 'number', 'bigint', 'undefined'].includes(taxTypeof))
+                        amt = amt.tax;
                     if (amt != null) {
                         html += `
     <div class="row mt-1">
