@@ -287,13 +287,13 @@ class taxConfig {
             if (newItem != oldItem)
                 changed = true;
             if (newItem != '-' && newItem != item.defaultValue) {
-                taxItemsDisplay += ',' + item.item + '=' + newItem;
+                taxItemsDisplay += ',\n' + item.item + '=' + newItem;
                 newItems.push({conid: this.#conid, taxField: this.#taxField, item: item.item, taxable: newItem, sortOrder: sortOrder});
             }
             sortOrder += 10;
         }
         update.taxItems = newItems;
-        update.taxItemsDisplay = taxItemsDisplay.substring(1);
+        update.taxItemsDisplay = taxItemsDisplay.substring(2);
         let updates = [];
         updates.push(update);
         //console.log("update: " + JSON.stringify(update));

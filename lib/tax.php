@@ -229,9 +229,9 @@ EOS;
         $taxField = $row['taxField'];
         $taxConfig[$taxField]['taxItems'][] = $row;
         if (array_key_exists('taxItemsDisplay', $taxConfig[$taxField])) {
-            $taxConfig[$taxField]['taxItemsDisplay'] .= ',' . $row['item'] . '=' . $row['taxable'];
+            $taxConfig[$taxField]['taxItemsDisplay'] .= ",\n" . $row['item'] . '=' . $row['taxable'];
         } else {
-            $taxConfig[$taxField]['taxItemsDisplay'] = ',' . $row['item'] . '=' . $row['taxable'];
+            $taxConfig[$taxField]['taxItemsDisplay'] = '  ' . $row['item'] . '=' . $row['taxable'];
         }
     }
     $QR->free();
@@ -240,7 +240,7 @@ EOS;
     $taxConfigArray = array();
     foreach ($taxConfig as $taxField => $tax) {
         if ($tax['taxItemsDisplay'] != '')
-            $tax['taxItemsDisplay'] = substr($tax['taxItemsDisplay'], 1);
+            $tax['taxItemsDisplay'] = substr($tax['taxItemsDisplay'], 2);
         $taxConfigArray[] = $tax;
     }
 
