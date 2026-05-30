@@ -248,10 +248,10 @@ for ($i = 0; $i < count($taxValues); $i++) {
 }
     $updTrans = <<<EOS
 UPDATE transaction
-SET tax1 = ?, tax2 = ?, tax3 = ?, tax4 = ?, tax5 = ?, tax = ?
+SET $taxSql, tax = ?
 WHERE id = ?;
 EOS;
-$updcnt = dbSafeCmd($updTrans, 'ddddddi', array_merge($taxValues, array($tax, $master_tid)));
+$updcnt = dbSafeCmd($updTrans, $taxStr . 'i', array_merge($taxValues, array($tax, $master_tid)));
 
 $change = 0;
 if ($amt > 0) {

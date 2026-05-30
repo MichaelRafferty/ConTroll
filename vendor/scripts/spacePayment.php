@@ -226,12 +226,19 @@ EOS;
         if ($taxValues)
             $tax += $taxValues[$i];
     }
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $updTrans = <<<EOS
 UPDATE transaction
-SET tax1 = ?, tax2 = ?, tax3 = ?, tax4 = ?, tax5 = ?, tax = ?, ccPaymentId = ?, paymentStatus = ?
+SET tax = ?, ccPaymentId = ?, paymentStatus = ?, $taxSql
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'ddddddssi', array_merge($taxUpdValues,array($tax, $ccrtn['paymentId'], $ccrtn['status'], $transId)));
+
+$valArray = array($tax, $ccrtn['paymentId'], $ccrtn['status');
+$valArray = array_merge($valArray, $taxValues);
+$valArray[] = $transId;
+$typeStr = 'dss' . $taxStr . 'i';
+
+    $numUpd = dbSafeCmd($updTrans, $typeStr, $valArray);
 } else {
     $approved_amt = 0;
     $ccrtn = array('url' => '');
