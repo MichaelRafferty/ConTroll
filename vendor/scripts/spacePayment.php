@@ -223,8 +223,12 @@ EOS;
     // update the transaction status with the payment details
     $tax = 0;
     for ($i = 0; $i < count($taxValues); $i++) {
-        if ($taxValues)
-            $tax += $taxValues[$i];
+        if ($taxValues[$i] != null) {
+            if (is_array($taxValues[$i]))
+                $tax += $taxValues[$i]['tax'];
+            else
+                $tax += $taxValues[$i];
+        }
     }
     [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $updTrans = <<<EOS

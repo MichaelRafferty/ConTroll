@@ -243,15 +243,19 @@ EOS;
 
 $tax = 0;
 for ($i = 0; $i < count($taxValues); $i++) {
-    if ($taxValues)
-        $tax += $taxValues[$i];
+    if ($taxValues[$i] != null) {
+        if (is_array($taxValues[$i]))
+            $tax += $taxValues[$i]['tax'];
+        else
+            $tax += $taxValues[$i];
+    }
 }
     $updTrans = <<<EOS
 UPDATE transaction
 SET $taxSql, tax = ?
 WHERE id = ?;
 EOS;
-$updcnt = dbSafeCmd($updTrans, $taxStr . 'i', array_merge($taxValues, array($tax, $master_tid)));
+$updcnt = dbSafeCmd($updTrans, $taxStr . 'di', array_merge($taxValues, array($tax, $master_tid)));
 
 $change = 0;
 if ($amt > 0) {

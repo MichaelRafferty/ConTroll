@@ -79,7 +79,10 @@ function buildTaxUpdate($taxes) : array {
     foreach ($taxFields as $taxField) {
         $sqlStr[] = "$taxField = ?";
         if (array_key_exists($taxField, $taxRates) && array_key_exists($taxField, $taxes)) {
-            $values[] = $taxes[$taxField];
+            if (is_array($taxes[$taxField]))
+                $values[] = $taxes[$taxField]['tax'];
+            else
+                $values[] = $taxes[$taxField];
         } else {
             $values[] = null;
         }
