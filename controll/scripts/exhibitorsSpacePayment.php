@@ -633,19 +633,17 @@ if ($prow != null) {
     }
 
     // now the main payment
-    if ($taxAmt > 0) {
+    if ($taxAmt > 0)
         $taxes = $order['taxes'];
-        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-        if ($taxFields != '')
-            $taxFields = ", $taxFields";
-        if ($taxSql != '')
-            $taxSql = ", $taxSql";
-    } else {
-        $taxFields = '';
-        $taxSql = '';
-        $taxStr = '';
-        $taxValues = [];
-    }
+    else
+        $taxes = [];
+
+    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+    if ($taxFields != '')
+        $taxFields = ", $taxFields";
+    if ($taxSql != '')
+        $taxSql = ", $taxSql";
+
     if ($paymentType == 'credit') {
         $txnQ = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 

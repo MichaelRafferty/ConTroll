@@ -333,7 +333,10 @@ if ($total > 0) {
     $referenceId = $transId . '-' . 'pay-' . time();
     $preTaxAmt = $rtn['preTaxAmt'];
     $taxAmt = $rtn['taxAmt'];
-    $taxes = $rtn['taxes'];
+    if ($taxAmt > 0)
+        $taxes = $rtn['taxes'];
+    else
+        $taxes = [];
     $withTax = $rtn['totalAmt'];
 
     $results = array(

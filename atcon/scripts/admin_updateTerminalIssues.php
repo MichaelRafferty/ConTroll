@@ -431,20 +431,17 @@ EOS;
     }
     if ($pmtResult->num_rows == 0) {
         $taxAmt = $order['total_tax_money']['amount'] / 100;
-        $taxes = $order['taxes'];
+        if ($taxAmt > 0)
+            $taxes = $order['taxes'];
+        else
+            $taxes = [];
         // payment doesn't exist, insert it and create
-        if ($taxAmt > 0) {
-            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-            if ($taxFields != '')
-                $taxFields = ", $taxFields";
-            if ($taxSql != '')
-                $taxSql = ", $taxSql";
-        } else {
-            $taxFields = '';
-            $taxSql = '';
-            $taxStr = '';
-            $taxValues = [];
-        }
+
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
