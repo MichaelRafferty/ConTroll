@@ -187,7 +187,7 @@ EOS;
         </div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-auto"><button class='btn btn-sm btn-primary' onclick='window.reload();'>Click to Log in Again</button></div>
+        <div class="col-sm-auto"><button class='btn btn-sm btn-primary' onclick='window.location.reload();'>Click to Log in Again</button></div>
     </div>
 EOS;
             $authToken->deleteToken();
