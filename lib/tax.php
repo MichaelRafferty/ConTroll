@@ -29,8 +29,8 @@ EOS;
 SELECT l.taxField, t.item, IFNULL(i.taxable, t.defaultValue) AS taxable
 FROM taxList l
 JOIN taxable t
-LEFT OUTER JOIN taxItems i ON i.taxfield = l.taxfield AND i.conid = l.conid AND i.item = t.item
-WHERE i.conid = ? AND l.active = 'Y'
+LEFT OUTER JOIN taxItems i ON i.taxfield = l.taxfield AND i.conid = l.conid AND i.item = t.item AND i.conid = ?
+WHERE l.active = 'Y'
 ORDER BY l.taxField, i.sortOrder;
 EOS;
         $QR = dbSafeQuery($QQ, 'i', array($conid));
