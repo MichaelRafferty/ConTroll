@@ -3042,6 +3042,8 @@ class Pos {
                     let amt = this.#taxes[tax];
                     if (amt == null)
                         continue;
+                    if (!['string', 'number', 'bigint', 'undefined'].includes(typeof amt))
+                        amt = amt.tax;
 
                     pay_html += `
     <div class="row mt-1">
