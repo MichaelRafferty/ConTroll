@@ -238,6 +238,21 @@ EOS;
     $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
 }
 
+// set tax in transaction
+[$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+
+$tax = 0;
+for ($i = 0; $i < count($taxValues); $i++) {
+    if ($taxValues)
+        $tax += $taxValues[$i];
+}
+    $updTrans = <<<EOS
+UPDATE transaction
+SET tax1 = ?, tax2 = ?, tax3 = ?, tax4 = ?, tax5 = ?, tax = ?
+WHERE id = ?;
+EOS;
+$updcnt = dbSafeCmd($updTrans, 'ddddddi', array_merge($taxValues, array($tax, $master_tid)));
+
 $change = 0;
 if ($amt > 0) {
     if ($new_payment['type'] != 'terminal') {
@@ -502,19 +517,11 @@ WHERE id = ?;
 EOS;
     $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
 
-    // now add the payment and process to which rows it applies
-    if ($taxAmt > 0) {
-        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-        if ($taxFields != '')
-            $taxFields = ", $taxFields";
-        if ($taxSql != '')
-            $taxSql = ", $taxSql";
-    } else {
-        $taxFields = '';
-        $taxSql = '';
-        $taxStr = '';
-        $taxValues = [];
-    }
+    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+    if ($taxFields != '')
+        $taxFields = ", $taxFields";
+    if ($taxSql != '')
+        $taxSql = ", $taxSql";
 
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
