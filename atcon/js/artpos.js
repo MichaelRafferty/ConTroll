@@ -1578,6 +1578,7 @@ function pay(nomodal, prow = null, nonce = null) {
     let checkno = null;
     let desc = null;
     let ptype = null;
+    let crow = null;
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -1691,7 +1692,6 @@ function pay(nomodal, prow = null, nonce = null) {
         }
 
         if (total_amount_due > 0) {
-            let crow = null;
             let change = 0;
             if (ptype == 'cash') {
                 amtTendered = Number(document.getElementById('pay-tendered').value) > total_amount_due;
@@ -2031,6 +2031,8 @@ function drawPay(readWrite = true) {
             let amt = taxes[tax];
             if (amt == null)
                 continue;
+            if (!['string', 'number', 'bigint', 'undefined'].includes(typeof amt))
+                amt = amt.tax;
             payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">` + rate.label + `:</div>
