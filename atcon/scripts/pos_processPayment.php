@@ -614,18 +614,11 @@ EOS;
 
     // now the main payment
     if ($amt > 0) {
-        if ($taxAmt > 0) {
-            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-            if ($taxFields != '')
-                $taxFields = ", $taxFields";
-            if ($taxSql != '')
-                $taxSql = ", $taxSql";
-        } else {
-            $taxFields = '';
-            $taxSql = '';
-            $taxStr = '';
-            $taxValues = [];
-        }
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
