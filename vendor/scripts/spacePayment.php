@@ -237,7 +237,7 @@ SET tax = ?, ccPaymentId = ?, paymentStatus = ?, $taxSql
 WHERE id = ?;
 EOS;
 
-$valArray = array($tax, $ccrtn['paymentId'], $ccrtn['status');
+$valArray = array($tax, $ccrtn['paymentId'], $ccrtn['status']);
 $valArray = array_merge($valArray, $taxValues);
 $valArray[] = $transId;
 $typeStr = 'dss' . $taxStr . 'i';
