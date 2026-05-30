@@ -28,6 +28,8 @@ EOS;
 function drawInterestList($interests, $modal = false, $class='portal', $tabIndexStart = 800) {
     if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
         return;
+    if ($class != '')
+        $class .= '.';
     $tabindex = $tabIndexStart;
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('interests/header', 'profile/all/');
@@ -42,12 +44,13 @@ function drawInterestList($interests, $modal = false, $class='portal', $tabIndex
 <?php
     }
     foreach ($interests as $interest) {
+        $readOnly = ($class == '' && $interest['readOnly'] == 1) ? ' hidden' : '';
         $desc = replaceVariables($interest['description']);
 ?>
-        <div class='row mt-1'>
+        <div class='row mt-1' <?php echo $readOnly; ?>>
             <div class='col-sm-auto'>
                 <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'
-                    onchange="<?php echo $class; ?>.updateInterestSelect('<?php echo $interest['interest'];?>')"
+                    onchange="<?php echo $class; ?>updateInterestSelect('<?php echo $interest['interest'];?>')"
                        tabindex="<?php echo $tabindex; $tabindex += 1;?>">
             </div>
             <div class='col-sm-auto'>
@@ -56,7 +59,7 @@ function drawInterestList($interests, $modal = false, $class='portal', $tabIndex
         </div>
         <div class='row' id='i_d_<?php echo $interest['interest'];?>' hidden>
             <div class='col-sm-auto'>&emsp;&ensp;</div>
-            <div class="col-sm-2" id='i_p_<?php echo $interest['interest'];?>'>prompt</div>
+            <div class="col-sm-2" id='i_p_<?php echo $interest['interest'] . "'>" . $interest['notesPrompt'];?></div>
             <div class="col-sm-8" id="i_i_<?php echo $interest['interest'];?>" hidden>
                 <textarea id='i_t_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>_notes'
                 rows="3" cols="80" placeholder="Enter your interest explanation here"></textarea>

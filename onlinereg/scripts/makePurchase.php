@@ -149,9 +149,11 @@ INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pro
            IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?, ?);
 EOS;
 
+
+
 $intInsertQ = <<<EOS
-INSERT INTO memberInterests(conid, newperid, interest, interested)
-VALUES(?, ?, ?, ?);
+INSERT INTO memberInterests(newperid, conid, interest, interested, notes)
+VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $polInsertQ = <<<EOS
@@ -234,7 +236,14 @@ foreach ($badges as $badge) {
             $key = substr($key, 2);
             $polid = dbSafeInsert($polInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
         } else {
-            $intid = dbSafeInsert($intInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
+            if (str_ends_with($key, '_notes'))
+                continue;
+            $nkey = $key . '_notes';
+            if (array_key_exists($nkey, $policies))
+                $notes = $policies[$nkey];
+            else
+                $notes = null;
+            $intid = dbSafeInsert($intInsertQ, 'iiss', array($conid, $newid, $key, 'Y', $notes));
         }
     }
 }

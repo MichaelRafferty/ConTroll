@@ -698,7 +698,7 @@ class Profile {
         this.#suffixField.value = '';
         if (this.#email1Input)
             this.#email1Field.value = '';
-        if (this.email2Field)
+        if (this.#email2Field)
             this.#email2Field.value = '';
         if (this.#legalNameField)
             this.#legalNameField.value = '';
@@ -740,8 +740,12 @@ class Profile {
         if (typeof interests !== 'undefined') {
             for (let row in interests) {
                 let interest = interests[row];
-                let field = '#i_' + interest.interest;
-                $(field).prop('checked', false);
+                let field = document.getElementById('i_' + interest.interest);
+                if (field)
+                    field.checked = false;
+                field = document.getElementById('i_t_' + interest.interest);
+                if (field)
+                    field.value = '';
             }
         }
     }

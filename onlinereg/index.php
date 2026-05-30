@@ -224,7 +224,7 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
             </div>
         </div>
 <?php
-        drawInterestList($interests, false, 'store');
+        drawInterestList($interests, false, '');
     }
 ?>                            <div class="row mt-4">
                                 <div class="col-sm-12">

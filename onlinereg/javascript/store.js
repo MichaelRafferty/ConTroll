@@ -418,6 +418,18 @@ function checkRefresh(data = null) {
     return;
 }
 
+// interest functions
+// check for need to open the notes section
+function updateInterestSelect(id) {
+    let checked = document.getElementById('i_' + id).checked;
+    let prompt = document.getElementById('i_p_' + id).innerHTML;
+    if (prompt != '') {
+        document.getElementById('i_d_' + id).hidden = !checked;
+        document.getElementById('i_t_' + id).hidden = !checked;
+        document.getElementById('i_i_' + id).hidden = !checked;
+    }
+}
+
 window.onload = function () {
 // formatting items
     locale = config.locale;
