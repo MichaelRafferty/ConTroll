@@ -56,8 +56,7 @@ WHERE conid = ? AND perid = ?
 GROUP BY perid
 )
 SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country,
-    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg, p.fullName
 FROM perinfo p
 LEFT OUTER JOIN regC r on r.perid = p.id
 WHERE p.id=?;
@@ -88,7 +87,7 @@ EOS;
         $fullName = $response['person']['fullName'];
         // get the list of people this person can pickup art for
         $findPickupQ = <<<EOS
-SELECT a.bidderPerid, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+SELECT a.bidderPerid, p.fullName
 FROM artshowAltPickupAuth a
 JOIN perinfo p ON p.id = a.bidderPerid
 WHERE a.pickupPerid = ? AND conid = ? AND a.active = 'Y';
@@ -107,8 +106,7 @@ EOS;
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
-       exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, exY.exhibitorId,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName, p.id AS perid
+       exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, exY.exhibitorId, p.fullName, p.id AS perid
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id

@@ -36,7 +36,7 @@ $perid = $_POST['perid'];
 // get the bidder name
 // get initial list of pickup relationships
 $pSQL = <<<EOS
-SELECT  TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName    
+SELECT fullName    
 FROM perinfo 
 WHERE id = ?;
 EOS;

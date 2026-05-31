@@ -172,9 +172,7 @@ WITH mems AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         p.badge_name, p.badgeNameL2,  p.first_name, p.last_name,
-        p.id AS memberId, p.email_addr, p.phone,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        IFNULL(tp.perid, t.perid) AS transPerid
+        p.id AS memberId, p.email_addr, p.phone, p.fullName, IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans

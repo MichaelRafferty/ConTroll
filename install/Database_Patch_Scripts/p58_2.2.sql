@@ -121,15 +121,15 @@ CREATE TABLE taxable (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO taxable (item, label, defaultValue, sortOrder) VALUES
-                                                               ('taxableMem', 'Taxable Memberships', 'Y', 10),
-                                                               ('nontaxMem', 'Non Taxable Memberships', 'N', 20),
-                                                               ('artSales', 'Art Sales', 'Y', 30),
-                                                               ('artSpace', 'Art Space', 'N', 40),
-                                                               ('artShipping', 'Art Shipping Fees', 'N', 50),
-                                                               ('vendorSpace', 'Vendor Space', 'N', 60),
-                                                               ('exhibitSpace', 'Exhibits Space', 'N', 70),
-                                                               ('fanSpace', 'Fan Table Space', 'N', 80),
-                                                               ('otherFees', 'Other Fees', 'N', 10000);
+   ('taxableMem', 'Taxable Memberships', 'Y', 10),
+   ('nontaxMem', 'Non Taxable Memberships', 'N', 20),
+   ('artSales', 'Art Sales', 'Y', 30),
+   ('artSpace', 'Art Space', 'N', 40),
+   ('artShipping', 'Art Shipping Fees', 'N', 50),
+   ('vendorSpace', 'Vendor Space', 'N', 60),
+   ('exhibitSpace', 'Exhibits Space', 'N', 70),
+   ('fanSpace', 'Fan Table Space', 'N', 80),
+   ('otherFees', 'Other Fees', 'N', 10000);
 
 CREATE TABLE taxItems (
     conid int NOT NULL COMMENT 'applicable convention year',
@@ -162,5 +162,22 @@ I also understand that once payment is made, no refund will be issued unless the
 my space.</p>'
 WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'invoice' AND txtItem = 'payDisclaimerVendor'
     AND (contents like '%By purchasing this space I certify%' OR contents like 'Controll-Default:%');
+
+``
+/*
+ * add computed column to perinfo and newperson for fullname
+ */
+ALTER TABLE perinfo ADD COLUMN fullName VARCHAR(256) AS (TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')))
+    STORED AFTER suffix;
+ALTER TABLE newperson ADD COLUMN fullName VARCHAR(256) AS (TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')))
+    STORED AFTER suffix;
+
+ALTER TABLE perinfo ADD COLUMN fullAddr VARCHAR(256) AS
+    (TRIM(REGEXP_REPLACE(CONCAT_WS(' ', address, addr_2, city, state, zip, country), ' +', ' ')))
+     VIRTUAL AFTER country;
+ALTER TABLE newperson ADD COLUMN fullAddr VARCHAR(256) AS
+    (TRIM(REGEXP_REPLACE(CONCAT_WS(' ', address, addr_2, city, state, zip, country), ' +', ' ')))
+    VIRTUAL AFTER country;
+
 
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');

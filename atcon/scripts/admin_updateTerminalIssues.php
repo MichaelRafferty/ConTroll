@@ -55,8 +55,7 @@ if ($_POST && $_POST['transid']) {
 // get the information for this transaction
 $issueSQL = <<<EOS
 SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
-       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo, p.fullName,
        y.id AS payTableId, IFNULL(y.status, '') AS cardStatus, IFNULL(y.ccPaymentId, '') AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
@@ -166,8 +165,7 @@ $message .= "$num_upd terminals released and marked available<br/>";
 // now get the remaining issues
 $issueSQL = <<<EOS
 SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
-       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, p.fullName,
        y.id AS payTableId, y.status AS cardStatus, y.ccPaymentId AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id

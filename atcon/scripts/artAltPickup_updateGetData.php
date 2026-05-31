@@ -106,9 +106,7 @@ EOS;
 // now get the data table
 // get initial list of pickup relationships
 $pSQL = <<<EOS
-SELECT a.*, pb.first_name, pb.middle_name, pb.last_name,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pb.first_name, pb.middle_name, pb.last_name, pb.suffix), ' +', ' ')) AS bidderFullName,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pp.first_name, pp.middle_name, pp.last_name, pp.suffix), ' +', ' ')) AS pickupFullName
+SELECT a.*, pb.first_name, pb.middle_name, pb.last_name, pb.fullName AS bidderFullName, pp.fullName AS pickupFullName
 FROM artshowAltPickupAuth a
 LEFT OUTER JOIN perinfo pb ON pb.id = a.bidderPerid
 LEFT OUTER JOIN perinfo pp ON pp.id = a.pickupPerid

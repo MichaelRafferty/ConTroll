@@ -50,8 +50,7 @@ $perids = array_unique($perids, SORT_NUMERIC);
 $regids = implode(',', array_unique($regids, SORT_NUMERIC));
 
 $recQ = <<<EOS
-SELECT t.perid, p.transid, p.ccPaymentId, p.time, 
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', w.first_name, w.middle_name, w.last_name, w.suffix), ' +', ' ')) AS fullName
+SELECT t.perid, p.transid, p.ccPaymentId, p.time, w.fullName
 FROM reg r
 JOIN transaction t ON t.id = r.complete_trans AND t.perid = r.perid
 JOIN payments p ON t.id = p.transid
