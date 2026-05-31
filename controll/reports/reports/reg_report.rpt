@@ -17,12 +17,12 @@
 	minWidth=80
 [F010]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    sql="p.fullName"
     title="Full Name"
     minWidth=300
 [F011]
     name=fullAddr
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' '))"
+    sql="p.fullAddr"
     title="Full Address"
     minWidth=300
 [F020]

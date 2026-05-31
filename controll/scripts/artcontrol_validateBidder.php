@@ -34,8 +34,8 @@ $bidder = $_POST['bidder'];
 
 
 $bidderQ = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
-FROM perinfo p
+SELECT fullName
+FROM perinfo
 WHERE id = ?;
 EOS;
 

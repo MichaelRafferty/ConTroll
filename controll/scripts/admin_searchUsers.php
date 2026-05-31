@@ -59,9 +59,7 @@ EOS;
 SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr, deceased, banned
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
-WHERE a.id is NULL AND
-    (LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ?
-         OR LOWER(badge_name) LIKE ? OR LOWER(badgeNameL2) LIKE ?);
+WHERE a.id is NULL AND (LOWER(p.fullName) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(badgeNameL2) LIKE ?);
 EOS;
     $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
     $typestr = 'isss';

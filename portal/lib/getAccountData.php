@@ -86,10 +86,8 @@ WITH trans AS (
             ELSE NULL
         END AS badgeNameL2,
         CASE 
-            WHEN pn.id IS NOT NULL THEN
-                TRIM(REGEXP_REPLACE(CONCAT(pn.first_name, ' ', pn.middle_name, ' ', pn.last_name, ' ', pn.suffix), ' +', ' '))
-            WHEN nn.id IS NOT NULL THEN
-                TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' '))
+            WHEN pn.id IS NOT NULL THEN pn.fullName
+            WHEN nn.id IS NOT NULL THEN nn.fullName
             ELSE ''
         END AS fullName,
         CASE 
@@ -139,9 +137,7 @@ WITH trans AS (
         END AS purchaserName,
         nn.id AS personId, 'n' AS personType,
         nn.first_name AS fname, nn.last_name AS lname, nn.first_name, nn.last_name,
-        nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
-        TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' ')) AS fullName, 
-        nn.id as memberId, nn.email_addr, nn.phone,
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2, nn.fullName, nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid 
     FROM trans t

@@ -129,8 +129,8 @@ SELECT t.*, DATE_FORMAT(create_date, '%W, %M %e, %Y %h:%i:%s %p') as create_date
        DATE_FORMAT(complete_date, '%W, %M %e, %Y %h:%i:%s %p') as complete_date_str,
        c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
-        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
-        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        WHEN p.id IS NOT NULL THEN p.fullName
+        WHEN n.id IS NOT NULL THEN n.fullName
         ELSE 'Unknown'
     END AS fullName,
     CASE 
@@ -301,8 +301,8 @@ EOS;
 SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice, m.taxable, m.conid AS memConid,
     c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
-        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
-        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        WHEN p.id IS NOT NULL THEN p.fullName
+        WHEN n.id IS NOT NULL THEN n.fullName
         ELSE 'Unknown'
     END AS fullName,
     CASE 
@@ -420,8 +420,8 @@ EOS;
     $response['spaces'] = $spaces;
     //      art sales (atcon/artpos)
     $artQ = <<<EOS
-SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, IFNULL(E.artistName, E.exhibitorName) AS artist,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, t.perid AS transPerid
+SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, 
+       IFNULL(E.artistName, E.exhibitorName) AS artist, p.fullName AS bidderFullName, t.perid AS transPerid
 FROM artSales s
 JOIN artItems i ON i.id = s.artId
 JOIN exhibitorRegionYears RY ON i.exhibitorRegionYearId = RY.id

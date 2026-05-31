@@ -79,9 +79,8 @@ WITH numregs AS (
     GROUP BY perid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    address, addr_2, city, state, zip, country, fullName,
+    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM perinfo p
 LEFT OUTER JOIN numregs n ON (n.perid = p.id)
 WHERE id = ?
@@ -97,9 +96,8 @@ WITH numregs AS (
     GROUP BY newperid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    address, addr_2, city, state, zip, country, fullName,
+    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM newperson p
 LEFT OUTER JOIN numregs n ON (n.newperid = p.id)
 WHERE id = ?;

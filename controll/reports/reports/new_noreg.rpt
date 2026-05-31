@@ -17,7 +17,7 @@
 	calc=count
 [F005]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    sql="p.fullName"
     title="Full Name"
     minWidth=300
 [F006]

@@ -322,8 +322,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.formerGoH, p.deceased,
     IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
+    p.fullName, pm.fullName AS managedByName
 FROM perinfo p
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE p.id = ?;
@@ -333,14 +332,11 @@ EOS;
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
     p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, 'N' AS formerGoH, 'N' AS deceased,
-    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType, p.fullName,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
-        WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmp.first_name, pmp.middle_name, pmp.last_name, pmp.suffix), ' +', ' '))
-        WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmn.first_name, pmn.middle_name, pmn.last_name, pmn.suffix), ' +', ' ')) 
+        WHEN pmp.id IS NOT NULL THEN pmp.fullName
+        WHEN pmn.id IS NOT NULL THEN pmn.fullName
         ELSE NULL
        END AS managedByName
     FROM newperson p

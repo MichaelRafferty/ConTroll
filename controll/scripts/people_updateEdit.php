@@ -341,18 +341,10 @@ WITH memAge AS (
     WHERE m.memAge != 'all' AND r.perid = ? AND r.conid = ?
     GROUP BY r.perid
 )
-SELECT p.*, ma.memAgeType,
+SELECT p.*, ma.memAgeType, p.fullname, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
-    CASE
-        WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) 
-        ELSE ''
-    END AS manager,
-    CASE
-        WHEN mp.id IS NOT NULL THEN mp.id
-        ELSE NULL
-    END AS managerId,
+    CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
+    CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
     GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
 FROM perinfo p
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))

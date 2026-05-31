@@ -118,12 +118,7 @@ EOS;
     if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS fullName,
-    'p' AS tablename
+    address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH, fullName, 'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
 WHERE pi.email_addr = ? AND pi.provider IN ('token', 'email', 'allow') AND pi.email_addr != p.email_addr

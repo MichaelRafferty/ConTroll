@@ -78,10 +78,7 @@ SELECT  pp.id, pp.planId, pp.conid, pp.perid, pp.newperid, pp.initialAmt, pp.non
         .createTransaction,
         pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy,
         p.name, l.paymentsMade, l.lastPaymentDate, l.lastPaymentAmt,
-        CASE 
-        WHEN pi.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pi.first_name, pi.middle_name, pi.last_name, pi.suffix), ' +', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', ni.first_name, ni.middle_name, ni.last_name, ni.suffix), ' +', ' '))
-        END AS fullName
+        CASE WHEN pi.id IS NOT NULL THEN pi.fullName ELSE ni.fullName END AS fullName
 FROM payorPlans pp
 JOIN paymentPlans p ON pp.planId = p.id
 LEFT OUTER JOIN perinfo pi ON pp.perid = pi.id
