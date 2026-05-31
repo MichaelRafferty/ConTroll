@@ -112,6 +112,14 @@ $policiesCell = drawPoliciesCell($policies);
                     <div class='row'>
                         <div class='col-sm-12' id='newpersonTable'></div>
                     </div>
+                    <div class='row mt-1 mb-2'>
+                        <div class="col-sm-auto">
+                            <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' type='button' id='createNewTop' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                                Create New Person
+                            </button>
+                        </div>
+                    </div>
                     <div class='row mt-1'>
                         <div class='col-sm-12 text-bg-secondary'>
                             Potential Matches
@@ -141,14 +149,17 @@ $policiesCell = drawPoliciesCell($policies);
                             'unmatchedPeople', $countryOptions, $policiesCell, $ageList, $regStaff, $regAdmin);
                 ?>
             </div>
-            <div class='modal-footer'>
+            <div class='modal-footer me-auto'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>Update Existing
-                    Person</button>
-                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New
-                    Person</button>
-                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>Delete New
-                    Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>
+                    Update Existing Person
+                </button>
+                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                    Create New Person
+                </button>
+                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>
+                    Delete New Person
+                </button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>

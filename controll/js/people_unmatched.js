@@ -28,6 +28,7 @@ class Unmatched {
     #editMatchTitle = null;
     #updateExisting = null;
     #createNew = null;
+    #createNewTop = null;
     #deleteNew = null;
     #newpersonPolicies = null;
     #matchpeoplePolicies = null;
@@ -110,6 +111,7 @@ class Unmatched {
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
             this.#createNew = document.getElementById('createNew');
+            this.#createNewTop = document.getElementById('createNewTop');
             this.#deleteNew = document.getElementById('deleteNew');
             // matched person display fields
             this.#matchId = document.getElementById('matchID');
@@ -567,6 +569,7 @@ class Unmatched {
         this.#formerGoH.value = 'N';
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
+        this.#createNewTop.disabled = true;
         // set the delete item disable flag based on paid mand manages from parent screen
         //console.log("this.#matchRowData");
         //console.log(this.#matchRowData);
@@ -717,6 +720,7 @@ class Unmatched {
 
         this.#updateExisting.disabled = disableUpdateExisting;
         this.#createNew.disabled = false;
+        this.#createNewTop.disabled = false;
         $('#editMatch').show();
     }
 
