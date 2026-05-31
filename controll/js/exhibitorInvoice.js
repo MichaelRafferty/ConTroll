@@ -1,6 +1,7 @@
 // Items related to building and paying the exhibitor invoice
 class ExhibitorInvoice {
     #exhibitorInvoiceModal = null;
+    #exhibitorPaymentModal = null;
     #totalSpacePrice = 0;
     #regionYearId = null;
     #exhibitorId = null;
@@ -34,12 +35,21 @@ class ExhibitorInvoice {
     #currentOrderId = null;
     #invalidFields = '';
     #portalType = null;
+    #token = null;
+    #paymentForDiv = null;
+    #orderData = null;
+
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
-        var id = document.getElementById('vendor_invoice');
+        let id = document.getElementById('vendor_invoice');
         if (id != null) {
             this.#exhibitorInvoiceModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        }
+        id = document.getElementById('vendor_payment');
+        if (id != null) {
+            this.#exhibitorPaymentModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#paymentForDiv = document.getElementById("paymentForDiv");
         }
         this.#membershipCostdiv = document.getElementById("membershipCost");
         this.#elcheckno = document.getElementById('pay-check-div');
@@ -76,7 +86,11 @@ class ExhibitorInvoice {
 
 // openInvoice: display the vendor invoice (and registration items)
     openInvoice(exhibitorInfo, regionYearId) {
-        var spacePriceName = '';
+        let spacePriceName = '';
+
+        clear_message();
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
 
         this.#regionYearId = regionYearId;
         this.#exhibitorId = exhibitorInfo.exhibitorId;
@@ -85,11 +99,11 @@ class ExhibitorInvoice {
         if (config.debug & 1) {
             console.log("regionYearId: " + regionYearId);
         }
-        var region = exhibits_spaces[regionYearId];
-        var regionList = region_list[regionYearId];
-        var portalName = 'ConTroll';
-        var attendeeName = 'Exhibitor';
-        var attendeeNameLC = 'Exhibitors';
+        let region = exhibits_spaces[regionYearId];
+        let regionList = region_list[regionYearId];
+        let portalName = 'ConTroll';
+        let attendeeName = 'Exhibitor';
+        let attendeeNameLC = 'Exhibitors';
         this.#portalType = regionList.portalType;
         this.#exhibitorName = exhibitor_info.exhibitorName;
         switch (this.#portalType) {
@@ -119,7 +133,7 @@ class ExhibitorInvoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionList.name + ' Invoice for ' + exhibitorName + '</strong>';
 
         // refresh the items spaces purchased area
-        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
+        let ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
             'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr',
             false, 'warncolor');
         this.#includedMemberships = ret[0];
@@ -140,11 +154,11 @@ class ExhibitorInvoice {
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
     updateCost(regionYearId, item) {
-        var regionList = region_list[regionYearId];
-        var fname = document.getElementById('a_' + item + '_fname').value;
+        let regionList = region_list[regionYearId];
+        let fname = document.getElementById('a_' + item + '_fname').value;
         this.#totalAmountDue = 0;
         this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
-        for (var num in this.#additionalCost) {
+        for (let num in this.#additionalCost) {
             this.#totalAmountDue += this.#additionalCost[num];
         }
         if (config.debug & 1)
@@ -171,16 +185,24 @@ class ExhibitorInvoice {
         }
     }
 
+    // process the order validate button in the invoice modal form
+    orderValidate() {
+        this.#currentOrdinal = 0;
+        this.#currentType = 'i';
+        this.#formValid = true;
+        this.payValidate();
+    }
+
 // Process a payment against the transaction
     pay() {
-        var checked = false;
-        var ccauth = null;
-        var checkno = null;
-        var desc = null;
-        var ptype = null;
-        var pt_cash = document.getElementById('pt-cash').checked;
-        var pt_check = document.getElementById('pt-check').checked;
-        var pt_credit = document.getElementById('pt-credit').checked;
+        let checked = false;
+        let ccauth = null;
+        let checkno = null;
+        let desc = null;
+        let ptype = null;
+        let pt_cash = document.getElementById('pt-cash').checked;
+        let pt_check = document.getElementById('pt-check').checked;
+        let pt_credit = document.getElementById('pt-credit').checked;
         this.#formValid = true;
         this.#validateMessage = '';
 
@@ -192,7 +214,7 @@ class ExhibitorInvoice {
             //      for check: the check number is required
             //      for credit card: the auth code is required
             //      for discount: description is required, it's optional otherwise
-            var pay_amt = Number(this.#payAmt.value);
+            let pay_amt = Number(this.#payAmt.value);
             if (pay_amt > 0 && pay_amt > this.#totalAmountDue) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
                 this.#invalidFields += "Amount Paid, ";
@@ -300,9 +322,9 @@ class ExhibitorInvoice {
         if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
+                profile = inclProfiles[this.#currentOrdinal];
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    profile = inclProfiles[this.#currentOrdinal];
                     let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
                     if (message == 'stop') // usps is doing it's work, don't proceed
                         return;
@@ -310,6 +332,8 @@ class ExhibitorInvoice {
                         this.#formValid = false;
                         this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
                     }
+                } else {
+                    profile.clearNext();
                 }
                 this.#currentOrdinal++;
             }
@@ -319,9 +343,9 @@ class ExhibitorInvoice {
 
         while (this.#currentOrdinal < this.#additionalMemberships) {
             this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            profile = addlProfiles[this.#currentOrdinal];
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                profile = addlProfiles[this.#currentOrdinal];
                 let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
                 if (message == 'stop') // usps is doing it's work, don't proceed
                     return;
@@ -329,6 +353,8 @@ class ExhibitorInvoice {
                     this.#formValid = false;
                     this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
                 }
+            } else {
+                profile.clearNext();
             }
             this.#currentOrdinal++;
         }
@@ -355,9 +381,9 @@ class ExhibitorInvoice {
     processPay() {
         this.#payButton.disabled = true;
         this.#overrideButton.disabled = true;
-        var formArr = $('#vendor_invoice_form').serializeArray();
-        var formData = {};
-        for (var index = 0; index <formArr.length; index++)
+        let formArr = $('#vendor_invoice_form').serializeArray();
+        let formData = {};
+        for (let index = 0; index <formArr.length; index++)
             formData[formArr[index].name] = formArr[index].value;
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
@@ -372,7 +398,7 @@ class ExhibitorInvoice {
         }
         clear_message('inv_result_message');
         $.ajax({
-            url: 'scripts/exhibitorsSpacePayment.php',
+            url: 'scripts/exhibitorsSpaceOrder.php',
             method: 'POST',
             data: formData,
             success: function(data, textStatus, jqXhr) {
@@ -424,11 +450,11 @@ class ExhibitorInvoice {
 // Create a receipt and email it
     email_receipt(receipt_type) {
         // header text
-        var header_text = cart.receiptHeader(user_id, pay_tid);
+        let header_text = cart.receiptHeader(user_id, pay_tid);
         // optional footer text
-        var footer_text = '';
+        let footer_text = '';
         // server side will print the receipt
-        var postData = {
+        let postData = {
             ajax_request_action: 'printReceipt',
             header: header_text,
             prows: cart.getCartPerinfo(),
@@ -469,6 +495,13 @@ exhibitorInvoice = null;
 // init
 function exhibitorInvoiceOnLoad() {
     exhibitorInvoice = new ExhibitorInvoice();
+}
+
+function orderValidate() {
+    if (exhibitorInvoice == null)
+        return;
+
+    exhibitorInvoice.orderValidate();
 }
 
 function payValidate() {

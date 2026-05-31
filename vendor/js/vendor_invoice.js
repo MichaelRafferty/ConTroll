@@ -132,9 +132,9 @@ class VendorInvoice {
         if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
+                profile = inclProfiles[this.#currentOrdinal];
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    profile = inclProfiles[this.#currentOrdinal];
                     let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
                     if (message == 'stop') // usps is doing it's work, don't proceed
                         return;
@@ -143,6 +143,8 @@ class VendorInvoice {
                         this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
                     }
                     numInclUsed++;
+                } else {
+                    profile.clearNext();
                 }
                 this.#currentOrdinal++;
             }
@@ -152,9 +154,9 @@ class VendorInvoice {
 
         while (this.#currentOrdinal < this.#additionalMemberships) {
             this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            profile = addlProfiles[this.#currentOrdinal];
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                profile = addlProfiles[this.#currentOrdinal];
                 let message = profile.validate(null, 'inv_message', incrPayValidate, payValidate, '', true);
                 if (message == 'stop') // usps is doing it's work, don't proceed
                     return;
@@ -164,6 +166,8 @@ class VendorInvoice {
                     this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
                 }
                 numAddlUsed++;
+            } else {
+                profile.clearNext();
             }
             this.#currentOrdinal++;
         }
@@ -523,6 +527,13 @@ function orderValidate() {
         return;
 
     vendorInvoice.orderValidate();
+}
+
+function payValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.payValidate();
 }
 
 function incrPayValidate() {

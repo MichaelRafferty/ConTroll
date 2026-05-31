@@ -702,11 +702,16 @@ class Profile {
             this.#email2Field.value = '';
         if (this.#legalNameField)
             this.#legalNameField.value = '';
-        this.#pronounsField.value = '';
-        this.#badgenameField.value = '';
-        this.#badgenameL2Field.value = '';
-        this.#ageField.value = '';
-        this.#memberAge = '';
+        if (this.#pronounsField)
+            this.#pronounsField.value = '';
+        if (this.#badgenameField)
+            this.#badgenameField.value = '';
+        if (this.#badgenameL2Field)
+            this.#badgenameL2Field.value = '';
+        if (this.#ageField)
+            this.#ageField.value = '';
+        if (this.#memberAge)
+            this.#memberAge = '';
         if (this.#deceasedField)
             this.#deceasedField.value = 'N';
         if (this.#formerGoHField)
@@ -715,9 +720,14 @@ class Profile {
             this.#deceasedTxtSpan.innerHTML = 'No';
         if (this.#formerGoHTxtSpan)
             this.#formerGoHTxtSpan.innerHTML = 'No';
-        this.#ageText.hidden = true;
-        this.#ageDiv.hidden = true;
-        this.#ageField.hidden = ageFieldHidden;
+        if (this.#ageText)
+            this.#ageText.hidden = true;
+        if (this.#ageDiv)
+            this.#ageDiv.hidden = true;
+        if (this.#ageField) {
+            this.#ageField.hidden = ageFieldHidden;
+            this.#ageField.classList.remove(this.#alert);
+        }
 
         this.#fnameField.classList.remove(this.#alert);
         this.#lnameField.classList.remove(this.#alert);
@@ -725,7 +735,6 @@ class Profile {
         this.#cityField.classList.remove(this.#alert);
         this.#stateField.classList.remove(this.#alert);
         this.#zipField.classList.remove(this.#alert);
-        this.#ageField.classList.remove(this.#alert);
 
         // reset the policies and interests
         if (typeof policies !== 'undefined') {
