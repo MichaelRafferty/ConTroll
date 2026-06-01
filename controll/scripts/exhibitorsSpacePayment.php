@@ -283,9 +283,9 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
 VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
         $typestr = 'isssdddsissssssiss' . $taxStr;
-        $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+        $values = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
             $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
-        $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
+        $txnid = dbSafeInsert($txnQ, $typestr, array_merge($values, $taxValues));
         $approved_amt = $rtn['amount'];
     } else {
         $txnQ = <<<EOS
@@ -296,9 +296,9 @@ EOS;
         $typestr = 'issssdddssis'. $taxStr;
         $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth,
             $authToken->getPerid(), $paymentId);
+        $txnid = dbSafeInsert($txnQ, $typestr, array_merge($values, $taxValues));
         $approved_amt = $totprice;
     }
-    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($values, $taxValues));
     if ($txnid == false) {
         $error_msg .= "Insert of payment failed\n";
     } else {
