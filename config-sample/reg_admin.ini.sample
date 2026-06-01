@@ -55,12 +55,12 @@ server="https://reg.conname.org/"
 ;       For production (test=0), the system will enforce a minumum level of 2)
 ;   Passkeys can be shared across any entry point within the same domain as the related party domain level
 ;   Explaintion of each level:
-;       2: org.root - right 2 most sections in host name (e.g. philcon.org)
+;       2: org.root - right 2 most sections in host name (e.g. philcon.org) (should not be used, will cause issues in portals)
 ;       3: site.org.root - right 3 most sections in the host name (e.g. reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
 ;          for the exhibitor types, if so setup)
 ;       h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
 ;       d: disabled - disable passkeys
-passkeyRpLevel=2 ; can override in each app section
+passkeyRpLevel=3 ; can override in each app section
 
 ;;; The convention section [con] is used for items specific to this convention
 [con]
