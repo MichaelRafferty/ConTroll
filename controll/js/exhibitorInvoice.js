@@ -759,7 +759,7 @@ class ExhibitorInvoice {
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         } else if (data.status == 'success') {
-            this.#exhibitorInvoiceModal.hide();
+            this.#exhibitorPaymentModal.hide();
             show_message(data.message + "Payment for space recorded.");
             if (data.exhibitor_spacelist) {
                 exhibitor_spacelist = data.exhibitor_spacelist;
@@ -767,7 +767,7 @@ class ExhibitorInvoice {
             this.#currentOrderId = null; // successful payment clears the current order
             exhibitors.open(fulltabname, data.message);
         } else {
-            show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'pay_result_message');
+            show_message('There was an unexpected error, seek assistance.', 'error', 'pay_result_message');
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         }
