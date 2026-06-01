@@ -394,8 +394,8 @@ EOS;
             $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
             $nyF = $nyR->fetch_row()[0];
             $nyR->free();
+            // no row in conlist means we need to build the next year, offer the button...
             if ($nyF == 0) { ?>
-                // no row in conlist means we need to build the next year, offer the button...
                 <div class='row'>
                     <div class='col-sm-auto m-4'>
                         <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
