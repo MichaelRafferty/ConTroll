@@ -163,7 +163,6 @@ my space.</p>'
 WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'invoice' AND txtItem = 'payDisclaimerVendor'
     AND (contents like '%By purchasing this space I certify%' OR contents like 'Controll-Default:%');
 
-``
 /*
  * add computed column to perinfo and newperson for fullname
  */
