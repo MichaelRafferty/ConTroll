@@ -270,7 +270,8 @@ class VendorInvoice {
         document.getElementById("vendor_payment_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice for ' + name + '</strong>';
 
         // loop over the taxes computing the output lines
-        console.log(config.taxRates);
+        if (config['debug'] & 1)
+            console.log(config.taxRates);
         let taxHtml = '';
         for (let taxid in data.rtn.taxes) {
             let tax = data.rtn.taxes[taxid];
