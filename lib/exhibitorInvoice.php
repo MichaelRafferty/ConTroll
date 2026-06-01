@@ -362,33 +362,32 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     <input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                 </div>
                             </div>
-                        </div>
-                        <div class='row mt-3 pb-2'>
-                            <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
-                                        onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                            <div class='row mt-3 pb-2'>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
+                                            onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
+                                            onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
+                                        $tabindex += 2; ?>">Overide Validation and Pay
+                                    </button>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
+                                            onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
+                                            hidden disabled>Email Receipt</button>
+                                </div>
                             </div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
-                                        onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
-                                    $tabindex += 2; ?>">Overide Validation and Pay
-                                </button>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
-                                        onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
-                                        hidden disabled>Email Receipt</button>
-                            </div>
-                        </div>
 <?php
                             }
 ?>
-                        <div class='row'>
-                            <div class='col-sm-12' id="pay_result_message"></div>
+                            <div class='row'>
+                                <div class='col-sm-12' id="pay_result_message"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
                 </div>
                 <div class='modal-footer'>
                     <button type='button' class='btn btn-secondary' id='pay_cancel_button' onclick='orderCancel()'>

@@ -36,9 +36,9 @@ class ExhibitorInvoice {
     #invalidFields = '';
     #portalType = null;
     #token = null;
+    #purchaseLabel = null;
     #paymentForDiv = null;
     #orderData = null;
-
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -185,6 +185,13 @@ class ExhibitorInvoice {
         }
     }
 
+    // submit the invoice for payment processing
+    makePurchase(token, label) {
+        this.#token = token;
+        this.#purchaseLabel = label;
+        this.processPay();
+    }
+
     // process the order validate button in the invoice modal form
     orderValidate() {
         this.#currentOrdinal = 0;
@@ -194,7 +201,7 @@ class ExhibitorInvoice {
     }
 
 // Process a payment against the transaction
-    pay() {
+    processPay() {
         let checked = false;
         let ccauth = null;
         let checkno = null;
@@ -368,7 +375,7 @@ class ExhibitorInvoice {
             return;
         }
 
-        this.processPay();
+        this.buildOrder();
     }
 
     incrPayValidate() {
@@ -377,8 +384,157 @@ class ExhibitorInvoice {
         this.payValidate();
     }
 
+    buildOrder() {
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = true;
+        let formData = $('#vendor_invoice_form').serialize()
+        clear_message('inv_result_message');
+        let _this = this;
+        $.ajax({
+            url: 'scripts/exhoibitorsSpaceOrder.php',
+            method: 'POST',
+            data: formData,
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    _this.getPaymentInfo(data);
+                    return;
+                } else {
+                    show_message('There was an unexpected error, please seek Assistance.', 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
+                exhibitorInvoice.enablePayButton();
+                return false;
+            }
+        });
+    }
+
+    getPaymentInfo(data) {
+        if (config['debug'] & 1)
+            console.log(data);
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = false;
+        if (data.orderRtn == null) {
+            show_message('There was an unexpected error, please seek assistance.', 'error', 'inv_result_message');
+            return;
+        }
+        this.#exhibitorInvoiceModal.hide();
+
+        // title of payment modal
+        let name = data.results.source == 'artist' ?
+            ((data.results.vendor.artistName != null && data.results.vendor.artistName != '') ? data.results.vendor.artistName : data.results.vendor.exhibitorName) :
+            data.results.vendor.exhibitorName;
+        document.getElementById("vendor_payment_title").innerHTML = "<strong>Pay Invoice for " + name + '</strong>';
+
+        // loop over the taxes computing the output lines
+        if (config['debug'] & 1)
+            console.log(config.taxRates);
+        let taxHtml = '';
+        for (let taxid in data.orderRtn.taxes) {
+            let tax = data.orderRtn.taxes[taxid];
+            let taxLabel = config.taxRates[taxid].label;
+            let taxTypeof = typeof tax;
+            if (!['string', 'number', 'bigint', 'undefined'].includes(taxTypeof))
+                tax = tax.tax;
+
+            taxHtml += taxLabel + ': ' + currencyFmt.format(Number(tax).toFixed(2)) + '<br/>\n';
+        }
+
+        let html = `
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <h4>Payment Details for ${name}</h4>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-sm-12" id="vendor_pay_approved_for"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto">
+                    Total price for memberships:
+                </div>
+                <div class="col-sm-auto p-0">
+                    <span id='vendor_pay_mbr_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+`;
+        if (taxHtml != '') {
+            html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    Total Pre Tax Order: <span id='vendor_pay_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                    <div class='col-sm-12' id="vendor_pay_tax_div">${taxHtml}</div> 
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due with Tax: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div>
+`;
+        } else {
+            html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+           <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div> 
+`;
+        }
+        html += `
+            <div class='row'>
+                <div class='col-sm-12'><hr/></div> 
+            </div>          
+`;
+
+        this.#paymentForDiv.innerHTML = html;
+        let region = exhibits_spaces[this.#regionYearId];
+        let regionList = region_list[this.#regionYearId];
+        let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
+        let membershipCost = data.results.preTaxAmt - totalSpacePrice;
+        document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
+        let totalPreOrder = data.results.preTaxAmt;
+        let totalWithTax = data.orderRtn.totalAmt;
+        document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        this.#orderData = data;
+        let id = document.getElementById(this.#purchaseLabel);
+        if (id)
+            id.disabled = false;
+        this.#totalAmountDue = Number(totalWithTax);
+        this.#exhibitorPaymentModal.show();
+
+    }
+
     // process payment
-    processPay() {
+    buildOrder() {
         this.#payButton.disabled = true;
         this.#overrideButton.disabled = true;
         let formArr = $('#vendor_invoice_form').serializeArray();
@@ -397,13 +553,28 @@ class ExhibitorInvoice {
             this.#currentOrderId = null;
         }
         clear_message('inv_result_message');
+        let _this = this;
         $.ajax({
             url: 'scripts/exhibitorsSpaceOrder.php',
             method: 'POST',
             data: formData,
             success: function(data, textStatus, jqXhr) {
                 checkRefresh(data);
-                exhibitorInvoice.paySuccess(data);
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    _this.getPaymentInfo(data);
+                    return;
+                } else {
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
@@ -418,18 +589,173 @@ class ExhibitorInvoice {
         this.#payButton.disabled = false;
     }
 
-    // pay succeedd - deal with it
+    // cancel the order and close the modal
+    orderCancel() {
+        let hideElement = this.#exhibitorPaymentModal;
+        $.ajax({
+            url: 'scripts/exhibitorsSpacePayment.php',
+            method: 'POST',
+            data: { nonce: 'c', orderData: JSON.stringify(this.#orderData), },
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    hideElement.hide();
+                    show_message(data['message'], 'success');
+                    return;
+                } else {
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                }
+            }
+        });
+    }
+
+    // make the payment
+    pay() {
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
+
+        let data = this.#orderData;
+        let checked = false;
+        let ccauth = null;
+        let checkno = null;
+        let desc = null;
+        let ptype = null;
+        let pt_cash = document.getElementById('pt-cash').checked;
+        let pt_check = document.getElementById('pt-check').checked;
+        let pt_credit = document.getElementById('pt-credit').checked;
+        this.#formValid = true;
+        this.#validateMessage = '';
+        this.#payAmt.style.backgroundColor = '';
+        this.#paymentTypeDiv.style.backgroundColor = '';
+        if (this.#payRow == null && this.#totalAmountDue > 0) {
+            // validate the payment entry: It must be >0 and <= amount due
+            //      a payment type must be specified
+            //      for check: the check number is required
+            //      for credit card: the auth code is required
+            //      for discount: description is required, it's optional otherwise
+            let pay_amt = Number(this.#payAmt.value);
+            if (pay_amt > 0 && pay_amt != this.#totalAmountDue) {
+                this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Amount Paid, ";
+                this.#formValid = false;
+            }
+            if (this.#formValid && pay_amt <= 0 && this.#totalAmountDue > 0) {
+                this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Amount Paid, ";
+                this.#formValid = false;
+            }
+
+            if (pt_check) {
+                ptype = 'check';
+                checked = true;
+                checkno = this.#payCheckno.value;
+                if (checkno == null || checkno == '') {
+                    this.#invalidFields += 'Check Number, ';
+                    this.#payCheckno.style.backgroundColor = 'var(--bs-warning)';
+                    this.#validateMessage += '<br/>For payment type check, the check number field is required.';
+                    this.#formValid = false;
+                } else {
+                    this.#payCheckno.style.backgroundColor = '';
+                }
+            }
+
+            if (pt_credit) {
+                ptype = 'credit';
+                checked = true;
+                ccauth = this.#payCcauth.value;
+                if (ccauth == null || ccauth == '') {
+                    this.#invalidFields += 'CC Auth Code, '
+                    this.#payCcauth.style.backgroundColor = 'var(--bs-warning)';
+                    this.#validateMessage += '<br/>For payment type credit, the autherization code field is required.';
+                    this.#formValid = false;
+                } else {
+                    this.#payCcauth.style.backgroundColor = '';
+                }
+            }
+
+            if (pt_cash) {
+                ptype = 'cash';
+                checked = true;
+            }
+
+            if (!checked) {
+                this.#paymentTypeDiv.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Payment Type, ";
+                this.#validateMessage += '<br/>You must select a payment type.';
+                this.#formValid = false;
+            }
+
+            if (!this.#formValid) {
+                show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
+                    '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
+                    'warn', 'pay_result_message')
+                return;
+            }
+
+            if (this.#formValid) {
+                if (pay_amt > 0) {
+                    this.#payRow = {
+                        index: 2, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: this.#payDescription.value, type: ptype, nonce: 'offline',
+                    };
+                }
+            }
+        }
+
+        let postData = {
+            nonce: 'admin',
+            amtDue: this.#totalAmountDue,
+            prow: this.#payRow,
+            portalType: this.#portalType,
+            exhibitorId: this.#exhibitorId,
+            exhibitorYearId: this.#exhibitorYearId,
+            orderData: JSON.stringify(this.#orderData),
+        };
+
+        if (this.#currentOrderId) {
+            postData.cancelOrderId = this.#currentOrderId;
+            this.#currentOrderId = null;
+        }
+        clear_message('inv_result_message');
+        $.ajax({
+            url: 'scripts/exhibitorsSpacePayment.php',
+            method: 'POST',
+            data: postData,
+            success: function(data, textStatus, jqXhr) {
+                checkRefresh(data);
+                exhibitorInvoice.paySuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
+                exhibitorInvoice.enablePayButton();
+                return false;
+            }
+        });
+    }
+
+
+        // pay succeeded - deal with it
     paySuccess(data) {
         if (config.debug & 1)
             console.log(data);
         if (data.currentOrderId)
             this.#currentOrderId = data.currentOrderId;
         if (data.error) {
-            show_message(data.error, 'error', 'inv_result_message');
+            show_message(data.error, 'error', 'pay_result_message');
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         } else if (data.status == 'error') {
-            show_message(data.data, 'error', 'inv_result_message');
+            show_message(data.data, 'error', 'pay_result_message');
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         } else if (data.status == 'success') {
@@ -441,7 +767,7 @@ class ExhibitorInvoice {
             this.#currentOrderId = null; // successful payment clears the current order
             exhibitors.open(fulltabname, data.message);
         } else {
-            show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+            show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'pay_result_message');
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         }
@@ -516,4 +842,11 @@ function incrPayValidate() {
         return;
 
     exhibitorInvoice.incrPayValidate();
+}
+
+function orderCancel() {
+    if (exhibitorInvoice == null)
+        return;
+
+    exhibitorInvoice.orderCancel();
 }
