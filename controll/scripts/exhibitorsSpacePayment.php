@@ -98,7 +98,6 @@ $status_msg = '';
 $results = $data['results'];
 $orderRtn = $data['orderRtn'];
 $orderResults = $data['orderResults'];
-$totprice = $results['total'];
 $spaces = $results['spaces'];
 $badgeResults = $results['badges'];
 $badges = $results['formbadges'];
@@ -109,7 +108,6 @@ $region = $orderResults['region'];
 $eryID = $orderResults['eryID'];
 $specialRequests = $results['specialrequests'];
 $results['nonce'] = $_POST['nonce'];
-$results['total'] = $results['totalAmt'];
 $transid = $results['transid'];
 $buyer = $orderResults['buyer'];
 $preTaxAmt = $orderRtn['preTaxAmt'];
@@ -117,6 +115,7 @@ $taxAmt = $orderRtn['taxAmt'];
 $orderId = $orderRtn['orderId'];
 $order = $orderRtn['order'];
 $results['buyer'] = $buyer;
+$totprice = $results['totalAmt'];
 
 if (array_key_exists('spacePrice', $_POST))
     $spacePrice = $_POST['spacePrice'];
