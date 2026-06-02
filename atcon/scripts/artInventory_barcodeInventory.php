@@ -209,7 +209,7 @@ UPDATE artItems
 SET status = ?, bidder = ?, final_price = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-            $status = $toAuction == 'Y' ? 'To Auction' : 'BID';
+            $status = $toAuction == '1' ? 'To Auction' : 'BID';
             $numRows = dbSafeCmd($uQ, 'sidii', array ($status, $bidder, $bid, $userId, $item));
             if ($numRows == 1) {
                 $response['message'] = buildItemString($item, $curItem) . "<br/>bid updated to $bid by $bidder and is now in status $status";
