@@ -522,6 +522,7 @@ class ExhibitorInvoice {
         let membershipCost = data.results.preTaxAmt - totalSpacePrice;
         document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
         let totalPreOrder = data.results.preTaxAmt;
+        document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
         let totalWithTax = data.orderRtn.totalAmt;
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
