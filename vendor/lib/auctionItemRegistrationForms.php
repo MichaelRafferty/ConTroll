@@ -44,7 +44,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="art-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoArt(); return false;" disabled>Undo</button>
                                 <button id="art-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoArt(); return false;" disabled>Redo</button>
                                 <button id="art-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowArt(); return false;">Add New</button>
-                                <button id="art-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveArt(); return false;" disabled>Save Changes</button>
+                                <button id="art-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;"
+                                        disabled>Save Changes</button>
                             </div>
                         </div>
                         <div class='row'> <?php /* print items */ ?>
@@ -62,7 +63,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="print-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoPrint(); return false;" disabled>Undo</button>
                                 <button id="print-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoPrint(); return false;" disabled>Redo</button>
                                 <button id="print-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowPrint(); return false;">Add New</button>
-                                <button id="print-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.savePrint(); return false;" disabled>Save Changes</button>
+                                <button id="print-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;
+" disabled>Save Changes</button>
                             </div>
                         </div>
                         <div class='row'> <?php /* nfs items */ ?>
@@ -80,7 +82,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNfs(); return false;" disabled>Undo</button>
                                 <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
                                 <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
-                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNFS(); return false;
+                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;
 " disabled>Save Changes</button>
                             </div>
                         </div>

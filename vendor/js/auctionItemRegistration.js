@@ -24,7 +24,8 @@ class AuctionItemRegistration {
     #ownerEmail = '';
     #regionName = '';
     #addItemIndex = 1;
-
+    #savedMessages = '';
+    #saveMessageType = 'success';
     // auction section
     #artItemTable = null;
     #artItemsDirty = false;
@@ -462,6 +463,43 @@ class AuctionItemRegistration {
         }
     };
 
+    // save all of the items back to the database as needed
+    saveAll(step = 0) {
+        if (step == 0) {
+            clear_message();
+            clear_message('ir_message_div');
+            this.#savedMessages = '';
+            this.#saveMessageType = 'success';
+        }
+
+        if (step <= 1) {
+            if (this.#artSaveBtn.disabled == false) {
+                this.saveArt();
+                return;
+            }
+        }
+        if (step <= 2) {
+            if (this.#printSaveBtn.disabled == false) {
+                this.savePrint();
+                return;
+            }
+        }
+
+        if (step <= 3) {
+            if (this.#nfsSaveBtn.disabled == false) {
+                this.saveNFS();
+                return;
+            }
+        }
+
+        if (this.#savedMessages != '') {
+            show_message(this.#savedMessages, this.#saveMessageType, 'ir_message_div');
+            return;
+        }
+
+        show_message('Nothing to save', 'warn', 'ir_message_div');
+    }
+
     // save the art table back to the database
     saveArt() {
         let type = 'art';
@@ -473,9 +511,6 @@ class AuctionItemRegistration {
             this.#artSaveBtn.disabled = true;
 
             let script = "scripts/updateGetItems.php";
-
-            clear_message();
-            clear_message('ir_message_div');
             let postdata = {
                 region: this.#region,
                 itemType: type,
@@ -510,15 +545,27 @@ class AuctionItemRegistration {
             }
             return false;
         }
-        if(data['message']) {
-            show_message(data['message'], 'success', 'ir_message_div');
+
+        if (data['message']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['message'];
         }
-        if(data['warn']) {
-            show_message(data['warn'], 'warn', 'ir_message_div');
+
+        if( data['warn']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['warn'];
+            this.#saveMessageType = 'warn';
         }
 
         this.drawArtItemTable(data['items']);
         this.validateLoadLimit(true, 'art', data['items']['art']);
+
+        // continue on to prints
+        this.saveAll(2);
     }
 
     // clear marks for unsaved rows
@@ -628,9 +675,6 @@ class AuctionItemRegistration {
             this.#printSaveBtn.disabled = true;
 
             let script = "scripts/updateGetItems.php";
-
-            clear_message();
-            clear_message('ir_message_div');
             let postdata = {
                 region: this.#region,
                 itemType: type,
@@ -672,16 +716,27 @@ class AuctionItemRegistration {
             this.#printSaveBtn.disabled = false;
             return false;
         }
-        if(data['message'] !== undefined) {
-            show_message(data['message'], 'success', 'ir_message_div');
+
+        if (data['message']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['message'];
         }
-        if(data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn', 'ir_message_div');
+
+        if( data['warn']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['warn'];
+            this.#saveMessageType = 'warn';
         }
 
         //console.log(data);
         this.drawPrintItemTable(data['items']);
         this.validateLoadLimit(true, 'print', data['items']['print']);
+
+        this.saveAll(3);
     }
 
     // a field, row, or entire table was reloaded, this is called by an ON function on the table.
@@ -777,9 +832,6 @@ class AuctionItemRegistration {
             this.#nfsSaveBtn.disabled = true;
 
             let script = "scripts/updateGetItems.php";
-
-            clear_message();
-            clear_message('ir_message_div');
             let postdata = {
                 region: this.#region,
                 itemType: type,
@@ -821,16 +873,27 @@ class AuctionItemRegistration {
             this.#nfsSaveBtn.disabled = false;
             return false;
         }
-        if(data['message'] !== undefined) {
-            show_message(data['message'], 'success', 'ir_message_div');
+
+        if (data['message']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['message'];
         }
-        if(data['warn'] !== undefined) {
-            show_message(data['warn'], 'warn', 'ir_message_div');
+
+        if( data['warn']) {
+            if (this.#savedMessages != '') {
+                this.#savedMessages += '<br/>';
+            }
+            this.#savedMessages += data['warn'];
+            this.#saveMessageType = 'warn';
         }
 
         //console.log(data);
         this.drawNFSItemTable(data['items']);
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
+
+        this.saveAll(999);
     }
 
     // create the tabulator table for the art items
