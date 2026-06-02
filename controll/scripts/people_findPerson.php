@@ -123,7 +123,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     CASE
-        WHEN mp.id IS NOT NULL mp.fullName ELSE '' END AS manager,
+        WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
     CASE
         WHEN mp.id IS NOT NULL THEN mp.id
         ELSE NULL
