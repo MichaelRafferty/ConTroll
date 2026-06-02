@@ -159,20 +159,20 @@ function fetchValuesSuccess(data) {
         return;
     }
     if (data.numRows != 1) {
-        clearScreen();
-        show_message("Item " + lastscan + ' not found', 'error');
+        clearScreen(false);
+        show_message("Item " + lastScan + ' not found', 'error');
         return;
     }
     if (data.item.conid != config.conid) {
-        clearScreen();
-        show_message(buildItemString(lastscan, data.item) + '<br/>is from conid ' + data.item.conid + '.  This is conid ' + config.conid, 'error');
+        clearScreen(false);
+        show_message(buildItemString(lastScan, data.item) + '<br/>is from conid ' + data.item.conid + '.  This is conid ' + config.conid, 'error');
         return;
     }
 
     let type = inventoryTypeSelect.value;
     if (type == 'bid' && data.item.type == 'nfs') {
-        clearScreen();
-        show_message(buildItemString(lastscan, data.item) + '<br/>is NOT FOR SALE and cannot be bid on', 'error');
+        clearScreen(false);
+        show_message(buildItemString(lastScan, data.item) + '<br/>is NOT FOR SALE and cannot be bid on', 'error');
         return;
     }
 
@@ -202,7 +202,7 @@ function inventory(mode, data = null) {
     }
     let type = inventoryTypeSelect.value;
     if (type == '') {
-        clearScreen();
+        clearScreen(true);
         show_message('Please select an inventory mode', 'warn');
         return;
     }
@@ -271,7 +271,7 @@ function inventory(mode, data = null) {
                 dbBidder.innerHTML = data.item.bidder;
                 if (data.item.status == 'To Auction') {
                     toAuctionField.checked = true;
-                    show_message(buildItemString(lastscan, data.item) + "<br/>is currently in the auction. You cannot enter a bid on it.<br/>" +
+                    show_message(buildItemString(lastScan, data.item) + "<br/>is currently in the auction. You cannot enter a bid on it.<br/>" +
                     "if there is an error in the bid or bidder see the administrator.", 'error');
                     return;
                 }
@@ -383,9 +383,8 @@ function inventoryUpdate(data) {
     }
 }
 
-function clearScreen() {
+function clearScreen(messageClear = true) {
     scanField.value = '';
-    lastScan = '---------------------------';
     quantity = inventoryTypeSelect.value == 'checkin' ? 1 : 0;
     quantityField.value = quantity;
     bidField.value = '';
@@ -404,6 +403,10 @@ function clearScreen() {
     inventoryNoChange.disabled = false;
     inventoryOverride.hidden = true;
     inventoryNoChange.hidden = true;
-    clear_message();
+    if (messageClear) {
+        clear_message();
+        lastScan = '---------------------------';
+    }
+
     return;
 }
