@@ -1260,7 +1260,7 @@ class rulesSetup {
         let rows = null;
         rows = this.#editRuleSelTable.getRows();
         for (let row of rows) {
-            if (row.getCell(rules.getselIndex()).getElement().style.backgroundColor != '') {
+            if (row.getCell(rules.getselIndex()).getElement().classList.contains('selectedBGColor')) {
                 filter += ',' + row.getCell(rules.getselIndex()).getValue();
             }
         }
