@@ -139,25 +139,34 @@ switch ($type) {
         if ($mode != 2) {
             // now validate the bidder field
             $cQ = <<<EOS
-SELECT p.id, COUNT(r.id) AS regs
+WITH regC AS (
+select perid, count(*) AS numReg
+FROM reg
+JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
+WHERE conid = ? AND perid = ?
+GROUP BY perid
+)
+SELECT p.id,  p.deceased, p.banned, IFNULL(r.numReg, 0) AS regs
 FROM perinfo p 
-LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid = ?
-WHERE p.id = ?
-GROUP BY p.id;
+LEFT OUTER JOIN regC r on r.perid = p.id
+WHERE p.id=?;
 EOS;
-            $cR = dbSafeQuery($cQ, 'ii', array ($conid, $bidder));
+            $cR = dbSafeQuery($cQ, 'iii', array ($conid, $bidder, $bidder));
             if ($cR->num_rows != 1) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is not valid"));
+                ajaxSuccess(array ('error' => "Bidder ID $bidder not found"));
                 exit();
             }
             $cL = $cR->fetch_assoc();
             $cR->free();
-            if ($cL['id'] == null) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is does not exist"));
+            if ($cL['deceased'] == 'Y') {
+                ajaxSuccess(array ('error' => "Bidder ID $bidder is marked deceased, please contact Registration for assistance"));
                 exit();
             }
+            if ($cL['banned'] == 'Y') {
+                ajaxSuccess(array('error' => "Bidder ID $bidder is not eligible for a badge, please contact Registration for assistance"));
+            }
             if ($cL['regs'] == 0) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is not registered for this conid"));
+                ajaxSuccess(array ('error' => "Bidder ID $bidder does not have a badge printed for $conid"));
                 exit();
             }
         }
