@@ -1228,7 +1228,7 @@ class rulesSetup {
     // toggle the selection color of the clicked cell
     clickedSelection(e, cell) {
         let filtercell = cell.getRow().getCell(rules.getselIndex());
-        toggleFieldClass(filtercell.getElement(), contains('selectedBGColor'));
+        toggleFieldClass(filtercell.getElement(), 'selectedBGColor');
     }
 
     // set all/clear all sections in table based on direction
