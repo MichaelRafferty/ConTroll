@@ -34,11 +34,15 @@ function drawConRolesList($conroles, $modal = false, $tabIndexStart = 900) {
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('conroles/header', 'profile/all/');
     $footer = returnCustomText('conroles/footer', 'profile/all/');
-    if ($header != '') {
 ?>
     <div class='row'>
-        <div class="col-sm-12"><hr/></div>
+        <div class='col-sm-12'>
+            <hr/>
+        </div>
     </div>
+<?php
+    if ($header != '') {
+?>
     <div class='row'>
         <div class='col-sm-auto'>
             <?php  echo $header . PHP_EOL; ?>
