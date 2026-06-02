@@ -826,7 +826,7 @@ function drawItemDetails(item, full = false, notInCart = true) {
             case 'art':
                 html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
                     '<div class="col-sm-7">' + currencyFmt.format(Number(item.min_price).toFixed(2)) + '</div></div>';
-                if (item.bidder == null || item.bidder == '') {
+                if (item.sale_price > 0 && (item.bidder == null || item.bidder == '')) {
                     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
                         '<div class="col-sm-7">' + currencyFmt.format(Number(item.sale_price).toFixed(2)) + '</div></div>';
                 }
@@ -1095,6 +1095,10 @@ function itemAction(cell, formatterParams, onRendered) {
 // build bidder select - from pickup list build select of bidder for an item to be used by inventory
 function buildBidderChange(fieldname, item) {
     let html = '';
+
+    if (item.bidder != null && pickupPerids.length == 1 && pickupPerids[0].bidderPerid == item.bidder)
+        return html;    // nothing to change it's already us
+
     // update bidder if bid and not user
     let setChange = item.bidder == null ? 'Set the current bidder to: ' :
         ('This item is current bid on by ' + item.bidder + ', change it to : ');
@@ -1104,16 +1108,22 @@ function buildBidderChange(fieldname, item) {
 }
 
 function buildBidderSelect(fieldname, bidder) {
-    let select = '<select id="' + fieldname + '" name="' + fieldname + '">';
-    select += '<option value="N">Select Bidder</option>';
-    for (let i = 0; i < pickupPerids.length; i++) {
-        let perid = pickupPerids[i].bidderPerid;
-        let fullName = pickupPerids[i].fullName;
-        let selected = bidder == perid ? ' selected' : '';
-        select += '<option value="' + perid + '"' + selected + '>' + fullName + ' (' + perid + ')</option>';
+    let select = 'error';
+    if (pickupPerids.length > 1) {
+        select = '<select id="' + fieldname + '" name="' + fieldname + '">';
+        select += '<option value="N">Select Bidder</option>';
+        for (let i = 0; i < pickupPerids.length; i++) {
+            let perid = pickupPerids[i].bidderPerid;
+            let fullName = pickupPerids[i].fullName;
+            let selected = bidder == perid ? ' selected' : '';
+            select += '<option value="' + perid + '"' + selected + '>' + fullName + ' (' + perid + ')</option>';
+        }
+        select += '<option value="N">Bidder not one of the allowed bidders for this person</option>';
+        select += '</select>';
+    } else {
+         select = '<input type="hidden" id="' + fieldname + '" name="' + fieldname + '" value="' + pickupPerids[0].bidderPerid + '">' +
+            pickupPerids[0].fullName + ' (' + pickupPerids[0].bidderPerid + ')';
     }
-    select += '<option value="N">Bidder not one of the allowed bidders for this person</option>';
-    select += '</select>';
     return select;
 }
 
