@@ -3113,11 +3113,13 @@ class Pos {
     </div>
     <div class="row mb-2" id="pay-cash-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered"
+         step="0.01" size="6"/></div>
     </div>
        <div class="row mb-2" id="pay-disc-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Disc Amount</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-discount" name="paid-discount" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-discount" name="paid-discount"
+        step="0.01"  size="6"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>

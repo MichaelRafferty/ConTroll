@@ -880,7 +880,8 @@ class PosCart {
             <label for="vpPrice">How much for ` + mem.label + `?</label>
         </div>
         <div class="col-sm-auto">
-            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + mem.price + `"/>
+            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?"
+             min="` + mem.price + `" step="0.01"/>
         </div>
     </div>
 `;
