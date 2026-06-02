@@ -1595,7 +1595,7 @@ class PosCart {
 
         for (rownum in this.#cartPerinfo) {
             crow = this.#cartPerinfo[rownum];
-            mrow = pos.find_primary_membership(crow.memberships);
+            mrow = pos.find_primary_membership(crow.memberships, true);
             if (mrow == null)
                 continue;   // skip anyone without a primary
             mrow = crow.memberships[mrow];

@@ -482,14 +482,14 @@ class Pos {
 
     // find the primary membership for a perid given it's array of memberships
     // with memberships sorted by purchase date, it's last
-    find_primary_membership(regitems) {
+    find_primary_membership(regitems, printOnly = false) {
         let mem_index = null;
         for (let item in regitems) {
             let mi_row = regitems[item];
             if (mi_row.conid != this.#conid)
                 continue;
 
-            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price))
+            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price, printOnly ? 'print' : 'all'))
                 continue;
 
             mem_index = item;
@@ -3211,7 +3211,7 @@ class Pos {
         cart.showStartOver();
     }
 
-// printint
+// printing
     printShown() {
         cart.clearInReview();
         this.#find_tab.disabled = true;
