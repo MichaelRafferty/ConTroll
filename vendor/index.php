@@ -564,7 +564,7 @@ EOS;
     $pastItemsQ = <<<EOS
 SELECT conid, count(*) AS itemCount
 FROM artItems
-WHERE conid >= ? AND conid < ?
+WHERE conid >= ? AND conid <= ?
 GROUP BY conid
 HAVING count(*) > 0
 ORDER BY conid DESC;
@@ -704,10 +704,14 @@ EOS;
         <div class="row mt-1">
 EOS;
             foreach ($pastYears as $year) {
+                if ($year == $conid)
+                    $name = "Current Year";
+                else
+                    $name = "$conname $year";
                 echo <<<EOS
             <div class="col-sm-auto p-1">
                 <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
-                for $conname $year</button>
+                for $name</button>
             </div>
 EOS;
             }
