@@ -342,9 +342,10 @@ class ConfigEditor {
         }
 
         let value = '';
-        if (field == undefined) {
-            console.log('No field for parameter' + name);
+        if (field == undefined || field == null) {
+            console.log('No field for parameter: ' + name);
             console.log(param);
+            return '';
         } else {
             value = field.value;
         }
