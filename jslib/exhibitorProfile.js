@@ -45,7 +45,7 @@ class ExhibitorProfile {
 
     // constructor function - intializes dom objects and inital privates
     constructor(debug = 0, portalType = '') {
-        var id = document.getElementById('profile');
+        let id = document.getElementById('profile');
         if (id != null) {
             this.#profileModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             if (this.#profileModal != null) {
@@ -123,7 +123,7 @@ class ExhibitorProfile {
 
     //  copy the address fields to the ship to address fields
     copyAddressToShipTo() {
-        for (var fieldNum in ExhibitorProfile.#copyFromFieldList) {
+        for (let fieldNum in ExhibitorProfile.#copyFromFieldList) {
             document.getElementById(ExhibitorProfile.#copyToFieldList[fieldNum]).value = document.getElementById(ExhibitorProfile.#copyFromFieldList[fieldNum]).value;
         }
         document.getElementById('shipCompany').focus();
@@ -168,7 +168,7 @@ class ExhibitorProfile {
                 }
                 break;
             case 2:
-                var copyName = document.getElementById('copyArtistName');
+                let copyName = document.getElementById('copyArtistName');
                 if (copyName)
                     copyName.focus({focusVisible: true});
                 else
@@ -215,14 +215,14 @@ class ExhibitorProfile {
     // submit the profile or both register and update, which type is in profileMode, set by the modal open
     submitProfile(dataType) {
         // replace validator with direct validation as it doesn't work well with bootstrap
-        var valid = true;
-        var m2 = ''; // add on to the message field if the description field needs editing
-        var field2 = null; // cross field checks (e.g. pw1 and pw2)
-        var minLength = 2;
+        let valid = true;
+        let m2 = ''; // add on to the message field if the description field needs editing
+        let field2 = null; // cross field checks (e.g. pw1 and pw2)
+        let minLength = 2;
 
-        for (var fieldNum in ExhibitorProfile.#fieldList) {
-            var fieldName = ExhibitorProfile.#fieldList[fieldNum];
-            var field = document.getElementById(fieldName);
+        for (let fieldNum in ExhibitorProfile.#fieldList) {
+            let fieldName = ExhibitorProfile.#fieldList[fieldNum];
+            let field = document.getElementById(fieldName);
             minLength = 2;
             if (field == null) {
                 if (fieldName != 'salesTaxId' && this.#debugFlag > 0) // salestax id is optional don't log it.
@@ -289,8 +289,8 @@ class ExhibitorProfile {
                     }
                     break;
                 case 'description':
-                    var value = tinyMCE.activeEditor.getContent();
-                    var lcvalue = value.toLowerCase();
+                    let value = tinyMCE.activeEditor.getContent();
+                    let lcvalue = value.toLowerCase();
                     if (value == null) {
                         value = false;
                         m2 += " and the description field which also is required;";
@@ -313,10 +313,17 @@ class ExhibitorProfile {
                         console.log(ExhibitorProfile.#fieldList[fieldNum].substring(0, 4));
                         console.log(dataType);
                     }
+                    // for non artist skip ship*, artistname, artistpayee
                     if (dataType != 'artist' &&
                         (ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship' ||
                             ExhibitorProfile.#fieldList[fieldNum] == 'artistName' ||
                             ExhibitorProfile.#fieldList[fieldNum] == 'artistPayee')) {
+                        if (this.#debugFlag & 16)
+                            console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
+                        break;
+                    }
+                    // for non vendor skip sales tax it
+                    if (dataType != 'vendor' && ExhibitorProfile.#fieldList[fieldNum] == 'salesTaxId') {
                         if (this.#debugFlag & 16)
                             console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
                         break;
@@ -331,7 +338,7 @@ class ExhibitorProfile {
         }
 
         if (!valid) {
-            var message = "Fill in required missing or incorrectly formatted fields highlighted in this color" + m2;
+            let message = "Fill in required missing or incorrectly formatted fields highlighted in this color" + m2;
             if (this.#profileUseType == 'register')
                 message += ', use the Previous Page and Next Page buttons to check all of the pages.'
             show_message(message, "warn", 'au_result_message');
@@ -471,17 +478,17 @@ class ExhibitorProfile {
 
             if (typeof exhibitor_info !== 'undefined') {
                 if (exhibitor_info && useType != 'register' && useType != 'add') {
-                    var keys = Object.keys(exhibitor_info);
-                    for (var keyindex in keys) {
-                        var key = keys[keyindex];
+                    let keys = Object.keys(exhibitor_info);
+                    for (let keyindex in keys) {
+                        let key = keys[keyindex];
                         if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'DaysSinceLastVerified')
                             continue;
 
-                        var value = exhibitor_info[key];
+                        let value = exhibitor_info[key];
                         if (this.#debugFlag & 16)
                             console.log(key + ' = "' + value + '"');
 
-                        var id = document.getElementById(key);
+                        let id = document.getElementById(key);
                         if (id) {
                             id.value = value;
                         } else if (this.#debugFlag & 16)
@@ -492,7 +499,7 @@ class ExhibitorProfile {
         }
         this.#profileMode.value = useType;
         this.#profileUseType = useType;
-        var hide = useType != 'register' && useType != 'add';
+        let hide = useType != 'register' && useType != 'add';
         this.#passwordLine1.hidden = hide;
         this.#passwordLine2.hidden = hide;
         this.#cpasswordLine1.hidden = hide;
@@ -535,13 +542,13 @@ class ExhibitorProfile {
             });
             exhibitorProfileMCEInit = true;
         }
-        var focusField = null;
+        let focusField = null;
         if (this.#profileArtistNameField) {
             focusField = this.#profileArtistNameField;
         } else {
             focusField = this.#profilePublicityField;
         }
-        var debugFlag = this.#debugFlag;
+        let debugFlag = this.#debugFlag;
         setTimeout(function() { if (debugFlag > 0) console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
     }
 
