@@ -140,9 +140,11 @@ EOS;
 SELECT count(*)
 FROM artItems a
 JOIN artSales s ON a.id = s.artid
-WHERE s.amount = s.paid AND s.perid = ? AND a.conid = ? AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
+LEFT OUTER JOIN artshowAltPickupAuth auth ON s.perid = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ? AND auth.active = 'Y'
+WHERE s.amount = s.paid AND (s.perid = ? OR IFNULL(auth.pickupPerid, -1) = ?) AND a.conid = ?
+    AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
 EOS;
-        $releaseR = dbSafeQuery($releaseQ, 'ii', array($perid, $conid));
+        $releaseR = dbSafeQuery($releaseQ, 'iiiii', array($perid, $conid, $perid, $perid, $conid));
         $response['release'] = $releaseR->fetch_row()[0];
         $releaseR->free();
 

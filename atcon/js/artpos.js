@@ -2306,7 +2306,7 @@ function releaseShown() {
 }
 
 function foundRelease(data) {
-    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
+    releaseTitleDiv.innerHTML = 'Check Artwork for Pickup by ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     let art = data.art;
     if (releaseTable != null) {
@@ -2339,11 +2339,13 @@ function foundRelease(data) {
             {field: "id", visible: false,},
             {field: "artSalesId", visible: false,},
             {title: "CO", field: "released", maxWidth: 90, width: 90, hozAlign: 'center', formatter: "tickCross", cellClick: invertTickCross, headerSort: true, },
-            {title: "Exh #", field: "exhibitorNumber",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 100, width: 100, hozAlign: 'right', },
-            {title: "Item #", field: "item_key", headerFilter: true, headerWordWrap: true,  maxWidth: 100, width: 100, hozAlign: 'right' },
-            {title: "Exhibitor Name", field: "exhibitorName", headerFilter: true, headerWordWrap: true,  maxWidth: 250, width: 250, },
-            {title: "Qty", field: "purQuantity", maxWidth: 90, width: 90, hozAlign: 'right' },
-            {title: "Type", field: "type", headerFilter: true, width: 120, maxWidth: 120, },
+            {title: "Purch By", field: "purchaser",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 100, width: 100, hozAlign: 'right', },
+            {title: "Purch Name", field: "purchaserFullName",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 200, width: 200, },
+            {title: "Exh #", field: "exhibitorNumber",  headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 80, width: 80, hozAlign: 'right', },
+            {title: "Item #", field: "item_key", headerFilter: true, headerWordWrap: true, headerSort: false, maxWidth: 60, width: 60, hozAlign: 'right' },
+            {title: "Exhibitor Name", field: "exhibitorName", headerFilter: true, headerWordWrap: true,  maxWidth: 220, width: 220, },
+            {title: "Qty", field: "purQuantity", headerSort: false, maxWidth: 60, width: 60, hozAlign: 'right' },
+            {title: "Type", field: "type", headerFilter: true, width: 90, maxWidth: 90, },
             {title: "Title", field: "title", headerSort: true, headerFilter: true, headerWordWrap: true, maxWidth: 400, width: 400, },
             {title: "Material", field: "material", headerSort: true, headerFilter: true,  width: 300, maxWidth: 300, },
         ],
