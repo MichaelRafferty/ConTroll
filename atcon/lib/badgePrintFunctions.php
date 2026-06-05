@@ -294,7 +294,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
 
         $y = $ymargin + 50/72;
         $x = $xmargin;
-        $pdf->code128($x, $y, $pid, 90 / 72, 10 / 72);
+        $pdf->code128($x, $y, $pid, 90 / 72, 12 / 72);
     }
 
     $output = $pdf->Output('S');
