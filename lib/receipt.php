@@ -208,7 +208,7 @@ EOS;
 
     $transL = $transR->fetch_assoc();
     $transL['badgename'] = badgeNameDefault($transL['badge_name'], $transL['badgeNameL2'], $transL['first_name'], $transL['last_name']);
-    if (!in_array($transL['email_addr'], $emails))
+    if ($transL['email_addr'] != '' && !in_array($transL['email_addr'], $emails))
         $emails[] = $transL['email_addr'];
 
     $conid = $transL['conid'];
@@ -263,7 +263,7 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $plans[] = $planL;
         $planId = $planL['id'];
-        if (!in_array($planL['email_addr'], $emails))
+        if ($planL['email_addr'] != '' && !in_array($planL $planL['email_addr'], $emails))
             $emails[] = $planL['email_addr'];
     }
     $planR->free();
@@ -293,7 +293,7 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $planPayments[] = $planL;
         $planId = $planL['id'];
-        if (!in_array($planL['email_addr'], $emails))
+        if (!in_array($planL['email_addr'] != '' && $planL['email_addr'], $emails))
             $emails[] = $planL['email_addr'];
     }
     $planR->free();
@@ -384,7 +384,7 @@ EOS;
     while ($regL = $regR->fetch_assoc()) {
         $regL['badgename'] = badgeNameDefault($regL['badge_name'], $regL['badgeNameL2'], $regL['first_name'], $regL['last_name']);
         $memberships[] = $regL;
-        if (!in_array($regL['email_addr'], $emails))
+        if ($regL['email_addr'] != '' && !in_array($regL['email_addr'], $emails))
             $emails[] = $regL['email_addr'];
     }
     $regR->free();
@@ -419,7 +419,7 @@ EOS;
     while ($spaceL = $spaceR->fetch_assoc()) {
         $spaceL['badgename'] = badgeNameDefault($spaceL['badge_name'], $spaceL['badgeNameL2'], $spaceL['first_name'], $spaceL['last_name']);
         $spaces[] = $spaceL;
-        if (!in_array($spaceL['email_addr'], $emails))
+        if ($spaceL['email_addr'] != '' && !in_array($spaceL['email_addr'], $emails))
             $emails[] = $spaceL['email_addr'];
     }
     $spaceR->free();
