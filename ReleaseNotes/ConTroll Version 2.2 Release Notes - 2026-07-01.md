@@ -1,6 +1,6 @@
 # ConTroll Version 2.2 Release Notes
 
-## Version 2.2: ???
+## Version 2.2: Art Show cleanup, Tax changes, Profile enhancements
 ### Release Date: 2026-07-01
 
 # Major Configuration Changes in 2.2:
