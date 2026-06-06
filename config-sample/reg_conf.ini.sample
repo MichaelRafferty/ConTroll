@@ -568,7 +568,7 @@ viewPriorLimit=
 ;; R:H,exhibitor
 ;; P:Generic Vendor (dealers) staff email address, region independent
 ;; H:The email address used to contact the vendor (dealers) staff for the convention. (Independent of region)
-;; D:e
+;; D:v
 ;; B:M
 ;vendor: email address for generic vendor emails
 vendor="dealers@???"
@@ -576,7 +576,7 @@ vendor="dealers@???"
 ;; R:H,exhibitor
 ;; P:Generic Artist staff email address, region independent
 ;; H:The email address used to contact the artist staff for the convention. (Independent of region)
-;; D:e
+;; D:v
 ;; B:M
 ;artist: email address for generic artist emails
 ;;; Artist Portal items for inventory headers
