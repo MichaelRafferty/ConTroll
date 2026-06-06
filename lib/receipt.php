@@ -263,7 +263,7 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $plans[] = $planL;
         $planId = $planL['id'];
-        if ($planL['email_addr'] != '' && !in_array($planL $planL['email_addr'], $emails))
+        if ($planL['email_addr'] != '' && !in_array($planL['email_addr'], $emails))
             $emails[] = $planL['email_addr'];
     }
     $planR->free();
