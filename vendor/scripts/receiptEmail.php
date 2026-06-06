@@ -29,8 +29,21 @@ if (!array_key_exists('email', $_POST)) {
 $email = $_POST['email'];
 $receiptTxt = $_POST['text'];
 $receiptHTML = $_POST['tables'];
+[$portalName, $portalType] = getPortalType();
 
-$return_arr = send_email(getConfValue('con', 'regadminemail'), $email, null, 'Receipt for Payment', $receiptTxt, $receiptHTML);
+if ($portalType == 'vendor')
+    $fromEmail = getConfValue('vendor', 'vendor', '');
+else if ($portalType == 'artist')
+    $fromEmail = getConfValue('vendor', 'artist', '');
+else if ($portalType == 'fan')
+    $fromEmail = getConfValue('vendor', 'fan', '');
+else if ($portalType == 'exhibit')
+    $fromEmail = getConfValue('vendor', 'exhibit', '');
+
+if ($fromEmail == '')
+    $fromEmail = getConfValue('con', 'regadminemail', '');
+
+$return_arr = send_email($fromEmail, $email, null, 'Receipt for Payment', $receiptTxt, $receiptHTML);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

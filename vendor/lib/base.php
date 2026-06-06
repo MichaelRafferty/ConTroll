@@ -101,6 +101,23 @@ function vendor_page_foot() {
     <?php
 }
 
+function getPortalType() : array {
+    if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
+        $portalName = 'Artist';
+        $portalType = 'artist';
+    } else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
+        $portalName = 'Exhibitor';
+        $portalType = 'exhibitor';
+    } else if (str_starts_with($_SERVER['HTTP_HOST'], 'fan')){
+        $portalName = 'Fan';
+        $portalType = 'fan';
+    } else {
+        $portalName = 'Vendor';
+        $portalType = 'vendor';
+    }
+    return [$portalName, $portalType];
+}
+
 
 function RenderErrorAjax($message_error) : void {
     global $return500errors;

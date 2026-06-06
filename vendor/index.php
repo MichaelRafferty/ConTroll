@@ -30,19 +30,7 @@ $exhibitor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
-    $portalName = 'Artist';
-    $portalType = 'artist';
-} else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
-    $portalName = 'Exhibitor';
-    $portalType = 'exhibitor';
-} else if (str_starts_with($_SERVER['HTTP_HOST'], 'fan')){
-    $portalName = 'Fan';
-    $portalType = 'fan';
-} else {
-    $portalName = 'Vendor';
-    $portalType = 'vendor';
-}
+[$portalName, $portalType] = getPortalType();
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
