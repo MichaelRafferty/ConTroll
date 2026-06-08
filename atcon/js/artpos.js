@@ -834,7 +834,7 @@ function drawItemDetails(item, full = false, notInCart = true) {
                         '<div class="col-sm-7">' + currencyFmt.format(Number(item.sale_price).toFixed(2)) + '</div></div>';
                 }
                 if (item.final_price != null && item.final_price > 0)
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Current Price:</div>' +
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Current High Bid:</div>' +
                         '<div class="col-sm-7">' + currencyFmt.format(Number(item.final_price).toFixed(2)) + '</div></div>';
 
                 if (item.bidder != null && item.bidder > 0)
