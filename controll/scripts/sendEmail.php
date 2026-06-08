@@ -330,8 +330,8 @@ while ($addr =  $emailR->fetch_assoc()) {
 
 if ($test) {
     $email_test = [];
-    $email_array[0]['email'] = $email;
-    $email_test[] = $email_array[0];
+    //$email_array[0]['email'] = $email;
+    $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
     $response['emailTest'] = $email_test;
 }
 
