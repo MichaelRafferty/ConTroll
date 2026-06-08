@@ -803,8 +803,11 @@ function drawItemDetails(item, full = false, notInCart = true) {
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Already Sold:</div>' +
                 '<div class="col-sm-7 bg-warning">Item has already been sold to someone else.</div></div>';
         else {
-            html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Bidder Mismatch:</div>' +
-                '<div class="col-sm-7 bg-warning">Someone else who is not on your pickup list is the high bidder.</div></div>';
+            html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Bidder Mismatch:</div>';
+            if (pickupPerids.length > 1)
+                html += '<div class="col-sm-7 bg-warning">Someone else who is not on this customer\'s pickup list is the high bidder.</div></div>';
+            else
+                html += '<div class="col-sm-7 bg-warning">Someone other than this customer is the high bidder.</div></div>';
             priceType = 'Current Bid';
         }
     }
