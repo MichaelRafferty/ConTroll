@@ -47,7 +47,7 @@ class EmailBulkSend {
         this.#emailStatusHTML += "Getting Email Contents and List\n";
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML;
         this.#testEmail = dataobj.action;
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: url,
             data: dataobj,
@@ -87,17 +87,22 @@ class EmailBulkSend {
         }
 
         // get first and last of list, plus it's size
-        var params = "<pre>\n\nEmail Paramenters:\n" +
-            "From: " + this.#emailFrom + "\n" +
-            "To: " + this.#emailTo.length + " addresses, first: " + this.#emailTo[0]['email'] + ", last: " + this.#emailTo[this.#emailTo.length - 1]['email'] + "\n";
+        let params = "<pre>\n\nEmail Paramenters:\n" +
+            "From: " + this.#emailFrom + "\n";
+        if (this.#emailTo.length == 1)
+            params += "To: " + this.#emailTo.length + " address, " + this.#emailTo[0]['email'] + "\n";
+        else
+            params += "To: " + this.#emailTo.length + " addresses, first: " + this.#emailTo[0]['email'] + ", last: " + this.#emailTo[this.#emailTo.length - 1]['email'] + "\n";
+
         if (this.#emailTest) {
             params += "Test To: " + this.#emailTest[0]['email'] + "\n";
         }
         if (this.#emailCC) {
             params += "CC: " + this.#emailCC.join(", ") + "\n";
         } else {
-            params += "CC: No CC Configured\n";
+            params += "CC: No Carbon Copy Configured\n";
         }
+
         params += "Subject: " + this.#emailSubject + "\n" + "\n</pre>\n";
 
         if (this.#emailTest)
@@ -134,7 +139,7 @@ class EmailBulkSend {
     sendNextBatch() {
         this.#emailBatch = this.#emailTo.slice(this.#startOrdinal, this.#startOrdinal + this.#batchSize);
         this.#batchStartTime = Date.now();
-        var data = {
+        let data = {
             action: this.#testEmail,
             emailText: this.#emailText,
             emailHTML: this.#emailHTML,
@@ -146,8 +151,8 @@ class EmailBulkSend {
             emailType: this.#emailType,
             macroSubstitution: this.#macroSubstitution
         };
-        var dataJSON = btoa(encodeURI(JSON.stringify(data)));
-        var _this = this;
+        let dataJSON = btoa(encodeURI(JSON.stringify(data)));
+        let _this = this;
         $.ajax({
             url: this.#sendURL,
             data: { data: dataJSON },
@@ -174,7 +179,7 @@ class EmailBulkSend {
             show_message(data['warn'], 'warn', this.#emailStatusDivId);
         }
 
-        var elapsed = (Date.now() - this.#batchStartTime) / 1000;
+        let elapsed = (Date.now() - this.#batchStartTime) / 1000;
         this.#emailStatusHTML += "Batch of " + this.#emailBatch.length + " sent in " + elapsed + " seconds\n";
         this.#emailStatusDiv.innerHTML = this.#emailStatusHTML + "</pre>\n";
         this.#emailTo = this.#emailTo.slice(this.#batchSize);

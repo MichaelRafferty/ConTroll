@@ -266,20 +266,27 @@ case 'invReminder':
         exit();
     }
     $emailQ = <<<EOQ
-  SELECT 
+WITH soldCount AS (
+    SELECT ry.id, COUNT(s.item_purchased) AS numPurchased
+    FROM exhibitorSpaces s
+    JOIN exhibitorRegionYears ry ON ry.exhibitsRegionYearId = ? AND s.exhibitorRegionYear = ry.id
+    GROUP BY ry.id
+)
+SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
       ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
+JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
 WHERE r.conid = ?
 GROUP BY first_name, email
-HAVING numItems > 0;
+HAVING numItems = 0;
 EOQ;
-    $typestr = 'ii';
-    $paramarray = array ($exhibitsRegionYearId, $conid);
+    $typestr = 'iii';
+    $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
     $email_text = returnCustomText('invReminder/text');
     $email_html = returnCustomText('invReminder/html');
     $macroSubstitution = true;
