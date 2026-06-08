@@ -96,10 +96,9 @@ class EmailBulkSend {
         if (this.#emailCC) {
             params += "CC: " + this.#emailCC.join(", ") + "\n";
         } else {
-            params += "CC: [null]\n";
+            params += "CC: No CC Configured\n";
         }
-            params += "Subject: " + this.#emailSubject + "\n" +
-            "Macro Substitution: " + this.#macroSubstitution + "\n</pre>\n";
+        params += "Subject: " + this.#emailSubject + "\n" + "\n</pre>\n";
 
         if (this.#emailTest)
             params += "<button class='btn btn-primary btn-sm' onclick='emailBulkSend.sendBulkOk();'>Send Test email</button>&nbsp;";

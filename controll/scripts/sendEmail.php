@@ -268,15 +268,15 @@ case 'invReminder':
     $emailQ = <<<EOQ
   SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
-      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(*) AS numItems, COUNT(s.item_purchased) AS numPurchases
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
-JOIN exhibitorSpaces s ON s.exhibitorRegionYear = ry.id
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
 WHERE r.conid = ?
-GROUP BY first_name, email;
+GROUP BY first_name, email
+HAVING numItems > 0;
 EOQ;
     $typestr = 'ii';
     $paramarray = array ($exhibitsRegionYearId, $conid);
@@ -317,7 +317,7 @@ if ($response['numEmails'] == 0) {
 $email_array=array();
 $data_array=array();
 
-while($addr =  $emailR->fetch_assoc()) {
+while ($addr =  $emailR->fetch_assoc()) {
    $email_array[] = $addr;
 }
 
