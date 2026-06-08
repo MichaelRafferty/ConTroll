@@ -447,7 +447,7 @@ noNewDays=
 ;;; allow discounts?
 ;; N:discount
 ;; R:V,reg_admin
-;; H:Allow disount as a payment type in Atxon
+;; H:Allow disount as a payment type in Atcon
 ;; H+values:
 ;; H+  manager - requires manager logged in
 ;; H+	active - manager override enabled
