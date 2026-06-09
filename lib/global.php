@@ -340,7 +340,7 @@ EOS;
         }
     }
 
-    function returnCustomText($key, $overridePrefix = null) : string {
+    function returnCustomText($key, $overridePrefix = null, $forDisplay = true) : string {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -358,6 +358,7 @@ EOS;
 
         if (array_key_exists($usePrefix . $key, $customTexT)) {
             $show = true;
+            $return = '';
             $contents = $customTexT[$usePrefix . $key];
             $prefixStr = 'Controll-Default: ';
             if (str_starts_with($contents, $prefixStr))
@@ -372,10 +373,25 @@ EOS;
                         return '';
                 }
 
-                if ($customTextFilter == 'all') {
-                    $contents = 'Start Custom: ' . $usePrefix . $key . PHP_EOL . $contents . PHP_EOL . 'End Custom: ' . $usePrefix . $key . PHP_EOL;
+                if ($forDisplay) {
+                    $return = '<div class="container-fluid p-0 m-0">' . PHP_EOL;
+                    if ($customTextFilter == 'all') {
+                        $return .= '<span class="text-muted" style="background-color: #E0FFE0;"><b>Start Custom: ' . $usePrefix . $key . '</b></span>' .
+                            ($show ? '<br/>' : '') . PHP_EOL;
+                    }
                 }
-                return replaceConfigTokens($contents);
+
+                if ($show)
+                    $return .= replaceConfigTokens($contents) . PHP_EOL;
+
+                if ($forDisplay && $customTextFilter == 'all') {
+                    $return .= '<br/><span class="text-muted" style="background-color: #E0FFE0;"><b>End Custom: ' . $usePrefix . $key . '</b></span>' .
+                    PHP_EOL;
+                }
+                if ($forDisplay)
+                    $return .= '</div>' . PHP_EOL;
+
+                return $return;
             }
         }
         return '';
