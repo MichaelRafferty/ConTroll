@@ -334,16 +334,18 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
     // Purchases block
     $mpbDisabled = '';
     $mpbSuffix = '';
+    $mpbColor = 'btn-primary';
     if ($person['missingPolicies'] > 0) {
         $mpbDisabled = ' disabled';
-        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Required Policies</b></span>';
+        $mpbColor = 'btn-danger';
+        $mpbSuffix = '<br/><span><b>Missing Required Policies</b></span>';
     }
 
     $mpbId = 'mpBtn' . $personType . $id;
     echo <<<EOS
     <div class="row mt-1">
         <div class="col-sm-2">
-            <button class='btn btn-sm btn-primary p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
+            <button class='btn btn-sm $mpbColor p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
             Add Items to Cart$mpbSuffix
             </button>
         </div>
