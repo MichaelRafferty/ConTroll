@@ -679,8 +679,7 @@ class Portal {
             let interest = this.#interests[row];
             let endDateDays = interest.endDate;
             let readOnly = false;
-            if (endDateDays === null || endDateDays === undefined || endDateDays == 0 ||
-                interest.notesPrompt === null || interest.notesPrompt === undefined || interest.notesPrompt.trim() == '') {
+            if (endDateDays === null || endDateDays === undefined || endDateDays == 0) {
                 readOnly = false;
             } else {
                 readOnly = interest.readOnly == 1;
