@@ -44,6 +44,7 @@ INSERT INTO `controllAppSections` VALUES
 ('portal','portal','main','main body of the portal home page'),
 ('portal','portal','paymentPlamns','data entry forms related to payment plans'),
 ('portal','portal','portalForm','data entry forms used by the portal page'),
+('profile','all','conroles','In profiles, convention roles section'),
 ('profile','all','interests','In profiles, interests section'),
 ('profile','all','policies','In profiles, policies section');
 ALTER TABLE `controllAppSections` ENABLE KEYS;
