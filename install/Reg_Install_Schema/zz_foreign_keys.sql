@@ -2,6 +2,11 @@ ALTER TABLE oauthRefreshTokens ADD CONSTRAINT `fk_refresh_token_access` FOREIGN 
 ALTER TABLE taxList ADD CONSTRAINT `taxC_conid` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE taxList ADD CONSTRAINT `taxC_perinfo` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE oauthAuthCodes ADD CONSTRAINT `fk_auth_codes_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_bidder` FOREIGN KEY (`bidderPerid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_deactuser` FOREIGN KEY (`deactivatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_pickup` FOREIGN KEY (`pickupPerid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_user` FOREIGN KEY (`createdBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `conid` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`);
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_2` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_3` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
@@ -48,6 +53,8 @@ ALTER TABLE ageList ADD CONSTRAINT `ageList_conid_fk` FOREIGN KEY (`conid`) REFE
 ALTER TABLE exhibitsRegions ADD CONSTRAINT `er_regiontype_fk` FOREIGN KEY (`regionType`) REFERENCES `exhibitsRegionTypes` (`regionType`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE exhibitors ADD CONSTRAINT `exhibitor_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitors ADD CONSTRAINT `exhibitors_newperson_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE taxItems ADD CONSTRAINT `ti_item_taxable` FOREIGN KEY (`item`) REFERENCES `taxable` (`item`);
+ALTER TABLE taxItems ADD CONSTRAINT `ti_taxlist` FOREIGN KEY (`conid`, `taxField`) REFERENCES `taxList` (`conid`, `taxField`);
 ALTER TABLE payorPlans ADD CONSTRAINT `pp_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payorPlans ADD CONSTRAINT `pp_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payorPlans ADD CONSTRAINT `pp_planid_fk` FOREIGN KEY (`planId`) REFERENCES `paymentPlans` (`id`);
