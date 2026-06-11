@@ -179,4 +179,4 @@ ALTER TABLE newperson ADD COLUMN fullAddr VARCHAR(256) AS
     VIRTUAL AFTER country;
 
 
-INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');
+INSERT INTO patchLog(id, name) VALUES(58, 'Release 2.2 Artshow and other changes');
