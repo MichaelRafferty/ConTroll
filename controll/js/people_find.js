@@ -448,7 +448,8 @@ class Find {
                     id.disabled = readOnly;
                 }
                 id = document.getElementById('i_d_' + interest.interest);
-                id.hidden = interest.interested != 'Y';
+                if (id)
+                    id.hidden = interest.interested != 'Y';
                 id = document.getElementById('i_p_' + interest.interest);
                 if (id)
                     id.innerHTML = interest.notesPrompt;
