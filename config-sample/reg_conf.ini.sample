@@ -3,7 +3,7 @@
 ;; N:customtext
 ;; R:V,reg_admin
 ;; H:Global custom text setting, values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:production,all,none
@@ -349,7 +349,7 @@ defaultCountry="USA"
 ;; R:V,reg_staff
 ;; H:Registration custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -430,7 +430,7 @@ noNewDays=
 ;; R:V,reg_admin
 ;; H:Atcon custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -541,7 +541,7 @@ fanOpen=0
 ;; R:H,exhibitor
 ;; H:Exhibitor Portal custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -704,7 +704,7 @@ artcontrolsort=type
 ;; R:V,reg_staff
 ;; H:Registration Portal custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
