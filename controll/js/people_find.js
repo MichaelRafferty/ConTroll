@@ -1077,8 +1077,11 @@ class Find {
             let keys = Object.keys(this.#memberInterests);
             for (let i = 0; i < keys.length; i++) {
                 let interest = this.#memberInterests[keys[i]];
-                if (document.getElementById('i_' + interest.interest).checked) {
-                    newInterests[interest.interest] = 'Y';
+                let id = document.getElementById('i_' + interest.interest);
+                if (id) {
+                    if (document.getElementById('i_' + interest.interest).checked) {
+                        newInterests[interest.interest] = 'Y';
+                    }
                 }
             }
         }
