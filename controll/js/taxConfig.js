@@ -143,14 +143,16 @@ class taxConfig {
         this.#taxRowBeforeEdit = taxrow.getData();
         this.#taxTitle.innerHTML = this.#taxRowBeforeEdit.taxField;
         this.#taxHeading.innerHTML = this.#taxRowBeforeEdit.taxField + ' for ' + this.#taxRowBeforeEdit.conid;
-        this.#taxLabel.value = this.#taxRowBeforeEdit.label;
-        this.#taxRate.value = this.#taxRowBeforeEdit.rate;
-        this.#taxActive.value = this.#taxRowBeforeEdit.active;
-        this.#taxGLNum.value = this.#taxRowBeforeEdit.glNum;
-        this.#taxGLLabel.value = this.#taxRowBeforeEdit.glLabel;
+        this.#taxLabel.value = this.#taxRowBeforeEdit.label == undefined ? '' : this.#taxRowBeforeEdit.label;
+        this.#taxRate.value = this.#taxRowBeforeEdit.rate == undefined ? '0.00' : this.#taxRowBeforeEdit.rate;
+        this.#taxActive.value = this.#taxRowBeforeEdit.active == undefined ? 'Y' : this.#taxRowBeforeEdit.active;
+        this.#taxGLNum.value = this.#taxRowBeforeEdit.glNum == undefined ? '' : this.#taxRowBeforeEdit.glNum;
+        this.#taxGLLabel.value = this.#taxRowBeforeEdit.glLabel == undefined ? '' : this.#taxRowBeforeEdit.glLabel;
         //this.#taxItemsDiv.innerHTML = this.#taxRowBeforeEdit.taxItemsDisplay;
         // build the edit area for the taxable items
         let taxablesArray = this.#taxRowBeforeEdit.taxItems;
+        if (taxablesArray == undefined)
+            taxablesArray = [];
         // convert taxables to indexed array
         let taxables = {};
         for (let i = 0; i < taxablesArray.length; i++) {

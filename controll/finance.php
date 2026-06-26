@@ -600,7 +600,7 @@ EOS;
                             <input class='form-control-sm no-spinners' type='number' name='taxRate' id='taxRate'
                                    onchange="tax.editFieldChanged('taxRate')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
-                        <div class='col-sm'>Optional for Accounting</div>
+                        <div class='col-sm'>As a percentage, less the % sign</div>
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-2'>
