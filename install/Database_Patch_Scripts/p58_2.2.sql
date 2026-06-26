@@ -179,4 +179,27 @@ ALTER TABLE newperson ADD COLUMN fullAddr VARCHAR(256) AS
     VIRTUAL AFTER country;
 
 
+/*
+ * conroles custom text items
+ */
+
+INSERT INTO `controllAppSections` VALUES
+('profile','all','conroles','In profiles, convention roles section');
+
+INSERT INTO `controllAppItems` VALUES
+('profile','all','conroles','footer','footer after con roles in edit profile'),
+('profile','all','conroles','header','header before con roles in edit profile');
+
+INSERT INTO `controllTxtItems` VALUES
+('profile','all','conroles','header','<span class=\"size-h3\" style=\"font-weight: bold;\">Convention Roles</span>\n<p>The convention will assign you these
+roles to help them communicate with you about the convention.</p>');
+
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem, CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+     '<br/>Custom HTML that can replaced with a custom value in the Controll Admin App under Edit Custom Text.<br/>',
+     ' Default text can be suppressed in the configuration file.')
+FROM controllAppItems a
+LEFT OUTER JOIN controllTxtItems t on (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection and a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
+
 INSERT INTO patchLog(id, name) VALUES(58, 'Release 2.2 Artshow and other changes');
