@@ -213,7 +213,7 @@ EOS;
     foreach ($interests as $interest) {
         $interestName = $interest['interest'];
         $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
-        if (array_key_exists($interestName . '_notes', $newInterests))
+        if ($newVal == 'Y' && array_key_exists($interestName . '_notes', $newInterests))
             $newNotes = trim($newInterests[$interestName . '_notes']);
         else
             $newNotes = '';
