@@ -4,7 +4,8 @@
 function getInterests() {
     $interests = null;
     $iQ = <<<EOS
-SELECT i.interest, i.description, i.endDate, i.notesPrompt, i.sortOrder, CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
+SELECT i.interest, i.description, i.endDate, i.notesPrompt, i.sortOrder, DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS endString,
+       CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
 FROM interests i
 JOIN conlist c ON c.id = ?
 WHERE active = 'Y'
@@ -115,16 +116,15 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
 
         if (!$readOnly) {
             $class ='';
+            $expNote = '';
             if ($checked)
                 $box = '✅:';
             else
                 $box = '❌:';
         } else {
             $class ='expired';
-            if ($checked)
-                $box = '☑️';
-            else
-                $box = '✕';
+            $expNote = ' (Changes to this interest had to be made before ' . $interest['endString'] . ')';
+            $box = '';
         }
         ?>
         <div class='row'>
@@ -133,7 +133,7 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
             </div>
             <div class='col-sm-auto'>
                 <p class='<?php echo $class; ?>'>
-                    <?php echo $description; ?>
+                    <?php echo $description . $expNote; ?>
                 </p>
             </div>
 <?php
