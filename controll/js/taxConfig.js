@@ -83,21 +83,10 @@ class taxConfig {
         });
     }
 
-    draw(data) {
+    drawTaxTable(list) {
         let _this = this;
-        // if this is from the config file, change updated by and set things to dirty
-        if (data.taxList.length == 1) {
-            if (Number(data.taxList[0].updatedBy) < 0) {
-                // from config
-                data.taxList[0].updatedBy = null;
-                this.dataChanged();
-            }
-        }
-        this.#taxable = data.taxable;
-        this.#taxList = data.taxList;
-        // show initial tax Config table
         this.#taxTable = new Tabulator('#taxConfigTable', {
-            data: data.taxList,
+            data: list,
             layout: "fitDataTable",
             index: "taxField",
             columns: [
@@ -120,6 +109,21 @@ class taxConfig {
             _this.dataChanged();
         });
         this.#taxTable.on("cellEdited", taxCellChanged);
+    }
+
+    draw(data) {
+        // if this is from the config file, change updated by and set things to dirty
+        if (data.taxList.length == 1) {
+            if (Number(data.taxList[0].updatedBy) < 0) {
+                // from config
+                data.taxList[0].updatedBy = null;
+                this.dataChanged();
+            }
+        }
+        this.#taxable = data.taxable;
+        this.#taxList = data.taxList;
+        // show initial tax Config table
+        this.drawTaxTable(data.taxList);
         this.#taxAddNewBTN.disabled = data['taxList'].length >= 5;
     }
 
@@ -226,6 +230,8 @@ class taxConfig {
             taxItems[item.item] = item;
         }
         let oldItemsData = this.#taxRowBeforeEdit.taxItems;
+        if (oldItemsData == undefined)
+            oldItemsData = [];
         let oldItems = {};
         for (let i = 0; i < oldItemsData.length; i++) {
             let item = oldItemsData[i];
@@ -301,6 +307,13 @@ class taxConfig {
         //console.log("update: " + JSON.stringify(update));
         this.#taxTable.updateData(updates);
         this.#taxEditModal.hide();
+        // rebuild the table because it may have changed size
+        let taxData = this.#taxTable.getData();
+        this.#taxTable.off("dataChanged");
+        this.#taxTable.off("cellEdited");
+        this.#taxTable.destroy();
+        this.#taxTable = null;
+        this.drawTaxTable(taxData);
     }
 
     close() {
