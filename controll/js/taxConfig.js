@@ -294,7 +294,7 @@ class taxConfig {
             }
             if (newItem != oldItem)
                 changed = true;
-            if (newItem != '-' && newItem != item.defaultValue) {
+            if (newItem != '-') {
                 taxItemsDisplay += ',\n' + item.item + '=' + newItem;
                 newItems.push({conid: this.#conid, taxField: this.#taxField, item: item.item, taxable: newItem, sortOrder: sortOrder});
             }
