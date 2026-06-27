@@ -29,7 +29,12 @@ span.warncolor {
 }
 
 .warn {
-  color: red
+  color: red;
+}
+
+.expired {
+  forced-color-adjust: none;
+  color: #a0a0a0 !important;
 }
 
 .hidden { 

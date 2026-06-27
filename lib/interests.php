@@ -114,15 +114,17 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
         }
 
         if (!$readOnly) {
+            $class ='';
             if ($checked)
                 $box = '✅:';
             else
                 $box = '❌:';
         } else {
+            $class ='expired';
             if ($checked)
-                $box = '✔️:';
+                $box = '☑️';
             else
-                $box = '✖:';
+                $box = '✕';
         }
         ?>
         <div class='row'>
@@ -130,7 +132,7 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
                 <?php echo $box; ?>
             </div>
             <div class='col-sm-auto'>
-                <p class='text-body'>
+                <p class='<?php echo $class; ?>'>
                     <?php echo $description; ?>
                 </p>
             </div>
@@ -144,8 +146,8 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
             echo <<<EOS
         <div class='row'>
             <div class='col-sm-auto'>&emsp;&ensp;</div>
-            <div class="col-sm-2">$prompt</div>
-            <div class="col-sm-8">$answer</div>
+            <div class="col-sm-2 $class">$prompt</div>
+            <div class="col-sm-8 $class">$answer</div>
         </div>
 EOS;
         }
