@@ -1058,10 +1058,10 @@ class Find {
             existingConRoles: JSON.stringify(this.#memberConRoles),
         };
         // now the policies
+        let newPolicies = {};
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
             let keys = Object.keys(this.#memberPolicies);
             let i;
-            let newPolicies = {};
             for (i = 0; i < keys.length; i++) {
                 let policy = this.#memberPolicies[keys[i]];
                 if (document.getElementById('f_p_' + policy.policy).checked) {

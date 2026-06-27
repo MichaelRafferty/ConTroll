@@ -49,12 +49,11 @@ if ($mR === false) {
 }
 
 $interests= [];
-if ($mR !== false) {
-    while ($row = $mR->fetch_assoc()) {
-        $interests[] = $row;
-    }
-    $mR->free();
+while ($row = $mR->fetch_assoc()) {
+    $interests[] = $row;
 }
+$mR->free();
+
 $response['interests'] = $interests;
 
 // get the policies
@@ -67,12 +66,17 @@ WHERE p.active = 'Y'
 ORDER BY p.sortOrder;
 EOS;
 $pR = dbSafeQuery($pQ, 'ii', array($perid, $conid));
-if ($pR !== false) {
-    while ($row = $pR->fetch_assoc()) {
-        $policies[] = $row;
+    if ($pR === false) {
+        $response['error'] = 'Select policies failed';
+        ajaxSuccess($response);
+        return;
     }
-    $pR->free();
+
+while ($row = $pR->fetch_assoc()) {
+    $policies[] = $row;
 }
+$pR->free();
+
 $response['policies'] = $policies;
 
 // get the convention roles

@@ -274,6 +274,7 @@ class Profile {
             this.#addrField.value = row.address_1;
         else if (row.hasOwnProperty('addr'))
             this.#addrField.value = row.addr;
+        else
             this.#addrField.value = '';
 
         if (row.hasOwnProperty('address_2'))
