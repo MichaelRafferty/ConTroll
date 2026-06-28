@@ -1497,9 +1497,6 @@ class exhibitorsAdm {
                 buttons += '&ensp;';
             }
             needEnsp = true;
-            buttons += '<button class="btn btn-sm btn-info ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                ' --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.showReceipt(' + id + ')" >Receipt</button>';
             buttons += '&ensp;<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
                 ' --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>';
