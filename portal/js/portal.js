@@ -80,6 +80,7 @@ class Portal {
     #disableButtonNames = null;
     #selectedItems = false;
     #payDueSubmitButton = null;
+    #preTaxLabel = '';
 
     // receipt fields
     #receiptModal = null;
@@ -828,7 +829,31 @@ class Portal {
         this.#paySelectedList = [];
         this.#selectIds = {};
         this.#selectMems = {};
+        let numTaxable = 0;
+        let nonTaxMemTaxable = false;
+        let taxMemTaxable = false;
+        console.log(config.taxRates);
+        if (Object.keys(config.taxRates).length > 0) {
+            for (let tax in config.taxRates) {
+                let rate = config.taxRates[tax];
+                let taxItems = rate.taxItems;
+                if (taxItems.nontaxMem.taxable == 'Y') nonTaxMemTaxable = true;
+                if (taxItems.taxableMem.taxable == 'Y') taxMemTaxable = true;
+            }
+        }
         let unpaids = 0;
+        // first compute num taxable
+        for (let i = 0; i < membershipsPurchased.length; i++) {
+            let mem = membershipsPurchased[i];
+            if (mem.status != 'unpaid')
+                continue;
+
+            if (mem.taxable == 'N' && nonTaxMemTaxable) numTaxable++;
+            if (mem.taxable == 'Y' && taxMemTaxable) numTaxable++;
+        }
+        console.log("numTaxable " + numTaxable);
+        this.#preTaxLabel = numTaxable > 0 ? ' pre-tax' : '';
+
         for (let i = 0; i < membershipsPurchased.length; i++) {
             let mem = membershipsPurchased[i];
             if (mem.status != 'unpaid')
@@ -867,7 +892,7 @@ class Portal {
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
-            <b>The total amount due for selected memberships totaling
+            <b>The total` + this.#preTaxLabel + ` amount due for selected memberships totaling
                 <span id="partialPayDue2">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
@@ -888,7 +913,7 @@ class Portal {
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.makeOrder(null);">Pay All</button></div>
         <div class="col-sm-auto">
-            <b>The total amount due for all memberships is ` +
+            <b>The total` + this.#preTaxLabel + ` amount due for all memberships is ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
@@ -896,7 +921,7 @@ class Portal {
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.buildPlan(1);">Make Plan for All</button></div>
         <div class="col-sm-auto">
-            <b>Create a payment plan for the total amount due for all memberships of ` +
+            <b>Create a payment plan for the total` + this.#preTaxLabel + ` amount due for all memberships of ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
@@ -944,7 +969,9 @@ class Portal {
                 this.#paySelectedList.push(this.#selectIds[idkey].mem);
         }
         let plansEligible = paymentPlans.plansEligible(this.#paySelectedList);
-        document.getElementById('paySelectedPlanRow').hidden = !plansEligible;
+        let payselid = document.getElementById('paySelectedPlanRow');
+        if (payselid)
+            payselid.hidden = !plansEligible;
     }
 
     // Build Plan - select and start the build plan process
@@ -994,7 +1021,7 @@ class Portal {
             makeOrderOther + `);'>` +
                 buttonName + `</button></div>
         <div class="col-sm-auto">
-            <b>Your total amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
+            <b>Your total` + this.#preTaxLabel + ` amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
         </div>
     </div>
 `;
