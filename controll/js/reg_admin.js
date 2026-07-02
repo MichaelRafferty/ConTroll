@@ -7,6 +7,7 @@ customText = null;
 policy = null;
 interests = null;
 rules = null;
+conroles = null;
 configEditor = null;
 checkConfigReload = true;
 conid = null;
@@ -405,6 +406,7 @@ function draw_stats(data) {
         statusTable = null;
     }
 
+    document.getElementById('regListFilters').hidden = curRegListSearch != '';
     if (curRegListSearch == '') {
         category = new Tabulator('#category-table', {
             data: data.categories,
@@ -580,6 +582,8 @@ function receipt_email(addrchoice) {
     if (success == '')
         success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
 
+    clear_message();
+    clearError();
     let data = {
         email: email,
         okmsg: success,
@@ -617,6 +621,8 @@ function receipt(index) {
     if (transid == null || transid == '') {
         transid = row.getCell("create_trans").getValue();
     }
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: "scripts/getReceipt.php",
@@ -648,6 +654,8 @@ function receipt(index) {
 function history(index) {
     historyRow = registrationtable.getRow(index).getData();
 
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: "scripts/regadmin_getRegHistory.php",
@@ -771,6 +779,8 @@ function changeReg(index, clear = true) {
         limitConid: limitConid,
         action: 'regregs',
     };
+    clear_message();
+    clearError();
     let script = 'scripts/regadmin_getRegs.php';
     $.ajax({
         method: "POST",
@@ -1018,6 +1028,8 @@ function changeRevoke(direction) {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     let data = {
         cancelList: changeList,
         direction: direction,
@@ -1130,6 +1142,8 @@ function changeTransferFind() {
     // search for matching names
     $("button[name='transferSearch']").attr("disabled", true);
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
 
     $.ajax({
         method: "POST",
@@ -1237,6 +1251,8 @@ function transferReg(to, banned) {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     let script = 'scripts/regadmin_transferReg.php';
     let data = {
         action: 'transfer',
@@ -1412,6 +1428,9 @@ function changeRolloverExecute() {
     }
     let script= 'scripts/regadmin_rolloverReg.php';
 
+    clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
     $.ajax({
         method: "POST",
         url: script,
@@ -1485,6 +1504,8 @@ function changeDonate() {
     }
 
     clear_message('changeMessageDiv');
+    clear_message();
+    clearError();
 
     let data = {
         donateList: changeList,
@@ -1707,6 +1728,8 @@ function changeEditSave(override) {
             return;
         }
     }
+    clear_message();
+    clearError();
     // ok, a clean validition or an overide, do the save
     let data = {
         action: 'edit',
@@ -1814,14 +1837,11 @@ function draw_registrations(data) {
             { title: "mId", field: "memId", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Price", field: "price", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Disc", field: "couponDiscount", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Paid", field: "paid", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Status", field: "status", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true,
@@ -1997,6 +2017,8 @@ function settab(tabname) {
         policy.close();
     if (interests != null)
         interests.close();
+    if (conroles != null)
+        conroles.close();
     if (rules != null)
         rules.close();
     if (configEditor && checkConfigReload) {
@@ -2056,6 +2078,11 @@ function settab(tabname) {
             if (interests == null)
                 interests = new interestsSetup();
             interests.open();
+            break;
+        case 'conroles-pane':
+            if (conroles == null)
+                conroles = new ConRolesSetup();
+            conroles.open();
             break;
         case 'rules-pane':
             if (rules == null)
@@ -2119,8 +2146,15 @@ function cellChanged(cell) {
 
 function deleteicon(cell, formattParams, onRendered) {
     let value = cell.getValue();
-    if (value == 0)
+    let noDelete = false;
+    if (formattParams.hasOwnProperty('table') && formattParams.table == 'ageList') {
+        let ageType = cell.getRow().getCell('ageType').getValue();
+        if (ageType == 'all')
+            noDelete = true;
+    }
+    if (value == 0 && !noDelete)
         return "&#x1F5D1;";
+
     return value;
 }
 
@@ -2135,4 +2169,45 @@ function deleterow(e, row) {
 // reg note items
 function addNote(regId) {
     showRegNotes(regId, false);
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
+}
+
+// replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the allowed
+// sections of the parsed configuration file
+const replaceOldNames = {CONID: 'id', CONNAME: 'conname', CONLABEL: 'label', POLICYLINK: 'policy', POLICYTEXT: 'policytext' };
+const replacePattern = /#[^#]+#/g;     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
+
+function replaceConfigTokens(string)  {
+    // get the matches if any
+    let matches = [...string.matchAll(replacePattern)].map(m => m[0]);
+    if (matches.length == 0)
+        return string;
+
+    for (let match of matches) {
+        // loop over all variables found and replace them
+        let token = match.substring(1, match.length -1);  // string the #'s off each end
+        if (token.includes('.')) {
+            [section, element] = token.split('.');  // split into parts
+        } else {
+            if (replaceOldNames.hasOwnProperty(token))
+                token = replaceOldNames[token];
+            element = token;  // default to reg. if the section is missing
+            section = 'con';
+        }
+
+        let replaceValue = fullConfig[section][element];
+        if (replaceValue === undefined)
+            continue; // item is missing, both in the section and in global, leave token in the string and move on
+
+        string = string.replace(match, replaceValue);
+    }
+
+    return string;
 }

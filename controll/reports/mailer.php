@@ -25,14 +25,14 @@ header('Content-Disposition: attachment; filename="mailer.csv"');
 
 $query = <<<EOS
 SELECT DISTINCT concat_ws(' ', P.first_name, P.middle_name, P.last_name, P.suffix) as name
-    , P.addr_2 as company, P.address, P.city, P.state, P.zip, P.country"
-    , P.phone, P.email_addr"
+    , P.addr_2 as company, P.address, P.city, P.state, P.zip, P.country
+    , P.phone, P.email_addr
     , max(R.conid) as last_con
 FROM perinfo AS P
 JOIN reg as R ON R.perid=P.id
 WHERE R.conid >$conid-5
     AND P.address IS NOT NULL and P.last_name IS NOT NULL
-    AND P.banned != 'Y'
+    AND P.banned != 'Y' AND P.deceased != 'Y'
     AND P.address != '' AND P.address != '\n' AND P.zip != 0
 GROUP BY P.address, P.city, P.state, P.zip
 ORDER BY TRIM(concat_ws(',', P.last_name, P.first_name, P.middle_name));

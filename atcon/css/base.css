@@ -68,15 +68,15 @@ span.req, .warn {
 }
 
 .historyChangedBGColor {
-    background-color: #ffcdcd;
+    background-color: #ffcdcd !important;
 }
 
 .unsavedChangeBGColor {
-    background-color: #fff3cd;
+    background-color: #fff3cd !important;
 }
 
 .unsavedWarnBGColor {
-    background-color: #ff8f8f;
+    background-color: #ff8f8f !important;
 }
 
 .paginationBGColor {
@@ -84,7 +84,7 @@ span.req, .warn {
 }
 
 .selectedBGColor {
-    background-color: #c0ffc0;
+    background-color: #c0ffc0 !important;
 }
 
 /* tabulator pagination styling */

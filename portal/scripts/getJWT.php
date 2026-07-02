@@ -54,8 +54,7 @@ $worldCon = getConfValue('portal', 'worldcon', '0');
 // Ok, we need the payload now, lets start with the main info
 if ($loginType == 'p') {
     $piQ = <<<EOS
-SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name, p.badgeNameL2,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name, p.badgeNameL2, p.fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 WHERE p.id = ?
@@ -63,8 +62,7 @@ ORDER BY n.id DESC;
 EOS;
 } else {
     $piQ = <<<EOS
-SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name, badgeNameL2,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name, badgeNameL2, fullName
 FROM newperson 
 WHERE id = ?;
 EOS;
@@ -216,8 +214,8 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         ELSE NULL
     END AS phone,
     CASE 
-        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
-        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
+        WHEN rp.id IS NOT NULL THEN rp.fullName
+        WHEN rn.id IS NOT NULL THEN rn.fullName
         ELSE NULL
     END AS fullName,
     CASE 

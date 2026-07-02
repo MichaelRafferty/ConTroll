@@ -1,7 +1,6 @@
 <?php
 require_once "../lib/base.php";
 require_once "../../lib/global.php";
-require_once "../lib/email.php";
 require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
@@ -83,13 +82,13 @@ case 'expire':
     FROM reg r
     JOIN perinfo p ON p.id = r.perid
     JOIN memLabel m ON m.id = r.memId
-    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60 AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
     $macroSubstitution = true;
-    $email_text = returnCustomText('expire/text');
+    $email_text = returnCustomText('expire/text', null, false);
     $email_html = returnCustomText('expire/html');
     $email_subject = "Reminder: You have unpaid memberships that will expire soon";
     break;
@@ -99,13 +98,13 @@ case 'new':
     SELECT p.first_name, p.email_addr AS email, p.id
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid
-    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? 
+    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
     $paramarray = array (getConfValue('reg', 'noNewDays', 60));
     $macroSubstitution = true;
-    $email_text = returnCustomText('noMembership/text');
+    $email_text = returnCustomText('noMembership/text', null, false);
     $email_html = returnCustomText('noMembership/html');
     $email_subject = 'Reminder: You created an account but have not purchased any memberships.';
     break;
@@ -116,13 +115,13 @@ SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%'
+WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%' AND P.deceased != 'Y'
 ORDER BY email;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
     $macroSubstitution = true;
-    $email_text = returnCustomText('reminder/text');
+    $email_text = returnCustomText('reminder/text', null, false);
     $email_html = returnCustomText('reminder/html');
     $email_subject = "Reminder: $label Starts Soon";
     break;
@@ -136,13 +135,13 @@ SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y'
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y' AND p.deceased != 'Y'
 ORDER BY email;
 EOQ;
     $typestr = 'ii';
     $paramarray = array($priorcon, $conid);
     $macroSubstitution = true;
-    $email_text = returnCustomText('marketing/text');
+    $email_text = returnCustomText('marketing/text', null, false);
     $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
     break;
@@ -188,7 +187,7 @@ FROM perinfo p
 LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
 LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
 GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
@@ -211,7 +210,7 @@ WITH people AS (
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
     LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
     GROUP BY p.email_addr
 )
 SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
@@ -224,8 +223,8 @@ EOQ;
     $typestr = 'iii';
     //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
     $paramarray = array($conid, $priorcon, $priorcon2);
-    $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
-    $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
+    $email_text = returnCustomText('comeback/text', null, false);
+    $email_html = returnCustomText('comeback/html');
     $email_subject = "We miss you! Please come back to $conname";
     $macroSubstitution = true;
     break;
@@ -237,19 +236,18 @@ case 'survey':
 SELECT Distinct P.email_addr AS email, P.first_name
 FROM reg R 
 JOIN regActions H ON (R.id=H.regid)
-JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
 WHERE R.conid=? AND (H.action = 'print') AND P.contact_ok='Y'
 AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
-AND P.email_addr LIKE '%@%'
+AND P.email_addr LIKE '%@%' AND p.deceased != 'Y'
 ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
     $macroSubstitution = true;
-    $email_text = returnCustomText('survey/text');
+    $email_text = returnCustomText('survey/text', null, false);
     $email_html = returnCustomText('survey/html');
     $email_subject = "Thanks for attending, can you help us improve by answering this simple survey";
     break;
@@ -268,21 +266,28 @@ case 'invReminder':
         exit();
     }
     $emailQ = <<<EOQ
-  SELECT 
+WITH soldCount AS (
+    SELECT ry.id, COUNT(s.item_purchased) AS numPurchased
+    FROM exhibitorSpaces s
+    JOIN exhibitorRegionYears ry ON ry.exhibitsRegionYearId = ? AND s.exhibitorRegionYear = ry.id
+    GROUP BY ry.id
+)
+SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
-      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(*) AS numItems, COUNT(s.item_purchased) AS numPurchases
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
-JOIN exhibitorSpaces s ON s.exhibitorRegionYear = ry.id
+JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
 WHERE r.conid = ?
-GROUP BY first_name, email;
+GROUP BY first_name, email
+HAVING numItems = 0;
 EOQ;
-    $typestr = 'ii';
-    $paramarray = array ($exhibitsRegionYearId, $conid);
-    $email_text = returnCustomText('invReminder/text');
+    $typestr = 'iii';
+    $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
+    $email_text = returnCustomText('invReminder/text', null, false);
     $email_html = returnCustomText('invReminder/html');
     $macroSubstitution = true;
     $email_subject = "Thank you for being in the $regionName. Don't forget to fill out your item registration data";
@@ -293,6 +298,14 @@ default:
     ajaxSuccess($response);
     exit();
 }
+
+if (str_contains($email_text, 'Controll-Default: This is ') || str_contains($email_html, 'Controll-Default: This is ')) {
+    $response['error'] = "The custom text of the text or html version of the $email_type is still the default message.<br/>" .
+        "It needs to be edited before sending emails of this type.";
+    ajaxSuccess($response);
+    exit();
+}
+
 
 $emailR = dbSafeQuery($emailQ, $typestr, $paramarray);
 if ($emailR === false) {
@@ -311,14 +324,14 @@ if ($response['numEmails'] == 0) {
 $email_array=array();
 $data_array=array();
 
-while($addr =  $emailR->fetch_assoc()) {
+while ($addr =  $emailR->fetch_assoc()) {
    $email_array[] = $addr;
 }
 
 if ($test) {
     $email_test = [];
-    $email_array[0]['email'] = $email;
-    $email_test[] = $email_array[0];
+    //$email_array[0]['email'] = $email;
+    $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
     $response['emailTest'] = $email_test;
 }
 
@@ -344,7 +357,7 @@ GROUP by perid
 ) n ON p.id = n.perid
 JOIN memberPolicies m ON  m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
 SET p.contact_ok = m.response
-WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into' AND m.conid = ?
 EOS;
     $rows = dbSafeCmd($sql, 'i', array($conid));
 }

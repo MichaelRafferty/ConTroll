@@ -83,7 +83,7 @@ function redoAddress() {
 
 function addMembership(formData) {
     // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
-    profile.clearNext();
+    profile.clearNext(true);
     clear_message('addMessageDiv');
 
     // build name and legal name
@@ -264,7 +264,7 @@ function makePurchase(token, label) {
 
 function newBadgeModalOpen() {
     if (newBadge != null) {
-        profile.clearNext();
+        profile.clearNext(true);
         newBadge.show();
         profile.setFocus('fname');
     }
@@ -416,6 +416,18 @@ function togglePopup() {
 
 function checkRefresh(data = null) {
     return;
+}
+
+// interest functions
+// check for need to open the notes section
+function updateInterestSelect(id) {
+    let checked = document.getElementById('i_' + id).checked;
+    let prompt = document.getElementById('i_p_' + id).innerHTML;
+    if (prompt != '') {
+        document.getElementById('i_d_' + id).hidden = !checked;
+        document.getElementById('i_t_' + id).hidden = !checked;
+        document.getElementById('i_i_' + id).hidden = !checked;
+    }
 }
 
 window.onload = function () {

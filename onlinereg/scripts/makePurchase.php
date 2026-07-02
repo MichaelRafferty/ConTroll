@@ -149,9 +149,11 @@ INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pro
            IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?, ?);
 EOS;
 
+
+
 $intInsertQ = <<<EOS
-INSERT INTO memberInterests(conid, newperid, interest, interested)
-VALUES(?, ?, ?, ?);
+INSERT INTO memberInterests(newperid, conid, interest, interested, notes)
+VALUES (?, ?, ?, ?, ?);
 EOS;
 
 $polInsertQ = <<<EOS
@@ -213,7 +215,7 @@ foreach ($badges as $badge) {
             $badge['country'],
             array_key_exists('contact', $badge) ? $badge['contact'] : 'Y',
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
-            $badge['age'],
+            $badge['age'] == '' ? null : $badge['age'],
             $conid
         );
 
@@ -234,7 +236,14 @@ foreach ($badges as $badge) {
             $key = substr($key, 2);
             $polid = dbSafeInsert($polInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
         } else {
-            $intid = dbSafeInsert($intInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
+            if (str_ends_with($key, '_notes'))
+                continue;
+            $nkey = $key . '_notes';
+            if (array_key_exists($nkey, $policies))
+                $notes = $policies[$nkey];
+            else
+                $notes = null;
+            $intid = dbSafeInsert($intInsertQ, 'iiss', array($conid, $newid, $key, 'Y', $notes));
         }
     }
 }
@@ -333,7 +342,10 @@ if ($total > 0) {
     $referenceId = $transId . '-' . 'pay-' . time();
     $preTaxAmt = $rtn['preTaxAmt'];
     $taxAmt = $rtn['taxAmt'];
-    $taxes = $rtn['taxes'];
+    if ($taxAmt > 0)
+        $taxes = $rtn['taxes'];
+    else
+        $taxes = [];
     $withTax = $rtn['totalAmt'];
 
     $results = array(

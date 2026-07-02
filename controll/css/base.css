@@ -46,7 +46,7 @@ h1.title {
 }
 
 .warncolor {
-    background-color: #FFE190;;
+    background-color: #FFE190;
 }
 
 .warn {
@@ -54,15 +54,15 @@ h1.title {
 }
 
 .historyChangedBGColor {
-    background-color: #ffcdcd;
+    background-color: #ffcdcd !important;
 }
 
 .unsavedChangeBGColor {
-    background-color: #fff3cd;
+    background-color: #fff3cd !important;
 }
 
 .unsavedWarnBGColor {
-    background-color: #ff8f8f;
+    background-color: #ff8f8f !important;
 }
 
 .paginationBGColor {
@@ -70,7 +70,7 @@ h1.title {
  }
 
 .selectedBGColor {
-    background-color: #c0ffc0;
+    background-color: #c0ffc0 !important;
 }
 
 /* hide up/down arrows ("spinners") on input fields marked type="number" */

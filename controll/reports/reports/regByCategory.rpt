@@ -25,13 +25,18 @@
 	name=memList
 	alias=m
 	join="m.id = r.memId"
+[T003]
+	name=perinfo
+	alias=p
+	join="p.id = r.perid"
+	left=true
 [P001]
 	type=config
 	section=con
 	item=id
 	datatype=i
 [where]
-	001="r.conid = ?"
+	001="r.conid = ? AND IFNULL(p.deceased,'N') != 'Y'"
 [group]
     001=memCategory
 [sort]

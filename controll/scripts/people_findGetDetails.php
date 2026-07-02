@@ -33,10 +33,12 @@ if ($perid == '' || is_numeric($perid) == false) {
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 
-// get the interests values
+// get the interests and member interests values
 $mQ = <<<EOS
-SELECT id, perid, conid, interest, interested, notifyDate, csvDate, createDate, updateDate, updateBy
-FROM memberInterests
+SELECT m.id, m.perid, m.conid, m.interest, m.interested, m.notifyDate, m.csvDate, m.createDate, m.updateDate, m.updateBy, m.notes,
+       i.notesPrompt, i.endDate
+FROM memberInterests m
+JOIN interests i ON i.interest = m.interest
 WHERE perid = ? and conid = ?;
 EOS;
 $mR = dbSafeQuery($mQ, 'ii', array($perid, $conid));
@@ -47,20 +49,11 @@ if ($mR === false) {
 }
 
 $interests= [];
-$iQ = <<<EOS
-SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
-FROM interests i
-LEFT OUTER JOIN memberInterests m ON m.perid = ? AND m.interest = i.interest AND conid = ?
-WHERE i.active = 'Y'
-ORDER BY i.sortOrder
-EOS;
-$iR = dbSafeQuery($iQ, 'ii', array($perid, $conid));
-if ($iR !== false) {
-    while ($row = $iR->fetch_assoc()) {
-        $interests[$row['interest']] = $row;
-    }
-    $iR->free();
+while ($row = $mR->fetch_assoc()) {
+    $interests[] = $row;
 }
+$mR->free();
+
 $response['interests'] = $interests;
 
 // get the policies
@@ -73,23 +66,45 @@ WHERE p.active = 'Y'
 ORDER BY p.sortOrder;
 EOS;
 $pR = dbSafeQuery($pQ, 'ii', array($perid, $conid));
-if ($pR !== false) {
-    while ($row = $pR->fetch_assoc()) {
-        $policies[] = $row;
+    if ($pR === false) {
+        $response['error'] = 'Select policies failed';
+        ajaxSuccess($response);
+        return;
     }
-    $pR->free();
+
+while ($row = $pR->fetch_assoc()) {
+    $policies[] = $row;
 }
+$pR->free();
+
 $response['policies'] = $policies;
+
+// get the convention roles
+if (getConfValue('con', 'conRoles', 0) == 1) {
+    $cQ = <<<EOS
+SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+FROM conRoles c
+LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+WHERE c.active = 'Y'
+EOS;
+    $conRoles = [];
+    $cR = dbSafeQuery($cQ, 'ii', array($perid, $conid));
+    if ($cR !== false) {
+        while ($row = $cR->fetch_assoc()) {
+            $conRoles[] = $row;
+        }
+        $cR->free();
+    }
+    $response['conroles'] = $conRoles;
+}
 
 // get the people managed
 $mQ = <<<EOS
-SELECT '' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+SELECT '' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name, fullName
 FROM perinfo p
 WHERE managedBy = ?
 UNION
-SELECT 'n' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+SELECT 'n' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name, fullName
 FROM newperson p
 WHERE managedBy = ? AND p.perid IS NULL
 EOS;

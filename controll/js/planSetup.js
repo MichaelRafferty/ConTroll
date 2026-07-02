@@ -455,6 +455,7 @@ class PlansSetup {
                 indexcol: "id"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({

@@ -310,6 +310,10 @@ class Pos {
         return this.#num_coupons;
     }
 
+    getFindResultTable() {
+        return this.#find_result_table;
+    }
+
     isReviewDirty() {
         return this.#review_dirty;
     }
@@ -324,27 +328,29 @@ class Pos {
         this.#add_perid_field.value = cartrow.perid;
         this.#add_memIndex_field.value = '';
 
-        profile.setAll(cartrow.first_name, cartrow.middle_name, cartrow.last_name, cartrow.suffix, cartrow.legalName, cartrow.pronouns,
-            cartrow.address_1, cartrow.address_2, cartrow.city, cartrow.state, cartrow.postal_code, cartrow.country,
-            cartrow.phone, cartrow.badge_name, cartrow.badgeNameL2, cartrow.currentAgeType);
+        profile.setAll(cartrow);
 
         profile.setEmail(cartrow.email_addr);
 
-        if (cartrow.perid > 0 && this.#managerDiv) {
-            this.#managerSelect.innerHTML = '';
-            this.#managerDiv.hidden = true;
-        } else {
-            let selectList = cart.getManagerSelect();
-            if (selectList.length > 0) {
-                this.#managerSelect.innerHTML = selectList;
-                this.#managerDiv.hidden = false;
-                if (cartrow.managedBy == null || cartrow.managedBy == '' || cart.notinCart(cartrow.managedBy))
-                    this.#managerSelect.value = '';
-                else
-                    this.#managerSelect.value = cartrow.managedBy;
-            } else {
+        if (this.#managerDiv && this.#managerSelect) {
+            if (cartrow.perid > 0) {
+                this.#managerSelect.innerHTML = '';
                 this.#managerDiv.hidden = true;
-                this.#managerSelect.innerHTML = null;
+            } else {
+                let selectList = cart.getManagerSelect();
+                if (selectList.length > 0) {
+                    this.#managerSelect.innerHTML = selectList;
+                    this.#managerDiv.hidden = false;
+                    if (cartrow.managedBy == null || cartrow.managedBy == '' || cart.notinCart(cartrow.managedBy))
+                        this.#managerSelect.value = '';
+                    else
+                        this.#managerSelect.value = cartrow.managedBy;
+                } else {
+                    if (this.#managerDiv)
+                        this.#managerDiv.hidden = true;
+                    if (this.#managerSelect)
+                        this.#managerSelect.innerHTML = null;
+                }
             }
         }
 
@@ -476,14 +482,14 @@ class Pos {
 
     // find the primary membership for a perid given it's array of memberships
     // with memberships sorted by purchase date, it's last
-    find_primary_membership(regitems) {
+    find_primary_membership(regitems, printOnly = false) {
         let mem_index = null;
         for (let item in regitems) {
             let mi_row = regitems[item];
             if (mi_row.conid != this.#conid)
                 continue;
 
-            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price))
+            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price, printOnly ? 'print' : 'all'))
                 continue;
 
             mem_index = item;
@@ -709,7 +715,6 @@ class Pos {
         this.#review_dirty = false;
     }
 
-
     // add search person/transaction from result_perinfo record to the cart
     addToCart(index, table) {
         let rt = null;
@@ -723,7 +728,12 @@ class Pos {
 
         if (index >= 0) {
             if (rt[index].banned == 'Y') {
-                alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                alert("Please ask " + (rt[index].first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                    "you cannot add them at this time.")
+                return;
+            }
+            if (rt[index].deceased == 'Y') {
+                alert("Please ask " + (rt[index].first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
                     "you cannot add them at this time.")
                 return;
             }
@@ -750,7 +760,12 @@ class Pos {
                     if (prow.banned == 'Y') {
                         alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
                             " to talk to the Registration Administrator, you cannot add them at this time.")
-                        return 0;
+                        continue;
+                    }
+                    if (prow.deceased == 'Y') {
+                        alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
+                            " to talk to the Registration Administrator, you cannot add them at this time.")
+                        continue;
                     }
                     perid = prow.perid;
                     if (cart.notinCart(perid)) {
@@ -1263,8 +1278,13 @@ class Pos {
                 html += `
             <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">B</button>`;
             } else {
-                html += `
-            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">Add to Cart</button>`;
+                let color = 'btn-success';
+                if (data.banned == 'Y')
+                    color = 'btn-danger';
+                else if (data.deceased == 'Y')
+                    color = 'btn-warning';
+                html += '\n<button class="btn ' + color + ' btn-success btn-sm" id="add_btn_1" onclick="pos.addToCart(' + row + ', \'result\');">Add to' +
+                    ' Cart</button>';
             }
         } else {
             html += `
@@ -1382,7 +1402,10 @@ class Pos {
         if (data.banned == 'Y') {
             return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">B</button>';
-        } else if (cart.notinCart(data.perid)) {
+        } else if (data.deceased == 'Y')
+            return '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
+                data.index + ', \'' + formatterParams.t + '\')">D</button>';
+        else if (cart.notinCart(data.perid)) {
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">Add</button>';
             if (config.useportal == 1) {
@@ -1811,12 +1834,13 @@ class Pos {
                 maxHeight: "600px",
                 data: this.#result_perinfo,
                 layout: "fitColumns",
+                index: 'perid',
                 initialSort: [
                     {column: "fullName", dir: "asc"},
                 ],
                 columns: [
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
-                    {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
+                    {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right', formatter: pos.idStatus, },
                     {field: "index", visible: false,},
                     {
                         title: "Full Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
@@ -1839,7 +1863,7 @@ class Pos {
             });
         } else if (this.#result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
             if ((!isNaN(this.#name_search)) && regtids.length == 1 && (attach_count > 0 || print_count > 0)) {
-                // only 1 transaction returned and it was search by number, and it's been attached for payment before
+                // only 1 transaction returned, not banned or deceased, and it was search by number, and it's been attached for payment before
                 // add it to the cart and go to payment
                 for (row in result_membership) {
                     if ((result_membership[row].tid == tid) || (result_membership[row].rstid == this.#name_search)) {
@@ -1868,6 +1892,16 @@ class Pos {
 </div>
 `;
         this.#id_div.innerHTML = 'No matching records found'
+    }
+
+// tabulator formatter for the id field
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  pos.getFindResultTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
 // draw perinfo as full record, not tabular data
@@ -3008,6 +3042,8 @@ class Pos {
                     let amt = this.#taxes[tax];
                     if (amt == null)
                         continue;
+                    if (!['string', 'number', 'bigint', 'undefined'].includes(typeof amt))
+                        amt = amt.tax;
 
                     pay_html += `
     <div class="row mt-1">
@@ -3077,11 +3113,13 @@ class Pos {
     </div>
     <div class="row mb-2" id="pay-cash-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered"
+         step="0.01" size="6"/></div>
     </div>
        <div class="row mb-2" id="pay-disc-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Disc Amount</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-discount" name="paid-discount" size="6"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-discount" name="paid-discount"
+        step="0.01"  size="6"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
@@ -3175,7 +3213,7 @@ class Pos {
         cart.showStartOver();
     }
 
-// printint
+// printing
     printShown() {
         cart.clearInReview();
         this.#find_tab.disabled = true;

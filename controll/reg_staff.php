@@ -34,6 +34,7 @@ page_init($page,
                     'js/adminCustomText.js',
                     'js/regadmin_policy.js',
                     'js/regadmin_interests.js',
+                    'js/regadmin_conroles.js',
                     'js/regadmin_rules.js',
                     'jslib/emailBulkSend.js',
                     'jslib/membershipRules.js',
@@ -56,11 +57,14 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 
 $conid = getConfValue('con', 'id', '-1');
+$condata = get_con($conid);
 $multiOneDay = getConfValue('con', 'multioneday', '0');
 $config_vars = array();
 $config_vars['pageName'] = 'regAdmin';
 $config_vars['debug'] = getConfValue('debug', 'controll_regadmin', 0);
 $config_vars['conid'] = $conid;
+$config_vars['conStartDate'] = $condata['startdate'];
+$config_vars['conEndDate'] = $condata['enddate'];
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $authToken->getPerid();
@@ -72,6 +76,7 @@ $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
 $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) == 1 ? 'Y' : 'N';
+$config_vars['validDomains'] = explode(',', getConfValue('con', 'emailDomains', ''));
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
@@ -425,7 +430,7 @@ draw_fileManagerModals($authToken);
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
                     <?php echo matchEdit('match', 'mergeMatchTitle', 'To Merge Person', 'Merge Edited Value', 'To Remain Person',
-                                      'merge', $countryOptions, $policiesCell, $ageList);
+                                      'merge', $countryOptions, $policiesCell, $ageList, true, $regAdmin);
                     ?>
                 </div>
             </div>
@@ -538,11 +543,31 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row'>
                         <div class='col-sm-1'>
+                            <label for='eEndDate'>End Date:</label>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <input type='date' id='eEndDate' name='eEndDate' onChange="interests.updateEndDate()"/>
+                            <input type="hidden" id="iEndDate" name="iEndDate"/>
+                        </div>
+                        <div class="col-sm-auto">Leave empty for no end date of asking for the interest"</div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
                             <label for='iNotify'>Notify:</label>
                         </div>
                         <div class='col-sm-11'>
-                            <textarea rows='5' cols='120' id='iNotify' name='iNotify' maxlength="500" wrap="soft"
+                            <textarea rows='4' cols='125' id='iNotify' name='iNotify' maxlength="500" wrap="soft"
                                       placeholder='comma separated list of email addresses, leave empty if CSV is Y'>
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='iPrompt'>Note Label:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <textarea rows='4' cols='125' id='iPrompt' name='iPrompt' maxlength='500' wrap='soft'
+                                      placeholder='label prompt for interest note to be left by member, leave empty if note field is to be suppressed'>
                             </textarea>
                         </div>
                     </div>
@@ -564,6 +589,58 @@ draw_fileManagerModals($authToken);
         </div>
     </div>
 </div>
+
+<div id='editConrolesModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Convention Role Configuration' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editConrolesTitle'>Edit Conroles Title</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editConroleBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editConroleName'>ConroleName</span>Conrole</h4></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='cName'>Con Role:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <input type='text' id='cName' name='cName' size='20' maxlength='16' placeholder='name'/>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='cMemlabel'>Label:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <input type='text' id='cMemlabel' name='cMemlabel' size='64' maxlength='64' placeholder='Role Label'/>
+                        </div>
+                    </div>
+
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><b>Con Role Description:</b></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12'>
+                            <textarea rows='5' cols='120' id='conroleDescription' name='conroleDescription'>conroleDescription</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editConroleSaveBtn' onClick='conroles.editConroleSave()'>Save Changes</button>
+            </div>
+            <div id='result_message_editConrole' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+
 <div id='editRuleModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Test Rules Configuration'
      aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
@@ -1047,6 +1124,7 @@ draw_fileManagerModals($authToken);
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var policies = <?php echo json_encode($policies); ?>;
+    var fullConfig = <?php echo json_encode(getFullConfig()); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
@@ -1088,7 +1166,15 @@ draw_fileManagerModals($authToken);
                 aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
         </button>
     </li>
-    <?php if ($regAdmin) { ?>
+    <?php if (getConfValue('con', 'conRoles', 0) == 1) { ?>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='conroles-tab' data-bs-toggle='pill' data-bs-target='#conroles-pane' type='button' role='tab'
+                aria-controls='nav-conroles' aria-selected='false' onclick="settab('conroles-pane');">Con Roles
+        </button>
+    </li>
+
+    <?php }
+        if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
@@ -1190,7 +1276,7 @@ draw_fileManagerModals($authToken);
             </div>
             <?php if (getConfValue('con', 'survey_url') != '') { ?>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')">Send Survey Email</button>
             </div>
             <?php } ?>
             <?php if (getConfValue('reg','cancelled') == 1) { ?>
@@ -1216,6 +1302,7 @@ draw_fileManagerModals($authToken);
     <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='conroles-pane' role='tabpanel' aria-labelledby='conroles-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
         <div class='container-fluid'>
@@ -1272,8 +1359,8 @@ page_foot($page);
 function drawFilters() {
 ?>
 <div class="container-fluid" id="regListFilters">
-    <div class="row mb-2" hidden>
-        <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
+    <div class="row mb-2">
+        <div class="col-sm-auto me-2 p-0">Click on a row to toggle filtering by that value</div>
         <div class="col-sm-auto me-1 p-0">
             <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
         </div>

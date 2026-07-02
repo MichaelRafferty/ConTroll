@@ -119,6 +119,7 @@ function updateReg(form) {
   var formData = $(form).serialize();
   var formUrl = "scripts/listClub.php"
 
+  clearError();
   $.ajax({
     url: formUrl,
     data: formData,

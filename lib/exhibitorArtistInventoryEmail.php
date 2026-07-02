@@ -20,10 +20,10 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
     // load the custom text fields
     loadCustomText('exhibitor', 'index', getConfValue('vendor', 'customtext', 'production'), true);
 
-    $artistOnSiteInventoryText = returnCustomText('email/onsiteInvText');
-    $artistOnSiteInventoryHTML = returnCustomText('email/onsiteInvHTML');
-    $artistMailInInventoryText = returnCustomText('email/mailinInvText');
-    $artistMailInInventoryHTML = returnCustomText('email/mailinInvHTML');
+    $artistOnSiteInventoryText = returnCustomText('email/onsiteInvText', null, false);
+    $artistOnSiteInventoryHTML = returnCustomText('email/onsiteInvHTML', null, false);
+    $artistMailInInventoryText = returnCustomText('email/mailinInvText', null, false);
+    $artistMailInInventoryHTML = returnCustomText('email/mailinInvHTML', null, false);
 
     if ($artistOnSiteInventoryText == '' && $artistOnSiteInventoryHTML == '' && $artistMailInInventoryText == '' && $artistMailInInventoryHTML == '') {
         return false; // no email templates available to send

@@ -87,6 +87,22 @@ function loadConfFile(): bool {
     return true;
 }
 
+// for those that need the full config for passing to javascript
+// sections cc, client, debug, email, google, local, log, mysql are skipped for security
+// reasons as they hold keys and other protected data
+const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql', 'usps', 'api'];
+
+    function getFullConfig() : array {
+    global $configData;
+    $fullConfigData = [];
+    foreach ($configData as $section => $values) {
+        if (in_array($section, replaceConfigTokensSkip))
+            continue;
+        $fullConfigData[$section] = $values;
+    }
+    return $fullConfigData;
+}
+
 // older depreciated function to get an entire conf section, but it doesn't handle global overrides,
 // should be reserved only for things without overrides, and perhaps phased out entirely
 function get_conf($name) {
@@ -294,23 +310,37 @@ EOS;
 
         if (array_key_exists($usePrefix . $key, $customTexT)) {
             $contents = $customTexT[$usePrefix . $key];
+            $show = true;
+            $prefixStr = 'Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+            $prefixStr = '<p>Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
-                    $prefixStr = 'Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
-                        return;
-                    $prefixStr = '<p>Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
+                    if (!$show)
                         return;
                 }
 
-                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
-                    replaceConfigTokens($contents) . PHP_EOL .
-                    '</div>' . PHP_EOL;
+                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL;
+                if ($customTextFilter == 'all') {
+                    echo '<span class="text-muted" style="background-color: #E0FFE0;"><b>Start Custom: ' . $usePrefix . $key . '</b></span>' .
+                        ($show ? '<br/>' : '') . PHP_EOL;
+                }
+
+                if ($show)
+                    echo replaceConfigTokens($contents) . PHP_EOL;
+
+                if ($customTextFilter == 'all') {
+                    echo '<br/><span class="text-muted" style="background-color: #E0FFE0;"><b>End Custom: ' . $usePrefix . $key . '</b></span>' . PHP_EOL;
+                }
+                echo '</div>' . PHP_EOL;
             }
         }
     }
-    function returnCustomText($key, $overridePrefix = null) : string {
+
+    function returnCustomText($key, $overridePrefix = null, $forDisplay = true) : string {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -327,18 +357,41 @@ EOS;
         }
 
         if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $show = true;
+            $return = '';
             $contents = $customTexT[$usePrefix . $key];
+            $prefixStr = 'Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+            $prefixStr = '<p>Controll-Default: ';
+            if (str_starts_with($contents, $prefixStr))
+                $show = false;
+
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
-                    $prefixStr = 'Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
-                        return '';
-                    $prefixStr = '<p>Controll-Default: ';
-                    if (str_starts_with($contents, $prefixStr))
+                   if (!$show)
                         return '';
                 }
 
-                return replaceConfigTokens($contents);
+                if ($forDisplay) {
+                    $return = '<div class="container-fluid p-0 m-0">' . PHP_EOL;
+                    if ($customTextFilter == 'all') {
+                        $return .= '<span class="text-muted" style="background-color: #E0FFE0;"><b>Start Custom: ' . $usePrefix . $key . '</b></span>' .
+                            ($show ? '<br/>' : '') . PHP_EOL;
+                    }
+                }
+
+                if ($show)
+                    $return .= replaceConfigTokens($contents) . PHP_EOL;
+
+                if ($forDisplay && $customTextFilter == 'all') {
+                    $return .= '<br/><span class="text-muted" style="background-color: #E0FFE0;"><b>End Custom: ' . $usePrefix . $key . '</b></span>' .
+                    PHP_EOL;
+                }
+                if ($forDisplay)
+                    $return .= '</div>' . PHP_EOL;
+
+                return $return;
             }
         }
         return '';
@@ -351,14 +404,13 @@ EOS;
         $replaceSource = ['#CONID#', '#CONNAME#', '#CONLABEL#', '#POLICYLINK#', '#POLICYTEXT#'];
         $replaceValue = [ $con['id'], $con['conname'], $con['label'], $con['policy'], $con['policytext'] ];
 
-        return str_replace($replaceSource, $replaceValue, $string);
+        return replaceConfigTokens(str_replace($replaceSource, $replaceValue, $string));
     }
 
 // replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the parsed configuration file
 // NOTE: the sections cc, client, debug, email, google, local, log, mysql are skipped for security reasons as they hold keys and other protected data
-const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
     function replaceConfigTokens($string) : string {
-        $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
+        $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'con' will be assumed
         // get the matches if any
         $count = preg_match_all($pattern, $string, $matches);
         if ($count == 0 || count($matches) == 0)
@@ -372,7 +424,7 @@ const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'go
             if (str_contains($token, '.')) {
                 [$section, $element] = explode('.', $token);        // split into parts
             } else {
-                $element = $token;  // default to reg. if the section is missing
+                $element = $token;  // default to con. if the section is missing
                 $section = 'con';
             }
 

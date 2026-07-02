@@ -57,15 +57,28 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
     if ($planPayment != 1) {
         if ($taxAmt > 0) {
             $taxList = getTaxRates();
-            $taxCode = "(Items with a T at the end of the price are taxable.)\n";
             $body .= 'The pre sales tax price for your order was ' . $dolfmt->formatCurrency((float)$preTaxAmt, $currency) . "\n";
+            $numTaxes = 0;
             foreach ($taxList as $tax) {
                 if ($tax['rate'] > 0) {
+                    if (!array_key_exists('taxField', $tax))
+                        continue; // tax not applicable
+                    if (!array_key_exists($tax['taxField'], $taxes))
+                        continue; // no tax chanrged
                     $stax = $taxes[$tax['taxField']];
+                    if (is_array($stax))
+                        $stax = $stax['tax'];
+                    if ($stax == 0)
+                        continue;
                     $label = $tax['label'];
                     $body .= "$label: " . $dolfmt->formatCurrency((float) $stax, $currency) . "\n";
+                    $numTaxes++;
                 }
             }
+            if ($numTaxes == 1)
+                $taxCode = "(Items with a T at the end of the price are taxable .)\n";
+            else if ($numTaxes > 1)
+                $taxCode = "(Items with a T at the end of the price are taxable by one or more of the taxes listed above.)\n";
             $body .= 'Total tax for the taxable portion of this order was ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . "\n" .
                 'For a total amount due of ' . $dolfmt->formatCurrency((float)$amount, $currency) . "\n\n";
         } else
@@ -73,14 +86,37 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
 
         $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction\n\n";
 
+        $nonTaxTaxable = false;
+        $taxTaxable = false;
         if ($memberships && count($memberships) > 0) {
             $body .= "The following memberships were involved in this payment:\n$taxCode\n";
+            if ($taxCode != '') {
+                foreach ($taxList as $tax) {
+                    $taxItems = $tax['taxItems'];
+                    foreach ($taxItems as $taxItem) {
+                        if ($taxItem['item'] == 'nontaxMem' && $taxItem['taxable'] == 'Y')
+                            $nonTaxTaxable = true;
+                        if ($taxItem['item'] == 'taxableMem' && ($taxItem['taxable'] == 'Y' || $taxItem['taxable'] == '-'))
+                            $taxTaxable = true;
+                    }
+                }
+            }
 
             foreach ($memberships as $membership) {
                 $label = $membership['conid'] == $conid ? $membership['label'] : ("$conid " . $membership['label']);
                 // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
+
+                $taxMark = '';
+                // determine taxability based on taxable flag in membership filtered by taxconfig
+                if ($membership['taxable'] == 'Y' && $taxTaxable) {
+                    $taxMark = ' T';
+                }
+                if ($membership['taxable'] == 'N' && $nonTaxTaxable) {
+                    $taxMark = ' T';
+                }
+
                 $body .= '     * ' . $membership['fullName'] . " ($label) for " .
-                    $dolfmt->formatCurrency((float) $membership['price'], $currency) .  ($membership['taxable'] == 'Y' ? ' T' : '');
+                    $dolfmt->formatCurrency((float) $membership['price'], $currency) . $taxMark;
 
                 $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
                 if ($due > 0.01) {

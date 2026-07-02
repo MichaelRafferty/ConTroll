@@ -32,6 +32,9 @@ class memsetup {
     #current_conid = null;
     #next_conid = null;
 
+    // constants
+    #enumYN = ['Y', 'N'];
+
     constructor() {
         this.#message_div = document.getElementById('test');
         this.#memsetup_pane = document.getElementById('memconfig-pane');
@@ -206,6 +209,7 @@ class memsetup {
                 maxHeight: "600px",
                 movableRows: true,
                 history: true,
+                index: "memType",
                 data: data['memtypes'],
                 layout: "fitDataTable",
                 columns: [
@@ -220,13 +224,16 @@ class memsetup {
                         editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     },
                     {
-                        title: "Active", field: "active", headerSort: true, editable: true,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                        title: "Active", field: "active", headerSort: true, editable: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editor: "list", editorParams: {values: this.#enumYN,}, validator: "required"
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'memTypes', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let notes = cell.getRow().getCell('notes').getValue();
+                            if (notes.substring(0, 4).toLowerCase() == 'req:')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -258,6 +265,7 @@ class memsetup {
                 maxHeight: "600px",
                 history: true,
                 movableRows: true,
+                index: "memCategory",
                 data: data['categories'],
                 layout: "fitDataTable",
                 columns: [
@@ -272,33 +280,41 @@ class memsetup {
                         editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     },
                     {
-                        title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Only One", field: "onlyOne",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
-                        title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 75, validator: "required"
+                        title: "Stand Alone", field: "standAlone",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 75, validator: "required"
                     },
                     {
-                        title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Var. Price", field: "variablePrice",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
-                        title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                        title: "Tax", field: "taxable",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editor: "list", editorParams: {values: this.#enumYN,}, width: 70, validator: "required"
                     },
                     {
                         title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: true,
                         editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, validator: "required"
                     },
                     {
-                        title: "Active", field: "active", headerSort: true, editable: actEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                        title: "Active", field: "active",
+                        headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: actEditable, editor: "list", editorParams: {values: this.#enumYN,}, validator: "required"
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'memCategories', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let notes = cell.getRow().getCell('notes').getValue();
+                            if (notes.substring(0, 4).toLowerCase() == 'req:')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -332,6 +348,7 @@ class memsetup {
                 history: true,
                 movableRows: true,
                 data: data['current_agelist'],
+                index: "ageType",
                 layout: "fitDataTable",
                 columns: [
                     {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
@@ -365,8 +382,9 @@ class memsetup {
                         validator: "required"
                     },
                     {
-                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                        title: "Verify Annually", field: "verify",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
                     },
                     {
                         title: "Badge Flag",
@@ -378,8 +396,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let ageType = cell.getRow().getCell('ageType').getValue();
+                            if (ageType.toLowerCase() == 'all')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -409,6 +430,7 @@ class memsetup {
                 maxHeight: "400px",
                 history: true,
                 movableRows: true,
+                index: "ageType",
                 data: data['next_agelist'],
                 layout: "fitDataTable",
                 columns: [
@@ -426,8 +448,9 @@ class memsetup {
                         editorParams: {elementAttributes: {maxlength: "16"}}
                     },
                     {
-                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                        title: "Verify Annually", field: "verify",
+                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
                     },
                     {
                         title: "Badge Flag",
@@ -439,8 +462,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let ageType = cell.getRow().getCell('ageType').getValue();
+                            if (ageType.toLowerCase() == 'all')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -461,6 +487,8 @@ class memsetup {
     open() {
         var _this = this;
         var script = "scripts/regadmin_getMemberSetupData.php";
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -544,11 +572,9 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("memType"));
-                setCellChanged(row.getCell("active"));
-                _this.checkTypeUndoRedo();
-            });
+            setCellChanged(row.getCell("memType"));
+            setCellChanged(row.getCell("active"));
+            _this.checkTypeUndoRedo();
         });
     }
 
@@ -570,6 +596,8 @@ class memsetup {
         } else {
             showError(data['success']);    
         }
+        clear_message();
+        clearError();
         this.#memtype_savebtn.innerHTML = "Save Changes";
         var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
@@ -608,6 +636,8 @@ class memsetup {
                 tablename: "memTypes",
                 indexcol: "memtypekey"
             };
+            clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -655,16 +685,14 @@ class memsetup {
         this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
                 badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("memCategory"));
-                setCellChanged(row.getCell("onlyOne"));
-                setCellChanged(row.getCell("standAlone"));
-                setCellChanged(row.getCell("variablePrice"));
-                setCellChanged(row.getCell("taxable"));
-                setCellChanged(row.getCell("badgeLabel"));
-                setCellChanged(row.getCell("active"));
-                _this.checkCatUndoRedo();
-            });
+            setCellChanged(row.getCell("memCategory"));
+            setCellChanged(row.getCell("onlyOne"));
+            setCellChanged(row.getCell("standAlone"));
+            setCellChanged(row.getCell("variablePrice"));
+            setCellChanged(row.getCell("taxable"));
+            setCellChanged(row.getCell("badgeLabel"));
+            setCellChanged(row.getCell("active"));
+            _this.checkCatUndoRedo();
         });
     }
     
@@ -684,10 +712,11 @@ class memsetup {
             this.#category_savebtn.disabled = false;
             return false;
         } else {
-            showError(data['success']);
+            show_message(data['success']);
         }
         this.#category_savebtn.innerHTML = "Save Changes";
         var script = "scripts/regadmin_getMemberSetupData.php";
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -725,6 +754,8 @@ class memsetup {
                 indexcol: "memcatkey"
             };
             //console.log(postdata);
+            clear_message();
+            clearError();
             $.ajax({
                 url: script,
                 method: 'POST',
@@ -769,13 +800,12 @@ class memsetup {
     addrowCurAge() {
         var _this = this;
 
-        this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("ageType"));
-                setCellChanged(row.getCell("label"));
-                setCellChanged(row.getCell("shortname"));
-                _this.checkCurageUndoRedo();
-            });
+        this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
+            false).then(function (row) {
+            setCellChanged(row.getCell("ageType"));
+            setCellChanged(row.getCell("label"));
+            setCellChanged(row.getCell("shortname"));
+            _this.checkCurageUndoRedo();
         });
     }
 
@@ -796,9 +826,10 @@ class memsetup {
             this.#curage_savebtn.disabled = false;
             return false;
         } else {
-            showError(data['success']);
+            show_message(data['success']);
         }
         this.#curage_savebtn.innerHTML = "Save Changes";
+        clearError();
         var script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
@@ -828,6 +859,8 @@ class memsetup {
             this.#curage_savebtn.innerHTML = "Saving...";
             this.#curage_savebtn.disabled = true;
 
+            clear_message();
+            clearError();
             var script = "scripts/regadmin_updateMemberSetupData.php";
 
             var postdata = {
@@ -881,13 +914,12 @@ class memsetup {
     addrowNextAge()  {
         var _this = this;
 
-        this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("ageType"));
-                setCellChanged(row.getCell("label"));
-                setCellChanged(row.getCell("shortname"));
-                _this.checkNextageUndoRedo();
-            });
+        this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
+            false).then(function (row) {
+            setCellChanged(row.getCell("ageType"));
+            setCellChanged(row.getCell("label"));
+            setCellChanged(row.getCell("shortname"));
+            _this.checkNextageUndoRedo();
         });
     }
 

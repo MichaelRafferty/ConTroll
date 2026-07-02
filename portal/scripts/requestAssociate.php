@@ -47,15 +47,13 @@ $email = $_POST['email'];
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
 country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    managedBy, NULL AS managedByNew, lastVerified, fullName, 'p' AS personType
 FROM perinfo
 WHERE id=? AND email_addr = ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
 country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    managedBy, managedByNew, lastVerified, fullName, 'n' AS personType,
 FROM newperson
 WHERE id=? AND email_addr = ? AND perid IS NULL AND NOT (first_name = 'Merged' AND middle_name = 'into');
 EOS;
@@ -171,8 +169,7 @@ if ($loginType == 'p') {
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
 country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    managedBy, NULL AS managedByNew, lastVerified, fullName, 'p' AS personType
 FROM $table
 WHERE id=?;
 EOS;

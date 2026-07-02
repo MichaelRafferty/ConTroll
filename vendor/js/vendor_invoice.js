@@ -5,6 +5,7 @@
 class VendorInvoice {
     // Items related to building and paying the vendor invoice
     #vendorInvoice = null;
+    #vendorPayment = null;
     #regionYearId = null;
     #membershipCostDiv = null;
     #regionName = '';
@@ -19,17 +20,27 @@ class VendorInvoice {
     #validateMessage = '';
     #token = null;
     #purchaseLabel = null;
+    #paymentForDiv = null;
+    #orderData = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
         if (id != null) {
             this.#vendorInvoice = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
+        id = document.getElementById('vendor_payment');
+        if (id != null) {
+            this.#vendorPayment = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        }
         this.#membershipCostDiv = document.getElementById("membershipCost");
+        this.#paymentForDiv = document.getElementById("paymentForDiv");
     }
 
     // openInvoice: display the vendor invoice (and registration items)
     openInvoice(id) {
+        clear_message();
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
         this.#regionName = '';
         this.#includedMemberships = 0;
         this.#additionalMemberships = 0;
@@ -56,7 +67,7 @@ class VendorInvoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice</strong>';
 
         // refresh the items spaces purchased area
-        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
+        let ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
             'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr');
         this.#includedMemberships = ret[0];
         this.#additionalMemberships = ret[1];
@@ -71,12 +82,6 @@ class VendorInvoice {
         setTimeout(() => {
             document.getElementById('agreeNone').focus({focusVisible: true});
         }, 600);
-        $('#vendor_invoice_form input[type=text]').off('keypress');
-        $('#vendor_invoice_form input[type=text]').on('keypress', function (event) {
-            if (event.key == 'Enter') {
-                event.preventDefault();
-            }
-        });
     }
 
     // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -102,6 +107,10 @@ class VendorInvoice {
     makePurchase(token, label) {
         this.#token = token;
         this.#purchaseLabel = label;
+        this.processPay();
+    }
+
+    orderValidate() {
         this.#currentOrdinal = 0;
         this.#currentType = 'i';
         this.#formValid = true;
@@ -116,15 +125,16 @@ class VendorInvoice {
 
     payValidate() {
         clear_message('inv_result_message');
+        clear_message('pay_result_message');
         this.#validateMessage = '';
         let numInclUsed = 0;
         let numAddlUsed = 0;
         if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
+                profile = inclProfiles[this.#currentOrdinal];
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    profile = inclProfiles[this.#currentOrdinal];
                     let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
                     if (message == 'stop') // usps is doing it's work, don't proceed
                         return;
@@ -133,6 +143,8 @@ class VendorInvoice {
                         this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
                     }
                     numInclUsed++;
+                } else {
+                    profile.clearNext();
                 }
                 this.#currentOrdinal++;
             }
@@ -142,10 +154,10 @@ class VendorInvoice {
 
         while (this.#currentOrdinal < this.#additionalMemberships) {
             this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            profile = addlProfiles[this.#currentOrdinal];
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                profile = addlProfiles[this.#currentOrdinal];
-                let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                let message = profile.validate(null, 'inv_message', incrPayValidate, payValidate, '', true);
                 if (message == 'stop') // usps is doing it's work, don't proceed
                     return;
 
@@ -154,6 +166,8 @@ class VendorInvoice {
                     this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
                 }
                 numAddlUsed++;
+            } else {
+                profile.clearNext();
             }
             this.#currentOrdinal++;
         }
@@ -200,6 +214,165 @@ class VendorInvoice {
             }
         }
 
+        if (!this.#formValid) {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
+            return;
+        }
+
+        this.buildOrder();
+    }
+
+    buildOrder() {
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = true;
+        let formData = $('#vendor_invoice_form').serialize()
+        clear_message('inv_result_message');
+        let _this = this;
+        $.ajax({
+            url: 'scripts/spaceOrder.php',
+            method: 'POST',
+            data: formData,
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    _this.getPaymentInfo(data);
+                    return;
+                } else {
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                    submitId.disabled = false;
+                }
+            }
+        });
+    }
+
+    getPaymentInfo(data) {
+        if (config['debug'] & 1)
+            console.log(data);
+        let submitId = document.getElementById('total_with_tax_btn');
+        submitId.disabled = false;
+        if (data.rtn == null) {
+            show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+            return;
+        }
+        this.#vendorInvoice.hide();
+
+        // title of payment modal
+        let name = data.results.source == 'artist' ?
+            ((data.results.vendor.artistName != null && data.results.vendor.artistName != '') ? data.results.vendor.artistName : data.results.vendor.exhibitorName) :
+            data.results.vendor.exhibitorName;
+        document.getElementById("vendor_payment_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice for ' + name + '</strong>';
+
+        // loop over the taxes computing the output lines
+        if (config['debug'] & 1)
+            console.log(config.taxRates);
+        let taxHtml = '';
+        for (let taxid in data.rtn.taxes) {
+            let tax = data.rtn.taxes[taxid];
+            let taxLabel = config.taxRates[taxid].label;
+            let taxTypeof = typeof tax;
+            if (!['string', 'number', 'bigint', 'undefined'].includes(taxTypeof))
+                tax = tax.tax;
+
+            taxHtml += taxLabel + ': ' + currencyFmt.format(Number(tax).toFixed(2)) + '<br/>\n';
+        }
+
+        let html = `
+            <div class='row'>
+                <div class='col-sm-12'>
+                    <h4>Payment Details for ${name}</h4>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-sm-12" id="vendor_pay_approved_for"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto">
+                    Total price for memberships:
+                </div>
+                <div class="col-sm-auto p-0">
+                    <span id='vendor_pay_mbr_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+`;
+            if (taxHtml != '') {
+                html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    Total Pre Tax Order: <span id='vendor_pay_cost'></span>
+                </div>
+            </div>
+            <div class='row'>
+                    <div class='col-sm-12' id="vendor_pay_tax_div">${taxHtml}</div> 
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due with Tax: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div>
+`;
+            } else {
+                html += `
+            <div class='row'>
+                <div class='col-sm-auto'>
+                    &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
+                </div>
+            </div>
+           <div class='row'>
+                <div class='col-sm-12'>
+                    Total Amount Due: <span id='vendor_pay_total_due'></span>
+                </div>
+            </div> 
+`;
+            }
+            html += `
+            <div class='row'>
+                <div class='col-sm-12'><hr/></div> 
+            </div>          
+`;
+
+        this.#paymentForDiv.innerHTML = html;
+        let region = exhibits_spaces[this.#regionYearId];
+        let regionList = region_list[this.#regionYearId];
+        let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
+        let membershipCost = data.results.preTaxAmt - totalSpacePrice;
+        document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
+        let totalPreOrder = data.results.preTaxAmt;
+        document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
+        let totalWithTax = data.rtn.totalAmt;
+        document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        this.#orderData = data;
+        let id = document.getElementById(this.#purchaseLabel);
+        if (id)
+            id.disabled = false;
+        this.#vendorPayment.show();
+
+    }
+
+    processPay() {
+        clear_message('inv_result_message');
+        clear_message('pay_result_message');
+
+        let data = this.#orderData;
+        this.#validateMessage = '';
+
         let cc_fields = {
             cc_fname: 'First Name',
             cc_lname: 'Last Name',
@@ -224,18 +397,11 @@ class VendorInvoice {
             }
         }
 
-        if (!this.#formValid) {
-            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
+        if (this.#validateMessage != '') {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'pay_result_message')
             return;
         }
 
-        this.processPay();
-    }
-
-    processPay() {
-        if (!this.#purchaseLabel || this.#purchaseLabel == '') {
-            this.#purchaseLabel = 'unknown';
-        }
         if (!this.#token)
             this.#token = 'test';
 
@@ -243,36 +409,68 @@ class VendorInvoice {
             this.#token = document.getElementById(this.#token).value;
         }
 
+        let postData = URLparamsToArray($('#vendor_pay_form').serialize());
+        postData['nonce'] = this.#token;
+        postData['orderData'] = JSON.stringify(data);
+        postData['portalType'] = config.portalType;
+        postData['portalName'] = config.portalName;
         let submitId = document.getElementById(this.#purchaseLabel);
         submitId.disabled = true;
-        let formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + this.#token;
         clear_message('inv_result_message');
         let purchaseLabel = this.#purchaseLabel;
-        let hideElement = this.#vendorInvoice;
+        let hideElement = this.#vendorPayment;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
-            data: formData,
+            data: postData,
             success: function (data, textStatus, jqXhr) {
                 if (config['debug'] & 1)
                     console.log(data);
                 if (data['error']) {
-                    show_message(data['error'], 'error', 'inv_result_message');
+                    show_message(data['error'], 'error', 'pay_result_message');
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error', 'inv_result_message');
+                    show_message(data['data'], 'error', 'pay_result_message');
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
                     hideElement.hide();
-                    show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
-                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
-                    if (data['exhibitor_spacelist']) {
-                        exhibitor_spacelist = data['exhibitor_spacelist'];
-                    }
-                    updatePaidStatusBlock();
+                    let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
+                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
+                    window.location.href = '/index.php?msg=' + encodeURIComponent(message);
+                    return;
+                } else {
+                    hideElement.hide();
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
+                    return;
+                }
+            }
+        });
+
+    }
+
+    orderCancel() {
+        let hideElement = this.#vendorPayment;
+        $.ajax({
+            url: 'scripts/spacePayment.php',
+            method: 'POST',
+            data: { nonce: 'c', orderData: JSON.stringify(this.#orderData), },
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'pay_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    hideElement.hide();
+                    show_message(data['message'], 'success');
+                    return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                     let submitId = document.getElementById(purchaseLabel);
@@ -281,7 +479,6 @@ class VendorInvoice {
             }
         });
     }
-
     // update the paid status block to show the confirmed space
     updatePaidStatusBlock() {
         let blockname = region_list[this.#regionYearId].shortname + '_div';
@@ -327,6 +524,13 @@ function updateCost(regionYearId, item) {
     vendorInvoice.updateCost(regionYearId, item);
 }
 
+function orderValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.orderValidate();
+}
+
 function payValidate() {
     if (vendorInvoice == null)
         return;
@@ -339,6 +543,13 @@ function incrPayValidate() {
         return;
 
     vendorInvoice.incrPayValidate();
+}
+
+function orderCancel() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.orderCancel();
 }
 
 function updatePaidStatusBlock() {

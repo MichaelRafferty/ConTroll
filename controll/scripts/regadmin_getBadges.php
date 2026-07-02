@@ -73,10 +73,7 @@ WITH notes AS (
 )
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 
     P.id AS perid, NP.id AS newperson_id,   
-    CASE 
-        WHEN R.perid IS NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix), ' +', ' '))  
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix), ' +', ' '))  
-    END AS fullName,
+    CASE WHEN R.perid IS NULL THEN NP.fullName ELSE P.fullName END AS fullName,
     CASE WHEN R.perid IS NULL THEN NP.first_name ELSE P.first_name END AS first_name,
     CASE WHEN R.perid IS NULL THEN NP.middle_name ELSE P.middle_name END AS middle_name,
     CASE WHEN R.perid IS NULL THEN NP.last_name ELSE P.last_name END AS last_name,
@@ -127,11 +124,11 @@ WITH notes AS (
     WHERE R.conid = ?
     GROUP BY R.id
 ), pfields AS (
-    SELECT id AS perid, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName,
+    SELECT id AS perid, fullName,
     IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM perinfo
 ), nfields AS (
-    SELECT id AS newperson_id, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName,
+    SELECT id AS newperson_id, fullName,
     IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM newperson
 )

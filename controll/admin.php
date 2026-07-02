@@ -39,6 +39,8 @@ $config_vars['buildNext'] = $buildNext ? 1 : 0;
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['validDomains'] = explode(',', getConfValue('con', 'emailDomains', ''));
+
 if (array_key_exists('msg', $_REQUEST)) {
     $config_vars['msg'] = $_REQUEST['msg'];
 }

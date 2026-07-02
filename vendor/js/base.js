@@ -19,3 +19,7 @@ function clearCellFieldChanged(cell) {
 function clearFieldChanged(field) {
     field.classList.remove('unsavedChangeBGColor');
 }
+
+function clearError() {
+    // noop
+}

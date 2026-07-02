@@ -31,7 +31,6 @@ if (array_key_exists('id', $_POST))
 
 switch ($type) {
     case 'dev':
-        //TODO back out seattle regtest from here
         if (!isDirectAllowed()) {
             ajaxSuccess(array('status'=>'error', 'message'=> 'Development login not valid outside of development:'));
             exit();
@@ -52,7 +51,7 @@ switch ($type) {
             $response['message'] = 'No matching emails found';
         } else if ($count == 1) {
             clearSession();  // clean logout
-            if ($matches[0]['banned'] != 'N') {
+            if ($matches[0]['banned'] != 'N' || $matches[0]['deceased'] != 'N') {
                 ajaxSuccess(array('status'=>'error', 'message'=> 'There is an issue with your account, please contact registration at ' .
                     $conf['regadminemail'] . ' for assistance.'));
                 exit();

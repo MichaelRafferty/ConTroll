@@ -101,6 +101,8 @@ class Coupon {
 
     open() {
         var script = "scripts/coupon_getData.php";
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -295,6 +297,8 @@ class Coupon {
         }
 
         // ok build values
+        clear_message();
+        clearError();
         var data = URLparamsToArray($('#coupon_form').serialize());
         var script = "scripts/coupon_update.php";
         $.ajax({
@@ -342,6 +346,8 @@ class Coupon {
 
         var script = "scripts/coupon_getUsage.php";
         var data = { id: this.#curCoupon, };
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -372,6 +378,8 @@ class Coupon {
 
         var script = "scripts/coupon_getKeys.php";
         var data = { id: this.#curCoupon, };
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -534,6 +542,8 @@ class Coupon {
             return; // no coupon to delete
         }
 
+        clear_message();
+        clearError();
         var script = "scripts/coupon_delete.php";
         $.ajax({
             url: script,

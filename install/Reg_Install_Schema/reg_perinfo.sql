@@ -18,6 +18,7 @@ CREATE TABLE `perinfo` (
   `first_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `middle_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `suffix` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `fullName` varchar(256) COLLATE utf8mb4_general_ci GENERATED ALWAYS AS (trim(regexp_replace(concat_ws(_utf8mb4' ',`first_name`,`middle_name`,`last_name`,`suffix`),_utf8mb4' +',_utf8mb4' '))) STORED,
   `email_addr` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `badge_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -30,6 +31,7 @@ CREATE TABLE `perinfo` (
   `state` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `zip` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `country` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `fullAddr` varchar(256) COLLATE utf8mb4_general_ci GENERATED ALWAYS AS (trim(regexp_replace(concat_ws(_utf8mb4' ',`address`,`addr_2`,`city`,`state`,`zip`,`country`),_utf8mb4' +',_utf8mb4' '))) VIRTUAL,
   `banned` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `deceased` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `formerGoH` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
@@ -49,11 +51,11 @@ CREATE TABLE `perinfo` (
   `managedReason` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `perinfi_old_perid_fk` (`old_perid`),
-  KEY `pi_managedBy_fk` (`managedBy`),
-  KEY `pi_updatedBy_fk` (`updatedBy`),
-  KEY `pi_managedByNew_fk` (`managedByNew`),
   KEY `perinfo_idx_email` (`email_addr`),
-  KEY `perinfo_ageList` (`currentAgeConId`,`currentAgeType`)
+  KEY `perinfo_ibfk_1` (`managedBy`),
+  KEY `perinfo_ibfk_2` (`updatedBy`),
+  KEY `perinfo_ibfk_3` (`managedByNew`),
+  KEY `perinfo_ibfk_4` (`currentAgeConId`,`currentAgeType`)
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo` FOR EACH ROW BEGIN
@@ -65,6 +67,7 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
         OR OLD.country != NEW.country OR OLD.banned != NEW.banned OR OLD.creation_date != NEW.creation_date
         OR OLD.change_notes != NEW.change_notes OR OLD.active != NEW.active OR OLD.open_notes != NEW.open_notes OR OLD.admin_notes != NEW.admin_notes
         OR OLD.old_perid != NEW.old_perid OR OLD.contact_ok != NEW.contact_ok OR OLD.share_reg_ok != NEW.share_reg_ok
+        OR OLD.deceased != NEW.deceased OR OLD.formerGoh != NEW.formerGoh
         OR OLD.managedBy != NEW.managedBy OR OLD.managedByNew != NEW.managedByNew OR OLD.updatedBy != NEW.updatedby
         OR OLD.managedReason != NEW.managedReason)
     THEN
@@ -73,13 +76,13 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
                                    badge_name, badgeNameL2, legalName, pronouns,
                                    address, addr_2, city, state, zip, country, banned, creation_date, update_date,
                                    change_notes, active, open_notes, admin_notes, old_perid, contact_ok, share_reg_ok,
-                                   managedBy, managedByNew, managedReason, lastVerified, updatedBy)
+                                   deceased, formerGoh,  managedBy, managedByNew, managedReason, lastVerified, updatedBy)
         VALUES (OLD.id, OLD.currentAgeConId, OLD.currentAgeType,
                 OLD.last_name, OLD.first_name, OLD.middle_name, OLD.suffix, OLD.email_addr, OLD.phone, OLD.badge_name,
                 OLD.badgeNameL2, OLD.legalName, OLD.pronouns,
                 OLD.address, OLD.addr_2, OLD.city, OLD.state, OLD.zip, OLD.country, OLD.banned, OLD.creation_date, OLD.update_date,
                 OLD.change_notes, OLD.active, OLD.open_notes, OLD.admin_notes, OLD.old_perid, OLD.contact_ok, OLD.share_reg_ok,
-                OLD.managedBy, OLD.managedByNew, OLD.managedReason, OLD.lastVerified, OLD.updatedBy);
+                OLD.deceased, OLD.formerGoH, OLD.managedBy, OLD.managedByNew, OLD.managedReason, OLD.lastVerified, OLD.updatedBy);
     END IF;
 END;;
 DELIMITER ;

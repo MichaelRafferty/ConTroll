@@ -179,6 +179,8 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','portal','main','purchased','Just aqfter the purchased header'),
 ('portal','portal','main','purchOthers','Custom Text for You have unpaid purchases for you by others section'),
 ('portal','portal','main','top','The top of the page/section'),
+('profile','all','conroles','footer','footer after con roles in edit profile'),
+('profile','all','conroles','header','header before con roles in edit profile'),
 ('profile','all','interests','footer','footer after interests in edit profile'),
 ('profile','all','interests','header','header before interests in edit profile'),
 ('profile','all','policies','footer','footer after policies in edit profile'),

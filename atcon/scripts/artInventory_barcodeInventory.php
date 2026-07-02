@@ -24,9 +24,11 @@ if (array_key_exists('pollitem', $_POST)) {
     $response['pollitem'] = $pollItem;
 // given a poll item get it's values
     $pQ = <<<EOS
-SELECT i.*, eRY.exhibitorNumber
+SELECT i.*, eRY.exhibitorNumber, eRY.exhibitorNumber, IFNULL(e.artistName, e.exhibitorName) AS artistName
 FROM artItems i 
 JOIN exhibitorRegionYears eRY ON i.exhibitorRegionYearId = eRY.id
+JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+JOIN exhibitors e ON eY.exhibitorId = e.id
 WHERE i.id = ?;
 EOS;
     $pR = dbSafeQuery($pQ, 'i', array ($pollItem));
@@ -63,9 +65,12 @@ $toAuction = $_POST['toAuction'];
 // check validity of inputs
 // 1. check to see if the item exists and get it's statis and current bid/quantity
 $cQ = <<<EOS
-SELECT i.id, item_key, title, type, status, quantity, original_qty, min_price, final_price, bidder, conid, eRY.exhibitorNumber
+SELECT i.id, item_key, title, type, status, quantity, original_qty, min_price, final_price, bidder, i.conid, 
+	eRY.exhibitorNumber, IFNULL(e.artistName, e.exhibitorName) AS artistName
 FROM artItems i
 JOIN exhibitorRegionYears eRY ON i.exhibitorRegionYearId = eRY.id
+JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+JOIN exhibitors e ON eY.exhibitorId = e.id
 WHERE i.id = ?;
 EOS;
 $cR = dbSafeQuery($cQ, 'i', array($item));
@@ -77,8 +82,8 @@ $curItem = $cR->fetch_assoc();
 $cR->free();
 
 if ($curItem['conid'] != $conid) {
-    ajaxSuccess(array ('error' => "The scan code ($item) for artist " . $curItem['exhibitorNumber'] . ' titled ' .
-        $curItem['title'] . " is from conid " . $curItem['conid'] . ", not the current conid, $conid"));
+    ajaxSuccess(array ('error' => buildItemString($item, $curItem) .
+        "<br/>is from conid " . $curItem['conid'] . ", not the current conid, $conid"));
     exit();
 }
 
@@ -105,9 +110,9 @@ switch ($type) {
 }
 
 if (!$valid) {
-    ajaxSuccess(array ('error' => "Item current status of " . $curItem['status'] . " is not valid for this inventory type.<br/>" .
-        "If a change is needed on this item (Artist: " . $curItem['exhibitorNumber'] .
-        " Title: " . $curItem['title'] . "), please see an administrator."));
+    ajaxSuccess(array ('error' => buildItemString($item, $curItem) .
+        "<br/>The current status (" . $curItem['status'] . ") is not valid for this inventory type.<br/>" .
+        "If a change is needed on this item, please see an administrator."));
     exit();
 }
 
@@ -122,7 +127,8 @@ switch ($type) {
         break;
     case 'bid':
         if ($curItem['type'] != 'art') {
-            ajaxSuccess(array ('error' => "Bids are only allowed on items of type 'Art', this is of type " . $curItem['type']));
+            ajaxSuccess(array ('error' => buildItemString($item, $curItem) .
+                "<br/>Bids are only allowed on items of type 'Art', this is of type " . $curItem['type']));
             exit();
         }
         $curBid = $curItem['final_price'] != null && $curItem['final_price'] > 0 ? $curItem['final_price'] : $curItem['min_price'];
@@ -133,25 +139,34 @@ switch ($type) {
         if ($mode != 2) {
             // now validate the bidder field
             $cQ = <<<EOS
-SELECT p.id, COUNT(r.id) AS regs
+WITH regC AS (
+select perid, count(*) AS numReg
+FROM reg
+JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
+WHERE conid = ? AND perid = ?
+GROUP BY perid
+)
+SELECT p.id,  p.deceased, p.banned, IFNULL(r.numReg, 0) AS regs
 FROM perinfo p 
-LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid = ?
-WHERE p.id = ?
-GROUP BY p.id;
+LEFT OUTER JOIN regC r on r.perid = p.id
+WHERE p.id=?;
 EOS;
-            $cR = dbSafeQuery($cQ, 'ii', array ($conid, $bidder));
+            $cR = dbSafeQuery($cQ, 'iii', array ($conid, $bidder, $bidder));
             if ($cR->num_rows != 1) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is not valid"));
+                ajaxSuccess(array ('error' => "Bidder ID $bidder not found"));
                 exit();
             }
             $cL = $cR->fetch_assoc();
             $cR->free();
-            if ($cL['id'] == null) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is does not exist"));
+            if ($cL['deceased'] == 'Y') {
+                ajaxSuccess(array ('error' => "Bidder ID $bidder is marked deceased, please contact Registration for assistance"));
                 exit();
             }
+            if ($cL['banned'] == 'Y') {
+                ajaxSuccess(array('error' => "Bidder ID $bidder is not eligible for a badge, please contact Registration for assistance"));
+            }
             if ($cL['regs'] == 0) {
-                ajaxSuccess(array ('error' => "Bidder ID $bidder is not registered for this conid"));
+                ajaxSuccess(array ('error' => "Bidder ID $bidder does not have a badge printed for $conid"));
                 exit();
             }
         }
@@ -178,9 +193,9 @@ EOS;
         }
         $numRows = dbSafeCmd($uQ, 'iiii', array($quantity, $quantity, $userId, $item));
         if ($numRows == 1) {
-            $response['message'] = "$item (" . $curItem['title'] . ") changed to Checked In with received (original) quantity $quantity";
+            $response['message'] = buildItemString($item, $curItem) . "<br/>changed to 'Checked In' with received (original) quantity $quantity";
         } else {
-            $response['warn'] = 'Nothing changed.';
+            $response['warn'] = buildItemString($item, $curItem) ."<br/>Nothing changed.";
         }
         break;
     case 'bid':
@@ -188,14 +203,14 @@ EOS;
             // no change, just update time stamp
             $uQ = <<<EOS
 UPDATE artItems
-SET updatedBy = ?
+SET updatedBy = ?, time_updated = NOW()
 WHERE id = ?;
 EOS;
             $numRows = dbSafeCmd($uQ, 'ii', array ($userId, $item));
             if ($numRows == 1) {
-                $response['message'] = "$item (" . $curItem['title'] . ") no change action recorded.";
+                $response['message'] = buildItemString($item, $curItem) . '<br/>"No Change" action recorded.';
             } else {
-                $response['warn'] = 'Nothing changed.';
+                $response['warn'] = buildItemString($item, $curItem) ."<br/>Nothing changed.";
             }
         } else {
             $uQ = <<<EOS
@@ -203,12 +218,12 @@ UPDATE artItems
 SET status = ?, bidder = ?, final_price = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-            $status = $toAuction == 'Y' ? 'To Auction' : 'BID';
+            $status = $toAuction == '1' ? 'To Auction' : 'BID';
             $numRows = dbSafeCmd($uQ, 'sidii', array ($status, $bidder, $bid, $userId, $item));
             if ($numRows == 1) {
-                $response['message'] = "$item (" . $curItem['title'] . ") bid updated to $bid by $bidder and is now in status $status";
+                $response['message'] = buildItemString($item, $curItem) . "<br/>bid updated to $bid by $bidder and is now in status $status";
             } else {
-                $response['warn'] = "Nothing changed.";
+                $response['warn'] = buildItemString($item, $curItem) ."<br/>Nothing changed.";
             }
         }
         break;
@@ -223,11 +238,16 @@ EOS;
         }
         $numRows = dbSafeCmd($uQ, 'iii', array($quantity, $userId, $item));
         if ($numRows == 1) {
-            $response['message'] = "$item (" . $curItem['title'] . ") changed to Checked Out with returned quantity $quantity";
+            $response['message'] = buildItemString($item, $curItem) ."<br/>changed to Checked Out with returned quantity $quantity";
         } else {
-            $response['warn'] = 'Nothing changed.';
+            $response['warn'] = buildItemString($item, $curItem) ."<br/>Nothing changed.";
         }
         break;
 }
 
 ajaxSuccess($response);
+
+// build common error prefix string
+function buildItemString($scanid, $item) {
+    return "Item $scanid (" . $item['exhibitorNumber'] . ':' . $item['item_key'] . ' ' . $item['artistName'] . ', ' . $item['title'] . ')';
+}

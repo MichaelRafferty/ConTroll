@@ -26,9 +26,13 @@ $con = get_con();
 $conid = $con['id'];
 $conf = get_conf('con');
 $debug_art_control = getConfValue('debug', 'controll_art_control', 0);
+$locale = getLocale();
+$currency = getConfValue('con', 'currency', 'USD');
 $config_vars = array();
 $config_vars['pageName'] = $page;
 $config_vars['label'] = $con['label'];
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 $config_vars['vemail'] = $conf['regadminemail'];
 $config_vars['debug'] = $debug_art_control;
 $config_vars['conid'] = $conid;
@@ -64,8 +68,14 @@ $yearR->free();
 
 // build the year select
 $yearSelect = '';
+$conidFound = false;
 foreach ($years as $year) {
+    if ($year == $conid)
+        $conidFound = true;
     $yearSelect .= "<option value=$year>$year</option>\n";
+}
+if (!$conidFound) {
+    $yearSelect = "<option value=$conid>$conid</option>\n" . $yearSelect;
 }
 
 ?>

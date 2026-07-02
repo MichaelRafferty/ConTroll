@@ -220,7 +220,9 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                            <?php } ?>
+                            <?php } else {
+                                echo "<input type='hidden' id='salesTaxId' name='salesTaxId' value=''>\n";
+                            }?>
                             <div class='row mt-1' id='passwordLine1'>
                                 <div class='col-sm-2'>
                                     <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
@@ -315,7 +317,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     </div>
                                 </div>
                             <?php } else { ?>
-                            <input type="hidden" name="mailin" id="mailinN" value="N">
+                            <input type="hidden" name="mailin" id="mailin" value="N">
                             <?php } ?>
                             <!-- Vendor/Artist Address -->
                             <div class='row mt-2'>
@@ -638,7 +640,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                 </div>
                                 <?php } else { ?>
-                                <input type="hidden" name="mailin" id="mailinN" value="N">
+                                <input type="hidden" name="mailin" id="mailin" value="N">
                                 <?php } ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
@@ -723,7 +725,9 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             />
                                         </div>
                                     </div>
-                                <?php } ?>
+                                <?php } else {
+                                    echo "<input type='hidden' id='salesTaxId' name='salesTaxId' value=''/>\n";
+                                }?>
                                 <div class='row mt-1' id='passwordLine1'>
                                     <div class='col-sm-2'>
                                         <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
