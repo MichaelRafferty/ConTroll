@@ -191,6 +191,11 @@ badgeBarcode=0
 ; 1 = allowed, 0 = disabled
 creditoffline=0
 creditonline=0
+;;; where to write printer "0" local badges, cannot be /tmp or /usr/tmp (the line below is a placeholder,
+;   use something in your own directory tree)
+;   must be an absolute path, not relative.
+;   will need to exist and have sub directories pdf and txt that are writable by the web server
+badges="/usr/tmp";
 
 ;;; The exhibitor portal [vendor] section is so named for historical reasons when only dealers rooms were supported.
 ;   It contains items related to use of the exhibitor portals (e.g. artist, exhibitor, fan table, and vendor (dealer).
