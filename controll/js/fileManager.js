@@ -7,6 +7,8 @@ class FileManager {
     #onlinePreview = null;
     #portalPreview = null;
     #exhibitorPreview = null;
+    #badgePreview = null;
+    #receiptPreview = null;
     
     // section permissions
     #controll = null;
@@ -14,6 +16,8 @@ class FileManager {
     #online = null;
     #portal = null;
     #exhibitor = null;
+    #badge = null;
+    #receipt = null;
 
     // overall permissions
     #admin = false;
@@ -27,12 +31,16 @@ class FileManager {
     #onlineButton = null;
     #portalButton = null;
     #exhibitorButton = null;
+    #badgeButton = null;
+    #receiptButton = null;
 
     #controllShow = true;
     #reportShow = true;
     #onlineShow = true;
     #portalShow = true;
     #exhibitorShow = true;
+    #badgeShow = true;
+    #receiptShow = true;
 
     // rename delete fields
     #renameDeleteModal = null;
@@ -74,6 +82,14 @@ class FileManager {
         this.#exhibitorPreview = document.getElementById("exhibitorImagePreview");
         this.#exhibitorButton = document.getElementById("exhibitorShow");
         this.#exhibitor = this.#exhibitorPreview != null;
+
+        this.#badgePreview = document.getElementById("badgePreview");
+        this.#badgeButton = document.getElementById("badgeShow");
+        this.#badge = this.#badgePreview != null;
+
+        this.#receiptPreview = document.getElementById("receiptPreview");
+        this.#receiptButton = document.getElementById("receiptShow");
+        this.#receipt = this.#receiptPreview != null;
 
         var id = document.getElementById('fm_RenameDelete');
         if (id != null) {
@@ -162,6 +178,16 @@ class FileManager {
             this.#exhibitorButton.innerHTML = 'Hide';
             this.#exhibitorPreview.hidden = false;
         }
+        if (this.#badge) {
+            this.#badgePreview.innerHTML = '';
+            this.#badgeButton.innerHTML = 'Hide';
+            this.#badgePreview.hidden = false;
+        }
+        if (this.#receipt) {
+            this.#receiptPreview.innerHTML = '';
+            this.#receiptButton.innerHTML = 'Hide';
+            this.#receiptPreview.hidden = false;
+        }
 
         let script = 'scripts/filemgr_getLists.php';
         let postData = {
@@ -229,19 +255,36 @@ class FileManager {
         if (data.exhibitor) {
             this.#exhibitorPreview.innerHTML = this.buildFileList(data.exhibitorFiles, true);
         }
+
+        // badges
+        let badgeSection = document.getElementById('badges');
+        if (data.badges && badgeSection) {
+            let badgeItems = this.buildFileList(data.badgesFiles, false);
+            this.#badgePreview.innerHTML = badgeItems;
+            badgeSection.hidden = badgeItems == '';
+        }
+
+        // badges
+        let receiptSection = document.getElementById('receipts');
+        if (data.receipts && receiptSection) {
+            let receiptItems = this.buildFileList(data.receiptsFiles, false);
+            this.#receiptPreview.innerHTML = receiptItems;
+            receiptSection.hidden =  receiptItems == '';
+        }
     }
 
     buildFileList(data, preview) {
         let html = '';
         let files = Object.keys(data);
+        if (files.length == 0) {
+            return '';
+        }
         if (preview) {
             html = '<div class="row">\n';
             for (let file of files) {
                 let element = data[file];
-                html += '<div class="col-sm-auto mb-4 me-4 align-self-end">\n';
-                if (preview) {
-                    html += '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
-                }
+                html += '<div class="col-sm-auto mb-4 me-4 align-self-end">\n' +
+                    '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
                 html += '<a target="_blank" href="' + element.path + '">' + file + '</a>(' + element.size + ')<br/>c: ' + element.created +
                     '<br/>m: ' + element.modified + '\n';
                 if (this.#admin)
@@ -261,11 +304,15 @@ class FileManager {
             }
             for (let file of files) {
                 let element = data[file];
+                let path = element.path;
+                if (path.startsWith('/')) {
+                    path = 'scripts/filemgr_display.php?fn=' + path;
+                }
                 html += '<div class="row mb-1 me-1">\n<div class="col-sm-2">';
                 if (this.#admin) {
                     html += '<button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
                         'Rename/Delete</button></div>\n' +
-                        '<div class="col-sm-3 align-self-center"><a target="_blank" href="' + element.path + '">' + file + '</a></div>\n';
+                        '<div class="col-sm-3 align-self-center"><a target="_blank" href="' + path + '">' + file + '</a></div>\n';
                 } else {
                     html += '</div>\n<div class="col-sm-3 align-self-center">' + file + '</div>\n';
                 }

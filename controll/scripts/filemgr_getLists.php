@@ -173,18 +173,37 @@ $imgCount = 0;
     if (($admin || $regAdmin || $reg_staff) && ($loadType == 'all' || $loadType == 'controll' || $loadType == 'images')) {
         $imgCount += loadDir('controll', '../images', 'images', $response);
     }
+
+// atcon badges from printer 0
+    if (($admin || $regAdmin || $reg_staff) && ($loadType == 'all' || $loadType == 'badges')) {
+        $printPath = getConfValue('atcon', 'badges', '/usr/tmp');
+        $imgCount += loadDir('badges', $printPath . '/pdf', '/pdf', $response);
+    }
+
+// receipts from print 0(atcon or exhibitor)
+    if (($admin || $regAdmin || $reg_staff) && ($loadType == 'all' || $loadType == 'receipts')) {
+        $printPath = getConfValue('atcon', 'badges', '/usr/tmp');
+        $imgCount += loadDir('receipts', $printPath . '/txt', '/txt', $response);
+    }
+
+// report data files
     if (($admin || $finance) && ($loadType == 'all' || $loadType == 'report' || $loadType == 'reportdata')) {
         $imgCount += loadDir('report', '../reportdata', 'reportdata', $response);
     }
+
+// online reg images
     if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'online' || $loadType == 'onlinereg' || $loadType == 'onlineregimages')) {
         $imgCount += loadDir('online', '../../onlinereg/images', 'onlineregimages', $response);
     }
+
+// portal images
     if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'portal' || $loadType == 'portalimages')) {
         $imgCount += loadDir('portal', '../../portal/images', 'portalimages', $response);
     }
     if (($admin || $exhibitor) && ($loadType == 'all' || $loadType == 'exhibitor' || $loadType == 'vendor' || $loadType == 'vendorimages')) {
         $imgCount += loadDir('exhibitor', '../../vendor/images', 'vendorimages', $response);
     }
+
 if (array_key_exists('success', $response))
     $response['success'] .= "<br/>$imgCount files found";
 else
@@ -193,7 +212,10 @@ ajaxSuccess($response);
 
 function loadDir($section, $path, $dir, &$response) {
     $response[$section]  = 1;
-    $curdir = getcwd();
+    if (!is_dir($path)) {
+        $response[$section . 'Files'] = [];
+        return 0;
+    }
     $dirList = scandir($path);
     $fileInfo = [];
     $fileCount = 0;
