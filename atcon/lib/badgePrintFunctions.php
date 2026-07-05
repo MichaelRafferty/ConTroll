@@ -315,8 +315,7 @@ function print_badge($printer, $tempfile)//: string|false
 
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // return link to badge
         web_error_log("trying to save file");
-        $atcon_conf = get_conf('atcon');
-        $location = $atcon_conf['badges'];
+        $location = getConfValue('atcon', 'badges', '/usr/tmp');
         $newname = "$suffix/" . basename($tempfile) . ".$suffix";
         $command = "cp $tempfile  $location/$newname";
         $output = [];
@@ -362,7 +361,7 @@ function print_badge($printer, $tempfile)//: string|false
     return $result_code;
 }
 
-// print receipt - used for both receipts and generic printouts
+// print_receipt - used for both receipts and generic printouts
 // will do character set conversions as needed for the code pages
 // printer: printer control array (name, server, queue, codepage (encoding)
 function print_receipt($printer, $receipt)//:string | false {
@@ -371,6 +370,7 @@ function print_receipt($printer, $receipt)//:string | false {
     $server = $printer['host'];
     $name = $printer['name'];
     $codepage = $printer['code'];
+    $suffix = 'txt';
 
     switch ($codepage) {
         case 'UTF-8':
@@ -380,7 +380,7 @@ function print_receipt($printer, $receipt)//:string | false {
         case '7bit':
         case '8bit':
         case 'UTF-16':
-        $receipt = mb_convert_encoding($receipt, $codepage, 'UTF-8');
+            $receipt = mb_convert_encoding($receipt, $codepage, 'UTF-8');
             break;
 
         default: // use Windows-1252 default
@@ -402,9 +402,24 @@ function print_receipt($printer, $receipt)//:string | false {
     fwrite($temp, $receipt);
     fclose($temp);
 
-    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') {
-        web_error_log($receipt);
-        return 0; // this token is the log only print queue
+    if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // save receipt to server directory
+        web_error_log('trying to save receipt file');
+        $location = getConfValue('atcon', 'badges', '/usr/tmp');
+        $newname = "$suffix/" . basename($tempfile) . ".$suffix";
+        $command = "cp $tempfile  $location/$newname";
+        $output = [];
+        $result = exec($command, $output, $result_code);
+        web_error_log("executing command '$command' returned '$result', code: $result_code", 'badgePrn');
+        if ($result_code == 0) {
+            $command = "chmod 644 $location/$newname";
+            $output = [];
+            $result = exec($command, $output, $result_code);
+            web_error_log("executing command '$command' returned '$result', code: $result_code", 'badgePrn');
+        }
+        if ($result_code != 0) {
+            web_error_log("Badge Not Saved: $command");
+        }
+        return 0;
     }
 
     $options = '';
