@@ -2,7 +2,6 @@
 
 require_once "lib/base.php";
 require_once '../lib/profile.php';
-require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
 require_once '../lib/cc__load_methods.php';
@@ -88,12 +87,8 @@ $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['posType'] = 'a';
-if (array_key_exists('creditoffline', $atcon)) {
-    $config_vars['creditoffline'] = $atcon['creditoffline'];
-}
-if (array_key_exists('creditonline', $atcon)) {
-    $config_vars['creditonline'] = $atcon['creditonline'];
-}
+$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
+$config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
@@ -102,6 +97,9 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $useUSPS = false;
 
@@ -121,13 +119,13 @@ page_init($page, $tab,
                     'jslib/membershipRules.js', 'js/regpos.js'),
             $config_vars
     );
-if (array_key_exists('creditonline', $atcon)) {
-    if ($atcon['creditonline'] == 1) {
-        $cc = get_conf('cc');
-        load_cc_procs();
-        echo draw_cc_html($cc, '--', 'js');
-    }
+
+if ($config_vars['creditonline'] == 1) {
+    $cc = get_conf('cc');
+    load_cc_procs();
+    echo draw_cc_html($cc, '--', 'js');
 }
+
 [$ageList, $ageListIdx] = getAgeList($conid);
 ?>
 <script type='text/javascript'>
@@ -212,7 +210,7 @@ if (array_key_exists('creditonline', $atcon)) {
                                 <input type='hidden' name='perinfo-perid' id='perinfo-perid'/>
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
-                                    drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+                                    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'registration', false, true, $ageByDate,
                                             array(), $ageListIdx, 200, true, '', false, true);
                                 ?>
                                 <div class="row">

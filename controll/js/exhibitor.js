@@ -16,11 +16,12 @@ exhibitorsData = null;
 customText = null;
 configEditor = null;
 checkConfigReload = true;
+exhibitors = null;
+emailBulkSend = null;
 var currencyFmt = null;
 var vendorInvoice = null;
 var profile = null;
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var fileManager = null;
 
 // globals for exhibits configuration
 exhibits = null;
@@ -29,12 +30,16 @@ exhibits = null;
 class exhibitorsAdm {
     // global items
     #conid = null;
+    #exhibitorConid = null;
     #debug = 0;
     #debugVisible = false;
     #message_div = null;
     #result_message_div = null;
     #cacheDirty = false;
     #scriptName = config.scriptName;
+    #currentTab = '';
+    #currentSubtab = '';
+    #exhibitsRegionYearId = null;
 
     // Space items
     #spacesTable = null;
@@ -68,6 +73,8 @@ class exhibitorsAdm {
     // Region items
     #currentRegion = null;
     #regionTabs = {};
+    #regionType = null;
+    #portalType = null;
 
     // Spaces items
     #currentSpace = null;
@@ -80,9 +87,19 @@ class exhibitorsAdm {
     #exhibitorHtml = null;
     #exhibitorListTable = null;
 
+    // history items
+    #historyModal = null;
+    #historyTitle = null;
+    #historyDiv = null;
+    #historyRow = null;
+
+    // colors
+    #approvedColor = '';
+
     constructor(conid, debug) {
         this.#debug = debug;
         this.#conid = conid;
+        this.#exhibitorConid = config.exhibitorConid;
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
         currencyFmt = new Intl.NumberFormat(config.locale, {
@@ -93,6 +110,7 @@ class exhibitorsAdm {
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
+            console.log("exhibitorConid = " + this.#exhibitorConid);
         }
         if (this.#debug & 2) {
             this.#debugVisible = true;
@@ -100,7 +118,7 @@ class exhibitorsAdm {
 
         // exhibitors
         exhibitorProfile = new ExhibitorProfile(this.#debug, config.portalType);
-        var id = document.getElementById("import_exhibitor");
+        let id = document.getElementById("import_exhibitor");
         if (id)
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         this.#importHTML = document.getElementById('importHTML');
@@ -120,25 +138,33 @@ class exhibitorsAdm {
             this.#exhibitorHtml = document.getElementById('exhibitorHtml');
         }
 
+        id = document.getElementById('history');
+        if (id != null) {
+            this.#historyModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+            this.#historyTitle = document.getElementById('historyTitle');
+            this.#historyDiv = document.getElementById('history-div');
+        }
+
         // owners
         this.#ownerTabs.overview = document.getElementById('overview-content');
         this.#ownerTabs.configuration = document.getElementById('configuration-pane');
         this.#ownerTabs.customtext = document.getElementById('customtext-pane');
         this.#ownerTabs.configEdit = document.getElementById('configEdit-pane');
+        this.#ownerTabs.fileManager = document.getElementById('fileManager-pane');
         this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
-        var ownerKeys = Object.keys(regionOwners);
-        for (var idO in ownerKeys) {
-            var owner = ownerKeys[idO];
-            var ownerId = owner.replaceAll(' ', '-');
+        let ownerKeys = Object.keys(regionOwners);
+        for (let idO in ownerKeys) {
+            let owner = ownerKeys[idO];
+            let ownerId = owner.replaceAll(' ', '-');
             this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
 
             // regions within owners (regionsInOwner)
-            var regionsInOwner = regionOwners[owner];
-            var regionKeys = Object.keys(regionsInOwner);
-            for (var idR in regionKeys) {
-                var region = regionsInOwner[regionKeys[idR]];
-                var regionId = region.name.replaceAll(' ', '-');
+            let regionsInOwner = regionOwners[owner];
+            let regionKeys = Object.keys(regionsInOwner);
+            for (let idR in regionKeys) {
+                let region = regionsInOwner[regionKeys[idR]];
+                let regionId = region.name.replaceAll(' ', '-');
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
         }
@@ -149,7 +175,7 @@ class exhibitorsAdm {
             console.log("regionTabs");
             console.log(this.#regionTabs);
         }
-        if (config.initialTab != 'overview') {
+        if (config.initialTab != '' && config.initialTab != 'overview') {
             const triggerTabList = document.querySelectorAll('#exhibitor-tab button')
             triggerTabList.forEach(triggerEl => {
                 const tabTrigger = new bootstrap.Tab(triggerEl)
@@ -160,12 +186,15 @@ class exhibitorsAdm {
                 })
             })
 
-            var selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
-            var triggerEl = document.querySelector(selectors);
+            let selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
+            let triggerEl = document.querySelector(selectors);
             if (triggerEl)
                 bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
 
-            this.settabOwner(config.initialTab + '-pane');
+            setTimeout( function() {
+                exhibitors.settabOwner(config.initialTab + '-pane');
+                }, 250);
+
         }
     };
 
@@ -173,6 +202,10 @@ class exhibitorsAdm {
 
     getApprovalPay() {
         return this.#approvalPay;
+    }
+
+    setCurrentSubtab(tab) {
+        this.#currentSubtab = tab;
     }
 
     setCacheDirty() {
@@ -185,15 +218,18 @@ class exhibitorsAdm {
         // need to add the do you wish to save dirty data item
         clearError();
         clear_message();
-        var content = tabname.replace('-pane', '');
+        this.#currentTab = tabname.replace('-pane', '');
 
         if (this.#currentOwner) {
             this.#currentOwner.hidden = true;
         }
-        this.#ownerTabs[content].hidden = false;
-        this.#currentOwner = this.#ownerTabs[content];
-        this.#currentPane = content;
-        if (content != 'configuration') {
+        if (!this.#ownerTabs.hasOwnProperty(this.#currentTab)) {
+            this.#currentTab = 'overview'; // if the other tab names change, go back to overview
+        }
+        this.#ownerTabs[this.#currentTab].hidden = false;
+        this.#currentOwner = this.#ownerTabs[this.#currentTab];
+        this.#currentPane = this.#currentTab;
+        if (this.#currentTab != 'configuration') {
             if (exhibits) {
                 exhibits.close();
                 exhibits = null;
@@ -216,40 +252,65 @@ class exhibitorsAdm {
             this.#currentRegion = null;
         }
 
-        if (content == 'overview')
-            return;
+        switch (this.#currentTab) {
+            case 'overview':
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+                ;
 
-        if (content == 'configuration') {
-            if (exhibits == null)
-                exhibits = new exhibitssetup(config.conid, config.debug);
-            exhibits.open();
-            return;
-        }
-        if (content == 'customtext') {
-            if (customText == null)
-                customText = new customTextSetup();
-            customText.open();
-            return;
-        }
 
-        if (content == 'configEdit') {
-            if (configEditor == null) {
-                this.loadConfigEditor();
-            }
-            checkConfigReload = true;
-            return;
+            case 'configuration':
+                if (exhibits == null)
+                    exhibits = new exhibitssetup(config.exhibitorConid, config.debug);
+                exhibits.open();
+                return;
+
+            case 'customtext':
+                if (customText == null)
+                    customText = new customTextSetup();
+                customText.open();
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+
+            case 'configEdit':
+                if (configEditor == null) {
+                    this.loadConfigEditor();
+                }
+                checkConfigReload = true;
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+
+            case 'fileManager':
+                fileManager.open();
+                return;
         }
 
         if (this.#cacheDirty) {
-            window.location.href = this.#scriptName + '?tab=' + content;
+            window.location.href = this.#scriptName + '?tab=' + this.#currentTab;
             return;
         }
 
-        var ownerLookup = regionOwnersTabNames[tabname];
-        var regionsInOwner = regionOwners[ownerLookup];
-        var regionKey = Object.keys(regionsInOwner)[0];
-        var region = regionsInOwner[regionKey];
+        let ownerLookup = regionOwnersTabNames[tabname];
+        let regionsInOwner = regionOwners[ownerLookup];
+        let regionKey = Object.keys(regionsInOwner)[0];
+        let region = regionsInOwner[regionKey];
         this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
+    }
+
+// change exhibitor year being displayed
+    changeExhibitorConid() {
+        let newConventionConid = document.getElementById('limitConid').value;
+        if (newConventionConid == this.#exhibitorConid)
+            return; // no change
+        let href = '?exhibitorConid=' + newConventionConid;
+        if (this.#currentTab != '')
+            href += '&tab=' + this.#currentTab;
+        if (this.#currentSubtab != '')
+            href += '&subtab=' + this.#currentSubtab;
+        window.location.href = href;
     }
 
 // configuration editor
@@ -296,7 +357,7 @@ class exhibitorsAdm {
         // need to add the do you wish to save dirty data item
         clearError();
         clear_message();
-        var content = tabname.replace('-pane', '');
+        let content = tabname.replace('-pane', '');
         if (this.#currentRegion)
             this.#currentRegion.hidden = true;
         this.#regionTabs[content].hidden = false;
@@ -311,7 +372,7 @@ class exhibitorsAdm {
         clearError();
         clear_message();
 
-        var content = tabname.replace('-pane', '');
+        let content = tabname.replace('-pane', '');
         if (this.#currentSpace)
             this.#currentSpace.hidden = true;
         this.#spacesTabs[content].hidden = false;
@@ -335,7 +396,7 @@ class exhibitorsAdm {
         $.ajax({
             url: "scripts/exhibitorsGetData.php",
             method: "POST",
-            data: { region: tabname, regionId: regionid },
+            data: { region: tabname, regionId: regionid, exhibitorConid: config.exhibitorConid },
             success: function (data, textstatus, jqXHR) {
                 checkRefresh(data);
                 exhibitors.draw(data, message);
@@ -353,6 +414,9 @@ class exhibitorsAdm {
             this.#message_div.innerHTML = "Query:\n" + data.query + "\n\n" + "Args: " + data.args.toString();
             return;
         }
+        this.#regionType = data.regionType;
+        this.#portalType = data.portalType
+        this.#exhibitsRegionYearId = data.exhibitsRegionYearId;
         this.#message_div.innerHTML = '';
         this.#pricelists = data.price_list;
         if (data.locationsUsed)
@@ -363,15 +427,15 @@ class exhibitorsAdm {
         if (this.#debug & 8)
             console.log(data);
 
-        var regionName = data.post.region;
-        var divId = regionName.replaceAll(' ','-') + '-div';
-        var dataDiv = document.getElementById(divId)
+        let regionName = data.post.region;
+        let divId = regionName.replaceAll(' ','-') + '-div';
+        let dataDiv = document.getElementById(divId)
 
         // build up the html for this tab
-        var html = this.drawSummary(data);
+        let html = this.drawSummary(data);
         // add in tabs for spaces, approvals and exhibitor
-        var region = regions[regionName];
-        var groupid = 'data-' + region.id;
+        let region = regions[regionName];
+        let groupid = 'data-' + region.id;
         this.#regionGroupId = groupid;
         this.#regionName = regionName;
         html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
@@ -387,11 +451,13 @@ class exhibitorsAdm {
                 "</button>\n" +
                 "</li>\n";
         }
-        html += "<li class='nav-item' role='presentation'>\n" +
-            "<button class='nav-link' id='" + groupid + "-exh-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-exh-pane' type='button' role='tab' aria-controls='nav-exh'\n" +
-            "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-exh-pane');" + '"' + ">Exhibitors Information\n" +
-            "</button>\n" +
-            "</li>\n";
+        if (config.exhibitorConid == config.conid) {
+            html += "<li class='nav-item' role='presentation'>\n" +
+                "<button class='nav-link' id='" + groupid + "-exh-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-exh-pane' type='button' role='tab' aria-controls='nav-exh'\n" +
+                "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-exh-pane');" + '"' + ">Exhibitors Information\n" +
+                "</button>\n" +
+                "</li>\n";
+        }
         html += "</ul>\n";
 
         html += this.drawSpaces(data, groupid);
@@ -416,8 +482,8 @@ class exhibitorsAdm {
     }
 
     redraw(data) {
-        var regionName = data.post.region;
-        var region = regions[regionName];
+        let regionName = data.post.region;
+        let region = regions[regionName];
         this.drawSpacesTable(data,  null, false);
         if (region.requestApprovalRequired != 'None') {
             this.#approvalsTable.replaceData(data.approvals);
@@ -429,17 +495,17 @@ class exhibitorsAdm {
         if (!data.hasOwnProperty('summary'))
             return;
 
-        var summary = data.summary;
+        let summary = data.summary;
         if (!summary)
             return;
 
-        var html = '';
+        let html = '';
         if (full)
             html += '<div class="container-fluid" id="summary_div">';
 
-        for (var spaceid in summary) {
-            var space = summary[spaceid];
-            var remaining =  space.unitsAvailable - space.approved;
+        for (let spaceid in summary) {
+            let space = summary[spaceid];
+            let remaining =  space.unitsAvailable - space.approved;
             html += `    <div class="row mt-0 mb-0 p-0">
         <div class="col-sm-auto">
             <span style="font-size: 125%; font-weight: bold;">` + space.name + ` Registrations: </span>
@@ -466,19 +532,26 @@ class exhibitorsAdm {
             this.#spacesTable.destroy();
             this.#spacesTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-spaces-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-spaces-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-spaces-table-div'></div>\n" +
             "    </div>\n" +
             "    <div class='row mt-2 mb-3' id='" + groupid + "-spaces-csv-div'>\n"+
-            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabSpacesPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
-            "       <div class='col-sm-auto p-1 ms-4'>\n" +
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='" + groupid + "-tabSpacesPaginationDiv'></div>\n" +
+            "       <div class='col-sm-auto p-1 ms-4'>\n";
+        if (config.exhibitorConid == config.conid)
+            html +=
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
             "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
-            "               Add New Exhibitor</button>\n" +
+            "               Add New Exhibitor</button>\n";
+        if (data.usesInventory == 'Y' && config.exhibitorConid == config.conid) {
+            html +=
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
+            "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
+        }
+        html +=
             "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
             "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm'" +
@@ -497,14 +570,13 @@ class exhibitorsAdm {
             this.#approvalsTable.destroy();
             this.#approvalsTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-app-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-app-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-app-table-div'></div>\n" +
             "    </div>\n" +
             "    <div class='row mt-2 mb-3' id='" + groupid + "-app-csv-div'>\n"+
-            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabAppPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='" + groupid + "-tabAppPaginationDiv'></div>\n" +
             "       <div class='col-sm-auto p-1 ms-4'>\n" +
             "           <button id='" + groupid + "-app-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.appDownload(\"csv\"); return false;'>Download CSV</button>\n" +
@@ -524,14 +596,13 @@ class exhibitorsAdm {
             this.#exhibitorsTable.destroy();
             this.#exhibitorsTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
             "    </div>\n" +
             "    <div class='row mt-2'>\n" +
-            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'></div>\n" +
             "        <div class='col-sm-auto'>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
@@ -548,29 +619,29 @@ class exhibitorsAdm {
 
     // build spaces Items
     #buildSpacesItems(data) {
-        var regionsLocal = [];
-        var region = null;
-        //var currentRegion = -1;
-        var currentExhibitor = -1;
-        var spaces = data.detail;
-        var spaceKeys = Object.keys(spaces);
-        var spaceHTML = '';
-        var spaceSUM = '';
-        var spaceStage = '';
-        var req = 0;
-        var app = 0;
-        var pur = 0;
-        var inv = 0;
-        var transid = 0;
-        var spaceSUMPurchased = '';
-        var spaceSUMApproved = '';
-        var spaceSUMRequested = '';
-        var newExhibitor = -1;
-        var space = -1;
-        var idS = ''
+        let regionsLocal = [];
+        let region = null;
+        //let currentRegion = -1;
+        let currentExhibitor = -1;
+        let spaces = data.detail;
+        let spaceKeys = Object.keys(spaces);
+        let spaceHTML = '';
+        let spaceSUM = '';
+        let spaceStage = '';
+        let req = 0;
+        let app = 0;
+        let pur = 0;
+        let inv = 0;
+        let transid = 0;
+        let spaceSUMPurchased = '';
+        let spaceSUMApproved = '';
+        let spaceSUMRequested = '';
+        let newExhibitor = -1;
+        let space = -1;
+        let idS = ''
         for (idS in spaceKeys) {
             space = spaces[idS];
-            //var newRegion = space.exhibitsRegionYearId;
+            //let newRegion = space.exhibitsRegionYearId;
             newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
@@ -649,7 +720,7 @@ class exhibitorsAdm {
             req += space.requested_units == null ? 0 : Number(space.requested_units);
             app += space.approved_units == null ? 0 : Number(space.approved_units);
             pur += space.purchased_units == null ? 0 : Number(space.purchased_units);
-            inv += space.invCount == null ? 0 : Number(space.invCount);
+            inv = space.invCount == null ? 0 : Number(space.invCount); // do not sum, each row has the total amount in it already
             if (Number(space.transid) > 0 && transid == 0)
                 transid = Number(space.transid);
 
@@ -765,7 +836,8 @@ class exhibitorsAdm {
     // drawSpacesTable - now that the DOM is created, draw the actual table
     drawSpacesTable(data, groupid, newTable) {
         // build new data array
-        var regionsLocal = this.#buildSpacesItems(data);
+        let regionsLocal = this.#buildSpacesItems(data);
+        let usesInventory = data.usesInventory == 'Y';
 
         if (this.#debug & 8) {
             console.log("regions:");
@@ -785,9 +857,9 @@ class exhibitorsAdm {
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
                     {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false, },
-                    {title: "ID", field: "id", visible: true, width: 65, },
+                    {title: "ID", field: "id", visible: true, width: 65, hozAlign:"right" },
                     {title: "RegionId", field: "regionId", visible: false},
-                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
+                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true,  width: 75, hozAlign:"right" },
                     {title: "regionYearId", field: "regionYearId", visible: false},
                     {title: "ExhibitorYearId", field: "exhibitorYearId", visible: false},
                     {title: "ExhibitorRegionYearId", field: "exhibitorRegionYearId", visible: false},
@@ -796,7 +868,7 @@ class exhibitorsAdm {
                     {field: "app", visible: false},
                     {field: "req", visible: false},
                     {field: "pur", visible: false},
-                    {title: "inventory", field: "inv", visible: false},
+                    {title: "Inv Items", headerWordWrap: true, field: "inv", visible: usesInventory, width: 75, hozAlign:"right" },
                     {title: "locations", field: "locations", visible: false},
                     {title: "exhibitorId", field: "exhibitorId", visible: false},
                     {title: "artistName", field: "artistName", visible: false},
@@ -816,7 +888,7 @@ class exhibitorsAdm {
 
     // formatter for this table
     stageColor(cell, formatterParams, onRendered) {
-        var data = cell.getValue();
+        let data = cell.getValue();
         switch (data) {
             case 'Requested':
                 cell.getElement().style.backgroundColor = "#e9e9ff";
@@ -835,9 +907,9 @@ class exhibitorsAdm {
         if (this.#spacesTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-spaces';
-        var tabledata = JSON.stringify(this.#spacesTable.getData("active"));
-        var excludeList = ['s1','space'];
+        let filename = this.#regionName.replace(' ', '-') + '-spaces';
+        let tabledata = JSON.stringify(this.#spacesTable.getData("active"));
+        let excludeList = ['s1','space'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
@@ -884,9 +956,9 @@ class exhibitorsAdm {
         if (this.#approvalsTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-apps';
-        var tabledata = JSON.stringify(this.#approvalsTable.getData("active"));
-        var excludeList = ['used','b1'];
+        let filename = this.#regionName.replace(' ', '-') + '-apps';
+        let tabledata = JSON.stringify(this.#approvalsTable.getData("active"));
+        let excludeList = ['used','b1'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
@@ -910,6 +982,7 @@ class exhibitorsAdm {
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Name", field: "fullExhName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
                             formatter: "html", },
+                        {title: "Regions", field: "regions", width: 200, headerSort: true, headerFilter: true, formatter: "html", },
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
@@ -941,19 +1014,20 @@ class exhibitorsAdm {
         if (this.#exhibitorsTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-exh';
-        var tabledata = JSON.stringify(this.#exhibitorsTable.getData("active"));
-        var excludeList = ['password','contactPassword','fullAddress','contact'];
+        let filename = this.#regionName.replace(' ', '-') + '-exh';
+        let tabledata = JSON.stringify(this.#exhibitorsTable.getData("active"));
+        let excludeList = ['password','contactPassword','fullAddress','contact'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
     // show the full vendor record as a hover in the table
     buildRecordHover(e, cell, onRendered) {
-        var data = cell.getData();
+        let data = cell.getData();
         //console.log(data);
-        var hover_text = 'Exhibitor id: ' + data.id + '<br/>' +
+        let hover_text = 'Exhibitor id: ' + data.exhibitorId + '<br/>' +
             data.exhibitorName + '<br/>' +
             'Artist Name: ' + data.artistName + '<br/>' +
+            'Artist Payee: ' + (data.artistPayee == '' ? '<i>(None Entered)</i>' : data.artistPayee) + '<br/>' +
             'Website: ' + data.website + '<br/>' +
             data.fullAddress + '<br/>' +
             'Needs New Password: ' + (data.needs_new ? 'Yes' : 'No') +  '<br/>' +
@@ -1005,7 +1079,7 @@ class exhibitorsAdm {
             show_message($data.message, 'error');
             return;
         }
-        var _this = this;
+        let _this = this;
         this.#importTable = new Tabulator('#Importtable', {
             data: data.past,
             layout: "fitDataTable",
@@ -1028,8 +1102,8 @@ class exhibitorsAdm {
                 { title: "Zip/PC", field: "zip", headerSort: true, headerFilter: true, width: 120 },
         ]});
         this.#importTable.on("rowClick", function(e, row){
-            var cell = row.getCell('import');
-            var contents = cell.getValue();
+            let cell = row.getCell('import');
+            let contents = cell.getValue();
             contents = !contents;
             cell.setValue(contents);
         });
@@ -1038,7 +1112,7 @@ class exhibitorsAdm {
     }
 
     importPastExhibitors() {
-        var data = this.#importTable.getData();
+        let data = this.#importTable.getData();
         this.#importModal.hide();
         clear_message();
         clearError();
@@ -1062,6 +1136,7 @@ class exhibitorsAdm {
 
 // add new functions
     addNew() {
+        exhibitorProfile.setPortalType(this.#portalType);
         exhibitorProfile.profileModalOpen('add');
     }
 
@@ -1071,57 +1146,58 @@ class exhibitorsAdm {
 
 // button callout functions
     edit(exhId) {
-        var exhibitorRow = this.#exhibitorsTable.getRow(exhId)
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = this.#exhibitorsTable.getRow(exhId)
+        let exhibitorData = exhibitorRow.getData();
+        exhibitorProfile.setPortalType(this.#portalType);
         exhibitors.editExhibitor(exhibitorData, exhibitorRow);
     }
 
     // approve an approval request
     exhApprove(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
     }
 
     // reset an approval back to request
     exhReset(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
     }
 
     // deny an approval request
     exhDeny(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
     }
 
     // hid a region (hide status)
     exhHide(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
     }
 
     // space detail button click
     showDetail(id) {
-        var row = this.#spacesTable.getRow(id).getData();
-        var details = row.space;
-        var exhibitorId = row.exhibitorId;
-        var exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
-        var exhibitorData = exhibitorRow.getData();
+        let row = this.#spacesTable.getRow(id).getData();
+        let details = row.space;
+        let exhibitorId = row.exhibitorId;
+        let exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
+        let exhibitorData = exhibitorRow.getData();
         exhibitorData.exhibitorNumber = row.exhibitorNumber;
         exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
-        var exhibitor = row.exhibitorName;
-        var mailInAllowed = row.mailInAllowed;
+        let exhibitor = row.exhibitorName;
+        let mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
-        var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
+        let exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
         document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
             "," +  exhibitorData.exhibitorRegionYearId  + ")</strong>";
@@ -1131,19 +1207,20 @@ class exhibitorsAdm {
     }
 
     buildExhibitorInfoBlock(exhibitorData, mailInAllowed) {
-        var none = '<i>(None Entered)</i>';
-        var weburl = blankIfNull(exhibitorData.website).trim();
-        var website = weburl;
+        let none = '<i>(None Entered)</i>';
+        let weburl = blankIfNull(exhibitorData.website).trim();
+        let website = weburl;
         if (weburl != "") {
             if (weburl.substring(0, 8) != 'https://')
                 weburl = 'https://' + weburl;
         } else {
             website = none;
         }
-        var exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
-        var artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
-        var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
-        var exhibitorInfo = `
+        let exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
+        let artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
+        let artistPayee = blankIfNull(exhibitorData.artistPayee).trim() == '' ? none :  exhibitorData.artistPayee.trim();
+        let exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
+        let exhibitorInfo = `
             <div class="row">
                 <div class="col-sm-4">Exhibitor Id/Number:</div>
                 <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
@@ -1155,6 +1232,10 @@ class exhibitorsAdm {
             <div class="row">
                 <div class="col-sm-4">Artist Name:</div>
                 <div class="col-sm-8 p-0 ms-0 me-0">` + artistName + `</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">Artist Payee:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + artistPayee + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-4'>Business Email:</div>
@@ -1227,25 +1308,25 @@ class exhibitorsAdm {
     }
     // locations button click
     showLocations(id) {
-        var row = this.#spacesTable.getRow(id).getData();
-        var summary = row.summary;
-        var exhibitorId = row.exhibitorId;
-        var locations = row.locations;
-        var exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
-        var exhibitorData = exhibitorRow.getData();
+        let row = this.#spacesTable.getRow(id).getData();
+        let summary = row.summary;
+        let exhibitorId = row.exhibitorId;
+        let locations = row.locations;
+        let exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
+        let exhibitorData = exhibitorRow.getData();
         exhibitorData.exhibitorNumber = row.exhibitorNumber;
         exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
-        var exhibitor = row.exhibitorName;
-        var mailInAllowed = row.mailInAllowed;
+        let exhibitor = row.exhibitorName;
+        let mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
-        var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
+        let exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
         // build locations used block
-        var locationsusedHTML = "<div class='row p-0 m-0'>"
-        var colno = 0;
+        let locationsusedHTML = "<div class='row p-0 m-0'>"
+        let colno = 0;
 
-        for (var location in this.#locationsUsed) {
+        for (let location in this.#locationsUsed) {
             colno++;
             if (colno > 12) {
                 locationsusedHTML += "</div>\n<div class='row p-0 m-0'>";
@@ -1256,9 +1337,9 @@ class exhibitorsAdm {
         locationsusedHTML += "</div>\n";
 
 
-        var exhibitorData = this.#spacesTable.getRow(id).getData();
-        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
-            "," + exhibitorData.exhibitorRegionYearId +  ")</strong>";
+        exhibitorData = this.#spacesTable.getRow(id).getData();
+        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor +
+            " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId + "," + exhibitorData.exhibitorRegionYearId +  ")</strong>";
         document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;
@@ -1271,11 +1352,14 @@ class exhibitorsAdm {
 
     // exhButtons - three buttons for the exhibitor Record
     exhButtons(cell, formatterParams, onRendered) {
-        var row = cell.getData();
-        var id = row.exhibitorId;
+        let row = cell.getData();
+        let id = row.exhibitorId;
         // edit button
-        var buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+        let buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.edit(' + id + ');">Edit</button>';
+
+        buttons += '<button class="btn btn-secondary m-1 ms-2" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+            '--bs-btn-font-size: .75rem;" onclick="exhibitors.history(' + id + ');">Hist</button>';
 
         buttons += '<br/>' + '<button class="btn btn-secondary m-1" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.resetpw(' + id + ');">Reset Exh PW</button>';
@@ -1287,19 +1371,19 @@ class exhibitorsAdm {
     }
 
     toHTML(cell,  formatterParams, onRendered) {
-        var item = cell.getValue();
+        let item = cell.getValue();
         return item;
     }
 
     submitLocations() {
-        var locations = document.getElementById('locationsVal').value.trim();
-        var rowId = document.getElementById('spaceRowId').value;
-        var row = this.#spacesTable.getRow(rowId);
+        let locations = document.getElementById('locationsVal').value.trim();
+        let rowId = document.getElementById('spaceRowId').value;
+        let row = this.#spacesTable.getRow(rowId);
         row.getCell("locations").setValue(locations);
         this.#locationsModal.hide();
 
-        var exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
-        var regionYearId = row.getCell("regionYearId").getValue();
+        let exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
+        let regionYearId = row.getCell("regionYearId").getValue();
 
         clear_message();
         clearError();
@@ -1336,49 +1420,52 @@ class exhibitorsAdm {
     // tabulator button formatters
 
     spaceButtons(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var req = data.req || 0;
-        var app = data.app || 0;
-        var pur = data.pur || 0;
-        var transid = data.transid || 0;
-        var agentRequest = data.agentRequest || '';
-        var id = data.id;
-        var buttons = '';
-        var approvalBtns = req > 0 && pur == 0;
-        var paidBtns = transid > 0;
-        var invBtns = data.inv > 0;
-        var agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
+        let data = cell.getData();
+        let req = data.req || 0;
+        let app = data.app || 0;
+        let pur = data.pur || 0;
+        let transid = data.transid || 0;
+        let agentRequest = data.agentRequest || '';
+        let id = data.id;
+        let exhibitorRegionYearId = data.exhibitorRegionYearId;
+        let buttons = '';
+        let approvalBtns = req > 0 && pur == 0;
+        let paidBtns = transid > 0;
+        let invBtns = data.inv > 0;
+        let agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
 
         // determine if we need the margin for the first section of buttons
-        var margin = (invBtns || agentBtns) ? ' mb-2' : '';
+        let margin = (invBtns || agentBtns) ? ' mb-2' : '';
 
         // details button
         buttons += '<button class="btn btn-sm btn-info' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
 
         // approval buttons
-        if (approvalBtns) {
-            if (data.approved != data.requested) {
-                if (app == 0) {
-                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
-                } else {
-                    buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                        ' --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
+        if (config.exhibitorConid == config.conid) {
+            if (approvalBtns) {
+                if (data.approved != data.requested) {
+                    if (app == 0) {
+                        buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
+                    } else {
+                        buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                            ' --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
+                    }
                 }
+                if (app > 0) {
+                    buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
+                        '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
+                }
+                if (app == 0)
+                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
+                // force a break after the approval buttons
+                buttons += "<br/>";
             }
-            if (app > 0) {
-                buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
-                    '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
-            }
-            if (app == 0)
-                buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
-            // force a break after the approval buttons
-            buttons += "<br/>";
         }
 
         margin = (invBtns || agentBtns) ? 'mb-2' : '';
@@ -1387,9 +1474,11 @@ class exhibitorsAdm {
             buttons += '<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
                 ' --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                ' --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+            if (config.exhibitorConid == config.conid) {
+                buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                    ' --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+            }
 
             buttons += "<br/>";
         }
@@ -1397,10 +1486,12 @@ class exhibitorsAdm {
         margin = agentBtns ? 'mb-2' : '';
         // inventory button
         if (invBtns) {
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+            if (config.exhibitorConid == config.conid) {
+                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
+                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+            }
             buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1410,21 +1501,22 @@ class exhibitorsAdm {
         }
 
         // agent
-        if (agentBtns)
+        if (agentBtns && config.exhibitorConid == config.conid) {
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>&nbsp;';
+        }
 
         return buttons;
     }
 
     // request approval buttons
     approvalButton(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var id = data.id;
-        var b1 = data.b1;
-        var approval = data.approval || 'none';
-        var name = formatterParams.name;
-        var color = 'secondary';
+        let data = cell.getData();
+        let id = data.id;
+        let b1 = data.b1;
+        let approval = data.approval || 'none';
+        let name = formatterParams.name;
+        let color = 'secondary';
 
         switch (approval) {
             case 'none':
@@ -1453,6 +1545,9 @@ class exhibitorsAdm {
             return '';
         }
 
+        if (config.exhibitorConid != config.conid)
+            return '';
+
         switch (name) {
             case 'Approve':
                 color = 'primary';
@@ -1478,6 +1573,198 @@ class exhibitorsAdm {
     exhibitorProfile.profileModalOpen('update', exhibitor.exhibitorId, exhibitor.exhibitorYearId, exhibitorRow);
     }
 
+    // history - call up and display the history for an exhibitor
+    history(exhibitorId) {
+        clear_message();
+        clearError();
+
+        this.#historyRow = this.#exhibitorsTable.getRow(exhibitorId).getData();
+        $.ajax({
+            url: 'scripts/exhibitorsGetHistory.php',
+            method: "POST",
+            data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
+            success: function (data, textStatus, jqXhr) {
+                checkRefresh(data);
+                exhibitors.displayHistory(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // display the history modal
+    displayHistory(data) {
+        if (data.error) {
+            show_message(data.error, 'error');
+            return;
+        }
+        // now build the modal data and call it up
+        let title = "Exhibitor Change History for " + this.#historyRow.exhibitorId + ' (' + this.#historyRow.exhibitorName + ')';
+        this.#historyTitle.innerHTML = title
+        title += "<br/>Artist Name:  " + this.#historyRow.artistName + ", Email: " + this.#historyRow.exhibitorEmail;
+        // build the history display
+        let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+        // format the heading lines-line 1
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-2'>History Date</div>\n" +
+            "<div class='col-sm-3'>Artist Name</div>\n" +
+            "<div class='col-sm-3'>Artist Payee</div>\n" +
+            "<div class='col-sm-3'>Business Name</div>\n" +
+            "</div>\n";
+        // format the heading lines-line 2
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-3'>Business Email</div>\n" +
+            "<div class='col-sm-2'>Business Phone</div>\n" +
+            "<div class='col-sm-2'>Tax ID</div>\n" +
+            "<div class='col-sm-4'>Website</div>\n" +
+            "</div>\n";
+        // format the heading lines-line 3
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-1'>Publicity</div>\n" +
+            "<div class='col-sm-3'>Addr Line 1</div>\n" +
+            "<div class='col-sm-2'>Addr Line 2</div>\n" +
+            "<div class='col-sm-2'>City</div>\n" +
+            "<div class='col-sm-1'>State</div>\n" +
+            "<div class='col-sm-1'>Zip</div>\n" +
+            "<div class='col-sm-1'>Country</div>\n" +
+            "</div>\n";
+        // format the heading lines-line 4
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-1'>Archive</div>\n" +
+            "<div class='col-sm-3'>Ship Addr Line 1</div>\n" +
+            "<div class='col-sm-2'>Ship Addr Line 2</div>\n" +
+            "<div class='col-sm-2'>Ship City</div>\n" +
+            "<div class='col-sm-1'>Ship State</div>\n" +
+            "<div class='col-sm-1'>Ship Zip</div>\n" +
+            "<div class='col-sm-1'>Ship Ctry</div>\n" +
+            "</div>\n";
+
+        // format the current line
+        let current = data.history[0];
+        let color = '';
+        let prior = data.history[0];
+        let rowColor = false;
+        for (let i = 0; i < data.history.length; i++) {
+            current = data.history[i];
+            let curColor = rowColor ? "#FFFFFF" : "#F0F0F0 ";
+            rowColor = !rowColor;
+            // line 1
+            html += "<div class='row pt-1 pb-1' style='background-color: " + curColor + ";'>\n";
+
+            // history date
+            html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
+            // artist name
+            color = prior.artistName != current.artistName ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.artistName + "</div>\n";
+            // artist payee
+            color = prior.artistPayee != current.artistPayee ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.artistPayee + "</div>\n";
+            // exhibitor name
+            color = prior.exhibitorName != current.exhibitorName ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.artistName + "</div>\n";
+            html += "</div>\n";
+
+            // line 2
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Business Email
+            color = prior.exhibitorEmail != current.exhibitorEmail ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.exhibitorEmail + "</div>\n";
+            // Business Email
+            color = prior.exhibitorPhone != current.exhibitorPhone ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.exhibitorPhone + "</div>\n";
+            // Sales Tax ID
+            color = prior.salesTaxId != current.salesTaxId ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.salesTaxId + "</div>\n";
+            // Website
+            color = prior.website != current.website ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.website + "</div>\n";
+            html += "</div>\n";
+
+            // line 3
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Publicity
+            color = prior.publicity != current.publicity ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.publicity + "</div>\n";
+            // street addr
+            color = prior.addr != current.addr ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.addr + "</div>\n";
+            // addr2
+            color = prior.addr2 != current.addr2 ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.addr2 + "</div>\n";
+            // city
+            color = prior.city != current.city ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.city + "</div>\n";
+            // state
+            color = prior.state != current.state ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.state + "</div>\n";
+            // zip
+            color = prior.zip != current.zip ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.zip + "</div>\n";
+            // country
+            color = prior.country != current.country ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.country + "</div>\n";
+            html += "</div>\n";
+
+            // line 4
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Archived
+            color = prior.archived != current.archived ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.archived + "</div>\n";
+            // ship treet addr
+            color = prior.shipAddr != current.shipAddr ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-3" + color + "'>" + current.shipAddr + "</div>\n";
+            // ship addr2
+            color = prior.shipAddr2 != current.shipAddr2 ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.shipAddr2 + "</div>\n";
+            // ship city
+            color = prior.shipCity != current.shipCity ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-2" + color + "'>" + current.shipCity + "</div>\n";
+            // ship state
+            color = prior.shipState != current.shipState ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.shipState + "</div>\n";
+            // ship zip
+            color = prior.shipZip != current.shipZip ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.shipZip + "</div>\n";
+            // ship country
+            color = prior.shipCountry != current.shipCountry ? ' historyChangedBGColor' : '';
+            html += "<div class='col-sm-1" + color + "'>" + current.shipCountry + "</div>\n";
+            html += "</div>\n";
+
+            // if current, or a difference, show description or notes
+            if (current.historyDate == 'current' && current.description != null && current.description != "") {
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
+                    "<div class='col-sm-11'>" + current.description.trim() + "</div>\n</div>\n";
+            } else if (current.description != prior.description) {
+                color = ' historyChangedBGColor';
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
+                    "<div class='col-sm-11" + color + "'>" + current.description.trim() + "</div>\n</div>\n";
+            }
+
+            if (current.historyDate == 'current' && current.notes != null && current.notes != "") {
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
+                    "<div class='col-sm-11'>" + current.notes.trim() + "</div>\n</div>\n";
+            } else if (current.notes != prior.notes) {
+                color = ' historyChangedBGColor';
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
+                    "<div class='col-sm-11" + color + "'>" + current.notes.trim() + "</div>\n</div>\n";
+            }
+
+            prior = current;
+        }
+        this.#historyDiv.innerHTML = html;
+        this.#historyModal.show();
+
+        if (data.warn)
+            show_message(data.warn, 'warn', 'history_message_div');
+
+        if (data.message)
+            show_message(data.message, 'success', 'history_message_div');
+    }
+
     // reset an exhibitor's password
     resetpw(exhibitorId) {
         clear_message();
@@ -1499,7 +1786,7 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
+        let exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
         clear_message();
         clearError();
         $.ajax({
@@ -1549,7 +1836,7 @@ class exhibitorsAdm {
         // show the receipt
     spaceReceipt(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
+        let exhibitorData = this.#spaceRow.getData();
         this.#regionYearId = exhibitorData.regionYearId;
         this.#exhibitorId = exhibitorData.exhibitorId;
         exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
@@ -1557,22 +1844,22 @@ class exhibitorsAdm {
 
     printBidSheets(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printPriceTags(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printControlSheet(id, email) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId + '&email=' + email;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId + '&email=' + email;
         window.open(script, "_blank")
     }
 
@@ -1580,17 +1867,16 @@ class exhibitorsAdm {
     // process appove requested
     spaceApprovalReq(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData.req || 0;
-        var app = exhibitorData.app || 0;
-        var pur = exhibitorData.pur || 0;
+        let exhibitorData = this.#spaceRow.getData();
+        let req = exhibitorData.req || 0;
+        let app = exhibitorData.app || 0;
+        let pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
         clear_message();
         clearError();
         this.#regionYearId = exhibitorData.regionYearId;
-
         $.ajax({
             url: 'scripts/exhibitorsSpaceApproval.php',
             method: "POST",
@@ -1607,10 +1893,10 @@ class exhibitorsAdm {
     spaceApprovalOther(id, pay = 0) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         this.#approvalPay = pay;
-        var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData.req || 0;
-        var app = exhibitorData.app || 0;
-        var pur = exhibitorData.pur || 0;
+        let exhibitorData = this.#spaceRow.getData();
+        let req = exhibitorData.req || 0;
+        let app = exhibitorData.app || 0;
+        let pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
@@ -1645,7 +1931,7 @@ class exhibitorsAdm {
                 show_message(data.message, 'success');
             if (this.#debug & 8)
                 console.log(data.detail);
-            var exhRow = this.#buildSpacesItems(data);
+            let exhRow = this.#buildSpacesItems(data);
             if (this.#debug & 8)
                 console.log(exhRow);
             this.#spacesTable.updateData(exhRow);
@@ -1678,10 +1964,11 @@ class exhibitorsAdm {
     addNewSpace() {
         clear_message();
         this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor? (only exhibitors with no paid spaces in this region are shown)';
-        var script = 'scripts/exhibitorsGetList.php';
-        var data = {
+        let script = 'scripts/exhibitorsGetList.php';
+        let data = {
             regionId: this.#regionId,
             action: 'list',
+            exhibitorConid: config.exhibitorConid,
         };
         clear_message();
         clearError();
@@ -1734,9 +2021,9 @@ class exhibitorsAdm {
 
     // buttons for the exhibitorListTable
     exhibitorListButtons(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var id = data.exhibitorId;
-        var buttons = '';
+        let data = cell.getData();
+        let id = data.exhibitorId;
+        let buttons = '';
 
         // add space button button
         buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1755,8 +2042,8 @@ class exhibitorsAdm {
         this.#exhibitorListTable = null;
         console.log("add/pay for space for exhibitor " + this.#exhibitorId + ', in exhibitsRegion ' + this.#regionId);
 
-        var script = 'scripts/exhibitorGetSingleData.php';
-        var data = {
+        let script = 'scripts/exhibitorGetSingleData.php';
+        let data = {
             exhibitorId: this.#exhibitorId,
             regionId: this.#regionId,
             action: 'get',
@@ -1799,6 +2086,30 @@ class exhibitorsAdm {
         country_options = data.country_options;
         exhibitorRequest.openReq(this.#regionYearId, 3);
     }
+
+    // email related functions
+    sendInvReminder() {
+        emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
+        let email = prompt("Would you like to send a test invitation reminder email?\n" +
+            "If so please enter the address to send the test to in the box below and click ok.\n" +
+            "If you don't provide a test address, you will be sending emails to a lot of people.\n" +
+            "You will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+            "Clicking cancel will cancel the sending of these emails.\n");
+        let action = "none";
+
+        if (email == null)
+            return false;
+
+        if (email == '') {
+            action = 'full';
+        } else {
+            action = 'test';
+        }
+
+        let data = { action: action, email: email, type: 'invReminder', regionName: this.#regionName, exhibitsRegionYearId: this.#exhibitsRegionYearId };
+        emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
+    }
 };
 
 exhibitors = null;
@@ -1812,6 +2123,7 @@ function updateExhibitorDataDraw(data, textStatus, jqXHR) {
 // create class on page render
 window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config.conid, config.debug);
+    fileManager = new FileManager();
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
     exhibitorInvoiceOnLoad();

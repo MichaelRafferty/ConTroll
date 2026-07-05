@@ -528,5 +528,11 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItem
 END;;
 DELIMITER ;
 
+/* delete obsolete tables if the exist */
+DROP TABLE IF EXISTS artshow_reg;
+DROP TABLE IF EXISTS artshow;
+DROP TABLE IF EXISTS artist;
+DROP TABLE IF EXISTS ribbons;
+
 INSERT INTO patchLog(id, name) VALUES(56, 'art, portal, et al');
 

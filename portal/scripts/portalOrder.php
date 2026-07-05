@@ -1,176 +1,264 @@
 <?php
-require_once('../lib/base.php');
-require_once('../lib/getAccountData.php');
-require_once('../lib/portalEmails.php');
-require_once('../../lib/paymentPlans.php');
-require_once('../../lib/purchase.php');
-require_once('../../lib/coupon.php');
-require_once('../../lib/tax.php');
-require_once('../../lib/log.php');
-require_once('../../lib/cc__load_methods.php');
+    require_once('../lib/base.php');
+    require_once('../lib/getAccountData.php');
+    require_once('../lib/portalEmails.php');
+    require_once('../../lib/paymentPlans.php');
+    require_once('../../lib/purchase.php');
+    require_once('../../lib/coupon.php');
+    require_once('../../lib/tax.php');
+    require_once('../../lib/log.php');
+    require_once('../../lib/cc__load_methods.php');
 
 // use common global Ajax return functions
-global $returnAjaxErrors, $return500errors;
-$returnAjaxErrors = true;
-$return500errors = true;
+    global $returnAjaxErrors, $return500errors;
+    $returnAjaxErrors = true;
+    $return500errors = true;
 
-$response = array('post' => $_POST, 'get' => $_GET);
+    $response = array ('post' => $_POST, 'get' => $_GET);
 
-$condata = get_con();
-$conid=$condata['id'];
-$conf = get_conf('con');
-$portal_conf = get_conf('portal');
-$ini = get_conf('reg');
-$log = get_conf('log');
-load_cc_procs();
-logInit($log['reg']);
+    $condata = get_con();
+    $conid = $condata['id'];
+    $conf = get_conf('con');
+    $portal_conf = get_conf('portal');
+    $ini = get_conf('reg');
+    $log = get_conf('log');
+    load_cc_procs();
+    logInit($log['reg']);
 
-$response['conid'] = $conid;
+    $response['conid'] = $conid;
 
-if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) &&
-    array_key_exists('amount', $_POST))) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
-    exit();
-}
-
-$action = $_POST['action'];
-if ($action != 'portalOrder') {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
-    exit();
-}
-
-if (!(isSessionVar('id') && isSessionVar('idType'))) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Not logged in.'));
-    exit();
-}
-
-validateLoginId();
-
-// check for being resolved/baned
-$resolveUpdates = isResolvedBanned();
-$response['resolveUpdates'] = $resolveUpdates;
-if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $resolveUpdates['logout'] == 1) {
-    ajaxSuccess($response);
-    return;
-}
-
-// must use cc here, as getConfValue will look in global and that must not happen here
-$cc = get_conf('cc');
-if (array_key_exists('location_portal', $cc)) {
-    $ccLocation = $cc['location_portal'];
-} else if (array_key_exists('location', $cc)) {
-    $ccLocation = $cc['location'];
-} else {
-    $ccLocation = 'Unknown';
-}
-
-$loginId = getSessionVar('id');
-$loginType = getSessionVar('idType');
-
-$plan = $_POST['plan'];
-$newPlan = $_POST['newplan'];
-$amount = $_POST['amount'];
-$planRec = $_POST['planRec'];
-$existingPlan = $_POST['existingPlan'];
-$planPayment = $_POST['planPayment'];
-$otherPay = $_POST['otherPay'];
-
-// load the amount values
-if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
-    $totalAmountDue = $_POST['totalAmountDue'];
-} else {
-    $totalAmountDue = $amount;
-}
-if (array_key_exists('couponDiscount', $_POST)) {
-    $webCouponDiscount = $_POST['couponDiscount'];
-} else {
-    $webCouponDiscount = 0;
-}
-if (array_key_exists('preCouponAmountDue', $_POST)) {
-    $preCouponAmountDue = $_POST['preCouponAmountDue'];
-} else {
-    $preCouponAmountDue = $amount;
-}
-
-if (array_key_exists('cancelOrder', $_POST)) {
-    $cancelOrderId = $_POST['cancelOrder'];
-} else {
-    $cancelOrderId = null;
-}
-
-if (array_key_exists('otherMemberships', $_POST)) {
-    try {
-        $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
-    }
-    catch (Exception $e) {
-        $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-        $response['error'] = $msg;
-        error_log($msg);
-        ajaxSuccess($response);
+    if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) &&
+        array_key_exists('amount', $_POST))) {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'Parameter error - get assistance'));
         exit();
     }
-} else {
-    $otherMemberships = [];
-}
+
+    $action = $_POST['action'];
+    if ($action != 'portalOrder') {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'Parameter error - get assistance'));
+        exit();
+    }
+
+    if (!(isSessionVar('id') && isSessionVar('idType'))) {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'Not logged in.'));
+        exit();
+    }
+
+    validateLoginId();
+
+// check for being resolved/baned
+    $resolveUpdates = isResolvedBanned();
+    $response['resolveUpdates'] = $resolveUpdates;
+    if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $resolveUpdates['logout'] == 1) {
+        ajaxSuccess($response);
+        return;
+    }
+
+// must use cc here, as getConfValue will look in global and that must not happen here
+    $cc = get_conf('cc');
+    if (array_key_exists('location_portal', $cc)) {
+        $ccLocation = $cc['location_portal'];
+    } else if (array_key_exists('location', $cc)) {
+        $ccLocation = $cc['location'];
+    } else {
+        $ccLocation = 'Unknown';
+    }
+
+    $loginId = getSessionVar('id');
+    $loginType = getSessionVar('idType');
+
+    $plan = $_POST['plan'];
+    $newPlan = $_POST['newplan'];
+    $amount = $_POST['amount'];
+    $planRec = $_POST['planRec'];
+    $existingPlan = $_POST['existingPlan'];
+    $planPayment = $_POST['planPayment'];
+
+// load the amount values
+    if (array_key_exists('couponDiscount', $_POST)) {
+        $webCouponDiscount = $_POST['couponDiscount'];
+    } else {
+        $webCouponDiscount = 0;
+    }
+    if (array_key_exists('preCouponAmountDue', $_POST)) {
+        $preCouponAmountDue = $_POST['preCouponAmountDue'];
+    } else {
+        $preCouponAmountDue = $amount;
+    }
+
+    if (array_key_exists('cancelOrder', $_POST)) {
+        $cancelOrderId = $_POST['cancelOrder'];
+    } else {
+        $cancelOrderId = null;
+    }
+
+    if (array_key_exists('otherMemberships', $_POST)) {
+        try {
+            $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
+        }
+        catch (Exception $e) {
+            $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+            $response['error'] = $msg;
+            error_log($msg);
+            ajaxSuccess($response);
+            exit();
+        }
+    } else {
+        $otherMemberships = [];
+    }
 
 // and the coupon values
-if (array_key_exists('couponCode', $_POST)) {
-    $couponCode = $_POST['couponCode'];
-} else {
-    $couponCode = null;
-}
+    if (array_key_exists('couponCode', $_POST)) {
+        $couponCode = $_POST['couponCode'];
+    } else {
+        $couponCode = null;
+    }
 
-if (array_key_exists('couponSerial', $_POST)) {
-    $couponSerial = $_POST['couponSerial'];
-} else {
-    $couponSerial = null;
-}
-
-if (array_key_exists('planRecast', $_POST)) {
-    $planRecast = $_POST['planRecast'];
-} else {
-    $planRecast = 0;
-}
+    if (array_key_exists('couponSerial', $_POST)) {
+        $couponSerial = $_POST['couponSerial'];
+    } else {
+        $couponSerial = null;
+    }
 
 // all the records are in the database, so lets charge the credit card...
 
-$transId = getSessionVar('transId');
-if ($transId == null) {
-    $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
-}
+    $transId = getSessionVar('transId');
+    if ($transId == null) {
+        $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+    }
 
 // get this person
-$info = getPersonInfo($conid);
+    $info = getPersonInfo($conid);
 
 // compute the results array here
-$coupon = null;
-$counts = null;
-$rows_upd = 0;
-$newPlanId = null;
-$buyer['email'] = $info['email_addr'];
-$buyer['phone'] = $info['phone'];
-$buyer['country'] = $info['country'];
-$phone = $info['phone'];
+    $coupon = null;
+    $counts = null;
+    $rows_upd = 0;
+    $newPlanId = null;
+    $buyer['email'] = $info['email_addr'];
+    $buyer['phone'] = $info['phone'];
+    $buyer['country'] = $info['country'];
+    $phone = $info['phone'];
 
-$deferredAmount = 0;
-if ($otherPay == 0) { // this is a plan payment or badge purchase payment
-    if ($planPayment == 1 && $newPlan == 0) {
-        if ($existingPlan['currentPayment'] > $existingPlan['balanceDue']) {
-            $totalAmountDue = $existingPlan['balanceDue'];
-        } else {
-            $totalAmountDue = $existingPlan['currentPayment'];
-        }
+    $deferredAmount = 0;
+
+// is this just a plan payment? (no memberships?)
+    if ($planPayment == 1) {
+        $totalAmountDue = min($existingPlan['currentPayment'], $existingPlan['balanceDue']);
         $amount = $totalAmountDue;
         $totalDiscount = 0;
         $badges = [];
     } else {
-        $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newPlan || $planPayment == 0) ? 'unpaid' : 'plan');
+// this is a payment on badges and it might have a plan creation in it as well
+        // load the badge array to mark what is being paid for
+        $totalDiscount = 0;
+        $badges = [];
+        foreach ($otherMemberships as $key => $mem) {
+            if (!array_key_exists('payThis', $mem))
+                continue;
+            //if ($mem['payThis'] != 1)
+            //    continue;
+            $bn = $mem['badgename'];
+            $bn = str_replace('<i>', '', $bn);
+            $bn = str_replace('</i>', '', $bn);
+            $bn = str_replace('<br/>', '', $bn);
+            if (array_key_exists('first_name', $mem))
+                $fname = $mem['first_name'];
+            else
+                $fname = $mem['fname'];
 
-        if ($planPayment == 1 || $newPlan == 1) {
+            if (array_key_exists('ageShortName', $mem))
+                $ageshortname = $mem['ageShortName'];
+            else
+                $ageshortname = $mem['ageshortname'];
+
+
+            $badges[] = array ('id' => $mem['create_trans'],
+                'create_date' => $mem['create_date'],
+                'regId' => $mem['regid'],
+                'memId' => $mem['memId'],
+                'conid' => $mem['conid'],
+                'status' => $mem['status'],
+                'price' => $mem['actPrice'],
+                'paid' => $mem['actPaid'],
+                'complete_trans' => $mem['complete_trans'],
+                'couponDiscount' => $mem['actCouponDiscount'],
+                'balDue' => $mem['actPrice'] - ($mem['actPaid'] + $mem['actCouponDiscount']),
+                'perid' => $mem['regPerid'],
+                'newperid' => $mem['regNewperid'],
+                'sortTrans' => $mem['sortTrans'],
+                'transDate' => $mem['transDate'],
+                'label' => $mem['shortname'],
+                'memAge' => $mem['memAge'],
+                'age' => $mem['memAge'],
+                'memType' => $mem['memType'],
+                'memCategory' => $mem['memCategory'],
+                'startdate' => $mem['startdate'],
+                'enddate' => $mem['enddate'],
+                'online' => $mem['online'],
+                'managedBy' => $mem['managedBy'],
+                'managedByNew' => $mem['managedByNew'],
+                'badge_name' => $bn,
+                'fullName' => $mem['fullName'],
+                'memberId' => $mem['memberId'],
+                'planId' => $mem['planId'],
+                'email_addr' => $mem['email_addr'],
+                'phone' => $mem['phone'],
+                'inPlan' => false,
+                'fname' => $fname,
+                'shortname' => $mem['shortname'],
+                'ageshortname' => $ageshortname,
+                'taxable' => $mem['taxable'],
+            );
+        }
+
+        if (count($badges) > 0) {
+            $badgeRegIds = '';
+            $badgeIndex = [];
+            $count = 0;
+            foreach ($badges as $key => $badge) {
+                $regId = $badge['regId'];
+                if (!is_numeric($regId)) {
+                    $msg = "Invalid data received for the memberships for this order. Seek assistance.";
+                    $response['error'] = $msg;
+                    error_log($msg);
+                    ajaxSuccess($response);
+                    exit();
+                }
+                $badgeIndex[$regId] = $count++;
+                $badgeRegIds .= ($regId + 0) . ','; // make it a number, not a string, to avoid any SQL injection
+            }
+            $badgeRegIds = substr($badgeRegIds, 0, -1); // strip off the trailing comma
+            $dbRegQ = <<<EOS
+SELECT *
+FROM reg
+WHERE id in ($badgeRegIds);
+EOS;
+            $badgeRegR = dbQuery($dbRegQ);
+            if ($badgeRegR === false) {
+                ajaxSuccess(array ('status' => 'error', 'message' => 'Database error in validating registrations, get assistance.'));
+                exit();
+            }
+            $valid = true;
+            while ($badgeL = $badgeRegR->fetch_assoc()) {
+                $reg = $badges[$badgeIndex[$badgeL['id']]]; // get the passed reg record
+                // compare the fields
+                if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] || $reg['status'] != $badgeL['status'] ||
+                    $reg['price'] != $badgeL['price'] || $reg['paid'] != $badgeL['paid'])
+                    $valid = false;
+            }
+            $badgeRegR->free();
+            if (!$valid) {
+                ajaxSuccess(array ('status' => 'error', 'message' => 'Memberships passed are not valid, get assistance.'));
+                exit();
+            }
+        }
+
+        if ($newPlan == 1) {
             $badges = whatMembershipsInPlan($badges, $planRec);
             $deferredAmount = $planRec['balanceDue'];
-        } else foreach ($badges as $key => $badge) {
-            $badges[$key]['inPlan'] = false;
+        } else foreach ($badges as $keyPlanBadge => $badge) {
+            $badges[$keyPlanBadge]['inPlan'] = false;
         }
 
         // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
@@ -185,6 +273,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
         $memCategories = $data['memCategories'];
         $mtypes = $data['mtypes'];
 
+
         //// $rules = $data['rules'];
         //// TODO: load and apply rules checks here to $badges
         $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
@@ -196,141 +285,87 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
         $paid = $data['paid'];
         $totalDiscount = $data['totalDiscount'];
 
-        if ($totalAmountDue != ($total - ($paid + $deferredAmount))) {
-            error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
-            ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
+        if ($amount != ($total - ($paid + $deferredAmount))) {
+            error_log('bad total: post=' . $amount . ', calc=' . $total);
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad total sent to Server'));
             exit();
         }
-        $amount = $totalAmountDue;
 
         if ($coupon != null) {
             if ($webCouponDiscount != $totalDiscount) {
                 error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
-                ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+                ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad coupon data sent to Server'));
                 exit();
             }
         }
     }
-} else { // otherPay = 1, this is a pay against 'other'
-    // load the badge array to mark what is being paid for
-        $totalDiscount = 0;
-        $badges = [];
-        foreach ($otherMemberships AS $key => $mem) {
-            if (!array_key_exists('payThis', $mem))
-                continue;
-            if ($mem['payThis'] != 1)
-                continue;
-            $bn = $mem['badgename'];
-            $bn = str_replace('<i>', '', $bn);
-            $bn = str_replace('</i>', '', $bn);
-            $bn = str_replace('<br/>', '', $bn);
-            $badges[] = array('id' => $mem['create_trans'],
-                              'create_date' => $mem['create_date'],
-                              'regId' => $mem['regid'],
-                              'memId' => $mem['memId'],
-                              'conid' => $mem['conid'],
-                              'status' => $mem['status'],
-                              'price' => $mem['actPrice'],
-                              'paid' => $mem['actPaid'],
-                              'complete_trans' => $mem['complete_trans'],
-                              'couponDiscount' => $mem['actCouponDiscount'],
-                              'balDue' => $mem['actPrice'] - ($mem['actPaid'] + $mem['actCouponDiscount']),
-                              'perid' => $mem['regPerid'],
-                              'newperid' => $mem['regNewperid'],
-                              'sortTrans' => $mem['sortTrans'],
-                              'transDate' => $mem['transDate'],
-                              'label' => $mem['shortname'],
-                              'memAge' => $mem['memAge'],
-                              'age' => $mem['memAge'],
-                              'memType' => $mem['type'],
-                              'memCategory' => $mem['category'],
-                              'startdate' => $mem['startdate'],
-                              'enddate' => $mem['enddate'],
-                              'online' => $mem['online'],
-                              'managedBy' => $mem['managedBy'],
-                              'managedByNew' => $mem['managedByNew'],
-                              'badge_name' => $bn,
-                              'fullName' => $mem['fullName'],
-                              'memberId' => $mem['memberId'],
-                              'planId' => $mem['planId'],
-                              'email_addr' => $mem['email_addr'],
-                              'phone' => $mem['phone'],
-                              'inPlan' => false,
-                              'fname' => array_key_exists('first_name', $mem) ? $mem['first_name'] : $mem['fname'],
-                              'shortname' => $mem['shortname'],
-                              'ageshortname' => array_key_exists('ageShortName', $mem) ? $mem['ageShortName'] : $mem['ageshortname'],
-                              'taxable' => $mem['taxable'],
-            );
-            if ($mem['planId'] != 0) {
-                $planRecast = 1;
-            }
-        }
-}
+
 
 // now recompute the records in the badgeResults array
 
-$results = array(
-    'custid' => "$loginType-$loginId",
-    'source' => 'portal',
-    'transid' => $transId,
-    'counts' => $counts,
-    'price' => $totalAmountDue,
-    'badges' => $badges,
-    'total' => $amount,
-    'coupon' => $coupon,
-    'discount' => $totalDiscount,
-    'newplan' => $newPlan,
-    'planRec' => $planRec,
-    'planPayment' => $planPayment,
-    'existingPlan' => $existingPlan,
-);
-$response['amount'] = $amount;
+    $results = array (
+        'custid' => "$loginType-$loginId",
+        'source' => 'portal',
+        'transid' => $transId,
+        'counts' => $counts,
+        'price' => $amount,
+        'badges' => $badges,
+        'total' => $amount,
+        'coupon' => $coupon,
+        'discount' => $totalDiscount,
+        'newplan' => $newPlan,
+        'planRec' => $planRec,
+        'planPayment' => $planPayment,
+        'existingPlan' => $existingPlan,
+    );
+    $response['amount'] = $amount;
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
-$upT = <<<EOS
+    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'results' => $results, 'request' => $badges));
+    $upT = <<<EOS
 UPDATE transaction
 SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
 WHERE id = ?;
 EOS;
-$rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $totalDiscount, 0, $transId));
+    $rows_upd += dbSafeCmd($upT, 'ddddi', array ($amount, $amount, $totalDiscount, 0, $transId));
 
 // end compute, create the order if there is something to pay
-if ($amount > 0) {
-    if ($cancelOrderId) // cancel the old order if it exists
-        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
+    if ($amount > 0) {
+        if ($cancelOrderId) // cancel the old order if it exists
+            cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
-    $rtn = cc_buildOrder($results, true, $ccLocation);
-    if ($rtn == null) {
-        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
-        exit();
-    }
-    $response['rtn'] = $rtn;
+        $rtn = cc_buildOrder($results, true, $ccLocation);
+        if ($rtn == null) {
+            // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+            logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Order not built'));
+            exit();
+        }
+        $response['rtn'] = $rtn;
 
-    // update the transaction with the order id
-    $taxes = $rtn['taxes'];
-    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
-    $upT = <<<EOS
+        // update the transaction with the order id
+        $taxes = $rtn['taxes'];
+        [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+        $upT = <<<EOS
 UPDATE transaction
 SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-    $preTax = $rtn['preTaxAmt'];
-    $taxAmt = $rtn['taxAmt'];
-    $withTax = $rtn['totalAmt'];
-    $valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
-    $typeStr = 'dddds' . $taxStr . 'i';
-    $valArray = array_merge($valArray, $taxValues);
-    $valArray[] = $transId;
+        $preTax = $rtn['preTaxAmt'];
+        $taxAmt = $rtn['taxAmt'];
+        $withTax = $rtn['totalAmt'];
+        $valArray = array ($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+        $typeStr = 'dddds' . $taxStr . 'i';
+        $valArray = array_merge($valArray, $taxValues);
+        $valArray[] = $transId;
 
-    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
-} else {
-    $rtn = array();
-}
+        $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
+    } else {
+        $rtn = array ();
+    }
 
 //$tnx_record = $rtn['tnx'];
-logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
-ajaxSuccess($response);
-return;
+    $response['status'] = 'success';
+    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    ajaxSuccess($response);
+    return;

@@ -29,6 +29,9 @@ $config_vars['vemail'] = $con['regadminemail'];
 $config_vars['debug'] = getConfValue('debug', 'controll_club', 0);
 $config_vars['conid'] = $conid;
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 ?>
 <script type='text/javascript'>
 var config = <?php echo json_encode($config_vars); ?>;
@@ -230,11 +233,7 @@ $(function() {
         <td colspan=2>
           <select tabindex=13 id='country' name='country' size=1 width=20>
             <?php
-            $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-            while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-              echo "<option value='".$data[1]."'>".$data[0]."</option>";
-            }
-            fclose($fh);
+            echo $countryOptions;
             ?>
           </select>
         </td>

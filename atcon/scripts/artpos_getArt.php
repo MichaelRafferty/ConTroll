@@ -65,7 +65,7 @@ $response['region'] = $region;
 $inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
 
 if ($inlineInventory != 1) {
-    $statusExclude = "AND A.status NOT IN ('Entered','Not In Show')";
+    $statusExclude = "AND A.status NOT IN ('Entered','Withdrawn')";
 } else {
     $statusExclude = '';
 }

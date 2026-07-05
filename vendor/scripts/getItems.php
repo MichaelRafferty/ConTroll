@@ -51,32 +51,25 @@ switch($getType) {
         break;
     case 'import':
         $itemQ = <<<EOS
-WITH eid AS (
-    SELECT exhibitorId
-    FROM exhibitorYears
-    WHERE id = ?
-), old AS (
+WITH old AS (
     SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
     FROM exhibitorYears exy
     JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
     JOIN artItems i ON i.exhibitorRegionYearId = exry.id
-    JOIN eid
     LEFT OUTER JOIN artSales s ON i.id = s.artId
-    WHERE exy.exhibitorId = eid.exhibitorId AND s.id IS NULL AND i.type = 'art'
+    WHERE exy.exhibitorId = ? AND s.id IS NULL AND i.type = 'art'
     UNION
     SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
     FROM exhibitorYears exy
     JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
     JOIN artItems i ON i.exhibitorRegionYearId = exry.id
-    JOIN eid
-    WHERE exy.exhibitorId = eid.exhibitorId  AND i.type = 'print' AND i.quantity > 0
+    WHERE exy.exhibitorId = ?  AND i.type = 'print' AND i.quantity > 0
     UNION
     SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
     FROM exhibitorYears exy
     JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
     JOIN artItems i ON i.exhibitorRegionYearId = exry.id
-    JOIN eid
-    WHERE exy.exhibitorId = eid.exhibitorId  AND i.type = 'nfs'
+    WHERE exy.exhibitorId = ?  AND i.type = 'nfs'
 )
 SELECT type, title, material, MIN(quantity) AS quantity, MAX(min_price) AS min_price, MAX(sale_price) AS sale_price
 FROM old
@@ -84,8 +77,8 @@ WHERE conid >= ? AND conid < ?
 GROUP BY type, title, material
 ORDER BY type, title;
 EOS;
-        $itemL = 'iii';
-        $itemA = array($region , $viewPriorLimit, $conid);
+        $itemL = 'iiiii';
+        $itemA = array($vendor, $vendor, $vendor, $viewPriorLimit, $conid);
         break;
     default:
         break;

@@ -27,6 +27,8 @@ if (!session_start()) {
     session_start();
 }
 
+// top banner for the login page
+// also does all the javascript includes
 function index_page_init($title) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
@@ -70,6 +72,8 @@ function index_page_init($title) {
 EOF;
 }
 
+// top banner for the logged in portal pages
+// also does the javascript includes
 function portalPageInit($page, $info, $css, $js, $refresh = false) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
@@ -182,6 +186,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     }
 }
 
+// footer for all pages, including the result_message block, and any passed in message for it
 function portalPageFoot() {
     $con = get_conf('con');
     $msg = '';
@@ -218,6 +223,7 @@ function portalPageFoot() {
     <?php
 }
 
+// draws the portal menu (tab bar)
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
@@ -290,6 +296,7 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
     <?php
 }
 
+// common function to detect if this is a web request or a script
 function isWebRequest() {
     return isset($_SERVER['HTTP_USER_AGENT']);
 }
@@ -539,4 +546,45 @@ EOS;
     $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
     setSessionVar('transId', $transId);
     return $transId;
+}
+
+// validate the current logged in person can update data for the passed in person
+// note: this is designed only for scripts and not web pages
+    function validateAccess($currentPerson, $currentPersonType) : bool {
+        $loginId = getSessionVar('id');
+        $loginType = getSessionVar('idType');
+        if ($currentPersonType == $loginType && $currentPerson == $loginId)
+            return true;    // it's me, of course access is allowed
+
+        if ($currentPersonType == 'p' && $loginType == 'n')
+            return false;   // a new person cannot manage an existing person
+
+        // check to see if the current person is one I manage
+        if ($currentPersonType == 'p') {
+            $pQ = <<<EOS
+SELECT id
+FROM perinfo
+WHERE id = ? AND managedBy = ?;
+EOS;
+        } else if ($loginType == 'n') {
+            // we're both new
+            $pQ = <<<EOS
+SELECT id
+FROM newperson
+WHERE id = ? AND managedByNew = ?;
+EOS;
+        } else {
+            // I am existing and they are new
+            $pQ = <<<EOS
+SELECT id
+FROM newperson
+WHERE id = ? AND managedBy = ?;
+EOS;
+    }
+    $pR = dbSafeQuery($pQ, 'ii', array($currentPerson, $loginId));
+    if ($pR === false)
+        return false;
+    $numMatch = $pR->num_rows;
+    $pR->free();
+    return $numMatch == 1;
 }

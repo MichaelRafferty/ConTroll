@@ -47,6 +47,10 @@ function show_message(message, type = 'success', div='result_message') {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+
+    setTimeout(function() {
+        message_div.scrollIntoView({block: 'nearest', inline: 'start'})
+    }, 100);
 }
 
 function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {

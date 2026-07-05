@@ -76,7 +76,7 @@ class exhibitssetup {
         this.#message_div = document.getElementById('test');
         this.#exhibits_pane = document.getElementById('configuration-pane');
         this.#result_message_div = document.getElementById('result_message');
-        var id = document.getElementById("exhibitorRegionYearModal");
+        let id = document.getElementById("exhibitorRegionYearModal");
         if (id != null) {
                 this.#exhibitsRegionYearModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
                 this.#exhibitsRegionYear_editTitle = document.getElementById('exhibitsRegionYear_editTitle');
@@ -102,14 +102,14 @@ class exhibitssetup {
 
     // called on open of the exhibits window
     open() {
-        var html = `
+        let html = `
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12"><h3 style="text-align: center;"><strong>Exhibits Setup</strong></h3></div>
     </div>
     <ul class="nav nav-pills nav-fill  mb-3" id="exhibitsAdmin-tab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="regionTypes-tab" data-bs-toggle="pill" data-bs-target="#regionTypes-pane" type="button" role="tab" 
+            <button class="nav-link active" id="regionTypes-tab" data-bs-toggle="pill" data-bs-target="#regionTypes-pane" type="button" role="tab"
                     aria-controls="nav-exhibitsTabs" aria-selected="true" onclick="exhibits.settab('regionTypes-pane');">Region Types</button>
         </li>
         <li class="nav-item" role="presentation">
@@ -143,17 +143,20 @@ class exhibitssetup {
                     <div class="col-sm-auto m-0 p-0">&bigstar; = Required Field</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-sm-auto" id="types-buttons">
+                    <div class="col-sm-auto" id="types-buttons">`;
+        if (config.exhibitorConid == config.conid)
+            html += `
                         <button id="types-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoTypes(); return false;" disabled>Undo</button>
                         <button id="types-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoTypes(); return false;" disabled>Redo</button>
                         <button id="types-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowTypes(); return false;">Add New</button>
-                        <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveTypes(); return false;" disabled>Save Changes</button>
+                        <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveTypes(); return false;" disabled>Save Changes</button>`;
+        html += `
                         <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadTypes('csv'); return false;">Download CSV</button>
                         <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadTypes('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>
             </div>
-        </div>   
+        </div>
         <div class="tab-pane fade show" id="regions-pane" role="tabpanel" aria-labelledby="regions-tab" tabindex="0">
             <div class="container-fluid">
                  <div class="row">
@@ -163,13 +166,17 @@ class exhibitssetup {
                     <div class="col-sm-auto m-0 p-0">&bigstar; = Required Field</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-sm-auto" id="regions-buttons">                
+                    <div class="col-sm-auto" id="regions-buttons">`;
+        if (config.exhibitorConid == config.conid)
+            html += `
                         <button id="regions-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoRegions(); return false;" disabled>Undo</button>
                         <button id="regions-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoRegions(); return false;" disabled>Redo</button>
                         <button id="regions-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowRegions(); return false;">Add New</button>
-                        <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveRegions(); return false;" disabled>Save Changes</button>
+                        <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveRegions(); return false;" disabled>Save Changes</button>`;
+        html += `
                         <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadRegions('csv'); return false;">Download CSV</button>
                         <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadRegions('xlsx'); return false;">Download Excel</button>
+
                     </div>
                 </div>
             </div>
@@ -183,11 +190,14 @@ class exhibitssetup {
                     <div class="col-sm-auto m-0 p-0">&bigstar; = Required Field</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-sm-auto" id="years-buttons">
+                    <div class="col-sm-auto" id="years-buttons">`;
+        if (config.exhibitorConid == config.conid)
+            html += `
                         <button id="years-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoYears(); return false;" disabled>Undo</button>
                         <button id="years-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoYears(); return false;" disabled>Redo</button>
                         <button id="years-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowYears(); return false;">Add New</button>
-                        <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveYears(); return false;" disabled>Save Changes</button>
+                        <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveYears(); return false;" disabled>Save Changes</button>`;
+        html += `
                         <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadYears('csv'); return false;">Download CSV</button>
                         <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadYears('xlsx'); return false;">Download Excel</button>
                     </div>
@@ -203,15 +213,18 @@ class exhibitssetup {
                     <div class="col-sm-auto m-0 p-0">&bigstar; = Required Field</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-sm-auto" id="spaces-buttons">
+                    <div class="col-sm-auto" id="spaces-buttons">`;
+        if (config.exhibitorConid == config.conid)
+            html += `
                         <button id="spaces-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoSpaces(); return false;" disabled>Undo</button>
                         <button id="spaces-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpaces(); return false;" disabled>Redo</button>
                         <button id="spaces-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpaces(); return false;">Add New</button>
-                        <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpaces(); return false;" disabled>Save Changes</button>
+                        <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpaces(); return false;" disabled>Save Changes</button>`;
+        html += `
                         <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpaces('csv'); return false;">Download CSV</button>
                         <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpaces('xlsx'); return false;">Download Excel</button>
                     </div>
-                </div>                        
+                </div>
             </div>
         </div>
         <div class="tab-pane fade show" id="exhibitsPrices-pane" role="tabpanel" aria-labelledby="exhibitsPrices-tab" tabindex="0">
@@ -223,15 +236,18 @@ class exhibitssetup {
                     <div class="col-sm-auto m-0 p-0">&bigstar; = Required Field</div>
                 </div>
                 <div class="row mt-2">
-                    <div class="col-sm-auto" id="spacePrices-buttons">
+                    <div class="col-sm-auto" id="spacePrices-buttons">`;
+        if (config.exhibitorConid == config.conid)
+            html += `
                         <button id="spacePrices-undo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.undoSpacePrices(); return false;" disabled>Undo</button>
                         <button id="spacePrices-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpacePrices(); return false;" disabled>Redo</button>
                         <button id="spacePrices-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpacePrices(); return false;">Add New</button>
-                        <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpacePrices(); return false;" disabled>Save Changes</button>
+                        <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpacePrices(); return false;" disabled>Save Changes</button>`;
+        html += `
                         <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpacePrices('csv'); return false;">Download CSV</button>
                         <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpacePrices('xlsx'); return false;">Download Excel</button>
                     </div>
-                </div>        
+                </div>
             </div>
         </div>
     </div>
@@ -268,7 +284,17 @@ class exhibitssetup {
         clear_message();
         clearError();
         let _this = this;
-        var script = "scripts/exhibitsUpdateGetData.php";
+        let startTab = 'regionTypes-pane';
+        let triggers = false;
+        if (config.initialTab == 'configuration' && config.initialSubtab != '' && config.initialSubtab != 'regionTypes') {
+            triggers = true;
+            startTab = config.initialSubtab + '-pane';
+            config.initialTab = '';
+            config.initialSubtab = '';
+        }
+
+
+        let script = "scripts/exhibitsUpdateGetData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -280,7 +306,7 @@ class exhibitssetup {
                 }
                 checkRefresh(data);
                 _this.draw(data);
-                _this.settab('regionTypes-pane');
+                _this.settab(startTab, triggers);
                 if (data.success)
                     show_message(data.success,  'success');
             },
@@ -333,17 +359,37 @@ class exhibitssetup {
 
 
     // common code for changing tabs
-    settab(tabname) {
+    settab(tabname, triggers = false) {
         clearError();
         clear_message();
+
+        if (triggers) {
+            const triggerTabList = document.querySelectorAll('#exhibitsAdmin-tab button')
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl)
+
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            })
+
+            let selectors = '#exhibitsAdmin-tab button[data-bs-target="#' + tabname;
+            let triggerEl = document.querySelector(selectors);
+            if (triggerEl)
+                bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
+        }
+        exhibitors.setCurrentSubtab(tabname.replace('-pane', ''));
     }
 
     // editRow - call up the proper modal to edit a full row
     editRow(table, index, field) {
-        var row;
+        let row;
+        let keys;
+        let html;
+        let regionYearName;
         switch (table) {
             case 'RegionYears':
-                var regionYearName;
                 row = this.#regionYearsTable.getRow(index).getData();
                 // set the title for the modal
                 if (this.#regionListArr.hasOwnProperty(row.exhibitsRegion)) {
@@ -351,44 +397,44 @@ class exhibitssetup {
                 } else {
                     regionYearName = 'New Row';
                 }
-                var html = '<strong>Editing Region Year for ' + (row.id > 0 ? (row.id + ':') : '') + regionYearName + '</strong>';
+                let html = '<strong>Editing Region Year for ' + (row.id > 0 ? (row.id + ':') : '') + regionYearName + '</strong>';
                 this.#exhibitsRegionYear_editTitle.innerHTML = html;
                 document.getElementById("eryH1Title").innerHTML = html;
 
                 // set the select lists
                 // region
-                var keys = Object.keys(this.#regionListArr);
-                var optionList = '';
+                keys = Object.keys(this.#regionListArr);
+                let optionList = '';
                 if (row.exhibitsRegion == undefined || row.exhibitsRegion <= 0) {
                     optionList += '<option value="-1">Select a region</option>';
                 }
-                for (var index = 0; index < keys.length; index++) {
-                    var key = keys[index];
-                    var value = this.#regionListArr[key];
+                for (let index = 0; index < keys.length; index++) {
+                    let key = keys[index];
+                    let value = this.#regionListArr[key];
                     optionList += '\n<option value="' + key + '">' + value + '</option>';
                 }
                 document.getElementById('eryExhibitsRegion').innerHTML = optionList;
 
                 // included memberships
                 optionList = '';
-                var optionListIncl = '';
+                let optionListIncl = '';
                 for (index = 0; index < this.#memList.length; index++) {
-                    key = this.#memList[index].id;
-                    value = this.#memListArr[key];
+                    let key = this.#memList[index].id;
+                    let value = this.#memListArr[key];
                     if (Number(this.#memList[index].price) == 0) {
                         optionListIncl += '\n<option value="' + key + '">' + value + '</option>';
                     }
                     optionList += '\n<option value="' + key + '">' + value + '</option>';
                 }
-                var defSel = '';
+                let defSel = '';
                 if (row.includedMemId == undefined || row.includedMemId <= 0) {
-                    var defSel = '<option value="-1">Select a type</option>';
+                    let defSel = '<option value="-1">Select a type</option>';
                 }
                 document.getElementById('eryIncludedMemId').innerHTML = defSel + optionListIncl;
 
                 defSel = '';
                 if (row.additionalMemId == undefined || row.additionalMemId <= 0) {
-                    var defSel = '<option value="-1">Select a type</option>';
+                    let defSel = '<option value="-1">Select a type</option>';
                 }
                 document.getElementById('eryAdditionalMemId').innerHTML = defSel + optionList;
 
@@ -403,6 +449,8 @@ class exhibitssetup {
                 document.getElementById('eryAdditionalMemId').value = row.additionalMemId > 0 ? row.additionalMemId : -1;
                 document.getElementById('eryTotalUnits').value = row.totalUnitsAvailable;
                 document.getElementById('eryAtConBase').value = row.atconIdBase;
+                document.getElementById('eryRevenueGLNum').value = row.revenueGlNum;
+                document.getElementById('eryRevenueGLLabel').value = row.revenueGlLabel;
                 document.getElementById('eryGLNum').value = row.glNum;
                 document.getElementById('eryGLLabel').value = row.glLabel;
                 document.getElementById('eryMailInFee').value = row.mailinFee;
@@ -422,7 +470,7 @@ class exhibitssetup {
 
     // each save of the edit modals - back into the table
     saveRYEdit() {
-        var newrow = {
+        let newrow = {
             id: document.getElementById('eryID').value,
             exhibitsRegion: document.getElementById('eryExhibitsRegion').value,
             roomStatus: document.getElementById('eryRoomStatus').value,
@@ -432,6 +480,8 @@ class exhibitssetup {
             additionalMemId: document.getElementById('eryAdditionalMemId').value,
             totalUnitsAvailable: document.getElementById('eryTotalUnits').value,
             atconIdBase: document.getElementById('eryAtConBase').value,
+            revenueGlNum: document.getElementById('eryRevenueGLNum').value,
+            revenueGlLabel: document.getElementById('eryRevenueGLLabel').value,
             glNum: document.getElementById('eryGLNum').value,
             glLabel: document.getElementById('eryGLLabel').value,
             mailinFee: document.getElementById('eryMailInFee').value,
@@ -446,7 +496,7 @@ class exhibitssetup {
 
     // editDesc - use tinymce to edit a description
     editDesc(table, index, field, title) {
-        var row;
+        let row;
         switch (table) {
             case 'Regions':
                 row = this.#regionsTable.getRow(index);
@@ -457,8 +507,8 @@ class exhibitssetup {
             default:
                 return;
         }
-        var textitem = row.getCell(field).getValue();
-        var titlename = row.getCell(title).getValue();
+        let textitem = row.getCell(field).getValue();
+        let titlename = row.getCell(title).getValue();
         showEdit('exhibits', table, index, field, titlename, textitem);
     }
 
@@ -469,13 +519,13 @@ class exhibitssetup {
 
         const startRE = /^<p>/i;
         const endRE = /<\/p>$/i;
-        var neweditValue = editValue.replace(startRE,'');
+        let neweditValue = editValue.replace(startRE,'');
         neweditValue = neweditValue.replace(endRE,'');
         if (neweditValue.match(/.*<p>.*/) == null) {
             editValue = neweditValue;;
         }
 
-        var updArr = {};
+        let updArr = {};
         updArr[editField] = editValue;
         switch (editTable) {
             case 'Regions':
@@ -492,7 +542,7 @@ class exhibitssetup {
 
     // formatId formatter: suppress showing negatives
     formatId(cell, formatterParams, onRendered) {
-        var index = cell.getRow().getIndex();
+        let index = cell.getRow().getIndex();
         if (index > 0)
             return index;
         return '';
@@ -500,14 +550,20 @@ class exhibitssetup {
 
     // editRowBtn: formatter for a table edit button
     editRowBtn(cell, formatterParams, onRendered) {
-        var index = cell.getRow().getIndex();
+        if (config.exhibitorConid != config.conid)
+            return "Pr Yr";
+
+        let index = cell.getRow().getIndex();
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="exhibits.editRow(\'' + formatterParams.table + '\',' + index + ',\'' +  formatterParams.fieldName + '\');">Edit</button>';
     }
 
     // display edit button for a long field
     editbutton(cell, formatterParams, onRendered) {
-        var index = cell.getRow().getIndex();
+        if (config.exhibitorConid != config.conid)
+            return "Prior Year";
+
+        let index = cell.getRow().getIndex();
         if (index > 0) {
             return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;", onclick="exhibits.editDesc(\'' +
                 formatterParams.table + '\',' + index + ',\'' +  formatterParams.fieldName + '\', \'' + formatterParams.name + '\');">Edit' +
@@ -518,10 +574,10 @@ class exhibitssetup {
 
     // draw - draw screen for editing
     draw(data) {
-        var drew_regions = false;
-        var drew_regionYears = false;
-        var drew_spaces = false;
-        var drew_spacePrices = false;
+        let drew_regions = false;
+        let drew_regionYears = false;
+        let drew_spaces = false;
+        let drew_spacePrices = false;
 
         if (data.memList) {
             this.#memList = data.memList;
@@ -571,6 +627,14 @@ class exhibitssetup {
         }
     }
 
+    // getEditMode - returns input as edit type if edit mode allowed, false otherwise
+    getEditMode(type) {
+        if (config.exhibitorConid == config.conid)
+            return type;
+
+        return false;
+    }
+
     // draw regionTypes table
     drawRegionTypes(data) {
         let _this = this;
@@ -605,28 +669,31 @@ class exhibitssetup {
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, validator: "required",
-                    editor: "input", editorParams: {maxlength: "16"} },
-                { title: "&bigstar;Portal Type", field: "portalType", width: 100, headerSort: true, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['vendor', 'artist']}, validator: "required" },
-                { title: "&bigstar;Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 120, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['None', 'Once', 'Annual']}, validator: "required" },
-                { title: "&bigstar;Purchase Approval Required", field: "purchaseApprovalRequired", headerSort: true, width: 120, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['Y', 'N'] }, validator: "required" },
-                { title: "&bigstar;Purchase Area Totals", field: "purchaseAreaTotals", headerSort: true, width: 140, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['unique', 'combined'] }, validator: "required" },
-                { title: "Inperson Max Units", field: "inPersonMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
-                { title: "&bigstar;Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['Y', 'N'] }, validator: "required" },
-                { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "16"} },
+                { title: "&bigstar;Portal Type", field: "portalType", width: 100, headerSort: true, headerWordWrap: true,
+                    editor: this.getEditMode("list"), editorParams: { values: ['vendor', 'artist']}, validator: "required" },
+                { title: "&bigstar;Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 120, headerWordWrap: true,
+                    editor: this.getEditMode("list"), editorParams: { values: ['None', 'Once', 'Annual']}, validator: "required" },
+                { title: "&bigstar;Purchase Approval Required", field: "purchaseApprovalRequired", headerSort: true, width: 120, headerWordWrap: true,
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "&bigstar;Purchase Area Totals", field: "purchaseAreaTotals", headerSort: true, width: 140, headerWordWrap: true,
+                    editor: this.getEditMode("list"), editorParams: { values: ['unique', 'combined'] }, validator: "required" },
+                { title: "Inperson Max Units", field: "inPersonMaxUnits", headerSort: true, width: 100, headerWordWrap: true,
+                    editor: this.getEditMode("input") },
+                { title: "&bigstar;Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true,
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true,
+                    editor: this.getEditMode("input") },
                 { title: "&bigstar;Need W9", field: "needW9", headerSort: false, width: 80, headerWordWrap: true, validator: "required",
-                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 100, headerWordWrap: true, validator: "required",
-                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
-                { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, },
+                { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true,
+                    editor: this.getEditMode("number") },
                 { title: "&bigstar;Allow Quick Sale", field: "allowQuickSale", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
-                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
-                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
+                    editor: this.getEditMode("list"), editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 { title: "Orig Key", field: "regionTypeKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 { title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
@@ -684,15 +751,15 @@ class exhibitssetup {
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
                 {
                     title: "&bigstar;Type", field: "regionType", headerSort: true, width: 200, headerFilter: true, headerFilterParams: {values: this.#regionType_arr},
-                    editor: "list", editorParams: {values: this.#regionType_arr}, validator: "required"
+                    editor: this.getEditMode("list"), editorParams: {values: this.#regionType_arr}, validator: "required"
                 },
                 {
                     title: "&bigstar;Short Name", field: "shortname", headerSort: true, headerFilter: true, width: 200,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
+                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
                 },
                 {
                     title: "&bigstar;Name", field: "name", width: 350, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
+                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' },
                     hozAlign:"left", headerSort: false },
@@ -727,7 +794,7 @@ class exhibitssetup {
             this.#regionYearsTable.off("cellEdited");
             this.#regionYearsTable.destroy();
         }
-        
+
         if (data.exhibitsRegionYears) {
             this.#regionYears = data.exhibitsRegionYears;
 
@@ -735,7 +802,7 @@ class exhibitssetup {
             this.#regionYears.forEach(s => {
                 this.#regionYearsListArr[s.id] = s.shortname;
             });
-            for (var i = 0; i < this.#regionYears.length; i++) {
+            for (let i = 0; i < this.#regionYears.length; i++) {
                 this.#regionYearsIdx[this.#regionYears[i]['id']] = i;
             }
 
@@ -770,42 +837,56 @@ class exhibitssetup {
                 {title: "ID", field: "id", width: 80, hozAlign: "right", headerSort: false, formatter: this.formatId },
                 {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
-                    title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
-                    editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
+                    title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true,
+                    headerFilter: true, headerFilterParams: {values: this.#regionListArr},
+                    editor: this.getEditMode("list"), editorParams: {values: this.#regionListArr}, validator: "required",
                     formatter: "lookup", formatterParams: this.#regionListArr,
                 },
                 {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
-                    editor: "list", editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
-                    formatter: "lookup", formatterParams: {values: this.#regionYearRoomStatuses, }
+                    editor: this.getEditMode("list"), editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
+                    formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
                 },
                 {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
+                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 {title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
+                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArrIncl, editorParams: { values: this.#memListArrIncl },
+                    editor: this.getEditMode("list"),  editorParams: { values: this.#memListArrIncl },
+                    formatter:"lookup", formatterParams: this.#memListArrIncl,
                 },
                 { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
+                    editor: this.getEditMode("list"),  editorParams: { values: this.#memListArr  },
+                    formatter:"lookup", formatterParams: this.#memListArr,
                 },
-                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    editor: "input", editorParams: {maxlength: "10"}},
-                {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
-                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
-                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
+                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true,
+                    headerSort: false,
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "10"}},
+                {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                    editor: this.getEditMode("number"), },
                 {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
-                    editor: "input", validator: ["required", this.#priceregexp],},
-                {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
+                    editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
+                {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                    editor: this.getEditMode("number"),},
+                {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Sales GL Label", field: "revenueGlLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
+                    formatter: "textarea",
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
+                    formatter: "textarea",
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                        editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Fee GL Label", field: "mailinGLLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
-                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, hozAlign: "right", width: 90,},
+                        editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Fee GL Label", field: "mailinGLLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
+                    formatter: "textarea",
+                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
+                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true,
+                    hozAlign: "right", width: 90,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
             ],
         });
@@ -837,7 +918,7 @@ class exhibitssetup {
                 this.#spacesListArr[s.id] = s.shortname;
             });
 
-            for (var i = 0; i < this.#spaces.length; i++) {
+            for (let i = 0; i < this.#spaces.length; i++) {
                 this.#spacesIdx[this.#spaces[i]['id']] = i;
             }
 
@@ -868,8 +949,7 @@ class exhibitssetup {
                     width: 100,
                     headerFilter: true,
                     headerFilterParams: {values: this.#regionYearsListArr},
-                    editor: "list",
-                    editorParams: {values: this.#regionYearsListArr},
+                    editor: "list", editorParams: {values: this.#regionYearsListArr},
                     validator: "required",
                     formatter: "lookup", formatterParams: this.#regionYearsListArr,
                 },
@@ -908,7 +988,7 @@ class exhibitssetup {
         });
         this.#spacesTable.on("cellEdited", cellChanged);
     }
-    
+
     // draw spacePrices table
     drawSpacePrices(data) {
         let _this = this;
@@ -943,7 +1023,7 @@ class exhibitssetup {
                 {
                     title: "&bigstar;Exhibits Space", field: "spaceId", width: 200, headerSort: true, headerWordWrap: true,
                     headerFilter: true, headerFilterParams: {values: this.#spacesListArr}, validator: "required",
-                    editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
+                    editor: "list", editorParams: {values: this.#spacesListArr}, formatter: "lookup", formatterParams: this.#spacesListArr,
                 },
                 {
                     title: "&bigstar;Code", field: "code", headerSort: true, headerFilter: true, width: 140,
@@ -1048,19 +1128,19 @@ class exhibitssetup {
             purchaseApprovalRequired: 'Y', purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
             needW9: 'N', usesInventory: 'N', allowQuickSale: 'Y', maxInventory: 75,
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-                row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("portalType").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("requestApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("purchaseApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("purchaseAreaTotals").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("inPersonMaxUnits").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("mailinAllowed").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("mailinMaxUnits").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("needW9").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("usesInventory").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("maxInventory").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("allowQuickSale").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("regionType"));
+                setCellChanged(row.getCell("portalType"));
+                setCellChanged(row.getCell("requestApprovalRequired"));
+                setCellChanged(row.getCell("purchaseApprovalRequired"));
+                setCellChanged(row.getCell("purchaseAreaTotals"));
+                setCellChanged(row.getCell("inPersonMaxUnits"));
+                setCellChanged(row.getCell("mailinAllowed"));
+                setCellChanged(row.getCell("mailinMaxUnits"));
+                setCellChanged(row.getCell("needW9"));
+                setCellChanged(row.getCell("usesInventory"));
+                setCellChanged(row.getCell("maxInventory"));
+                setCellChanged(row.getCell("allowQuickSale"));
+                setCellChanged(row.getCell("active"));
                 _this.checkTypesUndoRedo();
             }
         );
@@ -1068,7 +1148,7 @@ class exhibitssetup {
 
     // set undo / redo status for exhibits type buttons
     checkTypesUndoRedo() {
-        var undosize = this.#regionTypeTable.getHistoryUndoSize();
+        let undosize = this.#regionTypeTable.getHistoryUndoSize();
         this.#regionTypeundobtn.disabled = undosize <= 0;
         this.#regionTyperedobtn.disabled = this.#regionTypeTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -1103,7 +1183,7 @@ class exhibitssetup {
         if (this.#regionsTable != null) {
             let _this = this;
 
-            var invalids = this.#regionTypeTable.validate();
+            let invalids = this.#regionTypeTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Region Type Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
@@ -1112,11 +1192,11 @@ class exhibitssetup {
             this.#regionTypesavebtn.innerHTML = "Saving...";
             this.#regionTypesavebtn.disabled = true;
 
-            var script = "scripts/exhibitsUpdateGetData.php";
+            let script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
-            var postdata = {
+            let postdata = {
                 tabledata: JSON.stringify(this.#regionTypeTable.getData()),
                 tablename: "regionTypes",
                 gettype: "types,regions",
@@ -1144,9 +1224,9 @@ class exhibitssetup {
         if (this.#regionTypeTable == null)
             return;
 
-        var filename = 'exhibitorRegionTypes';
-        var tabledata = JSON.stringify(this.#regionTypeTable.getData("active"));
-        var fieldList = [
+        let filename = 'exhibitorRegionTypes';
+        let tabledata = JSON.stringify(this.#regionTypeTable.getData("active"));
+        let fieldList = [
             "regionType",
             "portalType",
             "requestApprovalRequired",
@@ -1214,7 +1294,7 @@ class exhibitssetup {
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function() {
-                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("shortname"));
                 _this.checkRegionsUndoRedo();
             });
         });
@@ -1222,7 +1302,7 @@ class exhibitssetup {
 
     // set undo / redo status for exhibits type buttons
     checkRegionsUndoRedo() {
-        var undosize = this.#regionsTable.getHistoryUndoSize();
+        let undosize = this.#regionsTable.getHistoryUndoSize();
         this.#regionundobtn.disabled = undosize <= 0;
         this.#regionredobtn.disabled = this.#regionsTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -1249,7 +1329,7 @@ class exhibitssetup {
         }
         this.#regionsavebtn.innerHTML = "Save Changes";
         this.#regionsavebtn.disabled = true;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1257,7 +1337,7 @@ class exhibitssetup {
         if (this.#regionsTable != null) {
             let _this = this;
 
-            var invalids = this.#regionsTable.validate();
+            let invalids = this.#regionsTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Regions Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
@@ -1287,11 +1367,11 @@ class exhibitssetup {
             this.#regionsavebtn.innerHTML = "Saving...";
             this.#regionsavebtn.disabled = true;
 
-            var script = "scripts/exhibitsUpdateGetData.php";
+            let script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
-            var postdata = {
+            let postdata = {
                 tabledata: JSON.stringify(regionData),
                 tablename: "regions",
                 gettype: "regions,years",
@@ -1319,9 +1399,9 @@ class exhibitssetup {
         if (this.#regionsTable == null)
             return;
 
-        var filename = 'exhibitorRegions';
-        var tabledata = JSON.stringify(this.#regionsTable.getData("active"));
-        var fieldList = [
+        let filename = 'exhibitorRegions';
+        let tabledata = JSON.stringify(this.#regionsTable.getData("active"));
+        let fieldList = [
             "id",
             "regionType",
             "shortname",
@@ -1385,7 +1465,7 @@ class exhibitssetup {
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("ownerName"));
                 _this.checkYearsUndoRedo();
             });
         });
@@ -1393,7 +1473,7 @@ class exhibitssetup {
 
     // set undo / redo status for exhibits type buttons
     checkYearsUndoRedo() {
-        var undosize = this.#regionYearsTable.getHistoryUndoSize();
+        let undosize = this.#regionYearsTable.getHistoryUndoSize();
         this.#regionYearundobtn.disabled = undosize <= 0;
         this.#regionYearredobtn.disabled = this.#regionYearsTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -1420,7 +1500,7 @@ class exhibitssetup {
         }
         this.#regionYearsavebtn.innerHTML = "Save Changes";
         this.#regionYearsavebtn.disabled = true;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1428,7 +1508,7 @@ class exhibitssetup {
         if (this.#regionsTable != null) {
             let _this = this;
 
-            var invalids = this.#regionYearsTable.validate();
+            let invalids = this.#regionYearsTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Region Years Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
@@ -1437,11 +1517,11 @@ class exhibitssetup {
             this.#regionYearsavebtn.innerHTML = "Saving...";
             this.#regionYearsavebtn.disabled = true;
 
-            var script = "scripts/exhibitsUpdateGetData.php";
+            let script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
-            var postdata = {
+            let postdata = {
                 tabledata: JSON.stringify(this.#regionYearsTable.getData()),
                 tablename: "regionYears",
                 gettype: "years,spaces",
@@ -1469,9 +1549,9 @@ class exhibitssetup {
         if (this.#regionYearsTable == null)
             return;
 
-        var filename = 'exhibitorRegionYears';
-        var tabledata = JSON.stringify(this.#regionYearsTable.getData("active"));
-        var fieldList = [
+        let filename = 'exhibitorRegionYears';
+        let tabledata = JSON.stringify(this.#regionYearsTable.getData("active"));
+        let fieldList = [
             "id",
             "conid",
             "exhibitsRegion",
@@ -1545,7 +1625,7 @@ class exhibitssetup {
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("shortname"));
                 _this.checkSpacesUndoRedo();
             });
         });
@@ -1553,7 +1633,7 @@ class exhibitssetup {
 
     // set undo / redo status for exhibits type buttons
     checkSpacesUndoRedo() {
-        var undosize = this.#spacesTable.getHistoryUndoSize();
+        let undosize = this.#spacesTable.getHistoryUndoSize();
         this.#spaceundobtn.disabled = undosize <= 0;
         this.#spaceredobtn.disabled = this.#spacesTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -1580,7 +1660,7 @@ class exhibitssetup {
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
         this.#spacesavebtn.disabled = false;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1588,7 +1668,7 @@ class exhibitssetup {
         if (this.#spacesTable != null) {
             let _this = this;
 
-            var invalids = this.#spacesTable.validate();
+            let invalids = this.#spacesTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Spaces Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
@@ -1597,11 +1677,11 @@ class exhibitssetup {
             this.#spacesavebtn.innerHTML = "Saving...";
             this.#spacesavebtn.disabled = true;
 
-            var script = "scripts/exhibitsUpdateGetData.php";
+            let script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
-            var postdata = {
+            let postdata = {
                 tabledata: JSON.stringify(this.#spacesTable.getData()),
                 tablename: "exhibitsSpaces",
                 gettype: "spaces,prices",
@@ -1629,9 +1709,9 @@ class exhibitssetup {
         if (this.#spacesTable == null)
             return;
 
-        var filename = 'exhibitorSpaces';
-        var tabledata = JSON.stringify(this.#spacesTable.getData("active"));
-        var fieldList = [
+        let filename = 'exhibitorSpaces';
+        let tabledata = JSON.stringify(this.#spacesTable.getData("active"));
+        let fieldList = [
             "id",
             "shortname",
             "name",
@@ -1696,8 +1776,8 @@ class exhibitssetup {
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("requestable").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("code"));
+                setCellChanged(row.getCell("requestable"));
                 _this.checkSpacePricesUndoRedo();
             });
         });
@@ -1705,7 +1785,7 @@ class exhibitssetup {
 
     // set undo / redo status for spaces buttons
     checkSpacePricesUndoRedo() {
-        var undosize = this.#spacePricesTable.getHistoryUndoSize();
+        let undosize = this.#spacePricesTable.getHistoryUndoSize();
         this.#spacePriceundobtn.disabled = undosize <= 0;
         this.#spacePriceredobtn.disabled = this.#spacePricesTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -1732,7 +1812,7 @@ class exhibitssetup {
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
         this.#spacePricesavebtn.disabled = false;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1740,7 +1820,7 @@ class exhibitssetup {
         if (this.#spacePricesTable != null) {
             let _this = this;
 
-            var invalids = this.#spacePricesTable.validate();
+            let invalids = this.#spacePricesTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Space Prices Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
@@ -1749,11 +1829,11 @@ class exhibitssetup {
             this.#spacePricesavebtn.innerHTML = "Saving...";
             this.#spacePricesavebtn.disabled = true;
 
-            var script = "scripts/exhibitsUpdateGetData.php";
+            let script = "scripts/exhibitsUpdateGetData.php";
 
             clear_message();
             clearError();
-            var postdata = {
+            let postdata = {
                 tabledata: JSON.stringify(this.#spacePricesTable.getData()),
                 tablename: "exhibitsSpacePrices",
                 gettype: "prices",
@@ -1781,9 +1861,9 @@ class exhibitssetup {
         if (this.#spacePricesTable == null)
             return;
 
-        var filename = 'exhibitorSpacePrices';
-        var tabledata = JSON.stringify(this.#spacePricesTable.getData("active"));
-        var fieldList = [
+        let filename = 'exhibitorSpacePrices';
+        let tabledata = JSON.stringify(this.#spacePricesTable.getData("active"));
+        let fieldList = [
             "id",
             "regionId",
             "spaceId",
@@ -1806,9 +1886,11 @@ class exhibitssetup {
 var dirty = false;
 function cellChanged(cell) {
     dirty = true;
-    var row = null;
-    var rowData = null;
-    var value = null;
+    let row = null;
+    let rowData = null;
+    let value = null;
+    let eryData = null;
+    let space = null;
 
     switch (cell.getField()) {
         case 'exhibitsRegionYear':
@@ -1819,12 +1901,12 @@ function cellChanged(cell) {
 
             // glNum is empty, fetch from region year
             value = rowData.exhibitsRegionYear;
-            var eryData = exhibits.getRegionYears(value);
-            var row = cell.getRow();
+            eryData = exhibits.getRegionYears(value);
+            row = cell.getRow();
             row.update({"glNum": eryData.glNum, "glLabel": eryData.glLabel});
-            cell.getElement().style.backgroundColor = "#fff3cd";
-            row.getCell("glNum").getElement().style.backgroundColor = "#fff3cd";
-            row.getCell("glLabel").getElement().style.backgroundColor = "#fff3cd";
+            setCellChanged(cell);
+            setCellChanged(row.getCell("glNum"));
+            setCellChanged(row.getCell("glLabel"));
             return;
 
         case 'spaceId':
@@ -1835,31 +1917,34 @@ function cellChanged(cell) {
 
             // glNum is empty, fetch from region year
             value = rowData.spaceId;
-            var space = exhibits.getSpace(value);
-            var row = cell.getRow();
-            var eryData = exhibits.getRegionYears(space.exhibitsRegionYear);
+            space = exhibits.getSpace(value);
+            row = cell.getRow();
+            eryData = exhibits.getRegionYears(space.exhibitsRegionYear);
             row.update({"glNum": space.glNum, "glLabel": space.glLabel, "regionId": eryData.exhibitsRegion }).then(
                 function () {
                     row.reformat();
-                    row.getCell("regionId").getElement().style.backgroundColor = "#fff3cd";
-                    row.getCell("spaceId").getElement().style.backgroundColor = "#fff3cd";
-                    row.getCell("glNum").getElement().style.backgroundColor = "#fff3cd";
-                    row.getCell("glLabel").getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row.getCell("regionId"));
+                    setCellChanged(row.getCell("spaceId"));
+                    setCellChanged(row.getCell("glNum"));
+                    setCellChanged(row.getCell("glLabel"));
                 });
             return;
     }
-    cell.getElement().style.backgroundColor = "#fff3cd";
+    setCellChanged(cell);
 }
 
 function deleteicon(cell, formattParams, onRendered) {
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value == 0)
         return "&#x1F5D1;";
     return value;
 }
 
 function deleterow(e, row) {
-    var count = row.getCell("uses").getValue();
+    if (config.exhibitorConid != config.conid)
+        return;
+
+    let count = row.getCell("uses").getValue();
     if (count == 0) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');

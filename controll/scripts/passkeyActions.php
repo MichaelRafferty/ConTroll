@@ -9,12 +9,16 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$perm = 'overview';
-$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$response = array ('post' => $_POST, 'get' => $_GET);
 $authToken = new authToken('script');
 $action = $_REQUEST['action'];
 $response['tokenStatus'] = $authToken->checkToken();
-if ($action != 'request' && $action != 'check' && (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm))) {
+if ($authToken->isLoggedIn())
+    $allowed = $authToken->checkAuth('overview') || $authToken->checkAuth('gen_rpts');
+else
+    $allowed = $action == 'check' || $action == 'request';  // only request key or check it allowed for login
+
+if (!$allowed) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
@@ -25,7 +29,6 @@ if (!(array_key_exists('action', $_REQUEST) && array_key_exists('email', $_REQUE
     exit();
 }
 
-$action = $_REQUEST['action'];
 $email = $_REQUEST['email'];
 $source = $_REQUEST['source'];
 $response['source'] = $source;
@@ -40,7 +43,7 @@ if ($action != 'request' && $action != 'check') {
 }
 
 switch ($action) {
-    case 'create':
+    case 'create': // create a new passkey token
         if (!array_key_exists('displayName', $_REQUEST)) {
             ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
             exit();
@@ -53,7 +56,7 @@ switch ($action) {
         print $createArgs;
         exit();
 
-    case 'save':
+    case 'save': // save a passkey to the database
         if (!array_key_exists('att', $_REQUEST)) {
             ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
             exit();
@@ -75,7 +78,7 @@ switch ($action) {
         $response['success'] = 'success';
     break;
 
-    case 'delete':
+    case 'delete': // delete a passkey from the database
         if (!array_key_exists('id', $_REQUEST)) {
             ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
             exit();
@@ -95,13 +98,13 @@ EOS;
         }
         break;
 
-    case 'request':
+    case 'request': // request an passkey from the browser
         $requestArgs = json_encode(getWebauthnArgs($source));
         header('Content-Type: application/json');
         print $requestArgs;
         exit();
 
-    case 'check':
+    case 'check': // check if a passkey is valid
         if (!array_key_exists('att', $_REQUEST)) {
             ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
             exit();

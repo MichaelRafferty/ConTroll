@@ -33,9 +33,18 @@ EOS;
 $searchPattern = '';
 $cte = '';
 $cteJoin = '';
+$newperid = 0;
 if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') {
-    $searchPattern = '%' . $_POST['searchPattern'] . '%';
-    $cte = <<<EOS
+    $searchPattern = $_POST['searchPattern'];
+    if (is_numeric($searchPattern)) {
+        $newperid = $searchPattern;
+        $cte = <<<EOS
+), ids AS (
+    SELECT ? AS matchId
+EOS;
+    } else {
+        $searchPattern = '%' . $_POST['searchPattern'] . '%';
+        $cte = <<<EOS
 ), ids AS (
     SELECT id AS matchId
     FROM newperson
@@ -51,6 +60,7 @@ if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') 
         OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) LIKE ?)
     ORDER BY last_name, first_name, id
 EOS;
+    }
     $cteJoin = 'JOIN ids ON ids.matchId = n.id';
 }
 
@@ -81,7 +91,7 @@ CASE
 	WHEN mgrP.id IS NOT NULL THEN 'p'
     WHEN mgrN.id IS NOT NULL THEN 'n'
     ELSE null
-END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId
+END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId, mgrN.id AS npidManager, mgrP.id AS ppidManager, mgrN.perid AS ppidPerid
 FROM newperson n
 $cteJoin
 LEFT OUTER JOIN mby ON mby.id = n.id
@@ -106,6 +116,8 @@ $unmatched = [];
 if ($unmatchedCnt > 0) {
     if ($cte == '')
         $unR = dbQuery($unQ);
+    else if ($newperid > 0)
+        $unR = dbSafeQuery($unQ,'i', array($newperid));
     else
         $unR = dbSafeQuery($unQ,'sssssssss', array($searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern,
             $searchPattern, $searchPattern, $searchPattern, $searchPattern));
@@ -117,6 +129,12 @@ if ($unmatchedCnt > 0) {
 
     while ($unL = $unR->fetch_assoc()) {
         $unL['badgename'] = badgeNameDefault($unL['badge_name'], $unL['badgeNameL2'], $unL['first_name'], $unL['last_name']);
+        if ($unL['npidManager'] != null && $unL['ppidManager'] == null && $unL['ppidPerid'] != null) {
+            $unl['managedBy'] = $unL['ppidPerid'];
+            $unL['managedId'] = $unL['ppidPerid'];
+            $unL['managerType'] = 'p';
+        }
+
         $unmatched[] = $unL;
     }
     $unR->free();

@@ -31,6 +31,12 @@
     title="Artist Name"
     minwidth: 200
     filter=true
+[F009]
+    name=artistPayee
+    sql="e.artistPayee"
+    title="Pay to the order of"
+    minwidth: 200
+    filter=false
 [F010]
     name=title
     sql=a.title

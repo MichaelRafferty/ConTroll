@@ -197,6 +197,9 @@ EOS;
                 $v += $blockheight;
                 $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
                 $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
+                $bctext = $print['itemId'] . ',' . $copy;
+                $length = $pdf->getStringWidth($bctext);
+                printXY($h + ($isize * 0.6) + 1.2 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
             }
         }
     }
@@ -523,6 +526,9 @@ EOS;
             $v += $blockheight;
             $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
             $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
+            $bctext = $art['itemId'];
+            $length = $pdf->getStringWidth($bctext);
+            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
         }
 
         if ($art['type'] != 'nfs') {
@@ -566,7 +572,7 @@ function pdfArtistControlSheet($regionYearId, $region, $response, $printContactI
 
     $artistQ = <<<EOS
 SELECT e.*, exY.conid,exY.mailin,exY.contactName,exY.contactPhone, exY.contactEmail, exRY.agentPerid, exRY.agentRequest, exRY.exhibitorNumber, eR.name,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail, e.artistName, e.exhibitorPhone
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail, e.artistName, e.artistPayee, e.exhibitorPhone
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -660,7 +666,7 @@ EOS;
 
     // Artist Number:
     pushFont('Roboto', 'B', 12);
-    printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber']);
+    printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber'] . ": $artistName");
     popFont();
     $v += 0.15;
 
@@ -676,9 +682,9 @@ EOS;
     $mprintXYoffset = (11 / 144) + $leading;  // strange centerline type of mprintXY.
     // artist name row
     //  artist name
-    printXY($col1, $v + $dataOffset, "Artist:");
+    printXY($col1, $v + $dataOffset, "Payee:");
     $maxY = $minRowHeight * $pt;
-    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artistName);
+    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artist['artistPayee']);
     if ($y > $maxY) $maxY = $y;
     $rowHeight = $leading + $maxY + 0.05 - $v;
 

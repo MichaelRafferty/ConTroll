@@ -1,4 +1,3 @@
-
 <?php
 // draw_login - draw the login/signup form
 function draw_login($config_vars, $result_message = '') {
@@ -11,15 +10,28 @@ function draw_login($config_vars, $result_message = '') {
         var config = <?php echo json_encode($config_vars); ?>;
     </script>
     <div id='signin'>
-        <?php outputCustomText('login/top' . $portalName); ?>
         <div class='container-fluid form-floating'>
+            <?php outputCustomText('login/top' . $portalName); ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
                     <h1 class="h4">Please log in to continue to the <?php echo $portalName; ?> Portal.</h1>
                 </div>
             </div>
+            <?php
+                $oneoff = getConfValue('con', 'oneoff', 0);
+                if ($oneoff == 0) {
+            ?>
+            <div class='row mb-2'>
+                <div class='col-sm-8'><i>
+                    If you created an account in a previous year, that account is still valid. If you know the email address
+                    you used in a prior year, but you have forgotten your password, you can use the “Reset Forgotten Password” button below to reset it.
+                    If you have forgotten which email you used for your account, please contact us at the email address above and we can help you and if
+                    necessary update it to your current email address.
+                </i></div>
+            </div>
+            <?php } ?>
             <form id='exhibitorSignin' method='POST'>
-                <div class='row mt-1'>
+                <div class='row mt-4'>
                     <div class='col-sm-1'>
                         <label for='si_email'><span class='text-danger'>&bigstar;</span>Email: </label>
                     </div>
@@ -41,50 +53,37 @@ function draw_login($config_vars, $result_message = '') {
                 <div class='row mt-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'
+                        <input type='submit' class='btn btn-primary h-100' value='Existing Account Sign-in'
                             tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" />
                     </div>
+                    <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
+                    (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
+                    <div class='col-sm-auto ms-1 me-1 align-self-center' style='text-align: center'>OR</div>
+                    <div class='col-sm-auto'>
+                        <button class='btn btn-sm btn-primary h-100' id='loginPasskeyBtn' onclick='loginWithPasskey();'>
+                            <img src='lib/passkey.png'>Login with Passkey
+                        </button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        Don't have one?<br/>Create a passkey after logging in and skip<br/>entering email address and password next time.
+                    </div>
+                    <?php } ?>
                 </div>
             </form>
-            <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
-                (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
-            <div class='row mt-1'>
-                <div class='col-sm-1'></div>
-                <div class='col-sm-2' style="text-align: center">OR</div>
-            </div>
-            <div class='row mt-1'>
-                <div class='col-sm-1'></div>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='loginWithPasskey();'>
-                        <img src="lib/passkey.png">Login with Passkey
-                    </button>
-                </div>
-                <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey after signing on and skip the password next time.
-                </div>
-            </div>
-            <?php } ?>
         </div>
     </div>
-    <div id='resetpw'>
-        <div class='container-fluid'>
-            <div class='row mt-4'>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                        Reset Forgotten Password
-                    </button>
-                </div>
-            </div>
+    <div class='row mt-4'>
+        <div class='col-sm-auto'>
+            <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                Reset Forgotten Password
+            </button>
         </div>
-    </div>
-    <div class='container-fluid'>
-        <div class='row mt-4'>
-            <div class='col-sm-auto'>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');"
-                    tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                    Sign Up for a New Account
-                </button>
-            </div>
+        <div class='col-sm-auto'>
+            <button type='button' class='btn btn-secondary' onclick="exhibitorProfile.profileModalOpen('register');"
+                    tabindex="<?php echo $tabIndex;
+                        $tabIndex += 2; ?>">
+                Sign Up for a New Account
+            </button>
         </div>
     </div>
     <?php outputCustomText('login/bottom' . $portalName); ?>
@@ -149,7 +148,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Business Information</h1></div>
                             </div>
                              <?php outputCustomText('profile/bus' . $portalName); if ($portalType == 'artist' || $portalType == 'admin') { ?>
-                                <div class="row mt-1">
+                                <div class="row mt-1" id="artistNameRow">
                                     <div class='col-sm-2'>
                                         <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Name: </label>
                                     </div>
@@ -157,12 +156,22 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
+
                                      <div class='col-sm-auto p-0 ms-4 me-0'>
                                          <button class='btn btn-sm btn-primary' type='button' id="copyArtistName"
                                                  tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                  onclick='exhibitorProfile.copyArtistNametoBusinessName()'>
-                                             Copy <?php echo $portalName; ?> Name to Business Name
+                                             Copy <?php echo $portalName; ?> Name to Business Name and Payee
                                          </button>
+                                     </div>
+                                </div>
+                                <div class='row mt-1' id='artistPayeeRow'>
+                                     <div class='col-sm-2'>
+                                         <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Payee: </label>
+                                     </div>
+                                     <div class='col-sm-auto p-0 ms-0 me-0'>
+                                         <input class='form-control-sm' type='text' name='artistPayee' id='artistPayee' maxlength='128' size='50'
+                                                required placeholder='Artist Check Pay To The Order Of' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                      </div>
                                 </div>
                             <?php } ?>
@@ -201,7 +210,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <?php if (($portalType == 'vendor' || $portalType == 'admin') &&
                                     array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
-                            <div class='row mt-1'>
+                            <div class='row mt-1' id="exhProfileTaxIdRow">
                                 <div class='col-sm-2'>
                                     <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
@@ -293,7 +302,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 </div>
                             </div>
                             <?php if ($portalType == 'artist' || $portalType == 'admin') { /* TODO change this to 'mail-in allowed' */ ?>
-                                <div class='row mt-1'>
+                                <div class='row mt-1' id="artistMainInRow">
                                     <div class='col-sm-2'>
                                         <label for='mailin'><span class='text-danger'>&bigstar;</span>Are you requesting a mail-in space: </label>
                                     </div>
@@ -537,7 +546,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     <?php
     }
 
-// draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
+// draw_aignupModal - the modal for exhibitor signup in the vendor subsystem
 function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 5000) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -593,6 +602,22 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
+                                    </div>
+                                    <div class='col-sm-auto p-0 ms-4 me-0'>
+                                        <button class='btn btn-sm btn-primary' type='button' id="copyArtistPayee"
+                                                tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
+                                                onclick='exhibitorProfile.copyArtistNametoArtistPayee()'>
+                                            Copy <?php echo $portalName; ?> Name to Payee Name
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='artistPayree'><span class='text-danger'>&bigstar;</span>Artist Payee:</label>
+                                    </div>
+                                    <div class='col-sm-auto p-0 ms-0 me-0'>
+                                        <input class='form-control-sm' type='text' name='artistPayee' id='artistPayee' maxlength='128' size='50'
+                                               required placeholder='Artist Check Pay To The Order Of' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
                                 </div>
                                 <div class='row mt-3'>
@@ -1041,5 +1066,5 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
             </div>
         </div>
     </div>
-    <?php
+     <?php
 }

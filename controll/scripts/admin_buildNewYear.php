@@ -66,7 +66,54 @@ if ($thisYear == null) {
     exit();
 }
 
+// ok, we have the conid, and the rest will run anyway on a re-do, so do the history table truncates now
+$maxHistoryYears = getConfValue('con', 'maxHistoryYears', 99999);
+$maxPerinfoHistoryYears = getConfValue('con', 'maxPerinfoHistoryYears', $maxHistoryYears);
+$maxRegHistoryYears = getConfValue('con', 'maxRegHistoryYears', $maxHistoryYears);
+$maxExhibitorHistoryYears = getConfValue('con', 'maxExhibitorHistoryYears', $maxHistoryYears);
+$maxArtItemsHistoryYears = getConfValue('con', 'maxArtItemsHistoryYears', $maxHistoryYears);
+
 $message = '';
+if ($maxRegHistoryYears < 99999) {
+    // truncate the reg history
+    $delQ = <<<EOS
+DELETE FROM regHistory
+WHERE create_date < DATE_SUB(NOW(), INTERVAL ? YEAR) OR change_date < DATE_SUB(NOW(), INTERVAL ? YEAR);
+EOS;
+    $numRdel = dbSafeCmd($delQ, 'ii', array($maxRegHistoryYears, $maxRegHistoryYears));
+    $message .= "$numRdel regHistory rows deleted for delete older than $maxRegHistoryYears year(s).<br/>\n";
+}
+
+if ($maxArtItemsHistoryYears < 99999) {
+    // truncate the artItems history
+    $delQ = <<<EOS
+DELETE FROM artItemsHistory
+WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
+EOS;
+    $numRdel = dbSafeCmd($delQ, 'ii', array($maxArtItemsHistoryYears, $maxArtItemsHistoryYears));
+    $message .= "$numRdel artItemsHistory rows deleted for delete older than $maxArtItemsHistoryYears year(s).<br/>\n";
+}
+
+if ($maxExhibitorHistoryYears < 99999) {
+    // truncate the exhibitors history
+    $delQ = <<<EOS
+DELETE FROM exhibitorsHistory
+WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
+EOS;
+    $numRdel = dbSafeCmd($delQ, 'ii', array($maxExhibitorHistoryYears, $maxExhibitorHistoryYears));
+    $message .= "$numRdel exhibitorsHistory rows deleted for delete older than $maxExhibitorHistoryYears year(s).<br/>\n";
+}
+
+if ($maxPerinfoHistoryYears < 99999) {
+    // truncate the perinfo history
+    $delQ = <<<EOS
+DELETE FROM perinfoHistory
+WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
+EOS;
+    $numRdel = dbSafeCmd($delQ, 'ii', array($maxPerinfoHistoryYears, $maxPerinfoHistoryYears));
+    $message .= "$numRdel perinfoHistory rows deleted for delete older than $maxPerinfoHistoryYears year(s).<br/>\n";
+}
+
 if ($nextYear == null) {
     // need to create the next year conlist entry
     $insQ = <<<EOS
@@ -306,7 +353,7 @@ EOS;
         else
             $rule['memList'] = null;
 
-        $valArray = array($rule['name'], $conid, $rule['optionName'], $rule['description'], 
+        $valArray = array($rule['name'], $conid, $rule['optionName'], $rule['description'],
                           $rule['typeList'], $rule['catList'], $rule['ageList'], $rule['memList']);
         $newRuleId = dbSafeInsert($insR, 'sissssss', $valArray);
         if ($newRuleId !== false)

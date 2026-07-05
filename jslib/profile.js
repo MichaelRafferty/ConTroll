@@ -25,6 +25,7 @@ class Profile {
     #memberAge = '';
     #uspsDiv= null;
     #email1Input = true;
+    #numPrimary = 0;
 
 // online reg - membership filtering
     #memIdField = null;
@@ -218,7 +219,7 @@ class Profile {
     }
 
     setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
-           badge_name, badgeNameL2, age) {
+           badge_name, badgeNameL2, age, numPrimary = 0) {
         this.#fnameField.value = first_name;
         this.#mnameField.value = middle_name;
         this.#lnameField.value = last_name;
@@ -237,6 +238,7 @@ class Profile {
         this.#badgenameField.value = badge_name;
         this.#badgenameL2Field.value = badgeNameL2;
         this.#ageField.value = age;
+        this.#numPrimary = numPrimary;
     }
 
     setPolicies(old) {
@@ -283,11 +285,12 @@ class Profile {
         this.#ageasofLabel.hidden = hide;
     }
 
-    validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false) {
+    validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false, override = false) {
         this.#messageDiv = messageDiv;
         this.#addCallback = addCallback;
         this.#redoCallback = redoCallback;
         let valid = message == '';
+        let overrideAllowed = false;
         let required = config.required;
         this.#uspsAddress = null;
 
@@ -395,26 +398,24 @@ class Profile {
                 this.#cityField.classList.remove(this.#alert);
             }
 
-            if (person.state == '') {
-                valid = false;
-                this.#stateField.classList.add(this.#alert);
-            } else {
-                if (person.country == 'USA') {
-                    if (person.state.trim().length != 2) {
-                        valid = false;
-                        this.#stateField.classList.add(this.#alert);
-                    } else {
-                        this.#stateField.classList.remove(this.#alert);
-                    }
+            if (person.country == 'USA' || person.country == 'CAN') {
+                if (person.state == '') {
+                    valid = false;
+                    this.#stateField.classList.add(this.#alert);
+                } else if (person.state.trim().length != 2) {
+                    valid = false;
+                    this.#stateField.classList.add(this.#alert);
                 } else {
                     this.#stateField.classList.remove(this.#alert);
                 }
-            }
-
-            if (person.zip == '') {
-                valid = false;
-                this.#zipField.classList.add(this.#alert);
+                if (person.zip == '') {
+                    valid = false;
+                    this.#zipField.classList.add(this.#alert);
+                } else {
+                    this.#zipField.classList.remove(this.#alert);
+                }
             } else {
+                this.#stateField.classList.remove(this.#alert);
                 this.#zipField.classList.remove(this.#alert);
             }
         }
@@ -439,12 +440,14 @@ class Profile {
                 if (policy.required == 'Y') {
                     let field = document.getElementById(this.#prefix + 'l_' + policy.policy);
                     if (!document.getElementById(this.#prefix + 'p_' + policy.policy).checked) {
-                        if (this.#alertType == 'warn')
+                        if (this.#alertType == 'warn' || multiUse || this.#numPrimary > 0) {
                             message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
-                        else
-                            message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                        field.classList.add(this.#alert);
-                        valid = false;
+                            valid = false;
+                        } else {
+                            message += '<br/>You cannot purchase memberships until you agree to the ' + policy.policy + ' policy.';
+                            overrideAllowed = true;
+                        }
+                        field.classList.add('warncolor');
                     } else {
                         field.classList.remove(this.#alert);
                     }
@@ -466,6 +469,11 @@ class Profile {
                 this.#alertType, messageDiv);
 
             return false;
+        }
+
+        if (overrideAllowed) {
+            if (!override)
+                return 'override';
         }
 
         // Check USPS for standardized address
@@ -629,6 +637,9 @@ class Profile {
     // clear the entire profile form for a new load to edit
     clearForm() {
         this.clearNext();
+        let defaultCountry = 'USA';
+        if (config.hasOwnProperty('defaultCountry'))
+            defaultCountry = config['defaultCountry'];
 
         this.#lnameField.value = '';
         this.#addrField.value = '';
@@ -636,7 +647,7 @@ class Profile {
         this.#cityField.value = '';
         this.#stateField.value = '';
         this.#zipField.value = '';
-        this.#countryField.value = 'USA';
+        this.#countryField.value = defaultCountry;
         this.#phoneField.value = '';
         this.#lnameField.classList.remove(this.#alert);
         this.#addrField.classList.remove(this.#alert);

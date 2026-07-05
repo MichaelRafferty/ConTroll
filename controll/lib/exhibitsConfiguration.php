@@ -84,6 +84,18 @@ function draw_exhibitsConfigurationModals() {
                                 <input type='number' class='no-spinners' inputmode='numeric' id='eryAtConBase' name='eryAtConBase' min="0"/>
                             </div>
                         </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-2'>Sales Space GL Num:</div>
+                            <div class='col-sm-auto'>
+                                <input type='text' id='eryRevenueGLNum' name='eryRevenueGLNum' maxlength='16' size='24'/>
+                            </div>
+                        </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-2'>Sales Space GL Label:</div>
+                            <div class='col-sm-auto'>
+                                <input type='text' id='eryRevenueGLLabel' name='eryRevenueGLLabel' maxlength='64' size='64'/>
+                            </div>
+                        </div>
                         <div class="row mt-2">
                             <div class='col-sm-2'>Default Space GL Num:</div>
                             <div class='col-sm-auto'>

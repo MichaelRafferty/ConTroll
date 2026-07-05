@@ -198,7 +198,7 @@ function draw(data, textStatus, jqXHR) {
         });
 
         itemTable.on("dataChanged", itemTable_dataChanged);
-        itemTable.on("cellEdited", cellChanged)
+        itemTable.on("cellEdited", setCellChanged)
     }
 
     itemTable_dirty = false;
@@ -240,11 +240,6 @@ function itemTable_dataChanged(data) {
     }
 
     checkItemUndoRedo();
-}
-
-function cellChanged(cell) {
-    dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
 }
 
 function undoItem () {
@@ -433,48 +428,51 @@ function displayArtItemHistory(data) {
     // format the current line
     let current = data['history'][0];
     let color = '';
+    let rowColor = false;
     let prior = data['history'][0];
     for (let i = 0; i < data['history'].length; i++) {
         let current = data['history'][i];
-        html += "<div class='row mt-2'>\n";
+        let curColor = rowColor ? "#FFFFFF" : "#F0F0F0 ";
+        rowColor = !rowColor;
+        html += "<div class='row pt-2' style='background-color: " + curColor + ";'>\n";
 
         // change date
         html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
         // title
-        color = prior.title != current.title ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-4'" + color + ">" + current.title + "</div>\n";
+        color = prior.title != current.title ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-4" + color + "'>" + current.title + "</div>\n";
         // material
-        color = prior.material != current.material ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-4'" + color + ">" + current.material + "</div>\n";
+        color = prior.material != current.material ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-4" + color + "'>" + current.material + "</div>\n";
         // status
-        color = prior.status != current.status ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-2'" + color + ">" + current.status + "</div>\n</div>\n";
+        color = prior.status != current.status ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-2" + color + "'>" + current.status + "</div>\n</div>\n";
         // quantity
-        color = (prior.quantity != current.quantity || prior.original_qty != current.original_qty) ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='row'>\n<div class='col-sm-1'>" +
-            "</div><div class='col-sm-1'" + color + ">" + current.quantity + ' of ' + current.original_qty + "</div>\n";
+        color = (prior.quantity != current.quantity || prior.original_qty != current.original_qty) ? ' historyChangedBGColor' : '';
+        html += "<div class='row' style='background-color: " + curColor + ";'>\n<div class='col-sm-1'>" +
+            "</div><div class='col-sm-1" + color + "'>" + current.quantity + ' of ' + current.original_qty + "</div>\n";
         // location
-        color = prior.location != current.location ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.location + "</div>\n";
+        color = prior.location != current.location ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.location + "</div>\n";
         // minimum
-        color = prior.min_price != current.min_price ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.min_price + "</div>\n";
+        color = prior.min_price != current.min_price ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.min_price + "</div>\n";
         // sale
-        color = prior.sale_price != current.sale_price ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.sale_price + "</div>\n";
+        color = prior.sale_price != current.sale_price ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.sale_price + "</div>\n";
         // final
-        color = prior.final_price != current.final_price ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.final_price + "</div>\n";
+        color = prior.final_price != current.final_price ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.final_price + "</div>\n";
         // bidder
-        color = prior.bidder != current.bidder ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.bidder + "</div>\n";
+        color = prior.bidder != current.bidder ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.bidder + "</div>\n";
         // updatedBy
-        color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n</div>\n";
+        color = prior.updatedBy != current.updatedBy ? ' historyChangedBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.updatedBy + "</div>\n</div>\n";
         // notes
         if (prior.notes != null || current.notes != null) {
-            color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
-            html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
+            color = prior.notes != current.notes ? ' historyChangedBGColor' : '';
+            html += "<div class='row' style='background-color: " + curColor + ";'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11" + color + "'>" + current.notes + "</div>\n";
             html += "</div>\n";
         }
         prior = current;

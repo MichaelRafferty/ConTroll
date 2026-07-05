@@ -10,6 +10,7 @@ require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 require_once 'lib/sessionAuth.php';
+require_once 'lib/fileManager.php';
 
 $page = 'exhibitor';
 $authToken = new authToken('web');
@@ -22,6 +23,33 @@ $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $usps = get_conf('usps');
 $conf = get_conf('con');
+$newConid = null;
+$initialTab = null;
+$initialSubtab = null;
+$viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
+// set session variables for redraw to take the new year off the request line
+if (array_key_exists('exhibitorConid', $_REQUEST)) {
+    $newConid = $_REQUEST['exhibitorConid'];
+    if (!is_numeric($newConid))
+        $newConid = $conid;
+
+    if ($newConid >= $viewPrior && $newConid <= $conid)
+        setSessionVar('exhibitorConid', $newConid);
+}
+
+if (array_key_exists('tab', $_REQUEST)) {
+    $initialTab = $_REQUEST['tab'];
+    setSessionVar('initialTab', $initialTab);
+}
+if (array_key_exists('subtab', $_REQUEST)) {
+    $initialSubtab = $_REQUEST['subtab'];
+    setSessionVar('initialSubtab', $initialSubtab);
+}
+if ($newConid != null || $initialTab != null || $initialSubtab != null) {
+    // reload the current page to lose the url argument
+    header('Location: exhibitor.php');
+    exit();
+}
 
 $required = getConfValue('reg', 'required', 'addr');
 $testsite = getConfValue('vendor', 'test') == 1;
@@ -40,13 +68,22 @@ switch ($required) {
 }
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
-if (array_key_exists('tab', $_REQUEST)) {
-    $initialTab = $_REQUEST['tab'];
-} else {
-    $initialTab = 'overview';
-}
-
 $conf = get_conf('con');
+$initialTab = '';
+$initialSubtab = '';
+$exhibitorConid = $conid;
+if (isSessionVar('exhibitorConid')) {
+    $exhibitorConid = getSessionVar('exhibitorConid');
+    unsetSessionVar('exhibitorConid');
+}
+if (isSessionVar('initialTab')) {
+    $initialTab = getSessionVar('initialTab');
+    unsetSessionVar('initialTab');
+}
+if (isSessionVar('initialSubtab')) {
+    $initialSubtab = getSessionVar('initialSubtab');
+    unsetSessionVar('initialSubtab');
+}
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -59,9 +96,11 @@ page_init($page,
                     'js/exhibitsConfiguration.js',
                     'js/exhibitorInvoice.js',
                     'js/adminCustomText.js',
+                    'js/fileManager.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'jslib/exhibitorInvoiceCommon.js',
+                    'jslib/emailBulkSend.js',
                     'jslib/configEdit.js',
                     'jslib/profile.js',
                     'js/tinymce/tinymce.min.js'
@@ -77,16 +116,11 @@ JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
 WHERE conid = ?
 ORDER BY eRY.ownerName, eR.sortorder;
 EOS;
-$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
+$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($exhibitorConid));
 
 // load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-    $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
-
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
@@ -96,7 +130,7 @@ $locale = getLocale();
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
-[$ageList, $ageListIdx] = getAgeList($conid);
+[$ageList, $ageListIdx] = getAgeList($exhibitorConid);
 $ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
 foreach ($ageList as $age) {
 $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
@@ -126,14 +160,18 @@ $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
+$config_vars['initialSubtab'] = $initialSubtab;
 $config_vars['scriptName'] = $scriptName;
 $config_vars['regserver'] = getConfValue('reg', 'server');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['defaultCountry'] = $defaultCountry;
+$config_vars['exhibitorConid'] = $exhibitorConid;
 
 bs_tinymceModal();
+draw_fileManagerModals($authToken);
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
@@ -265,7 +303,41 @@ draw_exhibitsConfigurationModals();
         </div>
     </div>
 </div>
+<div id='history' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Exhibitor History' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='historyTitle'>Exhibitor History</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='history-div'></div>
+                <div class='container-fluid'>
+                    <div class='row' id='history_message_div'></div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container-fluid" id='main'>
+    <div class="row mt-2 mb-2">
+        <div class='col-sm-auto ms-3 me-0'><label  class='size-h4' for='limitConid'><b>Displaying data for convention year:</b></label></div>
+        <div class='col-sm-auto'>
+            <select id='limitConid' name='limitConid' class="size-h4" onchange="exhibitors.changeExhibitorConid();">
+                <?php
+                    for ($year = $viewPrior; $year <= $conid; $year++) {
+                        $selected = $year == $exhibitorConid ? ' selected' : '';
+                        echo "<option value='$year'$selected>$year</option>";
+                    }
+                ?>
+            </select>
+        </div>
+    </div>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>
             <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab'
@@ -285,6 +357,11 @@ draw_exhibitsConfigurationModals();
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
                     aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('configEdit-pane');">Configuration Editor
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('fileManager-pane');">File Manager
             </button>
         </li>
 <?php
@@ -407,7 +484,23 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                 <div class='col-sm-auto'>
                     <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
                 </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollTOC();'>Scroll to
+                        Table of Contents</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollMenu();'>Scroll to
+                        Main Menu</button>
+                </div>
             </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+            </div>
+            <?php draw_FileManager($authToken); ?>
         </div>
     </div>
 

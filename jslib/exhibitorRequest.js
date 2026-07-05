@@ -25,7 +25,7 @@ class ExhibitorRequest {
             currency: config.currency,
         });
 
-        var id = document.getElementById('exhibitor_req');
+        let id = document.getElementById('exhibitor_req');
         if (id != null) {
             this.#exhibitor_request = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#exhibitor_req_btn = document.getElementById('exhibitor_req_btn');
@@ -41,18 +41,18 @@ class ExhibitorRequest {
 //          3: mail in request, with 0'th selector being no space approved, suppress the text for the exhibitor and accept payment
 
     openReq(regionYearId, cancel) {
-        var spaceHtml = '';
-        var regionName = '';
-        var totalUnitsRequested = 0;
+        let spaceHtml = '';
+        let regionName = '';
+        let totalUnitsRequested = 0;
 
         this.#cancelType = cancel;
         this.#regionYearId = regionYearId;
-        var region = exhibits_spaces[regionYearId];
+        let region = exhibits_spaces[regionYearId];
 
         if (!region)
             return;
 
-        var regionList = region_list[regionYearId];
+        let regionList = region_list[regionYearId];
         this.#countCombined = regionList.purchaseAreaTotals == 'combined';
         if (config.debug & 1) {
             console.log("regionList");
@@ -62,16 +62,17 @@ class ExhibitorRequest {
         }
 
         regionName = regionList.name;
-        var mailIn = exhibitor_info.mailin == 'Y';
+        let mailIn = exhibitor_info.mailin == 'Y';
         this.#unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
         if (config.debug & 1) {
             console.log("Unit limit: " + this.#unitLimit + ", countCombined: " + this.#countCombined);
         }
 
         // set fields for values fields
-        var prompt = ' ';
-        var exhibitor = '';
-        var nospace = '';
+        let prompt = ' ';
+        let exhibitor = '';
+        let nospace = '';
+        let requesting = 'requesting';
         switch (cancel) {
             case 0:
                 exhibitor = ''
@@ -87,29 +88,32 @@ class ExhibitorRequest {
                 prompt = 'Approve ';
                 exhibitor = ' for ' + (exhibitor_info.artistName ? exhibitor_info.artistName : exhibitor_info.exhibitorName);
                 nospace = 'Cancel Space Requested';
+                requesting = 'approving';
                 break;
             case 3:
                 prompt = 'Save Approved Space and go to Pay for ';
                 exhibitor = ' for ' + (exhibitor_info.artistName ? exhibitor_info.artistName : exhibitor_info.exhibitorName);
                 nospace = 'No Space Approved';
+                requesting = 'approving';
                 break;
         }
 
         // determine number of spaces in the region
-        var keys = Object.keys(region);
-        var spaceCount = keys.length;
+        let keys = Object.keys(region);
+        let spaceCount = keys.length;
         if (spaceCount == 0)
             return;
 
-        var colWidth = 4;
+        let colWidth = 4;
         if (spaceCount < 3) {
             colWidth = 12 / spaceCount;
         }
 
-        var index, col, hasRequestable;
-        var space = null;
-        var req_item = -1;
-        var sel = '';
+        let index, col, hasRequestable;
+        let space = null;
+        let req_item = -1;
+        let app_item = -1;
+        let sel = '';
 
         if (mailIn) {
             if (cancel < 2) {
@@ -120,43 +124,47 @@ class ExhibitorRequest {
             }
         }
 
-        var first = true;
+        let first = true;
         col = 999;
         for (index = 0; index < spaceCount; index++) { // look over the spaces
             space = region[keys[index]];
-            var reg_item = -1;
-            var exSpace = exhibitor_spacelist[keys[index]];
+            let reg_item = -1;
+            let priorApproved = '';
+            let exSpace = exhibitor_spacelist[keys[index]];
             if (exSpace) {
-                if (exSpace.item_approved)
-                    req_item = exSpace.item_approved;
-                else
+                if (exSpace.item_requested)
                     req_item = exSpace.item_requested;
+                if (exSpace.item_approved)
+                    app_item = exSpace.item_approved;
             }
             hasRequestable = false;
 
             // build option pulldown
-            var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + nospace + "</option>\n";
-            var prices = space.prices;
-            var price_keys = Object.keys(prices).sort();
-            var units = '';
-            for (var priceid in price_keys) {
-                var price = prices[price_keys[priceid]];
+            let options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + nospace + "</option>\n";
+            let prices = space.prices;
+            let price_keys = Object.keys(prices).sort();
+            let units = '';
+            for (let priceid in price_keys) {
+                let price = prices[price_keys[priceid]];
 
                 // determine if selected, used for items not requested but selected by admin for this exhibitor
                 sel = "'>";
+                if (this.#unitLimit > 0) {
+                    units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
+                }
                 if (exSpace) {
                     if (req_item == price.id) {
                         totalUnitsRequested += Number(price.units);
                         sel = "' selected>";
                     }
+                    if (app_item == price.id) {
+                        priorApproved = 'Propr Approved: ' + price.description + ' for ' +
+                            this.#currencyFmt.format(Number(price.price).toFixed(2)) + units + '<br/>';
+                    }
                 }
 
                 if ((price.requestable == 1 && (price.units <= this.#unitLimit || this.#unitLimit == 0) || this.#cancelType >= 2) || sel != "'>") {
-                    if (this.#unitLimit > 0) {
-                        units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
-                    }
-
-                    options += "<option value='" + price.id + sel + price.description + ' for ' +
+                        options += "<option value='" + price.id + sel + price.description + ' for ' +
                         this.#currencyFmt.format(Number(price.price).toFixed(2)) + units + "</option>\n";
                     hasRequestable = true;
                 }
@@ -177,8 +185,8 @@ class ExhibitorRequest {
                 "<div class='container-fluid ms-0 me-0 mt-2 mb-1'><div class='container-fluid ms-0 me-0 border border-3 border-primary'>\n" +
                 "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space.spaceName + "</div></div>\n" +
                 "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space.description ? space.description : '') + "</div></div>\n" +
-                "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" +
-                "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
+                "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" + priorApproved +
+                "<label htmlFor='exhibitor_req_price_id'>How many spaces are you " + requesting + "?</label>\n" +
                 "</div>\n" +
                 "<div class='col-sm-auto p-0'>\n" +
                 "<select name='exhbibitor_req_price_id_" + keys[index] + "' id='exhibitor_req_price_id_" + keys[index] + "' onchange='exhibitorRequest.updateTotalUnits(" + regionYearId + "," + this.#unitLimit + ");'>\n" +
@@ -198,7 +206,7 @@ class ExhibitorRequest {
 
         document.getElementById("exhibitor_req_title").innerHTML = "<strong>" + prompt + regionName + ' Space Request' + exhibitor + '</strong>';
         this.#exhibitor_req_btn.innerHTML = prompt + regionName + ' Space';
-        var selection = document.getElementById('exhibibitor_req_price_id');
+        let selection = document.getElementById('exhibibitor_req_price_id');
         //selection.innerHTML = options;
         this.#exhibitor_req_btn.setAttribute('onClick', "exhibitorRequest.spaceReq(" + regionYearId + ',' + cancel + ')');
 
@@ -209,23 +217,23 @@ class ExhibitorRequest {
 
 // updateTotalUnits -update the total units requested pulldown and color it if it's too large
     updateTotalUnits(regionYearId) {
-        var region = exhibits_spaces[regionYearId];
+        let region = exhibits_spaces[regionYearId];
         if (!region)
             return;
 
-        var requestedUnits = 0;
-        var keys = Object.keys(region);
-        var field;
-        var id;
-        for (var key in keys) {
-            var priceId = keys[key];
+        let requestedUnits = 0;
+        let keys = Object.keys(region);
+        let field;
+        let id;
+        for (let key in keys) {
+            let priceId = keys[key];
 
             field = document.getElementById('exhibitor_req_price_id_' + String(keys[key]));
             if (field) { // the field might not exist if it was skipped over due to nothing requestable
-                var value = field.value;
+                let value = field.value;
                 if (value > 0) {
-                    var prices = region[keys[key]].prices;
-                    for (var priceIdx in prices) {
+                    let prices = region[keys[key]].prices;
+                    for (let priceIdx in prices) {
                         if (prices[priceIdx].id == value) {
                             requestedUnits += Number(prices[priceIdx].units);
                         }
@@ -236,8 +244,8 @@ class ExhibitorRequest {
         this.#totalUnitsRequested_div.innerHTML = String(requestedUnits);
         this.#unitsRequested = requestedUnits;
 
-        var mailIn = exhibitor_info.mailin == 'Y';
-        var regionList = region_list[regionYearId];
+        let mailIn = exhibitor_info.mailin == 'Y';
+        let regionList = region_list[regionYearId];
 
         if (requestedUnits > this.#unitLimit && this.#unitLimit > 0 && this.#countCombined) {
             this.#totalUnitsRequestedRow.classList.add('bg-warning');
@@ -263,13 +271,13 @@ class ExhibitorRequest {
 
         clear_message('sr_message_div');
         clear_message();
-        var dataobj = {
+        let dataobj = {
             regionYearId: regionYearId,
             requests: $('#exhibitor_req_form').serialize(),
             'type': config.portalType,
             'name': config.portalName,
         };
-        var url = 'scripts/spaceReq.php';
+        let url = 'scripts/spaceReq.php';
         if (cancel >= 2) {
             url = 'scripts/exhibitorsSpaceApproval.php';
             dataobj.approvalType = cancel == 2 ? 'other' : 'approve';
@@ -278,7 +286,7 @@ class ExhibitorRequest {
             dataobj.cancel = cancel;
             dataobj.pay = exhibitors.getApprovalPay();
         }
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: url,
             data: dataobj,
@@ -325,24 +333,24 @@ class ExhibitorRequest {
 
 // update the request status block to show the new request
     updateRequestStatusBlock(regionYearId) {
-        var blockname = region_list[regionYearId].shortname + '_div';
-        var blockdiv = document.getElementById(blockname);
+        let blockname = region_list[regionYearId].shortname + '_div';
+        let blockdiv = document.getElementById(blockname);
 
         if (blockdiv == null)
             return;
 
         // get the name for this region
-        var regionName = region_list[regionYearId].name;
+        let regionName = region_list[regionYearId].name;
         // get the list item for this
-        var region_spaces = exhibits_spaces[regionYearId];
-        var spaceStatus = ''
-        var exSpaceKeys = Object.keys(exhibitor_spacelist);
-        for (var exSpaceIdx in exSpaceKeys) {
+        let region_spaces = exhibits_spaces[regionYearId];
+        let spaceStatus = ''
+        let exSpaceKeys = Object.keys(exhibitor_spacelist);
+        for (let exSpaceIdx in exSpaceKeys) {
             if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
-                var region = region_spaces[exSpaceKeys[exSpaceIdx]];
-                var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+                let region = region_spaces[exSpaceKeys[exSpaceIdx]];
+                let space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
                 if (space.item_requested) {
-                    var timeRequested = new Date(space.time_requested)
+                    let timeRequested = new Date(space.time_requested)
                     spaceStatus += space.requested_description + " in " + regionName + " for " +
                         this.#currencyFmt.format(Number(space.requested_price).toFixed(2)) +
                         " at " + timeRequested + "<br/>";

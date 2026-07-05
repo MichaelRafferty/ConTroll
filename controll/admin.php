@@ -1,7 +1,8 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sets.php";
-require_once 'lib/sessionAuth.php';
+require_once "lib/sessionAuth.php";
+require_once "lib/fileManager.php";
 
 $page = 'admin';
 $authToken = new authToken('web');
@@ -20,6 +21,7 @@ page_init($page,
     /* js  */ array( //$cdn['luxon'],
                     $cdn['tabjs'],
                     'js/admin.js',
+                    'js/fileManager.js',
                     'jslib/atconPrinters.js',
                     'jslib/atconUsers.js',
                     'jslib/configEdit.js',
@@ -40,6 +42,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
 if (array_key_exists('msg', $_REQUEST)) {
     $config_vars['msg'] = $_REQUEST['msg'];
 }
+draw_fileManagerModals($authToken);
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -75,13 +78,14 @@ if (array_key_exists('msg', $_REQUEST)) {
                             </div>
                         </div>
                     </form>
+                    <div id='result_message_user' class='mt-4 p-2'></div>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
             </div>
-            <div id='result_message_user' class='mt-4 p-2'></div>
+
         </div>
     </div>
 </div>
@@ -133,6 +137,11 @@ if (array_key_exists('msg', $_REQUEST)) {
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
                     aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="settab('fileManager-pane');">File Manager
             </button>
         </li>
         <!-- future - oauth2 client key configuration for the server
@@ -363,7 +372,23 @@ if (array_key_exists('msg', $_REQUEST)) {
                         <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard
                             Changes</button>
                     </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollTOC();'>Scroll to
+                            Table of Contents</button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollMenu();'>Scroll to
+                            Main Menu</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+            <div class='container-fluid'>
+                <div class='row'>
+                    <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+                </div>
+                <?php draw_FileManager($authToken); ?>
             </div>
         </div>
         <!---  future for oauth2 server client configuration

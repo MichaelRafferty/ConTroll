@@ -58,7 +58,7 @@ Both the files in the system wide groups directory and the files in the local gr
   * Pnnn: Prompt list for pre-execution prompts for a report. The overall string needs to be in quotes.  The three digit number in the prompt name is the 
     display order of the prompt fields.
     * /~/ separated list of strings, no quotes around the strings
-       * type: prompt, constant 
+       * type: prompt, constant
          * prompt is a label and input field, with a default value if desired in the value section
          * constant is a specific value in the value section
        * name: input field name
@@ -66,6 +66,10 @@ Both the files in the system wide groups directory and the files in the local gr
        * placeholder: placeholder text for input item
        * value: default/constant value
     * Eg: prompt/~/perid/~/Perid of the registrant/~/1
+  * Notes: Tnnn (top before prompts), Bnnn (bottom after prompts)
+    * Notes are HTML strings displayed full with across the page.
+    * One "Row" per Notes entry.
+    * The three digit number in the note name is the display order of the note.
 
 ### Sample Group File:
 

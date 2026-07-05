@@ -106,7 +106,7 @@ class ConfigEditor {
         }
         this.#toc += '</ul>\n';
         this.#tocLevel = 0;
-        this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div>\n' +
+        this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div></div>\n' +
             '<div class="row"><div class="col-sm-12">' + this.#toc + '</div></div>\n' +
             '<div class="row"><div class="col-sm-1"><h4>Legend:</h4></div>\n' +
             '<div class="col-sm-auto ms-1 me-1" style="background-color: rgb(255, 255, 220);"><h4>Required Parameter</h4></div>' +
@@ -281,8 +281,7 @@ class ConfigEditor {
         }
         let changed = this.#initialConfig[section][paramName] != field.value;
         this.#fieldsChanged[name] = changed;
-        field.style.backgroundColor = changed ?  "#fff3cd" : '';
-
+        setFieldChanged(field);
         this.needSave();
     }
 
@@ -357,8 +356,10 @@ class ConfigEditor {
             // empty string, check what to do if empty
             if (param.blank == 'M' && field != null) { // mandatory
                 errmsg = "Section " + sectionName + ", Parameter: " + param.name + " cannot be empty<br/>\n";
-                field.style.backgroundColor = "#ff8f8f";
+                addFieldClass(field,'unsavedWarnBGColor');
                 return errmsg;
+            } else {
+                clearFieldChanged(field);
             }
             return '';
         }
@@ -440,7 +441,9 @@ class ConfigEditor {
 
         if (errmsg != '') {
             errmsg = "Section " + sectionName + ", Parameter: " + param.name + " " + errmsg + "</br>";
-            field.style.backgroundColor = "#ffafaf";
+            addFieldClass(field,'unsavedWarnBGColor');
+        } else {
+            clearFieldChanged(field)
         }
         return errmsg;
     }
@@ -576,5 +579,14 @@ class ConfigEditor {
         this.#saveBtnB.innerHTML = 'Save';
         this.#discardBtnT.disabled = true;
         this.#discardBtnB.disabled = true;
+    }
+
+    scrollTOC() {
+        this.#configDiv.scrollIntoView({block: 'start', inline: 'nearest', behavior: 'instant'});
+    }
+
+    scrollMenu() {
+        let menu = document.getElementById('regInfo');
+        menu.scrollIntoView({block: 'start', inline: 'nearest', behavior: 'instant'});
     }
 }

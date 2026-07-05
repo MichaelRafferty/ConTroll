@@ -1,9 +1,10 @@
 <?php
 require_once "base.php";
+require_once "sessionAuth.php";
+
 // library functions to make php reports in the reports processor easier to run
 
-function loadReportInfo($authToken): array
-{
+function loadReportInfo($authToken): array {
     if ((!array_key_exists('postVars', $_POST)) || (!array_key_exists('report', $_POST)) || (!array_key_exists('group', $_POST))
         || (!array_key_exists('prefix', $_POST)) || $_POST['action'] != 'fetch') {
         $response['error'] = 'Invalid Arguments';
@@ -37,4 +38,23 @@ function loadReportInfo($authToken): array
     $response['postVars'] = $_POST['postVars'];
     $response['conid'] = $con['id'];
     return $response;
+}
+
+function loadToCSVArray($fileName, $delimiter=','): array {
+    $dataArray = [];
+    $fd = fopen($fileName, 'r');
+    if ($fd === false)
+        return $dataArray;
+
+    // load the header row
+    $elements = fgetcsv($fd, 0, $delimiter);
+    while (($row = fgetcsv($fd, 0, $delimiter)) !== false) {
+        $rowData = [];
+        foreach ($elements as $key => $name) {
+            $rowData[$name] = $row[$key];
+        }
+        $dataArray[] = $rowData;
+    }
+    fclose($fd);
+    return $dataArray;
 }

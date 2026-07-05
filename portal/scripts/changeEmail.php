@@ -46,6 +46,11 @@ $personType = getSessionVar('idType');
 $currentPersonId = $_POST['currentPersonId'];
 $currentPersonType = $_POST['currentPersonType'];
 
+if (!validateAccess($currentPersonId, $currentPersonType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'You do not have permission to change this email address.'));
+    exit();
+}
+
 if ($currentPersonType == 'n' && $resolveUpdates != null) {
     $updateMap = $resolveUpdates['remap'];
     if (array_key_exists($currentPersonId, $updateMap)) {
@@ -140,7 +145,7 @@ WHERE $mfield = ? AND NOT (first_name = 'merged' AND middle_name = 'into')
 EOS;
     $typeStr = 'ii';
     $values = array($personId, $personId);
-    if ($personType == 'N') {
+    if ($personType == 'n') {
         $vQ .= <<<EOS
 UNION SELECT DISTINCT LOWER(TRIM(email_addr))
 FROM newperson
@@ -167,7 +172,7 @@ EOS;
     }
 }
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPersonId;
+$response['currentPerson'] = $currentPersonId;
 $response['personId'] = $personId;
 $response['personType'] = $personType;
 
@@ -185,6 +190,7 @@ if ($rows_upd === false) {
 
 
 $response['rows_upd'] = $rows_upd;
+$response['newEmail'] = $email;
 $response['status'] = 'success';
 $response['logmessage'] = "$rows_upd rows updated, email address update successful from $curEmail to $email";
 $response['message'] = "Email address successfully updated from $curEmail to $email";

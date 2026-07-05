@@ -56,11 +56,6 @@ $regionR = dbSafeQuery($regionQ, 'i', array($conid));
 $setRegion = false;
 if(($regionR->num_rows==1) && ($region=='')) { $setRegion = true; }
 $regionYearId = -1;
-/** /
-var_dump(getAllSessionVars());
-echo $conid;
-/**/
-
 if (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] != 'on')
     $httptype = 'https:';
 else
@@ -72,8 +67,8 @@ $actual_link = $httptype . '//' .$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
 <div id="main">
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='barcode-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-barcode'
-            aria-selected='false' onclick='window.open("/barcodeInventory.php", "_blank")'>Barcode Inventory
+            <button class='nav-link id='barcode-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-barcode'
+            aria-selected='false' onclick='window.open("/barcodeInventory.php", "_blank")'> Barcode Inventory
             </button>
         </li>
         <?php
@@ -83,7 +78,8 @@ $actual_link = $httptype . '//' .$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
                     $region = $regionInfo['regionName'];
                     $regionYearId = $regionInfo['id'];
                 }
-                $regionName = $regionInfo['regionName'];
+                $regionName = $regionInfo['regionName']; 
+
                 ?>
         <li class='nav-item' role='presentation'>
             <button class='nav-link <?php if($isRegion) { echo 'active'; } ?>' id='<?php echo $regionName; ?>-tab'data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>' aria-selected='<?php echo $isRegion?'true':'false'; ?>'
@@ -171,8 +167,7 @@ while($artist = $artistR->fetch_assoc()) {
                                 <div class="col-sm-12" id="find_results"></div>
                             </div>
                             <div class='row mt-2 mb-3' id='artInventory-csv-div' hidden>
-                                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='artInventoryPaginationDiv'
-                                     style='background-color: #e5e5e5;'></div>
+                                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='artInventoryPaginationDiv'></div>
                                 <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
                                     <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1'
                                             onclick="pdfSheets('control', false); return false;">

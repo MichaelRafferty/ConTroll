@@ -41,7 +41,9 @@ var addTitle = null;
 var addName = null;
 var addType = null;
 var fixUserid = null;
+var fileManager = null;
 
+// initial setup
 window.onload = function initpage() {
     debug = config.debug;
     conid = config.debug;
@@ -70,6 +72,7 @@ window.onload = function initpage() {
         buildNewYear();
     }
 
+    fileManager = new FileManager();
     checkRefresh(config);
 }
 
@@ -318,6 +321,7 @@ function settab(tabname) {
             break;
         case 'keys-pane':
             console.log(tabname);
+            break;
         case 'atconUsers-pane':
             loadAtconUsers();
             break;
@@ -329,6 +333,9 @@ function settab(tabname) {
                 loadConfigEditor();
             }
             checkConfigReload = true;
+            break;
+        case 'fileManager-pane':
+            fileManager.open();
             break;
     }
 }
@@ -446,7 +453,7 @@ function openConfigEditor(data) {
 
 function cellChanged(cell) {
     dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
+    setCellChanged(cell);
 }
 
 function deleteicon(cell, formattParams, onRendered) {

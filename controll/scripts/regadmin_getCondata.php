@@ -71,6 +71,7 @@ SELECT m.id, m.id AS memlistkey,
     m.memAge,
     m.shortname,
     m.label,
+    m.cartDesc,
     m.notes,
     m.price,
     m.startdate,
@@ -79,12 +80,14 @@ SELECT m.id, m.id AS memlistkey,
     m.online,
     m.glNum,
     m.glLabel,
+    m.badgeLabel,
+    m.catBadgeLabel,
     count(r.id) as uses
 FROM memLabel m
 LEFT OUTER JOIN reg r ON (r.memId = m.id)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
-GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.price,m.startdate,m.enddate,m.atcon,m.online,
-         m.glNum,m.glLabel
+GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.cartDesc,
+         m.price,m.startdate,m.enddate,m.atcon,m.online,m.glNum,m.glLabel
 ORDER BY m.conid, m.sort_order, m.memCategory, m.memType, m.memAge, m.startdate;
 EOS;
     $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));
@@ -129,6 +132,21 @@ EOS;
         $response['ageTypes'] = $ageTypes;
     } else {
         $response['ageTypes'] = null;
+    }
+
+    $yaAgeTypes = array ();
+    $response['yaAgeTypes'] = null;
+    if (getConfValue('con', 'oneoff', 0) == 0) {
+        $result = dbSafeQuery('SELECT ageType FROM ageList WHERE conid = ? ORDER BY sortorder;', 'i', array ($id + 1));
+
+        if ($result->num_rows >= 1) {
+            while ($yaAgeType = $result->fetch_assoc()) {
+                array_push($yaAgeTypes, $yaAgeType['ageType']);
+            }
+            $response['yaAgeTypes'] = $yaAgeTypes;
+        } else {
+            $response['yaAgeTypes'] = null;
+        }
     }
 }
 ajaxSuccess($response);

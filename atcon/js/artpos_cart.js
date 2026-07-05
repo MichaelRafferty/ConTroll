@@ -261,6 +261,7 @@ class artpos_cart {
     // add art record to cart
     add(artItem) {
         var pindex = this.#cart_art.length;
+        artItem.revenueGlNum = config.revenueGlNum;
         this.#cart_art.push(make_copy(artItem));
         this.#cart_art[pindex].index = pindex;
         this.drawCart();

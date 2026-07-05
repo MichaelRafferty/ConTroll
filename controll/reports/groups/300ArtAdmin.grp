@@ -9,6 +9,13 @@
 	auth=art_control
 	type=rpt
 	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID"
+[105ArtistsByYear]
+    name='Artists By Year'
+	description='Artists that purchased space for a given Convention ID'
+	template=conidArtists.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
 [110ArtShowReg]
     name='Art Show Registration'
 	description='Art Show Registration by Region Name for the specified convention year'

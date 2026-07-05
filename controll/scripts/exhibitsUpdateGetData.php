@@ -264,14 +264,15 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, roomStatus, ownerName, ownerEmail, glNum, glLabel, includedMemId, additionalMemId,
-    totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, mailinGLNum, mailinGLLabel, sortorder)
-VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, roomStatus, ownerName, ownerEmail, glNum, glLabel, revenueGlNum, revenueGlLabel,
+    includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, mailinGLNum, mailinGLLabel, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionYears
-SET exhibitsRegion = ?, roomStatus = ?, ownerName = ?, ownerEmail = ?, glNum = ?, glLabel = ?, includedMemId = ?, additionalMemId = ?, 
-    totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, mailinGLNum = ?, mailinGLLabel = ?, sortorder = ?
+SET exhibitsRegion = ?, roomStatus = ?, ownerName = ?, ownerEmail = ?, revenueGlNum = ?, revenueGlLabel = ?, glNum = ?, glLabel = ?,
+    includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, mailinGLNum = ?, 
+    mailinGLLabel = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -297,10 +298,10 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'ssssssiiiidissii', array($row['exhibitsRegion'], $row['roomStatus'], $row['ownerName'],
-                    $row['ownerEmail'], $row['glNum'], $row['glLabel'], $row['includedMemId'], $row['additionalMemId'],
-                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
-                    $row['mailinGLNum'], $row['mailinGLLabel'],$row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'ssssssssiiiidissii', array($row['exhibitsRegion'], $row['roomStatus'], $row['ownerName'],
+                    $row['ownerEmail'], $row['revenueGlNum'], $row['revenueGlLabel'], $row['glNum'], $row['glLabel'],
+                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['atconIdBase'],
+                    $row['mailinFee'], $row['mailinIdBase'], $row['mailinGLNum'], $row['mailinGLLabel'],$row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -327,9 +328,9 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iisssssiiiidissi', array($conid, $row['exhibitsRegion'], $row['roomStatus'],
-                    $row['ownerName'], $row['ownerEmail'], $row['glNum'], $row['glLabel'], $includedMemId, $additionalMemId,
-                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
+                $numrows = dbSafeInsert($inssql, 'iisssssssiiiidissi', array($conid, $row['exhibitsRegion'], $row['roomStatus'],
+                    $row['ownerName'], $row['ownerEmail'], $row['revenueGlNum'], $row['revenueGlLabel'], $row['glNum'], $row['glLabel'],
+                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
                     $row['mailinGLNum'], $row['mailinGLLabel'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;

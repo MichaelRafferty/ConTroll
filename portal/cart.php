@@ -1,7 +1,8 @@
 <?php
 // Registration  Portal - addUpgrade.php - add new person and membership(s) or just upgrade the memberships for an existing person you manage
 require_once("lib/base.php");
-require_once("../lib/portalForms.php");
+require_once("lib/portalForms.php");
+require_once("../lib/profile.php");
 require_once("../lib/memRules.php");
 
 global $config_vars;
@@ -59,6 +60,16 @@ if ($cartId == null) {
     $cartType = $_POST['cartType'];
 }
 
+// validate we can work with this person
+if (!validateAccess($cartId, $cartType)) {
+    $response['status'] = 'error';
+    $response['message'] = "You do not have permission to access this person's cart.";
+    ajaxSuccess($response);
+    exit();
+}
+
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
@@ -74,6 +85,8 @@ $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['tab'] = $cartType . $cartId;
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
@@ -187,7 +200,7 @@ $ageName = $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [
     <div id="cartDiv">
         <div class='row'>
             <div class='col-sm-12'>
-                <h2 class="size-h3">Cart:</h2>
+                <h2 class="size-h3"><?php echo $person['fullName']; ?>'s Cart:</h2>
             </div>
         </div>
         <div id='cartContentsDiv'></div>

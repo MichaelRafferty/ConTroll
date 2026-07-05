@@ -12,9 +12,8 @@ $con = get_con();
 $conid = $con['id'];
 
 $conf = get_conf('con');
-$google = get_conf('google');
 $reg_conf = get_conf('reg');
-$url = $google['redirect_base'];
+$url = getConfValue('controll', 'redirect_base', '/');
 
 $cdn = getTabulatorIncludes();
 page_init($page,

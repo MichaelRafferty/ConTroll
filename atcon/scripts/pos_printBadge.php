@@ -54,6 +54,10 @@ if ($printer != null && $printer['name'] != 'None') {
         $badge['badge_name'] = $param['badge_name'];
         $badge['badgeNameL2'] = $param['badgeNameL2'];
         $badge['category'] = $param['category'];
+        if (array_key_exists('badgeLabel', $param))
+            $badge['badgeLabel'] = $param['badgeLabel'];
+        else
+            $badge['badgeLabel'] = '';
         $badge['id'] = $param['badge_id'];
         $badge['day'] = $param['day'];
         $badge['age'] = $param['age'];

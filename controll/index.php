@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once "lib/releaseNotes.php";
 require_once('../lib/googleOauth2.php');
 
 $page = "Home";
@@ -13,7 +14,6 @@ if ($tokenState == 'expired') {
     $tokenState = 'none';
 }
 
-//unset id_token if logging out.
 if (isset($_REQUEST['logout'])) {
     $sesPerid = getSessionVar('user_perid');
     if (!$sesPerid)
@@ -23,6 +23,20 @@ if (isset($_REQUEST['logout'])) {
             . ' from ' . $_SERVER['REMOTE_ADDR']);
     $authToken->deleteToken();
     session_regenerate_id(true);
+    // unset the cookie as well if logging out
+    $cookieName = 'ControllPassKeyCredentialId_' . str_replace('.', '_', $_SERVER['SERVER_NAME']);
+    if (array_key_exists($cookieName, $_COOKIE)) {
+        $arr_cookie_options = array (
+                'expires' => time() - (60*60*24*365),
+                'path' => '/',
+                'domain' => $_SERVER['SERVER_NAME'],
+                'secure' => true,
+                'httponly' => false,
+                'samesite' => 'Lax'
+        );
+        $ret = setcookie($cookieName, '', $arr_cookie_options);
+    }
+
     // refresh the page to take the logout string off the URL
     header('Location: index.php');
     exit();
@@ -30,7 +44,8 @@ if (isset($_REQUEST['logout'])) {
 
 if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
     $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-    if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1' && array_key_exists('id', $_REQUEST)) {
+    if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))
+            && array_key_exists('id', $_REQUEST)) {
         $id = $_REQUEST['id'];
         // we are internal, force a login for sub $id
         $authToken->buildToken('internal', $id, 'noemail');
@@ -123,7 +138,7 @@ if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
     switch ($authToken->getSource()) {
         case 'internal':
             $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-            if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+            if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
                 if ($authToken->refreshExpire()) {
                     echo <<<EOS
     <div class="row mt-4">
@@ -245,7 +260,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
         <?php
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-        if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+        if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
             for ($i = 1; $i < 99; $i++) {
                 $internal = getConfValue('controll', 'internalUser' . $i);
                 if ($internal == null)
@@ -360,13 +375,14 @@ EOS;
                             echo "User id: $user_id\n";
                             echo "User perid: $user_perid\n";
                             echo "Source: $source\n";
-                            echo "Sub: " . $authToken->getAuthId() . "\n";
-                            echo 'Current Time: ' . date('c') . "\n";
-                            echo "Token Expires: " . date('c', $authToken->getExpire()) . "\n";
-                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . "\n";
-                            echo "PHP Version: " . phpversion() . "\n";
+                            echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
+                            echo 'Current Time: ' . date('c') . PHP_EOL;
+                            echo "Token Expires: " . date('c', $authToken->getExpire()) . PHP_EOL;
+                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . PHP_EOL;
+                            echo "PHP Version: " . phpversion() . PHP_EOL;
+                            echo returnReleaseNotesLink('', $authToken) . PHP_EOL;
                             echo "$versionText";
-                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . "\n";
+                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
                             echo "Database Patch Level: $patchLevel\n";
                             echo "Conid: $conid\n";
                         ?>

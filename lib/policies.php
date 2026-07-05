@@ -123,14 +123,17 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
         $required = $policy['required'];
         $description = replaceVariables($policy['description']);
         if (array_key_exists($name,$personPolicies) && $personPolicies[$name] == 'Y')
-            $box = '✅';
+            $box = '✅:';
         else
-            $box = $required == 'Y' ? '❌' : '✖' ;
+            $box = $required == 'Y' ? '❌:' : '✖:' ;
         ?>
         <div class='row'>
-            <div class='col-sm-12'>
+            <div class='col-sm-auto'>
+                <?php echo $box; ?>
+            </div>
+            <div class="col-sm-auto">
                 <p class='text-body'>
-                    <?php echo "$box: $prompt"; ?></span>
+                    <?php echo $prompt; ?></span>
                     <?php if ($description != '') { ?>
                     <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
                     <img src="/lib/infoicon.png" alt="click this info icon for more information" style="max-height: 25px;"/>
@@ -161,10 +164,11 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
 }
 
 //drawPoliciesCell - draw the simpler cell for comparing policies
-function drawPoliciesCell($policies) {
+function drawPoliciesCell($policies) : string {
     if ($policies == null) // if there are no policies, nothing to draw
-        return;
+        return '';
 
+    $html = '';
     foreach ($policies as $policy) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
@@ -173,20 +177,16 @@ function drawPoliciesCell($policies) {
         if ($policy['required'] == 'Y') {
             $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
         }
-        if ($policy['defaultValue'] == 'Y') {
-            $checked = 'checked';
-        }
-        else {
-            $checked = '';
-        }
-        ?>
+        $checked = $policy['defaultValue'] == 'Y' ? 'checked' : '';
+        $html .= <<<EOS
                 <label>
-                    <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name; ?>' id='p_<?php echo $name; ?>' value='Y'/>
-                    <span id="l_<?php echo $name; ?>" name="l_<?php echo $name; ?>"><?php echo $prompt; ?></span>
+                    <input type='checkbox' $checked name='p_$name' id='p_$name' value='Y'/>
+                    <span id="l_$name" name="l_$name">$prompt;</span>
                 </label>
                 <br/>
-<?php
+EOS;
     }
+    return $html;
 }
 
 // update policies in memberPolicies and return number updated
@@ -298,7 +298,7 @@ EOS;
     return  $policy_upd;
 }
 
-// merge policies - merge polcies from a new person and an existing person or two existing people
+// merge policies - merge policies from a new person and an existing person or two existing people
 // Algorithm:
 //  If newperson ones exist:
 //      if perid ones exist:
