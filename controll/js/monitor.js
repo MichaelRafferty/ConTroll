@@ -1,6 +1,7 @@
 function getBreakdown () {
 
 var conid=$('#conid').val();
+clearError();
 var script = "scripts/getStats.php";
 $.ajax({
   url: script,

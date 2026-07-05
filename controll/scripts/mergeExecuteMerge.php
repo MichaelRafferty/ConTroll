@@ -1,5 +1,6 @@
 <?php
 require_once "../lib/base.php";
+require_once('../lib/cleanDeceased.php');
 require_once('../../lib/log.php');
 require_once('../../lib/policies.php');
 require_once '../lib/sessionAuth.php';
@@ -51,7 +52,7 @@ if ($merge == $remain) {
 
 // check if one is already merged
 $mQ = <<<EOS
-SELECT first_name, middle_name, last_name, email_addr
+SELECT first_name, middle_name, last_name, email_addr, deceased, id
 FROM perinfo
 WHERE id IN (?,?);
 EOS;
@@ -60,11 +61,14 @@ if ($mR === false) {
     ajaxSuccess(array('status'=>'error', 'error'=>'Database error retrieving perinfo rows'));
     exit();
 }
+$priorDeceased = '';
 while ($mL = $mR->fetch_assoc()) {
     if (($mL['first_name'] == 'Merged' && $mL['middle_name'] == 'into') || str_starts_with($mL['email_addr'], 'merged into')) {
         ajaxSuccess(array('status'=>'error', 'error'=>'One of the candidates is already a merged record, not allowed to merge a merged record'));
         exit();
     }
+    if ($mL['id'] == $remain)
+        $priorDeceased = $mL['deceased'];
 }
 $mR->free();
 
@@ -73,14 +77,15 @@ $mQ = <<<EOS
 UPDATE perinfo
 SET first_name = ?, middle_name = ?, last_name = ?, suffix = ?, legalName = ?, pronouns = ?, badge_name = ?, badgeNameL2 = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, email_addr = ?, currentAgeType = ?, phone = ?,
-    active = ?, banned = ?
+    active = ?, banned = ?, deceased = ?, formerGoH = ?
 WHERE id = ?;
 EOS;
 $valArr = array($values['first_name'], $values['middle_name'], $values['last_name'], $values['suffix'], $values['legalName'],
     $values['pronouns'], $values['badge_name'], $values['badgeNameL2'],
     $values['address'], $values['addr_2'], $values['city'], $values['state'], $values['zip'], $values['country'],
-    $values['email_addr'], $values['currentAgeType'], $values['phone'], $values['active'], $values['banned'], $remain);
-$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssi', $valArr);
+    $values['email_addr'], $values['currentAgeType'], $values['phone'], $values['active'], $values['banned'],
+    $values['deceased'], $values['formerGoH'], $remain);
+$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssssi', $valArr);
 if ($numUpd === false) {
     ajaxSuccess(array('status'=>'error', 'error'=>'Cannot update remaining person with the new values'));
     exit();
@@ -128,6 +133,10 @@ $rollback = $row['rollback'];
 $log = get_conf('log');
 logInit($log['db']);
 logWrite(array('type' => 'merge', 'merge' => $merge, 'remain' => $remain, 'status' => $status, 'rollback' => $rollback));
+
+if ($priorDeceased != $values['deceased'] && $values['deceased'] == 'Y') {
+    $status .= '<br/>' . cleanDeceasedUser($remain);
+}
 
 $response['success'] = 'merged';
 $response['status'] = $status;

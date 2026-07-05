@@ -63,8 +63,7 @@ if ($loginType == 'p') {
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns,
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, NULL AS managedByNew, p.managedReason,
-        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' ')) AS fullName,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, NULL AS managedByNew, p.managedReason, p.fullName,
         'p' AS personType
         FROM perinfo p
         WHERE managedBy = ? OR p.id = ?
@@ -72,8 +71,7 @@ WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns,
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, p.managedByNew, p.managedReason,
-        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' ')) AS fullName,
-        'n' AS personType
+        p.fullName, 'n' AS personType
         FROM newperson p
         WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL
 )

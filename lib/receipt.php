@@ -129,8 +129,8 @@ SELECT t.*, DATE_FORMAT(create_date, '%W, %M %e, %Y %h:%i:%s %p') as create_date
        DATE_FORMAT(complete_date, '%W, %M %e, %Y %h:%i:%s %p') as complete_date_str,
        c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
-        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
-        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        WHEN p.id IS NOT NULL THEN p.fullName
+        WHEN n.id IS NOT NULL THEN n.fullName
         ELSE 'Unknown'
     END AS fullName,
     CASE 
@@ -208,7 +208,8 @@ EOS;
 
     $transL = $transR->fetch_assoc();
     $transL['badgename'] = badgeNameDefault($transL['badge_name'], $transL['badgeNameL2'], $transL['first_name'], $transL['last_name']);
-    $emails[] = $transL['email_addr'];
+    if ($transL['email_addr'] != '' && !in_array($transL['email_addr'], $emails))
+        $emails[] = $transL['email_addr'];
 
     $conid = $transL['conid'];
     $userid = $transL['userid'];
@@ -262,7 +263,8 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $plans[] = $planL;
         $planId = $planL['id'];
-        $emails[] = $planL['email_addr'];
+        if ($planL['email_addr'] != '' && !in_array($planL['email_addr'], $emails))
+            $emails[] = $planL['email_addr'];
     }
     $planR->free();
     $response['plans'] = $plans;
@@ -291,7 +293,8 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $planPayments[] = $planL;
         $planId = $planL['id'];
-        $emails[] = $planL['email_addr'];
+        if (!in_array($planL['email_addr'] != '' && $planL['email_addr'], $emails))
+            $emails[] = $planL['email_addr'];
     }
     $planR->free();
     $response['planPayments'] = $planPayments;
@@ -301,8 +304,8 @@ EOS;
 SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice, m.taxable, m.conid AS memConid,
     c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
-        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
-        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        WHEN p.id IS NOT NULL THEN p.fullName
+        WHEN n.id IS NOT NULL THEN n.fullName
         ELSE 'Unknown'
     END AS fullName,
     CASE 
@@ -381,7 +384,8 @@ EOS;
     while ($regL = $regR->fetch_assoc()) {
         $regL['badgename'] = badgeNameDefault($regL['badge_name'], $regL['badgeNameL2'], $regL['first_name'], $regL['last_name']);
         $memberships[] = $regL;
-        $emails[] = $regL['email_addr'];
+        if ($regL['email_addr'] != '' && !in_array($regL['email_addr'], $emails))
+            $emails[] = $regL['email_addr'];
     }
     $regR->free();
     $response['memberships'] = $memberships;
@@ -415,17 +419,23 @@ EOS;
     while ($spaceL = $spaceR->fetch_assoc()) {
         $spaceL['badgename'] = badgeNameDefault($spaceL['badge_name'], $spaceL['badgeNameL2'], $spaceL['first_name'], $spaceL['last_name']);
         $spaces[] = $spaceL;
+        if ($spaceL['email_addr'] != '' && !in_array($spaceL['email_addr'], $emails))
+            $emails[] = $spaceL['email_addr'];
     }
     $spaceR->free();
     $response['spaces'] = $spaces;
+
     //      art sales (atcon/artpos)
     $artQ = <<<EOS
-SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, IFNULL(E.artistName, E.exhibitorName) AS artist
+SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, 
+       IFNULL(E.artistName, E.exhibitorName) AS artist, p.fullName AS bidderFullName, t.perid AS transPerid
 FROM artSales s
 JOIN artItems i ON i.id = s.artId
 JOIN exhibitorRegionYears RY ON i.exhibitorRegionYearId = RY.id
 JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
 JOIN exhibitors E ON E.id = Y.exhibitorId
+JOIN transaction t ON t.id = s.transId
+JOIN perinfo p ON p.id = i.bidder
 WHERE s.transId = ?;
 EOS;
     $artR = dbSafeQuery($artQ, 'i', array($transid));
@@ -951,6 +961,19 @@ EOS;
                 $artSubtotal += $price;
                 $pricefmt = $dolfmt->formatCurrency((float)$price, $currency);
                 $receipt .= "$itemId    $title/$artist    $type/$pricefmt\n";
+                if ($art['bidder'] != $art['transPerid']) {
+                    $bidderFullName = $art['bidderFullName'];
+                    $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class="col-sm-1">Bidder:</div>
+        <div class="col-sm-11">$bidderFullName</div>
+    </div>
+EOS;
+                    $receipt_tables .= <<<EOS
+<tr><td>Bidder:</td><td colspan="3">$bidderFullName</td></tr>
+EOS;
+
+                }
                 $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'>$itemId</div>
@@ -1088,7 +1111,7 @@ EOS;
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Due</td><td style="text-align: right;">$price</td></tr>
+<tr><td colspan="2">Total Due:</td><td style="text-align: right;">$price</td></tr>
 EOS;
 
     // now for the payments/coupon section
@@ -1198,7 +1221,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Payments</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
+<tr><td colspan="2">Total Payments:</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
 EOS;
     }
 

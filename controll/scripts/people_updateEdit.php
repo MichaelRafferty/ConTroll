@@ -1,7 +1,9 @@
 <?php
 require_once "../lib/base.php";
+require_once('../lib/cleanDeceased.php');
 require_once "../../lib/policies.php";
 require_once "../../lib/interests.php";
+require_once "../../lib/conroles.php";
 require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
@@ -42,7 +44,9 @@ $conid=$con['id'];
 //  1. profile
 //  2. policies
 //  3. interests
-//  4. manages
+//  4. conroles
+//  5. manages
+//  6. deceased
 
 //  1. Profile, update the perinfo record
 
@@ -67,8 +71,48 @@ $active = $_POST['active'] == null ? 'Y' : trim($_POST['active']);
 $banned = $_POST['banned'] == null ? 'N' : trim($_POST['banned']);
 $admin_notes = $_POST['adminNotes'] == null ? '' : trim($_POST['adminNotes']);
 $open_notes = $_POST['openNotes'] == null ? '' : trim($_POST['openNotes']);
+$deceased = $_POST['deceased'] == null ? 'N' : trim($_POST['deceased']);
+$formerGoH = $_POST['formerGoH'] == null ? 'N' : trim($_POST['formerGoH']);
 $currentAgeType = $_POST['currentAgeType'];
 $origAgeType = $_POST['origAgeType'];
+
+// check that renumber id is available
+if (array_key_exists('renumberNew', $_POST)) {
+    $renumberNew = $_POST['renumberNew'];
+    $checkSQL = <<<EOS
+SELECT COUNT(*) FROM perinfo WHERE id = ?;
+EOS;
+    $checkR = dbSafeQuery($checkSQL, 'i', array($renumberNew));
+    if ($checkR === false) {
+        $response['error'] = 'SQL Error checking for renumber availability<br/>Nothing updated.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $count = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($count > 0) {
+        $response['error'] = "Cannnot renumber $perid to $renumberNew as it is already in use<br/>Nothing updated.";
+        ajaxSuccess($response);
+        exit();
+    }
+}
+
+// get prior deceased value
+$chkQ = <<<EOS
+SELECT deceased
+FROM perinfo
+WHERE id = ?;
+EOS;
+$chkR = dbSafeQuery($chkQ, 'i', array($perid));
+if ($chkR === false) {
+    $response['error'] = 'SQL Error in checking if deceased<br/>Nothing updated.';
+    ajaxSuccess($response);
+    exit();
+}
+
+$priorData = $chkR->fetch_assoc();
+$chkR->free();
+$priorDeceased = $priorData['deceased'];
 
 // check if manager is managed by someone else if $managedBy is not null
 if ($managedBy != null) {
@@ -77,7 +121,7 @@ SELECT managedByNew, managedBy
 FROM perinfo
 WHERE id = ?;
 EOS;
-    $chkR = dbSafeQuery($chkQ, 'i', array($managedBy));
+    $chkR = dbSafeQuery($chkQ, 'i', array ($managedBy));
     if ($chkR === false) {
         $response['error'] = 'SQL Error in checking if manager is managed' . '<br/>Nothing updated.';
         ajaxSuccess($response);
@@ -86,7 +130,7 @@ EOS;
     $managerData = $chkR->fetch_assoc();
     $chkR->free();
     if ($managerData['managedBy'] != null) {
-        $response['error'] = "Manager $managedBy is already managed by " . $managerData['managedBy'] . "<br/>Nothing updated.";
+        $response['error'] = "Manager $managedBy is already managed by " . $managerData['managedBy'] . '<br/>Nothing updated.';
         ajaxSuccess($response);
         exit();
     }
@@ -110,16 +154,16 @@ if ($origAgeType != $currentAgeType) {
 $uP = <<<EOS
 UPDATE perinfo
 SET $ageSQL last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?, deceased = ?, formerGoH = ?,
     active = ?, open_notes = ?, admin_notes = ?, managedBy = ?, updatedBy = ?, 
     managedByNew = NULL, lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by People Edit screen')
 WHERE id = ?;
 EOS;
 
 
-$typeStr .= 'ssssssssssssssssssssiii';
+$typeStr .= 'ssssssssssssssssssssssiii';
 array_push($valArray, $last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $legalName, $pronouns,
-    $address, $addr_2, $city, $state, $zip, $country, $banned, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
+    $address, $addr_2, $city, $state, $zip, $country, $banned, $deceased, $formerGoH, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {
@@ -143,9 +187,20 @@ if ($interest_upd > 0) {
     $message .= "<br/>$interest_upd interest responses updated";
 }
 
-// 4. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
+//  4. conroles
+    $conrole_upd =  updateMemberConRoles($conid, $perid, 'p', $updatedBy, 'p');
+    if ($conrole_upd > 0) {
+        $message .= "<br/>$conrole_upd interest responses updated";
+    }
 
-// 5. renumber (must be last)
+// 5. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
+
+// 6. Deceased
+    if ($priorDeceased != $deceased && $deceased == 'Y') {
+        $message .= '<br/>' . cleanDeceasedUser($perid);
+    }
+
+// LAST. renumber (must be last)
 if (array_key_exists('renumberNew', $_POST)) {
     $renumberNew = $_POST['renumberNew'];
     if ($renumberNew != null && $renumberNew != '' && $renumberNew != $perid) {
@@ -286,18 +341,10 @@ WITH memAge AS (
     WHERE m.memAge != 'all' AND r.perid = ? AND r.conid = ?
     GROUP BY r.perid
 )
-SELECT p.*, ma.memAgeType,
+SELECT p.*, ma.memAgeType, p.fullname, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
-    CASE
-        WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) 
-        ELSE ''
-    END AS manager,
-    CASE
-        WHEN mp.id IS NOT NULL THEN mp.id
-        ELSE NULL
-    END AS managerId,
+    CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
+    CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
     GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
 FROM perinfo p
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
@@ -309,7 +356,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId,
-    ma.memAgeType, p.currentAgeType
+    ma.memAgeType, p.currentAgeType, p.deceased, p.formerGoH
 EOS;
 $updRowR = dbSafeQuery($updRowSQL, 'iiiiii', array($perid, $conid, $conid,  $conid, $conid + 1, $perid));
 if ($updRowR === false) {

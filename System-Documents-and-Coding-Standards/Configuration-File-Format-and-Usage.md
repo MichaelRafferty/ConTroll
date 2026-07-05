@@ -45,7 +45,7 @@ Section headers should be:
 Parameter names are alphanumeric and start with a letter.
 Quotes are required if the value has any non alphanumeric characters in it, including blanks.
 
-See the PHP parse_ini_file documentation for futher explaination of the rules for parameter formatting.
+See the PHP parse_ini_file documentation for futher explanatio of the rules for parameter formatting.
 
 Case is the developers choice, but they are case sensitive. Avoid the same name with different cases or spellings. Try to be mnemonic with the parameter name.
 
@@ -130,6 +130,7 @@ Each etnry in the file that is online editable will contain the following prefix
     - `sX` = fill in the blank single line string, with a max length of X
     - `tX,Y` = text area with X columns and Y rows. Newlines will be preserved in the text area.
     - `e` = valid email address
+    - `v` = valid email address in the reg_admin.ini variable emailDomains (list of valid sending domains for this convention)
     - `r:dir` = relative file path, a warning will be issued if this file is not readable starting in the *dir* directory 
 relative to the root of the installation. Note: dir is not allowed to be empty.
     - `a` = absolute file path from the root of of the file system.

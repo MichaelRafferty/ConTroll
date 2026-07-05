@@ -17,17 +17,28 @@ ORDER BY taxField;
 EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
+        $row['taxItems'] = array();
         $taxRates[$row['taxField']] = $row;
     }
     $QR->free();
 
-    if (count($taxRates) == 0) {
-        // default to the older configuration file based tax rates
-        $taxRate = getConfValue('con', 'taxRate', 0);
-        if ($taxRate > 0) {
-            $taxLabel = getConfValue('con', 'taxLabel');
-            $taxRates[] = array('taxField' => 'tax', 'rate' => $taxRate, 'label' => $taxLabel);
+    // NOTE: the code to use the config variables is obsolete, the editing of the sales tax configuration will import it if the tax table is empty.
+    if (count($taxRates) > 0) {
+        // get the tax items for each tax rate
+        $QQ = <<<EOS
+SELECT l.taxField, t.item, IFNULL(i.taxable, t.defaultValue) AS taxable
+FROM taxList l
+JOIN taxable t
+LEFT OUTER JOIN taxItems i ON i.taxfield = l.taxfield AND i.conid = l.conid AND i.item = t.item AND i.conid = ?
+WHERE l.active = 'Y'
+ORDER BY l.taxField, i.sortOrder;
+EOS;
+        $QR = dbSafeQuery($QQ, 'i', array($conid));
+        while ($row = $QR->fetch_assoc()) {
+            $taxField = $row['taxField'];
+            $taxRates[$taxField]['taxItems'][$row['item']] = $row;
         }
+        $QR->free();
     }
 
     return $taxRates;
@@ -41,8 +52,14 @@ function hasTaxRates() {
         getTaxRates();
     }
     foreach ($taxRates as $tax) {
-        if ($tax['rate'] > 0)
-            return true;
+        if ($tax['rate'] > 0) {
+            foreach ($tax['taxItems'] as $taxItemName => $taxItem) {
+                // check if anything is taxable using this rate
+                if ($taxItem['taxable'] == 'Y') {
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }
@@ -62,7 +79,10 @@ function buildTaxUpdate($taxes) : array {
     foreach ($taxFields as $taxField) {
         $sqlStr[] = "$taxField = ?";
         if (array_key_exists($taxField, $taxRates) && array_key_exists($taxField, $taxes)) {
-            $values[] = $taxes[$taxField];
+            if (is_array($taxes[$taxField]))
+                $values[] = $taxes[$taxField]['tax'];
+            else
+                $values[] = $taxes[$taxField];
         } else {
             $values[] = null;
         }
@@ -72,18 +92,39 @@ function buildTaxUpdate($taxes) : array {
 
 // build square tax arrays
 // item applied tax
-function buildSquareAppliedTaxArray($prefix = '', $lineid = 0) : array {
+function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     global $taxRates;
     $taxArray = array();
+    $prefix = $taxitem;
     if ($prefix != '')
         $prefix .= '-';
 
     foreach ($taxRates as $tax) {
-        if ($tax['rate'] > 0) {
+        if ($tax['rate'] > 0 && array_key_exists($taxitem, $tax['taxItems']) && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
             $taxArray[] = new Square\Types\OrderLineItemAppliedTax([
                 'uid' => $prefix . $tax['taxField'] . '-' . ($lineid + 1),
                 'taxUid' => $tax['taxField']
             ]);
+        }
+    }
+
+    return $taxArray;
+}
+
+function buildTestAppliedTaxArray($taxitem = '', $lineid = 0) : array {
+    global $taxRates;
+    $taxArray = array();
+    $prefix = $taxitem;
+    if ($prefix != '')
+        $prefix .= '-';
+
+    foreach ($taxRates as $tax) {
+        if ($tax['rate'] > 0 && array_key_exists($taxitem, $tax['taxItems']) && $tax['taxItems'][$taxitem]['taxable'] == 'Y') {
+            $taxArray[] = [
+                'percentage' => $tax['rate'],
+                'taxUid' => $tax['taxField'],
+                'taxName' => $tax['label'],
+            ];
         }
     }
 
@@ -110,6 +151,23 @@ function buildSquareOrderTaxArray() : array {
     return $taxArray;
 }
 
+function buildTestOrderTaxArray() : array {
+    global $taxRates;
+    $taxArray = array();
+
+    foreach ($taxRates as $tax) {
+        if ($tax['rate'] > 0) {
+
+            $taxArray[] = [
+                'uid' => $tax['taxField'],
+                'name' => $tax['label'],
+                'percentage' => $tax['rate'],
+            ];
+        }
+    }
+
+    return $taxArray;
+}
 
 // build payment and transaction insert sections
 function buildTaxInsert($taxes) : array {
@@ -126,7 +184,12 @@ function buildTaxInsert($taxes) : array {
     foreach ($taxFields as $taxField) {
         $sqlStr[] = "?";
         if (array_key_exists($taxField, $taxRates) && array_key_exists($taxField, $taxes)) {
-            $values[] = $taxes[$taxField];
+            $taxItem = $taxes[$taxField];
+            if (is_array($taxItem)) {
+                $values[] = $taxItem['tax'];
+            } else {
+                $values[] = $taxItem;
+            }
         } else {
             $values[] = null;
         }
@@ -147,33 +210,107 @@ ORDER BY taxField;
 EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
-        $taxConfig[] = $row;
+        $row['taxItems'] = [];
+        $row['taxItemsDisplay'] = '';
+        $taxField = $row['taxField'];
+        $taxConfig[$taxField] = $row;
     }
     $QR->free();
 
-    if (count($taxConfig) == 0) {
-        // default to the older configuration file based tax rates
-        $taxRate = getConfValue('con', 'taxRate', 0);
-        if ($taxRate > 0) {
-            $taxLabel = getConfValue('con', 'taxLabel');
-            $taxConfig[] = array('conid' => $conid, 'taxField' => 'tax1', 'label' => $taxLabel, 'rate' => $taxRate,
-                'active' => 'Y', 'glNum' => null, 'lastUpdate' => null, 'updatedBy' => -1);
+    // now add tax items to taxConfig
+    $QQ = <<<EOS
+SELECT *
+FROM taxItems
+WHERE conid = ?
+ORDER BY sortOrder;
+EOS;
+    $QR = dbSafeQuery($QQ, 'i', array($conid));
+    while ($row = $QR->fetch_assoc()) {
+        $taxField = $row['taxField'];
+        $taxConfig[$taxField]['taxItems'][] = $row;
+        if (array_key_exists('taxItemsDisplay', $taxConfig[$taxField])) {
+            $taxConfig[$taxField]['taxItemsDisplay'] .= ",\n" . $row['item'] . '=' . $row['taxable'];
+        } else {
+            $taxConfig[$taxField]['taxItemsDisplay'] = '  ' . $row['item'] . '=' . $row['taxable'];
+        }
+    }
+    $QR->free();
+
+    // strip the leading comma from each taxItemsDisplay while copying over the array
+    $taxConfigArray = array();
+    foreach ($taxConfig as $taxField => $tax) {
+        if ($tax['taxItemsDisplay'] != '')
+            $tax['taxItemsDisplay'] = substr($tax['taxItemsDisplay'], 2);
+        $taxConfigArray[] = $tax;
+    }
+
+    $QQ = <<<EOS
+SELECT item, label, defaultValue
+FROM taxable
+ORDER BY sortOrder;
+EOS;
+    $QR = dbQuery($QQ);
+    $taxable = array();
+    while ($row = $QR->fetch_assoc()) {
+        $taxable[] = $row;
+    }
+    $QR->free();
+
+    return array($taxConfigArray, $taxable);
+}
+
+function computeTax($item) : array {
+    // item has taxable Y/N and taxes for each tax rage
+    $taxes = array();
+    $taxes['totalTax'] = 0;
+    $taxes['totalTax_base'] = 0;
+    foreach ($item['taxes'] as $tax) {
+        $taxField  = $tax['taxUid'];
+        $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 2);
+        $taxes[$taxField] = $amt;
+        $taxes[$taxField . '_base'] = $item['basePriceMoney'];
+        $taxes['totalTax'] += $amt;
+        $taxes['totalTax_base'] += $item['basePriceMoney'];
+    }
+
+    return $taxes;
+}
+
+function computeTotalTax(&$items) {
+    $taxableAmounts = array();
+    $taxes = array();
+    $rates = array();
+    $maxItem = array();
+    $maxes = array();
+    // compute the total of each line item taxes as computed by computeTax
+    foreach ($items as $item) {
+        foreach ($item['taxes'] as $tax) {
+            $taxField  = $tax['taxUid'];
+            if (array_key_exists($taxField, $taxableAmounts)) {
+                $taxableAmounts[$taxField] += $item['basePriceMoney'];
+                $taxes[$taxField]['tax'] += $item['taxAmounts'][$taxField];
+                if ($item['basePriceMoney'] > $maxes[$taxField]) {
+                    $maxItem[$taxField] = $item;
+                    $maxes[$taxField] = $item['basePriceMoney'];
+                }
+            } else {
+                $taxableAmounts[$taxField] = $item['basePriceMoney'];
+                $taxes[$taxField]['tax'] = $item['taxAmounts'][$taxField];
+                $taxes[$taxField]['name'] = $tax['taxName'];
+                $rates[$taxField] = $tax['percentage'];
+                $maxItem[$taxField] = $item;
+                $maxes[$taxField] = $item['basePriceMoney'];
+            }
         }
     }
 
-    return $taxConfig;
-}
-
-function computeTax($taxableAmt) : array {
-    global $taxRates;
-
-    if ($taxRates == null) {
-        getTaxRates();
-    }
-
-    $taxes = array();
-    foreach ($taxRates as $taxField => $tax) {
-        $taxes[$taxField] = round($taxableAmt * $tax['rate'] / 100.0, 2);
+    // now recompute the total tax and fudge the
+    foreach ($taxes as $taxField => $tax) {
+        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100;
+        if ($totalTax != $tax['tax']) { // fudge last item in list to make the pennies add up
+            $item = $maxItem[$taxField];
+            $item['taxes'][$taxField] += $totalTax - $tax['tax'];
+        }
     }
 
     return $taxes;

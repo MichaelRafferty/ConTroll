@@ -3,7 +3,7 @@
 ;; N:customtext
 ;; R:V,reg_admin
 ;; H:Global custom text setting, values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:production,all,none
@@ -159,17 +159,17 @@ volunteers="volunteers@conname.org"
 ;; R:H,reg_staff
 ;; P:Registration Staff Email Address
 ;; H:The email address used to contact the registration staff people for the convention.
-;; D:e
+;; D:v
 ;; B:M
-regemail="registration2022@conname.org"
+regemail="registration@conname.org"
 ;; N:regadminemail
 ;; R:H,reg_staff
 ;; P:Registration Administrator Email Address
 ;; H:The email address used to contact the registration administrator for the convention.
 ;; H+This can be the same address as regemail
-;; D:e
+;; D:v
 ;; B:M
-regadminemail="registration2022@conname.org"
+regadminemail="registration@conname.org"
 ;; N:regconfirmcc
 ;; R:H,reg_staff
 ;; P:Registration Carbon Copy Email Address
@@ -186,21 +186,21 @@ regconfirmcc=
 ;; H:The email address used to contact the convention for further information.
 ;; D:e
 ;; B:M
-infoemail="info2022@conname.org"
+infoemail="info@conname.org"
 ;; N:refundemail
 ;; R:H,reg_staff
 ;; P:email address for refunds/refund policy
 ;; H:The email address used to contact the convention for refunds and refund policy issues.
 ;; D:e
 ;; B:M
-refundemail='info2022@conname.org'
+refundemail='info@conname.org'
 ;; N:feedbackemail
 ;; R:H,reg_staff
 ;; P:Convention feedback email
 ;; H:The email address used to contact the convention with feedback
 ;; D:e
 ;; B:M
-feedbackemail='info2022@conname.org'
+feedbackemail='info@conname.org'
 ;;;;; HR Web Sites
 ;;; Websites
 ;; N:website
@@ -307,10 +307,36 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; D:l:0,1
 ;; B:M
 bundlememberships=0 ; allow bundle memberships
+;; N:formerGoH
+;; R:H,reg_admin
+;; H:Enable Tracking Former Guest of Honor in the Profile
+;; H+ =0 Marking people as Former Guest of Honor is disabled
+;; H+ =1 Marking people as Former Guest of Honor is enabled, anyone with reg_staff higher permissions can edit the field, others can see it.
+;; D:l:0,1
+;; B:M
+formerGoH=0 ; allow Former GoH tracking memberships
+;; N:conRoles
+;; R:H,reg_admin
+;; H:Enable tracking of convention roles (conRoles) in the Profile
+;; H+ =0 conRoles are disabled
+;; H+ =1 conRoles are enabled
+;; D:l:0,1
+;; B:M
+conRoles=0 ; allow convention role tracking
+;; N:showConRoles
+;; R:H,reg_admin
+;; H:Display which convention roles are set for a person in their profile
+;; H+ Note: if conRoles are disabled (see conRoles), this is automatically hidden
+;; H+ =0 conRoles are hidden
+;; H+ =1 Assigned conRoles are shown
+;; H+ =2 All conRoles are shown, even if not assigned
+;; D:l:0,1,2
+;; B:M
+showConRoles=0 ;
 ;; N:defaultCountry
 ;; R:H,reg_staff
 ;; P:3 Character ISO Code
-;; H:For the country HTML selects, which country code is the default one selected.
+;; H:For the country HTML selects (country pulldown), which country code is the default one selected.
 ;; H+If the country is being set to the one already entered for this person, that will override this default.
 ;; D:s3
 ;; B:O
@@ -323,7 +349,7 @@ defaultCountry="USA"
 ;; R:V,reg_staff
 ;; H:Registration custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -359,7 +385,7 @@ defaultCountry="USA"
 ;; H+file formats: jpg, png
 ;; D:s256
 ;; B:O
-logoimage="conname2022.png"
+logoimage="conname.png"
 ;; N:logoalt
 ;; R:H,reg_staff
 ;; P:Logo alternate text
@@ -404,7 +430,7 @@ noNewDays=
 ;; R:V,reg_admin
 ;; H:Atcon custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -421,7 +447,7 @@ noNewDays=
 ;;; allow discounts?
 ;; N:discount
 ;; R:V,reg_admin
-;; H:Allow disount as a payment type in Atxon
+;; H:Allow disount as a payment type in Atcon
 ;; H+values:
 ;; H+  manager - requires manager logged in
 ;; H+	active - manager override enabled
@@ -472,12 +498,50 @@ precon=0
 
 ;;;;; Exhibitor Portals (Artist, Exhibitor, Fan, Vendor)
 [vendor]
+;;; local open/close flags
+;; N:artistOpen
+;; R:H,exhibitor
+;; H:specific artist portal open/close flag, the global vendor open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for artist portal closed, 1 to allow artist portal to open based on overall open flag
+;; D:l:0,1
+;; B:M
+;;; artistOpen
+artistOpen=1
+;;; vendorOpen
+;; N:vendorOpen
+;; R:H,exhibitor
+;; H:specific vendor (dealers) portal open/close flag, the global vendor open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for vendor portal closed, 1 to allow vendor portal to open based on overall open flag
+;; D:l:0,1
+;; B:M
+;;; vendorOpen
+vendorOpen=1
+;;; exhibitOpen
+;; N:exhibitOpen
+;; R:H,exhibitor
+;; H:specific exhibit (exhibit hall) portal open/close flag, the global exhibit open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for exhibit portal closed, 1 to allow exhibit portal to open based on overall open flag
+;; H+NOTE: this is a future feature
+;; D:l:0,1
+;; B:M
+;;; exhibitOpen
+exhibitOpen=0
+;;; fanOpen
+;; N:fanOpen
+;; R:H,exhibitor
+;; H:specific fan (fan tables hall) portal open/close flag, the global fan open flag must also be open (1) for this to open the specific portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 for fan portal closed, 1 to allow fan portal to open based on overall open flag
+;; H+NOTE: this is a future feature
+;; D:l:0,1
+;; B:M
+;;; fanOpen
+fanOpen=0
 ;;; overrides
 ;; N:customtext
 ;; R:H,exhibitor
 ;; H:Exhibitor Portal custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none
@@ -504,7 +568,7 @@ viewPriorLimit=
 ;; R:H,exhibitor
 ;; P:Generic Vendor (dealers) staff email address, region independent
 ;; H:The email address used to contact the vendor (dealers) staff for the convention. (Independent of region)
-;; D:e
+;; D:v
 ;; B:M
 ;vendor: email address for generic vendor emails
 vendor="dealers@???"
@@ -512,7 +576,7 @@ vendor="dealers@???"
 ;; R:H,exhibitor
 ;; P:Generic Artist staff email address, region independent
 ;; H:The email address used to contact the artist staff for the convention. (Independent of region)
-;; D:e
+;; D:v
 ;; B:M
 ;artist: email address for generic artist emails
 ;;; Artist Portal items for inventory headers
@@ -640,7 +704,7 @@ artcontrolsort=type
 ;; R:V,reg_staff
 ;; H:Registration Portal custom text setting, overrides the global setting if desired
 ;; H+values:
-;; H+all = show all customtext, even the default messages
+;; H+all = show all customtext, even the empty ones that are placeholders
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
 ;; D:l:-inherit from global-~ ,production,all,none

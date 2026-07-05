@@ -55,8 +55,8 @@ JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
 WHERE conid = ? AND perid = ?
 GROUP BY perid
 )
-SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone, 
-    IFNULL(r.numReg, 0) AS numReg
+SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country,
+    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg, p.fullName
 FROM perinfo p
 LEFT OUTER JOIN regC r on r.perid = p.id
 WHERE p.id=?;
@@ -71,18 +71,42 @@ EOS;
         $person = $personR->fetch_assoc();
         $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $response['person'] = $person;
-        if ($person['numReg'] == 0) {
+        if ($person['deceased'] == 'Y') {
+            $response['status'] = 'warn';
+            $response['warn'] = "Person is marked deceased, please contact Registration for assistance";
+        } else if ($person['banned'] == 'Y') {
+            $response['status'] = 'warn';
+            $response['warn'] = "Person is not eligible for a badge, please contact Registration for assistance";
+        } else if ($person['numReg'] == 0) {
             $response['status'] = 'warn';
             $response['warn'] = "Person does not have a badge printed for $conid";
         } else {
             $response['status'] = 'success';
         }
-        // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
+        $fullName = $response['person']['fullName'];
+        // get the list of people this person can pickup art for
+        $findPickupQ = <<<EOS
+SELECT a.bidderPerid, p.fullName
+FROM artshowAltPickupAuth a
+JOIN perinfo p ON p.id = a.bidderPerid
+WHERE a.pickupPerid = ? AND conid = ? AND a.active = 'Y';
+EOS;
+        $findPickupR = dbSafeQuery($findPickupQ, 'ii', array($perid, $conid));
+        $pickupPerids = [];
+        $pickupPerids[] = array('bidderPerid' => $perid, 'fullName' => $fullName);
+        while ($findPickupL = $findPickupR->fetch_assoc()) {
+            $pickupPerids[] = $findPickupL;
+        }
+        $findPickupR->free();
+        $response['pickupPerids'] = $pickupPerids;
+
+        // now find any art for which is final and they are the high bidder
+
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
-       exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, exY.exhibitorId
+       exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, exY.exhibitorId, p.fullName, p.id AS perid
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
@@ -90,13 +114,15 @@ JOIN exhibitors ex ON exY.exhibitorId = ex.id
 JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON a.id = s.artid
-LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
-WHERE (a.bidder = ? OR IFNULL(s.perid, -1) = ?) AND a.conid = ? AND 
+LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid     
+LEFT OUTER JOIN artshowAltPickupAuth auth ON a.bidder = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ? AND auth.active = 'Y'
+JOIN perinfo p ON (p.id = IFNULL(a.bidder, -1) OR (p.id = IFNULL(auth.bidderPerid, -1)))
+WHERE (a.bidder = ? OR IFNULL(s.perid, -1) = ? OR IFNULL(auth.pickupPerid, -1) = ?) AND a.conid = ? AND 
       IFNULL(s.paid, 0) != IFNULL(s.amount, -1) AND
       (a.status IN ('Checked In' $allowBid, 'Quicksale/Sold', 'Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
       ((t.id IS NULL AND s.transid IS NULL) OR (t.id = s.transid)) AND eR.shortname LIKE ?;
 EOS;
-        $findArtR = dbSafeQuery($findArtQ, 'iiis', array($perid, $perid, $conid, $region));
+        $findArtR = dbSafeQuery($findArtQ, 'iiiiiis', array($perid, $conid, $perid, $perid, $perid, $conid, $region));
         $art = [];
         $transaction = null;
         while ($findArtL = $findArtR->fetch_assoc()) {
@@ -114,9 +140,11 @@ EOS;
 SELECT count(*)
 FROM artItems a
 JOIN artSales s ON a.id = s.artid
-WHERE s.amount = s.paid AND s.perid = ? AND a.conid = ? AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
+LEFT OUTER JOIN artshowAltPickupAuth auth ON s.perid = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ? AND auth.active = 'Y'
+WHERE s.amount = s.paid AND (s.perid = ? OR IFNULL(auth.pickupPerid, -1) = ?) AND a.conid = ?
+    AND a.status IN ('Sold Bid Sheet','Sold at Auction', 'Quicksale/Sold');
 EOS;
-        $releaseR = dbSafeQuery($releaseQ, 'ii', array($perid, $conid));
+        $releaseR = dbSafeQuery($releaseQ, 'iiiii', array($perid, $conid, $perid, $perid, $conid));
         $response['release'] = $releaseR->fetch_row()[0];
         $releaseR->free();
 

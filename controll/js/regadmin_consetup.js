@@ -4,6 +4,7 @@ var activeConSetup = 'none';
 var editListMasterRow = null;
 var memListModalDirty = false;
 var tinyMCEInit = false;
+var currencyFmt = null;
 
 class consetup {
     #debug = 0;
@@ -59,9 +60,21 @@ class consetup {
     #containsField = null;
     #rowStartDate = '';
     #rowEndDate = '';
+    #locale = 'en-us';
+    #currencyFmt = null;
+    #memListPagination = false;
+    #memTablePagination = false;
+
+    // constants
+    #enumYN = ['Y', 'N'];
 
     constructor(setup_type) {
         this.#debug = Number(config.debug);
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
         this.#conid = Number(config.conid);
         this.#bundlesEnabled = config.bundleMemberships == 'Y';
         if (this.#debug & 2) {
@@ -354,12 +367,13 @@ class consetup {
         this.#paginationDiv.innerHTML = '';
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
+        this.#memTablePagination = data['memlist'].length > 25;
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,
             data: data['memlist'],
             layout: "fitDataTable",
-            pagination: data['memlist'].length > 25,
+            pagination: this.#memTablePagination,
             paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -405,53 +419,46 @@ class consetup {
                         return cell.getRow().getCell("label").getValue();
                     },
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    formatter: "textarea",
-                    headerFilter: true
+                    formatter: "textarea", headerFilter: true
                 },
                 {title: "Label", field: "label", visible: false},
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
                     headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
                 {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
                     headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
                 {
-                    title: "At", field: "atcon", editor: "list", editorParams: {values: ["Y", "N"],},
-                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
+                    title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
-                    title: "On", field: "online", editor: "list", editorParams: {values: ["Y", "N"],},
-                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
+                    title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
                     title: "Notes", field: "notes", width: 200,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
-                    headerFilter: true,
-                    formatter: "textarea",
+                    headerFilter: true, formatter: "textarea",
                 },
                 {
                     title: "Cart Desc", field: "cartDesc", width: 300,
-                    headerFilter: true,
-                    formatter: "html",
+                    headerFilter: true, formatter: "html",
                 },
                 {
                     title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
-                    headerFilter: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
                 },
                 {
                     title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
-                    headerFilter: true
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
                 },
                 {
                     title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true,
-                    formatter: "textarea",
+                    headerFilter: true, formatter: "textarea",
                 },
                 {field: "to_delete", visible: false,},
                 {field: "catBadgeLabel", visible: false,},
@@ -640,6 +647,8 @@ class consetup {
 
     open() {
         let script = "scripts/regadmin_getCondata.php";
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'GET',
@@ -744,8 +753,20 @@ class consetup {
             notes: '',
             glNum: '',
             glLabel: '',
+            badgeLabel: '',
+            catBadgeLabel: '',
         }, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#memTablePagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("id"));
+                    setCellChanged(row.getCell("conid"));
+                    setCellChanged(row.getCell("shortname"));
+                    setCellChanged(row.getCell("price"));
+                    setCellChanged(row.getCell("atcon"));
+                    setCellChanged(row.getCell("online"));
+                    _this.checkMemlistUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("id"));
                 setCellChanged(row.getCell("conid"));
                 setCellChanged(row.getCell("shortname"));
@@ -753,7 +774,7 @@ class consetup {
                 setCellChanged(row.getCell("atcon"));
                 setCellChanged(row.getCell("online"));
                 _this.checkMemlistUndoRedo();
-            });
+            }
         });
     };
 
@@ -786,6 +807,7 @@ class consetup {
         this.#conlist_savebtn.innerHTML = "Save Changes";
 
         clear_message();
+        clearError();
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
@@ -831,6 +853,7 @@ class consetup {
                 indexcol: "id"
             };
             clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -872,6 +895,8 @@ class consetup {
         }
         this.#memlist_savebtn.innerHTML = "Save Changes";
 
+        clear_message();
+        clearError();
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
@@ -961,6 +986,7 @@ class consetup {
                 indexcol: "id"
             };
             clear_message();
+            clearError();
             //console.log(postdata);
             $.ajax({
                 url: script,
@@ -1070,11 +1096,12 @@ class consetup {
 
         this.#editMemListBundleDiv.hidden = false;
 
+        this.#memListPagination = this.#nonBundleList.length > 25;
         this.#memListBundleTable = new Tabulator('#editMemlistBundleTable', {
             data: this.#nonBundleList,
             layout: "fitDataTable",
             index: "id",
-            pagination: this.#nonBundleList.length > 25,
+            pagination: this.#memListPagination,
             paginationAddRow:"table",
             paginationSize: 99999,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1818,4 +1845,12 @@ function tsBadgeLabelChange(row) {
         document.getElementById('editMemListBadgeLabel').value = document.getElementById('EMLTS' + row + '_badgeLabel').value;
         memListModalDirty = true;
     }
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
 }

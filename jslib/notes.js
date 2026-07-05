@@ -128,6 +128,8 @@ class Notes {
 
 // fetch / display the reg notoes
     getDisplayRegNotes(rid, readOnly) {
+        clear_message();
+        clearError();
         var _this = this;
         $.ajax({
             method: "POST",

@@ -60,7 +60,7 @@
     align=right,
 [F024]
     name=bidderFullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', bp.first_name, bp.middle_name, bp.last_name, bp.suffix), ' +', ' '))"
+    sql="bp.fullName"
     title="Bidder Full Name"
     minWidth=300
 [F025]
@@ -72,7 +72,7 @@
     align=right,
 [F026]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    sql="p.fullName"
     title="Sold To Full Name"
     minWidth=300
 [F030]

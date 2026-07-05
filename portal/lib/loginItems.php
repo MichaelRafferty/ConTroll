@@ -142,10 +142,16 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
             if ($match['banned'] != 'N') {
                 return('There is an issue with your account, please contact registration at ' .
                     $con_conf['regadminemail'] . ' for assistance.');
-                }
             }
+        }
+        if (array_key_exists('deceased', $match)) {
+            if ($match['deceased'] == 'Y') {
+                return('There is an issue with your account, please contact registration at ' .
+                        $con_conf['regadminemail'] . ' for assistance.');
+            }
+        }
         if (array_key_exists('issue', $match)) {
-            if ($match['issue'] != 'N') {
+            if ($match['issue']) {
                 return('There is an issue with your account, please contact registration at ' .
                     $con_conf['regadminemail'] . ' for assistance.');
             }
@@ -261,7 +267,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
             $match['lid'] = $linkid;
             $match['validationType'] = $nextValidationType;
             $match['multiple'] = strtolower($email);
-            $match['issue'] = $match['banned'];
+            $match['issue'] = $match['banned'] == 'Y' || $match['deceased'] == 'Y';
             $string = json_encode($match);
             $string = encryptCipher($string, true);
             echo "<li><a href='?vid=$string'>" .  $match['fullName'] . "</a></li>\n";

@@ -42,7 +42,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
                         <?php outputCustomText('invoice/top'); outputCustomText('invoice/top' . $portalName); ?>
-                    <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'>
+                        <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'  onsubmit='return false;'>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
@@ -162,20 +162,51 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                         <div id="vendor_inv_additional_mbr"></div>
                         <div class="container-fluid" id="membershipCost">
                             <div class="row">
-                                <div class="col-sm-2">
-                                    Cost for Memberships:
+                                <div class="col-sm-auto">
+                                    Total price for memberships:
                                 </div>
-                                <div class="col-sm-10 p-0">
+                                <div class="col-sm-auto p-0">
                                     <span id='vendor_inv_mbr_cost'><?php echo $dolfmt->formatCurrency(0.00, $currency) ;?></span>
                                 </div>
                             </div>
                             <hr/>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                Total: <span id='vendor_inv_cost'></span>
+                            <div class='row'>
+                                <div class='col-sm-auto'>
+                                    Total Pre Tax Order:
+                                </div>
+                                <div class='col-sm-auto p-0' id='vendor_inv_cost'>
+                                    <?php echo $dolfmt->formatCurrency(0.00, $currency) ;?>
+                                </div>
                             </div>
                         </div>
+                        </form>
+                        <div class='row'>
+                            <div class='col-sm-12' id='inv_result_message'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel Order</button>
+                    <button type='button' class='btn btn-primary' id='total_with_tax_btn' onclick="orderValidate()">
+                        Compute Total With Tax and Pay
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- payment -->
+        <div id='vendor_payment' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Payment' aria-hidden='true' style='--bs-modal-width: 90%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title' id='vendor_payment_title'>
+                            <strong><?php echo $portalName; ?> Invoice Payment</strong>
+                        </div>
+                        <button type='button' class='btn-close' onclick='orderCancel();' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="container-fluid form-floating">
+                            <div class='container-fluid' id='paymentForDiv'></div>
                         <div class='container-fluid' id='paymentDiv'>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -186,6 +217,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
+                             <form id='vendor_pay_form' class='form-floating' action='javascript:void(0);' onsubmit='return false;'>
                              <div class='row'>
                                  <div class='col-sm-2'>
                                      <label for='cc_fname'>
@@ -287,6 +319,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     <input type='reset'/>
                                 </div>
                             </div>
+                            </form>
 <?php
                                 outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);
                             } else { // exhibitors module in ConTroll - cash/check/offline cc
@@ -329,33 +362,37 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     <input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                 </div>
                             </div>
-                        </div>
-                        <div class='row mt-3 pb-2'>
-                            <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
-                                        onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                            <div class='row mt-3 pb-2'>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
+                                            onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
+                                            onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
+                                        $tabindex += 2; ?>">Overide Validation and Pay
+                                    </button>
+                                </div>
+                                <div class='col-sm-auto ms-0 me-2 p-0'>
+                                    <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
+                                            onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
+                                            hidden disabled>Email Receipt</button>
+                                </div>
                             </div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
-                                        onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
-                                    $tabindex += 2; ?>">Overide Validation and Pay
-                                </button>
-                            </div>
-                            <div class='col-sm-auto ms-0 me-2 p-0'>
-                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
-                                        onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
-                                        hidden disabled>Email Receipt</button>
-                            </div>
-                        </div>
 <?php
                             }
 ?>
-                    </form>
-                        <div class='row'>
-                            <div class='col-sm-12' id="inv_result_message"></div>
+                            <div class='row'>
+                                <div class='col-sm-12' id="pay_result_message"></div>
+                            </div>
                         </div>
                     </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-secondary' id='pay_cancel_button' onclick='orderCancel()'>
+                        Cancel Payment
+                    </button>
                 </div>
             </div>
         </div>

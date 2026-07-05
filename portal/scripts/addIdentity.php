@@ -116,10 +116,8 @@ EOS;
 }
 
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
-country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
+       address, addr_2, city, state, zip, country, managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, fullName
 FROM perinfo
 WHERE id=?;
 EOS;

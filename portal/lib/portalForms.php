@@ -285,18 +285,13 @@ EOS;
 <?php
 }
 // drawPersonTab: draw memberships and profile for a managed person or yourself
-function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : void {
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $conroles, $hr, $now, $ageByDate) : void {
     global $membershipButtonColors;
     $portal_conf = get_conf('portal');
 
-    $hr = <<<EOS
-<div class="row mt-2">
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
-        </div>
-    </div>
-EOS;
-
+    if ($personId != $person['id'] || $personType != $person['personType']) {
+        error_log("Mismatch between $personId and $personType:" . $person['id'] . ', ' . $person['personType']);
+    }
 
     $badgename = $person['badgename'];
     $fn = '';
@@ -339,16 +334,18 @@ EOS;
     // Purchases block
     $mpbDisabled = '';
     $mpbSuffix = '';
+    $mpbColor = 'btn-primary';
     if ($person['missingPolicies'] > 0) {
         $mpbDisabled = ' disabled';
-        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Required Policies</b></span>';
+        $mpbColor = 'btn-danger';
+        $mpbSuffix = '<br/><span><b>Missing Required Policies</b></span>';
     }
 
     $mpbId = 'mpBtn' . $personType . $id;
     echo <<<EOS
     <div class="row mt-1">
         <div class="col-sm-2">
-            <button class='btn btn-sm btn-primary p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
+            <button class='btn btn-sm $mpbColor p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
             Add Items to Cart$mpbSuffix
             </button>
         </div>
@@ -565,6 +562,15 @@ $hr
 </div>
 EOS;
         drawInterestsDisplay($interests, $person['interests'], $id);
+        if (array_key_exists('conroles', $person)) {
+            $html = drawConRolesDisplay($conroles, $person['conroles'], $id);
+            if ($html != '') {
+                echo <<<EOS
+$hr
+$html
+EOS;
+            }
+        }
     }
 }
 

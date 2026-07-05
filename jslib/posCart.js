@@ -621,6 +621,7 @@ class PosCart {
             }
             config.loginPrimary = loginPrimary;
             config.managedByLogin = managedByLogin;
+            config.formerGoH = cart_row.formerGoH;
 
             // build the current values of the memberships
             pos.everyMembership(this.#cartPerinfo, function(_this, mem, perinfo) {
@@ -879,7 +880,8 @@ class PosCart {
             <label for="vpPrice">How much for ` + mem.label + `?</label>
         </div>
         <div class="col-sm-auto">
-            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?" min="` + mem.price + `"/>
+            <input type="number" class='no-spinners' inputmode="numeric" id="vpPrice" name="vpPrice" size="20" placeholder="How Much?"
+             min="` + mem.price + `" step="0.01"/>
         </div>
     </div>
 `;
@@ -1594,7 +1596,7 @@ class PosCart {
 
         for (rownum in this.#cartPerinfo) {
             crow = this.#cartPerinfo[rownum];
-            mrow = pos.find_primary_membership(crow.memberships);
+            mrow = pos.find_primary_membership(crow.memberships, true);
             if (mrow == null)
                 continue;   // skip anyone without a primary
             mrow = crow.memberships[mrow];

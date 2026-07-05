@@ -26,10 +26,15 @@ class Profile {
     #uspsDiv= null;
     #email1Input = true;
     #numPrimary = 0;
+    #deceasedField = null;
+    #formerGoHField = null;
+    #deceasedTxtSpan = null;
+    #formerGoHTxtSpan = null;
 
 // online reg - membership filtering
     #memIdField = null;
     #ageasofLabel = null;
+    #mtypeAge = null;
 
 // USPS fields
     #formData = null;
@@ -74,8 +79,12 @@ class Profile {
         this.#ageText = document.getElementById(prefix + "agetext");
         this.#ageDiv = document.getElementById(prefix + "agediv");
         this.#uspsDiv = document.getElementById(prefix + "uspsblock");
-        this.#memIdField = document.getElementById('memId');
-        this.#ageasofLabel = document.getElementById('ageasofLabel');
+        this.#memIdField = document.getElementById(prefix +'memId');
+        this.#ageasofLabel = document.getElementById(prefix + 'ageasofLabel');
+        this.#deceasedField = document.getElementById(prefix + 'deceased');
+        this.#formerGoHField = document.getElementById(prefix + 'formerGoH');
+        this.#deceasedTxtSpan = document.getElementById(prefix + 'deceasedTxt');
+        this.#formerGoHTxtSpan = document.getElementById(prefix + 'formerGoHTxt');
     }
 
     // get functions
@@ -158,6 +167,23 @@ class Profile {
         return this.#ageField.value;
     }
 
+    deceased() {
+        if (this.#deceasedField)
+            return this.#deceasedField.value
+
+        return this.#deceasedTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+    }
+
+    formerGoH() {
+        if (this.#formerGoHField)
+            return this.#formerGoHField.value;
+
+        if (this.#formerGoHTxtSpan)
+            return this.#formerGoHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+
+        return '';
+    }
+
     getFormData() {
         return this.#formData;
     }
@@ -218,27 +244,100 @@ class Profile {
         this.#memberAge = age;
     }
 
-    setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
-           badge_name, badgeNameL2, age, numPrimary = 0) {
-        this.#fnameField.value = first_name;
-        this.#mnameField.value = middle_name;
-        this.#lnameField.value = last_name;
-        this.#suffixField.value = suffix;
+    setDeceased(deceased) {
+        if (this.#deceasedField)
+            this.#deceasedField.value = deceased == 'Y' ? 'Y' : 'N';
+        else
+            this.#deceasedTxtSpan.innerHTML = deceased == 'Y' ? 'Yes' : 'No';
+    }
+
+    setformerGoH(formerGoH) {
+        if (this.#formerGoHField)
+            this.#formerGoHField.value = formerGoH == 'Y' ? 'Y' : 'N';
+        else if (this.#formerGoHTxtSpan)
+            this.#formerGoHTxtSpan.innerHTML = formerGoH == 'Y' ? 'Yes' : 'No';
+    }
+
+    setAll(row) {
+        this.#fnameField.value = row.hasOwnProperty('first_name') ? row.first_name : '';
+        this.#mnameField.value = row.hasOwnProperty('middle_name') ? row.middle_name : '';
+        this.#lnameField.value = row.hasOwnProperty('last_name') ? row.last_name : '';
+        this.#suffixField.value = row.hasOwnProperty('suffix') ? row.suffix : '';
         if (this.#legalNameField)
-            this.#legalNameField.value = legalName;
+            this.#legalNameField.value = row.hasOwnProperty('legalName') ? row.legalName : '';
         if (this.#pronounsField)
-            this.#pronounsField.value = pronouns;
-        this.#addrField.value = address;
-        this.#addr2Field.value = addr_2;
-        this.#cityField.value = city;
-        this.#stateField.value = state;
-        this.#zipField.value = zip;
-        this.#countryField.value = country;
-        this.#phoneField.value = phone;
-        this.#badgenameField.value = badge_name;
-        this.#badgenameL2Field.value = badgeNameL2;
-        this.#ageField.value = age;
-        this.#numPrimary = numPrimary;
+            this.#pronounsField.value = row.hasOwnProperty('pronouns') ? row.pronouns : '';
+
+        if (row.hasOwnProperty('address'))
+            this.#addrField.value = row.address;
+        else if (row.hasOwnProperty('address_1'))
+            this.#addrField.value = row.address_1;
+        else if (row.hasOwnProperty('addr'))
+            this.#addrField.value = row.addr;
+        else
+            this.#addrField.value = '';
+
+        if (row.hasOwnProperty('address_2'))
+            this.#addr2Field.value = row.address_2;
+        else if (row.hasOwnProperty('addr_2'))
+            this.#addr2Field.value = row.addr_2;
+        else if (row.hasOwnProperty('addr2'))
+            this.#addr2Field.value = row.addr2;
+        else
+            this.#addr2Field.value = '';
+
+        this.#cityField.value = row.hasOwnProperty('city') ? row.city : '';
+        this.#stateField.value = row.hasOwnProperty('state') ? row.state : '';
+
+        if (row.hasOwnProperty('zip'))
+            this.#zipField.value = row.zip;
+        else if (row.hasOwnProperty('postal_code'))
+            this.#zipField.value = row.postal_code;
+        else
+            this.#zipField.value = '';
+
+        this.#countryField.value = row.hasOwnProperty('country') ? row.country : '';
+
+        if (row.hasOwnProperty('phone'))
+            this.#phoneField.value = row.phone;
+        else if (row.hasOwnProperty('exhibitorPhone'))
+            this.#phoneField.value = row.exhibitorPhone;
+
+        this.#badgenameField.value = row.hasOwnProperty('badge_name') ? row.badge_name : '';
+        this.#badgenameL2Field.value = row.hasOwnProperty('badgeNameL2') ? row.badgeNameL2 : '';
+
+        if (row.hasOwnProperty('currentAgeType'))
+            this.#ageField.value = row.currentAgeType;
+        else if (row.hasOwnProperty('age'))
+            this.#ageField.value = row.age;
+        else
+            this.#ageField.value = '';
+
+        this.#numPrimary = row.hasOwnProperty('numPrimary') ? row.numPrimary : 0;
+
+        if (row.hasOwnProperty('deceased')) {
+            if (this.#deceasedField)
+                this.#deceasedField.value = row.deceased == 'Y' ? 'Y' : 'N';
+            if (this.#deceasedTxtSpan)
+                this.#deceasedTxtSpan.innerHTML = row.deceased == 'Y' ? 'Yes' : 'No';
+        } else {
+            if (this.#deceasedField)
+                this.#deceasedField.value = 'N';
+            if (this.#deceasedTxtSpan)
+                this.#deceasedTxtSpan.innerHTML = 'No';
+        }
+        
+        if (row.hasOwnProperty('formerGoH')) {
+            if (this.#formerGoHField)
+                this.#formerGoHField.value = row.formerGoH == 'Y' ? 'Y' : 'N';
+            if (this.#formerGoHTxtSpan)
+                this.#formerGoHTxtSpan.innerHTML = row.formerGoH == 'Y' ? 'Yes' : 'No';
+        } else {
+            if (this.#formerGoHField)
+                this.#formerGoHField.value = 'N';
+            if (this.#formerGoHTxtSpan)
+                this.#formerGoHTxtSpan.innerHTML = 'No';
+        }
     }
 
     setPolicies(old) {
@@ -293,6 +392,7 @@ class Profile {
         let overrideAllowed = false;
         let required = config.required;
         this.#uspsAddress = null;
+        this.#mtypeAge = null;
 
         if (this.#memIdField) {
             if (this.#memIdField.value != '') {
@@ -301,6 +401,7 @@ class Profile {
                     let mtype = membershipTypes[i];
                     if (mtype.id == memId) {
                         this.#ageField.value = mtype.memAge;
+                        this.#mtypeAge = mtype.memAge;
                         break;
                     }
                 }
@@ -420,10 +521,14 @@ class Profile {
             }
         }
 
-        // age is always required
+        // age is always required, but if memAge is all, it can't be checked right now
         if (person.age === undefined || person.age == '') {
-            valid = false;
-            this.#ageField.classList.add(this.#alert);
+            if (this.#mtypeAge != null) {
+                person.age = this.#mtypeAge == 'all' ? '' : this.#mtypeAge;
+            } else {
+                valid = false;
+                this.#ageField.classList.add(this.#alert);
+            }
         } else {
             if (this.#memberAge != '' && person.age != '' && person.age != this.#memberAge) {
                 message += '<br/>Memerships have age ' + this.#memberAge + ' which does not match current age of ' + person.age + '.';
@@ -588,24 +693,42 @@ class Profile {
     }
 
     // clearnext - clear the fields for another membership to be added
-    clearNext() {
+    clearNext(ageFieldHidden = false) {
         this.#fnameField.value = '';
         this.#mnameField.value = '';
         this.#suffixField.value = '';
         if (this.#email1Input)
             this.#email1Field.value = '';
-        if (this.email2Field)
+        if (this.#email2Field)
             this.#email2Field.value = '';
         if (this.#legalNameField)
             this.#legalNameField.value = '';
-        this.#pronounsField.value = '';
-        this.#badgenameField.value = '';
-        this.#badgenameL2Field.value = '';
-        this.#ageField.value = '';
-        this.#memberAge = '';
-        this.#ageText.hidden = true;
-        this.#ageDiv.hidden = true;
-        this.#ageField.hidden = false;
+        if (this.#pronounsField)
+            this.#pronounsField.value = '';
+        if (this.#badgenameField)
+            this.#badgenameField.value = '';
+        if (this.#badgenameL2Field)
+            this.#badgenameL2Field.value = '';
+        if (this.#ageField)
+            this.#ageField.value = '';
+        if (this.#memberAge)
+            this.#memberAge = '';
+        if (this.#deceasedField)
+            this.#deceasedField.value = 'N';
+        if (this.#formerGoHField)
+            this.#formerGoHField.value = 'N';
+        if (this.#deceasedTxtSpan)
+            this.#deceasedTxtSpan.innerHTML = 'No';
+        if (this.#formerGoHTxtSpan)
+            this.#formerGoHTxtSpan.innerHTML = 'No';
+        if (this.#ageText)
+            this.#ageText.hidden = true;
+        if (this.#ageDiv)
+            this.#ageDiv.hidden = true;
+        if (this.#ageField) {
+            this.#ageField.hidden = ageFieldHidden;
+            this.#ageField.classList.remove(this.#alert);
+        }
 
         this.#fnameField.classList.remove(this.#alert);
         this.#lnameField.classList.remove(this.#alert);
@@ -613,7 +736,6 @@ class Profile {
         this.#cityField.classList.remove(this.#alert);
         this.#stateField.classList.remove(this.#alert);
         this.#zipField.classList.remove(this.#alert);
-        this.#ageField.classList.remove(this.#alert);
 
         // reset the policies and interests
         if (typeof policies !== 'undefined') {
@@ -628,8 +750,12 @@ class Profile {
         if (typeof interests !== 'undefined') {
             for (let row in interests) {
                 let interest = interests[row];
-                let field = '#i_' + interest.interest;
-                $(field).prop('checked', false);
+                let field = document.getElementById('i_' + interest.interest);
+                if (field)
+                    field.checked = false;
+                field = document.getElementById('i_t_' + interest.interest);
+                if (field)
+                    field.value = '';
             }
         }
     }

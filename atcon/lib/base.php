@@ -150,6 +150,10 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                                         <li>
                                             <a class="nav-link navitem <?php echo $tab == "artsales" ? "active" : ""; ?>" <?php echo $tab == "artsales" ? 'aria-current="page"' : "" ?> href="artpos.php">Art Show Cashier</a>
                                         </li>
+                                        <li>
+                                            <a class="nav-link navitem <?php echo $tab == "artAltPickup" ? 'active' : ''; ?>" <?php echo $tab == 'artAltPickup'
+                                                    ? 'aria-current="page"' : ''; ?> href="artAltPickup.php">Art Alt Pickup</a>
+                                        </li>
                                         <?php }
                                         if (in_array('manager', $perms)) { ?>
                                         <li>
