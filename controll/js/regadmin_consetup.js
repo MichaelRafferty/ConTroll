@@ -1320,7 +1320,7 @@ class consetup {
         let shortname = document.getElementById('editMemListLabel').value;
         if (bundle) {
             if (shortname.substring(0, 8) != 'Bundle: ')
-                shortname = 'Bundle: ' + shortname;
+                shortname = 'Bundle: ' + shortname.substring(0, 64-8);
         }
         for (let row = 0; row < 10; row++) {
             if (document.getElementById('EMLTS' + row + '_Price').value != '' ||
