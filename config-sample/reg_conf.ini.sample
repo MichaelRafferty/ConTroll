@@ -495,6 +495,21 @@ posRegistrationSort="m.sort_order";
 ; precon=0 - only work correctly at con, precon simiulates the first day of the con
 ; precon=1 - works pre-con, follows the date range for precon
 precon=0
+;;;;; Reg Cashier and Reg Check-in Numeric Search: Transaction id
+;; N:searchTransactionId
+;; R:H,reg_admin
+;; H:Can reg cashier and reg check-in search for transaction id when a numeric string is provided in the "Search for:" box.
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Disabled, only search for person id's, and not search for transaction id's
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Pid Primary, if matches both a person id and a transaction id, only use the person id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=2: Tid Primary, if matches both a person id and a transaction id, only use the transaction id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;Note: for 1 and 2, it will return either a transaction id, or a person id, but not both
+;; D:l:0,1,2
+;; B:O
+;;;; searchTransactionId - how to process numberic search: TID and/or PID
+; searchTransactionId=0 - only search for person id's
+; searchTransactionId=1 - search for either, person id is primary
+; searchTransactionId=2 - search for either, transaction id is primary
+searchTransactionId=2
 
 ;;;;; Exhibitor Portals (Artist, Exhibitor, Fan, Vendor)
 [vendor]
@@ -854,6 +869,36 @@ viewPriorLimit=
 ;; D:i6
 ;; B:O
 artEditYear=
+;;;;; ConTroll/Registration: Search for Person ID or Transaction ID
+;; N:regSearchTransactionId
+;; R:H,reg_admin
+;; H:Can registration tab search for transaction id when a numeric string is provided in the "Search for:" box.
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Disabled, only search for person id's, and not search for transaction id's
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Pid Primary, if matches both a person id and a transaction id, only use the person id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=2: Tid Primary, if matches both a person id and a transaction id, only use the transaction id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;Note: for 1 and 2, it will return either a transaction id, or a person id, but not both
+;; D:l:0,1,2
+;; B:O
+;;;; regSearchTransactionId - how to process numberic search: TID and/or PID
+; regSearchTransactionId=0 - only search for person id's
+; regSearchTransactionId=1 - search for either, person id is primary
+; regSearchTransactionId=2 - search for either, transaction id is primary
+regSearchTransactionId=2
+;;;;; ConTroll/Reg Lookup: Search for Person ID or Transaction ID
+;; N:regLookupTransactionId
+;; R:H,reg_admin
+;; H:Can registration lookup search for transaction id when a numeric string is provided in the "Search for:" box.
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Disabled, only search for person id's, and not search for transaction id's
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Pid Primary, if matches both a person id and a transaction id, only use the person id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=2: Tid Primary, if matches both a person id and a transaction id, only use the transaction id
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;Note: for 1 and 2, it will return either a transaction id, or a person id, but not both
+;; D:l:0,1,2
+;; B:O
+;;;; regLookupTransactionId - how to process numberic search: TID and/or PID
+; regLookupTransactionId=0 - only search for person id's
+; regLookupTransactionId=1 - search for either, person id is primary
+; regLookupTransactionId=2 - search for either, transaction id is primary
+regLookupTransactionId=2
 
 ;;;;; Local Parameters for this Convention
 [local]
