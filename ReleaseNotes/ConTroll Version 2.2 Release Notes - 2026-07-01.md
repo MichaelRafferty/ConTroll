@@ -44,6 +44,12 @@
       * 0 = closed
       * 1 = open
       * Note: admin flag for the exhibitors portal is still required and controls all exhibitors portal access.
+    * changing the behavior of atcon: Reg Cashier and Check-in, Backend Registration and Reg Lookup searches in regards to transaction and perids
+      * [atcon] searchTransactionId
+      * [controll] regSearchTransactionId, regLookupTransactionId
+      * 0 = only look for person id (perid)
+      * 1 = look for both, person id primary if both found
+      * 2 = look for both, transaction primary if both found,
 
 * New Scripts: None
 
@@ -58,10 +64,13 @@
   * Addition of defining Con Roles
 * Registration
   * Support for the new tax structure
+  * Support for new regSearchtransactionId config variable for limiting the search result
 * People
   * Support for editing Deceased and Former GoH flags
     * reg-admin permission required to edit Deceased
     * reg-staff permission required to edit Former GoH
+* Reg Lookup:
+  * Support for new regSearchtransactionId config variable for limiting the search result
 * Finance
   * Added to the sales tax configuration tab the ability to edit taxability by item type being sold (Memberships, ...)
 * Exhibitors:
@@ -80,6 +89,7 @@
 * Point of Sale
   * Support for Deceased
   * Support for the new tax structure
+  * Support for new searchtransactionId config variable for limiting the search result
 * Art Show Cashier
   * Support for the new tax structure
   * Support for alternate pickup person
@@ -97,6 +107,7 @@
 * Add email control sheet to artist as an action on exhibtor space management tab
 * Barcode inventory not setting to auction
 * Change custom text 'all' mode to show tag for all entries, and still suppress the placeholder text
+* Change how library posFindRecord processes a numeric search
 * Fix bug: Can print virtual, should not be allowed
 * Install, config edit, exhbits config, and other email from: sources need validation
 * Interests: Create an End Date for Interests.

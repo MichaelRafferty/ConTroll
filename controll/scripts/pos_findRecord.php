@@ -32,5 +32,7 @@ if ($ajax_request_action != 'findRecord') {
     exit();
 }
 
-$response = posFindRecord();
+// get the configured search type
+$searchTransactionId = getConfValue('controll', 'regSearchTransactionId', 1);
+$response = posFindRecord($searchTransactionId);
 ajaxSuccess($response);

@@ -30,6 +30,7 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
     RenderErrorAjax($message_error);
     exit();
 }
-
-$response = posFindRecord();
+// get the configured search type
+$searchTransactionId = getConfValue('atcon', 'searchTransactionId', 2);
+$response = posFindRecord($searchTransactionId);
 ajaxSuccess($response);
