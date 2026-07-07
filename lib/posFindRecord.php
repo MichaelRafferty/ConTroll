@@ -4,11 +4,14 @@
 // Author: Syd Weinstein
 // Common routine to perform findRecord for any POS program (registration, atcon)
 // Retrieve perinfo, reg, note records for the Find and Add tabs
+// searchTid: 0 = perid only, 1 = perid over tid, 2 = tid over perid
 
-function posFindRecord() {
+function posFindRecord($searchTid) {
     $con = get_conf('con');
     $usePortal = getConfValue('controll', 'useportal', 1);
     $conid = intval($con['id']);
+    if ($searchTid === null)
+        $searchTid = 2; // prior system default behavior
 
 // findRecord:
 // load all perinfo/reg records matching the search string or unpaid if that flag is passed
@@ -210,12 +213,20 @@ EOS;
 SELECT 'p' AS which, id
 FROM perinfo p
 WHERE p.id = ?
+EOS;
+            if ($searchTid > 0) {
+                $overlapQ .= <<<EOS
+
 UNION SELECT 't' AS which, id
 FROM transaction t 
 WHERE t.id = ? AND t.conid IN (?, ?);
 EOS;
-            $typestr = 'iiii';
-            $values = array ($name_search, $name_search, $conid, $conid + 1);
+                $typestr = 'iiii';
+                $values = array ($name_search, $name_search, $conid, $conid + 1);
+            } else {
+                $typestr = 'i';
+                $values = array ($name_search);
+            }
         }
         $overlapR = dbSafeQuery($overlapQ, $typestr, $values);
         if ($overlapR === false) {
@@ -242,8 +253,8 @@ EOS;
             exit();
         }
 
-        // tid has higher precidence than perid in the matching
-        if ($found_tid) {
+        // tid has higher precidence than perid in the matching, if searchTid == 2, and is requried if 1 and found_perid is false
+        if (($searchTid == 2 || $found_perid == false) && $found_tid) {
             // pull all the matching regs for this transid for this period
             $withClause = <<<EOS
 WITH regids AS (
