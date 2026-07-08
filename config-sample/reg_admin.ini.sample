@@ -61,6 +61,11 @@ server="https://reg.conname.org/"
 ;       h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
 ;       d: disabled - disable passkeys
 passkeyRpLevel=3 ; can override in each app section
+;;; cards accepted image
+;   two supported:
+;   cards_accepted_noamex.jpg = no amex in the logo, words about not accepting AMEX
+;   cards_accepted_64.png = full logo with no added words
+cardsAcceptedImage="cards_accepted_64.png"
 
 ;;; The convention section [con] is used for items specific to this convention
 [con]
