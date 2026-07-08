@@ -28,6 +28,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+    $cardsAccepted = getConfValue('global', 'cardsAcceptedImage', 'cards_accepted_64.png');
+    $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Mastercard, American Express, and Discover');
     ?>
     <!-- invoice -->
     <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -303,7 +305,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     ?>
                                     <br/>
                                     We Accept<br/>
-                                    <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                                    <img src='<?php echo $cardsAccepted; ?>' alt='<?php echo $cardsAcceptedAlt; ?>'/>
                                 </div>
                             </div>
                             <hr/>

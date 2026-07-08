@@ -653,6 +653,8 @@ function draw_PaymentDueModal() : void {
 // draw_makePaymentModal - the modap popup to take a payment via credit card
 function draw_makePaymentModal() : void {
     $testsite = getConfValue('portal', 'test') == 1;
+    $cardsAccepted = getConfValue('global', 'cardsAcceptedImage', 'cards_accepted_64.png');
+    $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Mastercard, American Express, and Discover');
     $cc = get_conf('cc');
     $con = get_conf('con');
     ?>
@@ -671,7 +673,7 @@ function draw_makePaymentModal() : void {
                         <div class="row">
                             <div class="col-sm-auto">
                                 We Accept<br/>
-                                <img src='cards_accepted_64.png' alt='Visa, Mastercard, American Express, and Discover'/>
+                                <img src='<?php echo $cardsAccepted; ?>' alt='<?php echo $cardsAcceptedAlt; ?>'/>
                             </div>
 
                         </div>

@@ -114,7 +114,9 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
     "var membershipTypes = " . json_encode($membershiptypes) . ";" . PHP_EOL;
 
 // overall header HTML and main body
-  ol_page_init($condata['label'] . ' Online Registration', $js);
+ol_page_init($condata['label'] . ' Online Registration', $js);
+$cardsAccepted = getConfValue('global', 'cardsAcceptedImage', 'cards_accepted_64.png');
+$cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Mastercard, American Express, and Discover');
 ?>
 <body class="regPaybody">
     <div class="container-fluid">
@@ -366,7 +368,7 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
                      </div>
                      <div class="row mt-1">
                          <div class="col-sm-12">
-                             <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                             <img src='<?php echo $cardsAccepted; ?>' alt='<?php echo $cardsAcceptedAlt; ?>'/>
                          </div>
                      </div>
 <?php
