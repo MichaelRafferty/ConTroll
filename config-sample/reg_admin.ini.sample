@@ -66,6 +66,11 @@ passkeyRpLevel=3 ; can override in each app section
 ;   cards_accepted_noamex.jpg = no amex in the logo, words about not accepting AMEX
 ;   cards_accepted_64.png = full logo with no added words
 cardsAcceptedImage="cards_accepted_64.png"
+;;; cardsAcceptedAltText
+;   two supported:
+;   cardsAcceptedAltText='Visa, Mastercard, American Express, and Discover'
+;   cardsAcceptedAltText='Visa, Mastercard, and Discover'
+cardsAcceptedAltText='Visa, Mastercard, American Express, and Discover'
 
 ;;; The convention section [con] is used for items specific to this convention
 [con]
