@@ -119,23 +119,6 @@ EOS;
     return $html;
 };
 
-/* replace with strip equivalents of what is needed
-use Square\Environments;
-use Square\SquareClient;
-use Square\Exceptions\SquareApiException;
-use Square\Payments\Requests\CreatePaymentRequest;
-use Square\Types\Currency;
-use Square\Types\Money;
-use Square\Types\CreateOrderRequest;
-use Square\Types\Order;
-use Square\Types\OrderSource;
-use Square\Types\OrderLineItem;
-use Square\Types\OrderLineItemItemType;
-use Square\Types\OrderLineItemDiscount;
-use Square\Types\OrderLineItemDiscountScope;
-use Square\Types\OrderLineItemDiscountType;
-*/
-
 //  from the stripe docs
 global $stripeUnitCurrencies;
 $stripeUnitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
@@ -161,8 +144,8 @@ function cc_getCurrency($con) : string {
     try {
         if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
         // get a client reference
-        $stripe = new \Stripe\StripeClient(getConfValue('cc', 'key'));
-        $countrySpec = $stripe->countrySpecs->retrieve($country, []);
+        $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $countrySpec = $client->countrySpecs->retrieve($country, []);
         if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
@@ -194,16 +177,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $currency = cc_getCurrency($con);
     $currencyMultiplier = get_currencyMultiplier($currency);
     web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
-    /* need to write
-    $squareDebug = getConfValue('debug', 'square', 0);
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
     $id = null;
 
-    $client = new SquareClient(
-        token: $cc['token'],
-        options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-    ]);
-
+    $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
 
     $loginPerid = getSessionVar('user_perid');
     $loginNewPerid = null;
@@ -215,23 +192,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             $loginNewperid = getSessionVar('id');
     }
 
-    // square order api steps
-    // 1. build order record and price it
-    //  a. build order top level container
-    //      i. add discounts
-    //      ii. add taxes
-    //  b. add line items
-    //      i. assign which tax line items to ignore
-    //      ii. assign which discount line items to ignore
-    //      iii. skip over already complete items and not add them to the square order
-    //  c. create order
-    //  add order id to return items
-
     $source = 'onlinereg';
     if (array_key_exists('source', $results)) {
         $source = $results['source'];
     }
     $cleanUpRegs = $source == 'onlinereg';
+
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -252,44 +218,38 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $custid = 't-' . $results['transid'];
     }
 
+    $customerID = null;
+    // look up if customer exists
+
+    // stripe locations appear to apply to devices, not api online???
+    /*
     if ($locationId == null) {
         $locationId = $cc['location'];
     }
+    */
 
-    // SDK 41, builds the parts then passes them into the body
-    // line items first
-    // then order
-    // then body
+    // stripe customer/invoice/paymentintent api steps
 
-    // SDK API Quick Reference: order lines (possible values from constructor)
-    //	$this->uid = $values['uid'] ?? null;
-    //	$this->name = $values['name'] ?? null;
-    //	$this->quantity = $values['quantity'];
-    //	$this->quantityUnit = $values['quantityUnit'] ?? null;  (leave out for 'each')
-    //	$this->note = $values['note'] ?? null;
-    //	$this->catalogObjectId = $values['catalogObjectId'] ?? null;  (NOT USED by ConTroll)
-    //	$this->catalogVersion = $values['catalogVersion'] ?? null;  (NOT USED by ConTroll)
-    //	$this->variationName = $values['variationName'] ?? null;  (NOT USED by ConTroll)
-    //	$this->itemType = $values['itemType'] ?? null;
-    //	$this->metadata = $values['metadata'] ?? null;
-    //	$this->modifiers = $values['modifiers'] ?? null;  (NOT USED by ConTroll)
-    //	$this->basePriceMoney = $values['basePriceMoney'] ?? null;
-    //	$this->variationTotalPriceMoney = $values['variationTotalPriceMoney'] ?? null;  (NOT USED by ConTroll)
-    //	$this->pricingBlocklists = $values['pricingBlocklists'] ?? null;    (Both discounts and taxes are in this item)
-    //	$this->appliedTaxes = $values['appliedTaxes'] ?? null;     (if scope Line, then input else computed)
-    //	$this->appliedDiscounts = $values['appliedDiscounts'] ?? null;     (if scope Line, then input else computed)
-    // fields only in the response/getOrder
-    //	$this->appliedTaxes = $values['appliedTaxes'] ?? null;     (Computed field by Square, R/O)
-    //	$this->appliedDiscounts = $values['appliedDiscounts'] ?? null;     (Computed field by Square, R/O)
-    //	$this->appliedServiceCharges = $values['appliedServiceCharges'] ?? null;     (Computed field by Square, R/O)
-    //	$this->grossSalesMoney = $values['grossSalesMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalTaxMoney = $values['totalTaxMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalDiscountMoney = $values['totalDiscountMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalMoney = $values['totalMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalServiceChargeMoney = $values['totalServiceChargeMoney'] ?? null;     (Computed field by Square, R/O)
+    // 1. build the payment intent and add line items to it
+    //  a. build line item associative array
+    //  b.  add line items
+    //      i. skip over already completed items and not add them to the order
+    //      ii. build the discount elements for each line computing each discount amount
+    //      iii. build a meta tax structure for each line computing each tax value
+    //      iv. deal with rounding for the taxes
+    //      v. compute all totals and set all global values for the payment intent
+    // 2.  create/get customer
+    //  a. retrieve the customer by id
+    //  b. if not found, create the customer
+    //  c. update their info to make it current
+    //  d. add the customer to the payment intent structure
+    // 3. call the api using all of the items of the payment intent structure.
+    // 4. set up all rtn variables, and return the payment intent id for future use
 
-    $orderLineitems = [];
-    $orderDiscounts = [];
+    $orderLineitems = []; // array (non associative) where each item is a line item of the order in a very basic form
+    $itemNumber = 0;
+    $orderMetadata = [];  // associative array of items we can't store in the line item structure, as well as overall order metadata
+    $orderTax = 0;
     $lineid = 0;
     $orderValue = 0;
     $planName = '';
@@ -305,7 +265,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // item rules:
     //  if a plan payment
     //      just one order item, the plan payment itself
-    //  if art work //TODO-add online credit card via terminal to artpos
+    //  if art work
     //      add each art item in the checkout as a single line item
     //  else (memberships + spaces):
     //      each membership is a line item
@@ -353,20 +313,17 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         }
 
         $notesData = cc_planNotes($ep, $results['transid']);
-        $item = new OrderLineItem ([
-            'itemType' => OrderLineItemItemType::Item->value,
-            'uid' => 'planPayment',
-            'name' => mb_substr('Plan Payment: ' .  $planName, 0, 128),
+        $itemNumber++;
+        $orderLineitems[] = [
+            'product_code' => 'planPayment',
+            'product_name' => mb_substr('Plan Payment: ' .  $planName, 0, 512),
             'quantity' => 1,
-            'note' => $notesData['note'],
-            'metadata' => $notesData['metadata'],
-            'basePriceMoney' => new Money([
-                'amount' => round($results['total'] * 100),
-                'currency' => $currency,
-            ]),
-        ]);
-        $orderLineitems[] = $item;
+            'unit_cost' => round($results['total'] * $currencyMultiplier),
+            'tax' => ['total_tax_amount' => 0 ],
+            ];
         $orderValue = $results['total'];
+        $orderMetadata[] = ['in . $itemNumber' => $notesData['note']];
+        $orderMetadata[] = ['im . $itemNumber' => $notesData['metadata']];
         $itemsBuilt = true;
     }
 
@@ -389,24 +346,25 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $amount = $art['amount'];
                 $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
-                $item = new OrderLineItem([
-                    'itemType' => OrderLineItemItemType::Item->value,
-                    'uid' => 'art-' . ($lineid + 1),
-                    'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
+                // compute the art line item tax
+                if ($hasTax)
+                    $tax = cc_computeTax('artSales', $amount);
+                else
+                    $tax = 0;
+
+                $itemNumber++;
+                $orderLineitems[] = [
+                    'product_code' => 'art-' . $artId,
+                    'product_name' => mb_substr($artistName . ' / ' . $title, 0, 1024),
                     'quantity' => $quantity,
-                    'note' => $notesData['note'],
-                    'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => new Money([
-                        'amount' => round($amount * 100 / $quantity),
-                        'currency' => $currency,
-                    ]),
-                ]);
-                if ($hasTax) {
-                    // create the Line Item tax record, art sales are taxable
-                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('artSales', $lineid));
-                }
-                $orderLineitems[] = $item;
+                    'unit_cost' => round($amount * $currencyMultiplier / $quantity),
+                    'tax' => ['total_tax_amount' => $tax * $currencyMultiplier ],
+                ];
+                $orderMetadata[] = ['in . $itemNumber' => $notesData['note']];
+                $orderMetadata[] = ['im . $itemNumber' => $notesData['metadata']];
+
                 $orderValue += $art['amount'];
+                $orderTax += $tax;
                 $lineid++;
             }
         } else {
@@ -737,10 +695,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // pass order to square and get order id
 
     try {
-        if ($squareDebug & 14) sqcc_logObject(array ('Orders API order create', json_decode(json_encode($body), true)), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Orders API order create', json_decode(json_encode($body), true)), $useLogWrite);
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
-        if ($squareDebug & 14) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
         if ($cleanUpRegs)
@@ -787,7 +745,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $rtn['exhibits'] = $results['exhibits'];
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
-    */
 
     $rtn = array(); // placeholder
     return $rtn;
@@ -802,7 +759,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     if ($locationId == null)
         $locationId = $cc['location'];
 
-    $squareDebug = getConfValue('debug', 'square', 0);
+    $stripeDebug = getConfValue('debug', 'square', 0);
 
     $order = new Order([
         'locationId' => $locationId,
@@ -825,10 +782,10 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     // pass update to cancel state to square
     $rtn = null;
     try {
-          if ($squareDebug & 12) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
+          if ($stripeDebug & 12) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($squareDebug & 12) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
+          if ($stripeDebug & 12) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
@@ -852,7 +809,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $cc = get_conf('cc');
     // need to rewrite for stripe
     /*
-    $squareDebug = getConfValue('debug', 'square', 0);
+    $stripeDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Orders\Requests\GetOrdersRequest([
         'orderId' => $orderId,
@@ -866,10 +823,10 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($squareDebug & 12) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
+        if ($stripeDebug & 12) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
         $apiResponse = $client->orders->get($body);
         $order = $apiResponse->getOrder();
-        if ($squareDebug & 12) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+        if ($stripeDebug & 12) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
@@ -1001,17 +958,17 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ]);
 
     try {
-        if ($squareDebug & 14) sqcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
         $apiResponse = $client->payments->create($pbody);
         $payment = $apiResponse->getPayment();
-        if ($squareDebug & 14) sqcc_logObject(array ('Payments API Response', json_decode(json_encode($payment), true)), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Payments API Response', json_decode(json_encode($payment), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
         web_error_log('Order Square API Exception: ' . $e->getMessage());
         $ebody = json_decode($e->getBody(),true);
         $errors = $ebody['errors'];
         if ($errors) {
-            if ($squareDebug) sqcc_logObject(array ('Payment returned non-success', $errors), $useLogWrite);
+            if ($stripeDebug) sqcc_logObject(array ('Payment returned non-success', $errors), $useLogWrite);
             foreach ($errors as $error) {
                 $cat = $error['category'];
                 $code = $error['code'];
@@ -1119,7 +1076,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $cc = get_conf('cc');
     // need to rewrite for stripe
     /*
-    $squareDebug = getConfValue('debug', 'square', 0);
+    $stripeDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Payments\Requests\GetPaymentsRequest([
         'paymentId' => $paymentid,
@@ -1133,10 +1090,10 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($squareDebug & 14) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
         $apiResponse = $client->payments->get($body);
         $payment = json_decode(json_encode($apiResponse->getPayment()), true);
-        if ($squareDebug & 14) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
+        if ($stripeDebug & 14) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
