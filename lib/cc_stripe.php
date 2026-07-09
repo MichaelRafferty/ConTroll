@@ -162,7 +162,7 @@ function cc_getCurrency($con) : string {
         if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
         // get a client reference
         $stripe = new \Stripe\StripeClient(getConfValue('cc', 'key'));
-        $countrySpec = $stripe->countrySpecs->retrieve($country . 'xx', []);
+        $countrySpec = $stripe->countrySpecs->retrieve($country, []);
         if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
@@ -187,7 +187,7 @@ function cc_getCurrency($con) : string {
     exit();
 }
 
-// build the order, pass it to square and get the order id
+// build the order, pass it to stripe and get the payment intent id (order id)
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
