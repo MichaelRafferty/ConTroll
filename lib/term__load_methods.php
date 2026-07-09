@@ -10,6 +10,10 @@ function load_term_procs() : void {
             require_once (__DIR__ . "/../Composer/vendor/autoload.php");
             require_once("term_square.php");
             break;
+        case 'stripe':
+            require_once(__DIR__ . '/../Composer/vendor/autoload.php');
+            require_once('term_stripe.php');
+            break;
         case 'test':
             if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
                 if (($cc['env'] != 'sandbox') || getConfValue('reg','test') != 1) {
