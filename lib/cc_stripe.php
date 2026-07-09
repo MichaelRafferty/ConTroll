@@ -136,26 +136,64 @@ use Square\Types\OrderLineItemDiscountScope;
 use Square\Types\OrderLineItemDiscountType;
 */
 
+//  from the stripe docs
+global $stripeUnitCurrencies;
+$stripeUnitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+
+// stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
+function get_currencyMultiplier($currency) {
+    global $stripeUnitCurrencies;
+    if (in_array($currency, $stripeUnitCurrencies)) {
+        return 1;
+    }
+    return 100;
+}
+
 function cc_getCurrency($con) : string {
     // need to rewrite for stripe, return always correct for now
-    $cur = strtoupper(getConfValue('con', 'currency', 'USD'));
-    /* need to replace
-    $curT = Currency::from($cur);
-    if ($curT) {
-        $currency = $curT->value;
-    } else {
-        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
-            ' not yet supported in Square, seek assistance.'));
+    $cur = strtolower(getConfValue('con', 'currency', 'USD'));
+    // use the country
+    $country = strtoupper(getConfValue('cc', 'country', 'US'));
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
+    $useLogWrite = $stripeDebug > 0;
+    $countrySpec = null;
+
+    try {
+        if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
+        // get a client reference
+        $stripe = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $countrySpec = $stripe->countrySpecs->retrieve($country . 'xx', []);
+        if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Invalid Country in system configuration, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        sqcc_logException('cc_getCurrency', $e, 'other api error', 'Unable to validate currency in system configuration, seek assistance.', $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe.');
+    }
+
+    if ($countrySpec == null) {
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: Country $country not found in Stripe."));
         exit();
-    } */
-    $currency = $cur; // placeholder
-    return $currency;
+    }
+    $currencies = $countrySpec->supported_payment_currencies;
+    if (in_array($cur, $currencies))
+        return $cur;
+
+    ajaxSuccess(array ('status' => 'error', 'data' => "Error: Currency $cur not yet supported in Stripe, seek assistance."));
+    exit();
 }
 
 // build the order, pass it to square and get the order id
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
+    $currency = cc_getCurrency($con);
+    $currencyMultiplier = get_currencyMultiplier($currency);
+    web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
     /* need to write
     $squareDebug = getConfValue('debug', 'square', 0);
     $id = null;
@@ -165,7 +203,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         options: [
             'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
     ]);
-    $currency = cc_getCurrency($con);
+
 
     $loginPerid = getSessionVar('user_perid');
     $loginNewPerid = null;
@@ -870,9 +908,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
     // need to rewrite for stripe
     /*
-    $squareDebug = getConfValue('debug', 'square', 0);
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -1113,8 +1151,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     return $payment;
 }
 
-/*
-function sqcc_logObject($objArray, $useLogWrite = false) : void {
+function stcc_logObject($objArray, $useLogWrite = false) : void {
     if ($useLogWrite) {
         logWrite($objArray);
     } else {
@@ -1126,29 +1163,11 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
     }
 }
 
-function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
+function stcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
     error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
-    $ebody = json_decode($e->getBody(), true);
-    $errors = $ebody['errors'];
-    if ($errors) {
-        if ($useLogWrite) {
-            logWrite("$message: returned non-success");
-        }
-        web_error_log("$message: returned non-success");
-        foreach ($errors as $error) {
-            $cat = $error['category'];
-            $code = $error['code'];
-            $detail = $error['detail'];
-            if ($useLogWrite) {
-                logWrite("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-            }
-            web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-        }
-    }
     if ($doExit) {
-        ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage<br/>Ask them to check the logs."));
         exit();
     }
 }
-*/

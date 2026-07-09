@@ -832,7 +832,7 @@ class Portal {
         let numTaxable = 0;
         let nonTaxMemTaxable = false;
         let taxMemTaxable = false;
-        console.log(config.taxRates);
+        //console.log(config.taxRates);
         if (Object.keys(config.taxRates).length > 0) {
             for (let tax in config.taxRates) {
                 let rate = config.taxRates[tax];
@@ -851,7 +851,7 @@ class Portal {
             if (mem.taxable == 'N' && nonTaxMemTaxable) numTaxable++;
             if (mem.taxable == 'Y' && taxMemTaxable) numTaxable++;
         }
-        console.log("numTaxable " + numTaxable);
+        //console.log("numTaxable " + numTaxable);
         this.#preTaxLabel = numTaxable > 0 ? ' pre-tax' : '';
 
         for (let i = 0; i < membershipsPurchased.length; i++) {
@@ -1136,7 +1136,10 @@ class Portal {
                     portal.openPaymentDueModal();
                     if (enableButtonNames)
                         $('[name="' + enableButtonNames + '"]').prop('disabled', false);
-                    show_message(data.message, 'error', 'payDueMessageDiv');
+                    if (data.message)
+                        show_message(data.message, 'error', 'payDueMessageDiv');
+                    if (data.data)
+                        show_message(data.data, 'error', 'payDueMessageDiv');
                     return false;
                 }
                 checkResolveUpdates(data);
