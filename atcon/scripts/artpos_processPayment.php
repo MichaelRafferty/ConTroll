@@ -179,7 +179,7 @@ if ($new_payment['type'] == 'terminal') {
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
                     $operatorNameSQL = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+SELECT fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -237,6 +237,25 @@ WHERE id = ?;
 EOS;
     $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
 }
+
+// set tax in transaction
+[$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+
+$tax = 0;
+for ($i = 0; $i < count($taxValues); $i++) {
+    if ($taxValues[$i] != null) {
+        if (is_array($taxValues[$i]))
+            $tax += $taxValues[$i]['tax'];
+        else
+            $tax += $taxValues[$i];
+    }
+}
+    $updTrans = <<<EOS
+UPDATE transaction
+SET $taxSql, tax = ?
+WHERE id = ?;
+EOS;
+$updcnt = dbSafeCmd($updTrans, $taxStr . 'di', array_merge($taxValues, array($tax, $master_tid)));
 
 $change = 0;
 if ($amt > 0) {
@@ -502,19 +521,11 @@ WHERE id = ?;
 EOS;
     $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
 
-    // now add the payment and process to which rows it applies
-    if ($taxAmt > 0) {
-        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-        if ($taxFields != '')
-            $taxFields = ", $taxFields";
-        if ($taxSql != '')
-            $taxSql = ", $taxSql";
-    } else {
-        $taxFields = '';
-        $taxSql = '';
-        $taxStr = '';
-        $taxValues = [];
-    }
+    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+    if ($taxFields != '')
+        $taxFields = ", $taxFields";
+    if ($taxSql != '')
+        $taxSql = ", $taxSql";
 
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
@@ -600,13 +611,13 @@ foreach ($cart_art as $cart_row) {
             if ($cart_row['priceType'] == 'Quick Sale') {
                 $cart_row['final_price'] = $cart_row['paid']; // for quick sale, need to update cart row itself with the final price
                 $cart_row['status'] = 'Quicksale/Sold';
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Quicksale/Sold', $perid, $cart_row['paid'], $cart_row['id']));
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Quicksale/Sold', $cart_row['bidder'], $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
             } else if ($cart_row['status'] == 'BID' || $cart_row['status'] == 'To Auction' ||
                 $cart_row['status'] == 'Sold Bid Sheet' || $cart_row['status'] == 'Sold Auction'  ) {
                 $cart_row['final_price'] = $cart_row['paid'];
                 $cart_row['status'] = 'Purchased/Released';
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perid, $cart_row['paid'], $cart_row['id']));
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $cart_row['bidder'], $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $cart_row['artSalesId']));
             }
 

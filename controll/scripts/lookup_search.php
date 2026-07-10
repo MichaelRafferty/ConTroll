@@ -31,5 +31,7 @@ if ($findPattern == NULL || $findPattern == '') {
     exit();
 }
 
-$response = posFindRecord();
+// get the configured search type
+$searchTransactionId = getConfValue('controll', 'regLookupTransactionId', 0);
+$response = posFindRecord($searchTransactionId);
 ajaxSuccess($response);

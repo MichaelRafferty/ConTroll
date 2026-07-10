@@ -12,11 +12,24 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
+$regAdmin = $authToken->checkAuth('reg_admin');
+$regStaff = $authToken->checkAuth('reg_staff');
+
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
+
+// compute the placeholder value
+$searchTransactionId = getConfValue('controll', 'regSearchTransactionId', 1);
+$findPlaceHolder = 'Name/Portion of Name';
+if ($searchTransactionId == 2)
+    $findPlaceHolder .= ', TransID or Person (Badge) ID';
+else if ($searchTransactionId == 1)
+    $findPlaceHolder .= ', Person (Badge) ID or TransID';
+else
+    $findPlaceHolder .= ' or Person (Badge) ID';
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -157,7 +170,8 @@ if (array_key_exists('creditonline', $controll)) {
                                     <label for="find_pattern" >Search for:</label>
                                 </div>
                                 <div class="col-sm-8">
-                                    <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="Name/Portion of Name, Person (Badge) ID or TransID"/>
+                                    <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="<?php
+                                        echo $findPlaceHolder; ?>"/>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -206,7 +220,7 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
 drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true, $ageByDate,
-        array(), $ageListIdx, 200, true, '');
+        array(), $ageListIdx, 200, true, '', false,false, null, null);
 ?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">

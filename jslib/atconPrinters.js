@@ -2,6 +2,8 @@
 // all functions to configure the printers for atcon
 
 class Printers {
+    #printerTypes = ["generic", "receipt", "badge"];
+    #printerCodePages = ["PS", "HPCL", "Dymo4xx", "Dymo3xx", "Windows-1252", "ASCII", "7bit", "8bit", "UTF-8", "UTF-16"];
     constructor(servers, printers) {
         // Search tabulator elements
         this.serverlist = null;
@@ -72,21 +74,14 @@ class Printers {
             history: true,
             index: 'serverName',
             columns: [
-                { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, }, editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter: 'input'  },
+                { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, },
+                    editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter: 'input'  },
                 { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
-                { title: "Type", field: "printerType", headerSort: true, headerFilter:true,
-                    editor: "list", editorParams: {
-                        values: ["generic", "receipt", "badge"],
-                        defaultValue: "generic",
-                        emptyValue: "generic",
-                    }
+                { title: "Type", field: "printerType", headerSort: true, headerFilter: true, headerFilterParams: { values: this.#printerTypes, },
+                    editor: "list", editorParams: { values: this.#printerTypes, defaultValue: "generic", emptyValue: "generic", },
                 },
-                { title: "Code Page", field: "codePage", headerSort: true, headerFilter:true,
-                    editor: "list", editorParams: {
-                        values: ["PS", "HPCL", "Dymo4xx", "Dymo3xx", "Windows-1252", "ASCII", "7bit", "8bit", "UTF-8", "UTF-16"],
-                        defaultValue: "ASCII",
-                        emptyValue: "ASCII",
-                    }
+                { title: "Code Page", field: "codePage", headerSort: true, headerFilter:true, headerFilterParams: { values: this.#printerCodePages, },
+                    editor: "list", editorParams: { values: this.#printerCodePages, defaultValue: "ASCII", emptyValue: "ASCII", },
                 },
                 { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
                 { title: "Printer Test", formatter: function (cell, onRendered, sucess, cancelCallback, editorParams) {

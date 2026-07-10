@@ -102,6 +102,15 @@ $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
 
 $useUSPS = false;
+// compute the placeholder value
+$searchTransactionId = getConfValue('atcon', 'searchTransactionId', 2);
+$findPlaceHolder = 'Name/Portion of Name';
+if ($searchTransactionId == 2)
+    $findPlaceHolder .= ', TransID or Person (Badge) ID';
+else if ($searchTransactionId == 1)
+    $findPlaceHolder .= ', Person (Badge) ID or TransID';
+else
+    $findPlaceHolder .= ' or Person (Badge) ID';
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -170,7 +179,8 @@ if ($config_vars['creditonline'] == 1) {
                                     <label for="find_pattern" >Search for:</label>
                                 </div>
                                 <div class="col-sm-8">
-                                    <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="Name/Portion of Name, Person (Badge) ID or TransID"/>
+                                    <input type="text" id="find_pattern" name="find_name" maxlength="50" size="50" placeholder="<?php
+                                        echo $findPlaceHolder; ?>"/>
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -211,7 +221,7 @@ if ($config_vars['creditonline'] == 1) {
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
                                     drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'registration', false, true, $ageByDate,
-                                            array(), $ageListIdx, 200, true, '', false, true);
+                                            array(), $ageListIdx, 200, true, '', false, true, null, null);
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 ms-0 me-0" id="add_results">

@@ -28,8 +28,7 @@ if (!$user_perid) {
     return;
 }
 
-$con = get_conf('con');
-$conid=$con['id'];
+$conid = getConfValue('con', 'id', '-1');
 
 if (!array_key_exists('ajax_request_action', $_POST)) {
     $response['error'] = 'Parameter Missing';
@@ -50,49 +49,12 @@ switch ($action) {
         }
         $cancelId = $_POST['cancelId'];
         // check if status of this plan is 'active'
-        $checkQ = <<<EOS
-SELECT status
-FROM payorPlans
-WHERE id = ?;
-EOS;
-        $checkR = dbSafeQuery($checkQ, 'i', array($cancelId));
-        if ($checkR === false) {
-            $response['error'] = "Error: Unable to get status of plan to cancel";
-            ajaxSuccess($response);
+        $message = cancelPaymentPlan(null, $cancelId);
+        if (str_contains($message, "Error: "))
+            $response['error'] = $message;
+        else
+            $response['success'] = $message;
             exit();
-        }
-        $checkStatus = $checkR->fetch_row()[0];
-        $checkR->free();
-        if ($checkStatus != 'active') {
-            $response['error'] = "Error: Cannot cancel plan $cancelId, as it's status of $checkStatus is not active";
-            ajaxSuccess($response);
-            exit();
-        }
-        // cancel the plan
-        // step 1 - mark all items in that plan as 'unpaid' (uses planid index for speed)
-        $updReg = <<<EOS
-UPDATE reg
-SET status = 'unpaid'
-WHERE status = 'plan' AND planId = ?;
-EOS;
-        $numUpdated = dbSafeCmd($updReg, 'i', array($cancelId));
-        if ($numUpdated === false) {
-            $response['error'] = "Error: Cannot cancel plan $cancelId, unable to change the memberships from 'plan' to 'unpaid', seek assistance.";
-            ajaxSuccess($response);
-            exit();
-        }
-        $updPlan = <<<EOS
-UPDATE payorPlans
-SET status = 'cancelled'
-WHERE id = ?;
-EOS;
-        $numCancelled = dbSafeCmd($updPlan, 'i', array($cancelId));
-        if ($numCancelled === false) {
-            $response['error'] = "Error: Cannot cancel plan $cancelId, marked memberships to unpaid, but cannot change the status of the plan, seek assistance.";
-            ajaxSuccess($response);
-            exit();
-        }
-        $response['success'] = "$numUpdated registrations changed from 'plan' to 'unpaid' and $numCancelled plan(s) cancelled.";
         break;
 
     default:
@@ -116,10 +78,7 @@ SELECT  pp.id, pp.planId, pp.conid, pp.perid, pp.newperid, pp.initialAmt, pp.non
         .createTransaction,
         pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy,
         p.name, l.paymentsMade, l.lastPaymentDate, l.lastPaymentAmt,
-        CASE 
-        WHEN pi.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pi.first_name, pi.middle_name, pi.last_name, pi.suffix), ' +', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', ni.first_name, ni.middle_name, ni.last_name, ni.suffix), ' +', ' '))
-        END AS fullName
+        CASE WHEN pi.id IS NOT NULL THEN pi.fullName ELSE ni.fullName END AS fullName
 FROM payorPlans pp
 JOIN paymentPlans p ON pp.planId = p.id
 LEFT OUTER JOIN perinfo pi ON pp.perid = pi.id

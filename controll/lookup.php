@@ -15,6 +15,16 @@ $conf = get_conf('con');
 $reg_conf = get_conf('reg');
 $url = getConfValue('controll', 'redirect_base', '/');
 
+// compute the placeholder value
+$searchTransactionId = getConfValue('controll', 'regLookupTransactionId', 0);
+$findPlaceHolder = 'Name/Portion of Name';
+if ($searchTransactionId == 2)
+    $findPlaceHolder .= ', TransID or Person (Badge) ID';
+else if ($searchTransactionId == 1)
+    $findPlaceHolder .= ', Person (Badge) ID or TransID';
+else
+    $findPlaceHolder .= ' or Person (Badge) ID';
+
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5']
@@ -44,7 +54,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
         <div class='col-sm-1'><label for="find_pattern"  class='form-label-sm'>Search for:</label></div>
         <div class='col-sm-auto'>
             <input type='text' id='find_pattern' name='find_pattern' maxlength='90' size='90' tabindex='10'
-                   placeholder='Name/Portion of (Name, Address, Email, Badgename, Legal Name), Person ID or Transaction ID'/>
+                   placeholder='<?php echo $findPlaceHolder; ?>'/>
         </div>
     </div>
     <div class='row mt-3'>

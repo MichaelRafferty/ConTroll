@@ -55,8 +55,7 @@ if ($_POST && $_POST['transid']) {
 // get the information for this transaction
 $issueSQL = <<<EOS
 SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
-       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo, p.fullName,
        y.id AS payTableId, IFNULL(y.status, '') AS cardStatus, IFNULL(y.ccPaymentId, '') AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
@@ -166,14 +165,13 @@ $message .= "$num_upd terminals released and marked available<br/>";
 // now get the remaining issues
 $issueSQL = <<<EOS
 SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
-       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, p.fullName,
        y.id AS payTableId, y.status AS cardStatus, y.ccPaymentId AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN payments y ON t.id = y.transid AND y.type NOT IN ('coupon', 'discount')
-WHERE t.conid = ? AND (t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
-   OR IFNULL(y.status,'') = 'APPROVED'
+WHERE t.conid = ? AND ((t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
+   OR IFNULL(y.status,'') = 'APPROVED')
 ORDER BY minutes DESC;
 EOS;
 
@@ -431,20 +429,17 @@ EOS;
     }
     if ($pmtResult->num_rows == 0) {
         $taxAmt = $order['total_tax_money']['amount'] / 100;
-        $taxes = $order['taxes'];
+        if ($taxAmt > 0)
+            $taxes = $order['taxes'];
+        else
+            $taxes = [];
         // payment doesn't exist, insert it and create
-        if ($taxAmt > 0) {
-            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-            if ($taxFields != '')
-                $taxFields = ", $taxFields";
-            if ($taxSql != '')
-                $taxSql = ", $taxSql";
-        } else {
-            $taxFields = '';
-            $taxSql = '';
-            $taxStr = '';
-            $taxValues = [];
-        }
+
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
@@ -588,11 +583,25 @@ EOS;
         $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
 
         if ($priceType == 'Quick Sale') {
-            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
-            $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
+            $urows = dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
+            if ($urows != 1) {
+                web_error_log("Error updating art item status for art $artId, art sales $artSalesId, 'Quicksale' of $paid", '', true);
+            }
+            $upd_cart += $urows;
+
+            $urows = dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
+            if ($urows != 1) {
+                web_error_log("Error updating art item status for art $artId, art sales $artSalesId, 'Quicksale' of $paid", '', true);
+            }
+            $upd_rows += $urows;
         } else {
-            if ($type == 'art')
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+            if ($type == 'art') {
+                $urows = dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+                if ($urows != 1) {
+                    web_error_log("Error updating art item status for art $artId, art sales $artSalesId, art of $paid", '', true);
+                }
+                $upd_cart += $urows;
+            }
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
         }
 

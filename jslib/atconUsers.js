@@ -1,10 +1,13 @@
 // Atcon Users Class - all functions and data related to configuring atcon Users
 
 class Users {
+    #userList = null;
+    #addList = null;
+
     constructor(users) {
         // Search tabulator elements
-        this.userlist = null;
-        this.addlist = null;
+        this.#userList = null;
+        this.#addList = null;
 
         // Users HTML elements
         this.savebtn = document.getElementById('users_save_btn');
@@ -20,18 +23,22 @@ class Users {
         this.dirty = false;
     }
 
+    // get functions
+    getAddList() {
+        return this.#addList;
+    }
     // process press of undo button
     undo() {
         'use strict';
-        this.userlist.undo();
+        this.#userList.undo();
 
-        if (this.userlist.getHistoryUndoSize() <= 0) {
+        if (this.#userList.getHistoryUndoSize() <= 0) {
             this.undobtn.disabled = true;
             this.dirty = false;
             this.savebtn.innerHTML = "Save";
             this.savebtn.disabled = true;
         }
-        if (this.userlist.getHistoryRedoSize() > 0) {
+        if (this.#userList.getHistoryRedoSize() > 0) {
             this.redobtn.disabled = false;
         }
     }
@@ -39,9 +46,9 @@ class Users {
     // process press of redo button
     redo() {
         'use strict';
-        this.userlist.redo();
+        this.#userList.redo();
 
-        if (this.userlist.getHistoryUndoSize() > 0) {
+        if (this.#userList.getHistoryUndoSize() > 0) {
             this.undobtn.disabled = false;
             if (this.dirty === false) {
                 this.dirty = true;
@@ -50,7 +57,7 @@ class Users {
             }
         }
 
-        if (this.userlist.getHistoryRedoSize() <= 0) {
+        if (this.#userList.getHistoryRedoSize() <= 0) {
             this.redobtn.disabled = true;
         }
     }
@@ -62,7 +69,7 @@ class Users {
         this.dirty = true;
         this.savebtn.innerHTML = "Save*";
         this.savebtn.disabled = false;
-        if (this.userlist.getHistoryUndoSize() > 0) {
+        if (this.#userList.getHistoryUndoSize() > 0) {
             this.undobtn.disabled = false;
         }
     }
@@ -71,7 +78,7 @@ class Users {
     invertnotme(e, cell) {
         'use strict';
 
-        var me = cell.getRow().getCell('id').getValue();
+        let me = cell.getRow().getCell('id').getValue();
         if (me !== userid) {
             invertTickCross(e, cell);
         }
@@ -84,9 +91,14 @@ class Users {
         //cell - the cell component
         //formatterParams - parameters set for the column
         //onRendered - function to call when the formatter has been rendered
-
-        var id = cell.getRow().getCell('id').getValue();
-        return '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="users.addSearchRow(' + id + ')">Add</button >';
+        let row = cell.getData();
+        if (row.deceased == 'Y') {
+            return 'Deceased';
+        }
+        if (row.banned == 'Y') {
+            return 'B';
+        }
+        return '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="users.addSearchRow(' + row.id + ')">Add</button >';
     }
 
     // there are issues mapping the header filter to the rows, as tick cross filtering would need to be tri state, (true, false, any).
@@ -100,16 +112,16 @@ class Users {
     loadUsers(users) {
         'use strict';
 
-        if (this.userlist !== null) {
-            this.userlist.destroy();
-            this.userlist = null;
+        if (this.#userList !== null) {
+            this.#userList.destroy();
+            this.#userList = null;
             this.searchdiv.hidden = true;
             this.addbtn.disabled = false;
         }
         this.savebtn.disabled = true;
         this.savebtn.innerHTML = 'Save';
 
-        this.userlist = new Tabulator('#userTab', {
+        this.#userList = new Tabulator('#userTab', {
             data: users,
             index: "id",
             layout: "fitData",
@@ -176,7 +188,7 @@ class Users {
                 },
             ],
         });
-        this.userlist.on("dataChanged", users_changed);
+        this.#userList.on("dataChanged", users_changed);
     }
 
     // used to enable the search button when the search field has something in it.  (target of an on.change)
@@ -187,9 +199,9 @@ class Users {
 
     // close the search block
     cancelSearch() {
-        if (this.addlist !== null) {
-            this.addlist.destroy();
-            this.addlist = null;
+        if (this.#addList !== null) {
+            this.#addList.destroy();
+            this.#addList = null;
         }
         this.searchbtn.innerHTML = 'Search Users';
         this.searchdiv.hidden = true;
@@ -201,13 +213,13 @@ class Users {
     // perform the search
     search() {
         // if tabulator table exists, button is to close search, destroy the table and hide the block
-        if (this.addlist !== null) {
-            this.addlist.destroy();
-            this.addlist = null;
+        if (this.#addList !== null) {
+            this.#addList.destroy();
+            this.#addList = null;
         }
 
         // ok, new search
-        var postData = {
+        let  postData = {
             ajax_request_action: 'searchUsers',
             search_string: this.search_field.value.trim(),
         };
@@ -226,10 +238,15 @@ class Users {
     // show search block
     addUser() {
         "use strict";
-        users.addbtn.disabled = true;
-        users.searchdiv.hidden = false;
-        users.searchbtn.disabled = true;
-        users.search_field.value = '';
+        this.addbtn.disabled = true;
+        this.searchdiv.hidden = false;
+        this.searchbtn.disabled = true;
+        this.search_field.value = '';
+        if (this.#addList !== null) {
+            this.#addList.destroy();
+            this.#addList = null;
+        }
+
         clear_message();
     }
 
@@ -240,14 +257,14 @@ class Users {
             show_message(data['error'], 'error');
             return;
         }
-        var numrows = data['rows'];
+        let  numrows = data['rows'];
         if (numrows <= 0) {
             show_message('Your search criteria returned no matchs', 'warn');
             return;
         }
         show_message(data['message'], 'success');
 
-        this.addlist = new Tabulator('#searchTab', {
+        this.#addList = new Tabulator('#searchTab', {
             data: data['data'],
             index: "id",
             layout: "fitData",
@@ -255,31 +272,41 @@ class Users {
             movableRows: false,
             history: false,
             columns: [
-                {title: "perid", field: "id", headerSort: true, width: 150,},
+                {title: "Add", headerSort: false, hozAlign: "center", formatter: this.tabAddButton, minWidth: 50},
+                {title: "perid", field: "id", headerSort: true, width: 150, formatter: users.idStatus, },
                 {title: "First Name", field: "first_name", headerSort: true, headerFilter: true},
                 {title: "Last Name", field: "last_name", headerSort: true, headerFilter: true},
                 {title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html',},
                 {title: "Email Address", field: "email_addr", headerSort: true, headerFilter: true},
-                {title: "Add", headerSort: false, hozAlign: "center", formatter: this.tabAddButton, minWidth: 50},
             ],
         });
+    }
+
+    // formatter for deceased rows
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  users.getAddList().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
     // process the add button on a search row, the perid of the row (id) is passed in and created by the formatter on the column
     addSearchRow(id) {
         'use strict';
 
-        var row = this.addlist.getRow(id);
-        var rowData = row.getData();
-        this.userlist.clearFilter(true);
-        this.userlist.addRow({
+        let  row = this.#addList.getRow(id);
+        let  rowData = row.getData();
+        this.#userList.clearFilter(true);
+        this.#userList.addRow({
             id: rowData['id'],
             name: (rowData['first_name'] + ' ' + rowData['last_name']).trim(),
             new_password: '-',
             delete: "🗑",
         }, true);
         row.delete();
-        var rowCount = this.addlist.getDataCount();
+        let  rowCount = this.#addList.getDataCount();
         if (rowCount <= 0) {
             this.search();  // close the search block, it's now empty
         }
@@ -289,14 +316,14 @@ class Users {
     save() {
         "use strict";
 
-        if (this.addlist !== null) {
+        if (this.#addList !== null) {
             this.search(); // close the search block
         }
 
         this.savebtn.disabled = true;
         // build the dataset of the table
-        var data = this.userlist.getData();
-        var postData = {
+        let  data = this.#userList.getData();
+        let  postData = {
             ajax_request_action: 'updateUsers',
             data: data,
         };
@@ -321,9 +348,9 @@ class Users {
     }
 
     close() {
-        if (this.userlist !== null) {
-            this.userlist.destroy();
-            this.userlist = null;
+        if (this.#userList !== null) {
+            this.#userList.destroy();
+            this.#userList = null;
             this.searchdiv.hidden = true;
             this.addbtn.disabled = false;
         }

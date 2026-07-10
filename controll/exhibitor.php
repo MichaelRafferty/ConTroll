@@ -169,6 +169,7 @@ $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['defaultCountry'] = $defaultCountry;
 $config_vars['exhibitorConid'] = $exhibitorConid;
+$config_vars['validDomains'] = explode(',', getConfValue('con', 'emailDomains', ''));
 
 bs_tinymceModal();
 draw_fileManagerModals($authToken);

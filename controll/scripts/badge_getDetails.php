@@ -44,8 +44,7 @@ WITH memAge AS (
     GROUP BY p.id
 )
 SELECT p.id, email_addr, badge_name, badgeNameL2, legalName, pronouns, phone, first_name, middle_name, last_name, suffix,
-    address, addr_2, city, state, zip, country, currentAgeType, currentAgeConId,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName, map.memAgeType
+    address, addr_2, city, state, zip, country, currentAgeType, currentAgeConId, p.fullName, map.memAgeType
 FROM perinfo p
 LEFT OUTER JOIN memAge map ON p.id = map.id
 WHERE p.id = ?

@@ -30,6 +30,7 @@ class Find {
     #adminNotes = null
     #memberPolicies = null;
     #memberInterests = null;
+    #memberConRoles = null;
     #managed = null;
     #managesHdr = null;
     #managesRow = null;
@@ -52,11 +53,13 @@ class Find {
     #memAgeType = null;
     #renumberExisting = null;
     #renumberNew = null;
+    #priorDeceased = '';
 
     #matched = null;
     #editRow = null;
     #historyTable = null;
     #prefix = 'f_'; // find's prefix for fields in edit
+    #findPagination = false;
 
     // globals before open
     constructor(debug) {
@@ -70,7 +73,7 @@ class Find {
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
         this.#findPersonBTN = document.getElementById('findPersonBTN');
 
-        var id  = document.getElementById('edit-person');
+        let id  = document.getElementById('edit-person');
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editTitle = document.getElementById('editTitle');
@@ -98,7 +101,7 @@ class Find {
             this.#renumberExisting = document.getElementById('renumberExistingPerid');
             this.#renumberNew = document.getElementById('f_renumberNewPerid');
         }
-        var id  = document.getElementById('person-history');
+        id  = document.getElementById('person-history');
         if (id) {
             this.#historyModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#historyTitle = document.getElementById('historyTitle');
@@ -112,6 +115,14 @@ class Find {
 
     getHistoryRow(pos) {
         return this.#historyData[pos];
+    }
+
+    getFindTable() {
+        return this.#findTable;
+    }
+
+    getManagerLookupTable() {
+        return this.#managerLookupTable;
     }
 
     // called on open of the add window
@@ -159,12 +170,12 @@ class Find {
 
     // find matching records
     find() {
-        var postdata = {
+        let postdata = {
             type: 'find',
             pattern: this.#findPattern.value,
         };
-        var script = 'scripts/people_findPerson.php';
-        var _this = this;
+        let script = 'scripts/people_findPerson.php';
+        let _this = this;
         clear_message();
         clearError();
         this.close(true, false);
@@ -202,25 +213,23 @@ class Find {
         }
         if (data.warn) {
             show_message(data.warn, 'warn');
-            return;
-        }
-
-        if (data.success) {
+        } else if (data.success) {
             show_message(data.success, 'success');
         }
 
         this.#matched = data.matches;
+        this.#findPagination = this.#matched.length > 25;
         this.#findTable = new Tabulator('#findTable', {
             data: this.#matched,
             layout: "fitDataTable",
             index: "id",
-            pagination: this.#matched.length > 25,
+            pagination: this.#findPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Actions", formatter: findPerson.actionButtons, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.idStatus,},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
@@ -247,6 +256,8 @@ class Find {
                 {field: 'currentAgeType', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
+                {field: 'formerGoH', visible: false,},
                 {field: 'hasManagedReg', visible: false,},
                 {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
                 {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
@@ -254,6 +265,25 @@ class Find {
         });
 
         this.#addPersonBtn.disabled = false;
+    }
+
+    // tabulator formatter for the id field
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  findPerson.getFindTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
+    }
+
+    idMStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  findPerson.getManagerLookupTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
     // addperson button - go to add person
@@ -264,14 +294,14 @@ class Find {
 
     // format action buttons
     actionButtons(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex()
+        let row = cell.getRow();
+        let index = row.getIndex()
 
-        var html = '<button class="btn btn-primary me-1" type="button" ' +
+        let html = '<button class="btn btn-primary me-1" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
 
-        var historyCount = row.getData().historyCount;
+        let historyCount = row.getData().historyCount;
         if (historyCount > 0) {
             html += '<button class="btn btn-secondary" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
@@ -282,13 +312,14 @@ class Find {
 
     // select manager: select this row as manager
     selectButton(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex()
-        var managerId = row.getData().managerId;
-        if (managerId != null && managerId != '') {
+        let row = cell.getRow();
+        let index = row.getIndex()
+        let data = row.getData();
+        if (data.managerId != null && data.managerId != '') {
             return '(managed)';
         }
-        return '<button class="btn btn-primary" type="button" ' +
+        let color = data.deceased == 'Y' ? 'btn-warning' : 'btn-primary';
+        return '<button class="btn ' + color + '" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.selectManager(' + index + ');">Select</button>';
     }
@@ -299,9 +330,9 @@ class Find {
     }
 
     managerBTN(cell){
-        var row = cell.getRow();
-        var index = row.getIndex()
-        var managerId = row.getData().managerId;
+        let row = cell.getRow();
+        let index = row.getIndex()
+        let managerId = row.getData().managerId;
         if (managerId == null || managerId == '') {
             return '<button class="btn btn-primary" type="button" ' +
                 'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
@@ -320,12 +351,12 @@ class Find {
         this.#editRow = this.#findTable.getRow(index).getData();
         this.#memAgeType = this.#editRow.memAgeType == '' ? null : this.#editRow.memAgeType
 
-        var postdata = {
+        let postdata = {
             type: 'details',
             perid: index,
         };
-        var script = 'scripts/people_findGetDetails.php';
-        var _this = this;
+        let script = 'scripts/people_findGetDetails.php';
+        let _this = this;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -346,7 +377,7 @@ class Find {
     }
 
     findDetailsSuccess(data) {
-        var i;  // index
+        let i;  // index
         if (data.error) {
             show_message(data.error, 'error');
             return;
@@ -358,17 +389,14 @@ class Find {
 
         this.#memberPolicies = data['policies'];
         this.#memberInterests = data['interests'];
+        this.#memberConRoles = data['conroles'];
         this.#managed = data['managed'];
         // populate the form
         this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
-        profile.setAll(this.#editRow.first_name, this.#editRow.middle_name, this.#editRow.last_name, this.#editRow.suffix, this.#editRow.legalName,
-            this.#editRow.pronouns, this.#editRow.address, this.#editRow.addr_2, this.#editRow.city, this.#editRow.state, this.#editRow.zip,
-            this.#editRow.country, this.#editRow.phone, this.#editRow.badge_name, this.#editRow.badgeNameL2,
-            this.#editRow.currentAgeType == null ? '' : this.#editRow.currentAgeType)
-
-
+        profile.setAll(this.#editRow);
         profile.setEmail(this.#editRow.email_addr);
         this.#origAge = profile.age();
+        this.#priorDeceased = profile.deceased();
         this.#managerId.value = this.#editRow.managerId;
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
@@ -390,10 +418,10 @@ class Find {
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
-            var keys = Object.keys(this.#memberPolicies);
+            let keys = Object.keys(this.#memberPolicies);
             for (i = 0; i < keys.length; i++) {
-                var policy = this.#memberPolicies[keys[i]];
-                var response = policy.response;
+                let policy = this.#memberPolicies[keys[i]];
+                let response = policy.response;
                 if (response === null || response === undefined) {
                     response = policy.defaultValue;
                 }
@@ -403,10 +431,50 @@ class Find {
 
         // now the interests
         if (this.#memberInterests && this.#memberInterests.length > 0) {
-            keys = Object.keys(this.#memberInterests);
-            for (i = 0; i < keys.length; i++) {
-                var interest = this.#memberInterests[keys[i]];
-                document.getElementById('i_' + interest.interest).checked = interest.interested == 'Y';
+            let keys = Object.keys(this.#memberInterests);
+            for (let i = 0; i < keys.length; i++) {
+                let interest = this.#memberInterests[keys[i]];
+                let endDateDays = interest.endDate;
+                let readOnly = false;
+                if (endDateDays === null || endDateDays === undefined || endDateDays == 0 ||
+                    interest.notesPrompt === null || interest.notesPrompt === undefined || interest.notesPrompt.trim() == '') {
+                    readOnly = false;
+                } else {
+                    readOnly = interest.readOnly == 1;
+                }
+                let id = document.getElementById('i_' + interest.interest);
+                if (id) {
+                    id.checked = interest.interested == 'Y';
+                    id.disabled = readOnly;
+                }
+                id = document.getElementById('i_d_' + interest.interest);
+                if (id)
+                    id.hidden = interest.interested != 'Y';
+                id = document.getElementById('i_p_' + interest.interest);
+                if (id)
+                    id.innerHTML = interest.notesPrompt;
+                id = document.getElementById('i_t_' + interest.interest);
+                if (id) {
+                    id.innerHTML = interest.notes;
+                    document.getElementById('i_i_' + interest.interest).hidden = readOnly;
+                }
+                id = document.getElementById('i_r_' + interest.interest);
+                if (id) {
+                    id.innerHTML = interest.notes;
+                    id.hidden = !readOnly;
+                }
+            }
+        }
+
+        // now the con roles
+        if (this.#memberConRoles && this.#memberConRoles.length > 0) {
+            let keys = Object.keys(this.#memberConRoles);
+            for (let i = 0; i < keys.length; i++) {
+                let conrole = this.#memberConRoles[keys[i]];
+                let id = document.getElementById('c_' + conrole.conRole);
+                if (id) {
+                    id.checked = conrole.assigned == 'Y';
+                }
             }
         }
 
@@ -430,9 +498,9 @@ class Find {
             this.#managerId.value = '';
             this.#managerName.innerHTML = '';
             // now the manages section
-            var html = '';
+            let html = '';
             for (i = 0; i < this.#managed.length; i++) {
-                var mper = this.#managed[i];
+                let mper = this.#managed[i];
                 html += '<div class="col-sm-1">' +
                     '<button class="btn btn-sm btn-warning" type="button" id="u_' + mper.type + mper.id + '" ' +
                     'onclick="findPerson.unmanage(' + "'" + mper.type + mper.id + "'" + ')">Unmanage</button>' +
@@ -441,17 +509,18 @@ class Find {
                     '<div class="col-sm-10">' + mper.fullName + '</div>\n';
             }
             this.#managesRow.innerHTML = html;
+            this.#managerRow.hidden = true;
+            this.#managerRowTxt.hidden = true;
         }
         if (this.#managed.length == 0) {
             this.#managerHdr.hidden = false;
+            this.#managerRow.hidden = false;
             if (this.#editRow.hasManagedReg > 0) {
-                this.#managerRow.hidden = true;
                 this.#managerRowTxt.hidden = false;
                 this.#managerRowCol.innerHTML = "Managed by " +  this.#editRow.manager + " (" + this.#editRow.managerId +
                     ") and has a managed membership, cannot dissociate.";
             } else {
                 this.#managerRowTxt.hidden = true;
-                this.#managerRow.hidden = true;
                 this.#managerRowCol.innerHTML = 'Placeholder';
                 this.#managerId.value = this.#editRow.managerId;
                 this.#managerName.innerHTML = this.#editRow.manager;
@@ -474,12 +543,15 @@ class Find {
     // clear the managee
     unmanage(link) {
         console.log(link);
-        var script = 'scripts/people_unmanage.php';
-        var postdata = {
+        let script = 'scripts/people_unmanage.php';
+        let postdata = {
             action: 'unmanage',
             who: link,
         }
-        var _this = this;
+        let _this = this;
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -508,7 +580,7 @@ class Find {
         }
 
         // change the button to be inactive and it's name to be unmanaged
-        var button = document.getElementById('u_' + data['who']);
+        let button = document.getElementById('u_' + data['who']);
         if (button) {
             button.innerHTML = 'cleared';
             button.disabled = true;
@@ -531,19 +603,19 @@ class Find {
 
     // lookup manager - preform the search and show the table
     lookupManager() {
-        var searchStr = this.#newManagerLookup.value;
+        let searchStr = this.#newManagerLookup.value;
         if (searchStr == '') {
             show_message("Enter a search string in the Lookup New Manager text box", 'error', 'find_edit_message')
         }
-        var postdata = {
+        let postdata = {
             type: 'manager',
             pattern: searchStr,
         }
-        var script = 'scripts/people_findPerson.php';
+        let script = 'scripts/people_findPerson.php';
         clear_message('find_edit_message');
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -582,7 +654,7 @@ class Find {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Select", formatter: findPerson.selectButton, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.idMStatus,},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
@@ -610,6 +682,7 @@ class Find {
                 {field: 'banned', visible: false,},
                 {field: 'admin_notes', visible: false,},
                 {field: 'open_notes', visible: false,},
+                {field: 'deceased', visible: false,},
             ],
         });
         if (data.success) {
@@ -639,19 +712,19 @@ class Find {
 
     // lookup managea - preform the search and show the table
     lookupManages() {
-        var searchStr = this.#newManagesLookup.value;
+        let searchStr = this.#newManagesLookup.value;
         if (searchStr == '') {
             show_message("Enter a search string in the Find Person to Manage text box", 'error', 'find_edit_message')
         }
-        var postdata = {
+        let postdata = {
             type: 'managed',
             pattern: searchStr,
         }
-        var script = 'scripts/people_findPerson.php';
+        let script = 'scripts/people_findPerson.php';
         clear_message('find_edit_message');
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -751,13 +824,16 @@ class Find {
             return;
         }
 
-        var script = 'scripts/people_manage.php';
-        var postdata = {
+        let script = 'scripts/people_manage.php';
+        let postdata = {
             action: 'manage',
             who: index,
             manager: this.#editRow.id,
         }
-        var _this = this;
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -792,12 +868,12 @@ class Find {
 
     // personHistory - call up display of the history for this person
     personHistory(index) {
-        var postdata = {
+        let postdata = {
             type: 'history',
             perid: index,
         };
-        var script = 'scripts/people_getHistory.php';
-        var _this = this;
+        let script = 'scripts/people_getHistory.php';
+        let _this = this;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -818,7 +894,7 @@ class Find {
     }
 
     personHistorySuccess(data) {
-        var i;  // index
+        let i;  // index
         if (data.error) {
             show_message(data.error, 'error');
             return;
@@ -828,16 +904,16 @@ class Find {
             return;
         }
 
-        var  title = "Person Change History for " + data.perid;
+        let  title = "Person Change History for " + data.perid;
         historyTitle.innerHTML = title
         // build the history map
         this.#historyMap = {};
         this.#historyData = data.history;
-        for (var index = 0; index < data.history.length; index++) {
+        for (let index = 0; index < data.history.length; index++) {
             this.#historyMap[data.history[index].historyId] = index;
         }
         // build the history display
-        var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+        let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
 
         // format the heading line
         if (this.#historyTable) {
@@ -875,7 +951,9 @@ class Find {
                 { title: "Post Code", field: 'zip', headerWordWrap: true, headerSort: false, },
                 { title: "Ctry", field: 'country', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Act", field: 'active', formatter: findPerson.colorSet, headerSort: false, },
-                { title: "B", field: 'banned', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Ban", field: 'banned', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Decd", field: 'deceased', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "FGoH", field: 'formerGoH', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Open Notes", field: "open_notes", formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Admin Notes", field: "admin_notes", formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Mgr P", field: 'managedBy', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
@@ -888,18 +966,18 @@ class Find {
     }
 
     colorSet(cell, formatterParams, onRendered) {
-        var histId = cell.getRow().getIndex();
-        var index = findPerson.getHistoryMap(histId);
-        var priorIndex = index - 1;
+        let histId = cell.getRow().getIndex();
+        let index = findPerson.getHistoryMap(histId);
+        let priorIndex = index - 1;
         if (priorIndex < 0) {
             return cell.getValue();
         }
 
-        var field = cell.getField();
-        var color = ''
-        var priorRow = findPerson.getHistoryRow(priorIndex);
-        var prior = priorRow[field];
-        var current = cell.getValue();
+        let field = cell.getField();
+        let color = ''
+        let priorRow = findPerson.getHistoryRow(priorIndex);
+        let prior = priorRow[field];
+        let current = cell.getValue();
         if (prior == current)
             return current;
 
@@ -932,12 +1010,20 @@ class Find {
     }
 
     saveEdit2() {
+        // get permission to save if changing deceased to y
+        if (this.#priorDeceased != 'Y' && profile.deceased() == 'Y') {
+            if (!confirm("You are changing this person from deceased(No) to (Yes).\n" +
+                "This will delete many records associated with this person.\n\nAre you sure?")) {
+                profile.setDeceased('N');
+                return;
+            }
+        }
         // first we need the perid we are editing, this.#editRow has the row
-        var script = 'scripts/people_updateEdit.php';
+        let script = 'scripts/people_updateEdit.php';
 
         // we need to pass each section, the profile, the policies, the interests, the manager, the manages, the active/banned, and the notes
         // first the edit fields on the form directly
-        var postdata = {
+        let postdata = {
             action: 'saveedit',
             perid: this.#editRow.id,
             firstName: profile.fname(),
@@ -963,18 +1049,21 @@ class Find {
             banned: this.#banned.value,
             openNotes: this.#openNotes.value,
             adminNotes: this.#adminNotes.value,
+            deceased: profile.deceased(),
+            formerGoH: profile.formerGoH(),
             oldPolicies: JSON.stringify(this.#memberPolicies),
             currentAgeType: profile.age() == '' ? this.#memAgeType : profile.age(),
             origAgeType: this.#origAge,
             existingInterests: JSON.stringify(this.#memberInterests),
+            existingConRoles: JSON.stringify(this.#memberConRoles),
         };
         // now the policies
+        let newPolicies = {};
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
-            var keys = Object.keys(this.#memberPolicies);
-            var i;
-            var newPolicies = {};
+            let keys = Object.keys(this.#memberPolicies);
+            let i;
             for (i = 0; i < keys.length; i++) {
-                var policy = this.#memberPolicies[keys[i]];
+                let policy = this.#memberPolicies[keys[i]];
                 if (document.getElementById('f_p_' + policy.policy).checked) {
                     newPolicies['p_' + policy.policy] = 'Y';
                 }
@@ -983,17 +1072,33 @@ class Find {
         postdata['newPolicies'] = JSON.stringify(newPolicies);
 
         // now the interests
-        var newInterests = {};
+        let newInterests = {};
         if (this.#memberInterests && this.#memberInterests.length > 0) {
-            var keys = Object.keys(this.#memberInterests);
-            for (var i = 0; i < keys.length; i++) {
-                var interest = this.#memberInterests[keys[i]];
-                if (document.getElementById('i_' + interest.interest).checked) {
-                    newInterests[interest.interest] = 'Y';
+            let keys = Object.keys(this.#memberInterests);
+            for (let i = 0; i < keys.length; i++) {
+                let interest = this.#memberInterests[keys[i]];
+                let id = document.getElementById('i_' + interest.interest);
+                if (id) {
+                    if (document.getElementById('i_' + interest.interest).checked) {
+                        newInterests[interest.interest] = 'Y';
+                    }
                 }
             }
         }
         postdata['newInterests'] = JSON.stringify(newInterests);
+
+        // now the con roles
+        let newConRoles = {};
+        if (this.#memberConRoles && this.#memberConRoles.length > 0) {
+            let keys = Object.keys(this.#memberConRoles);
+            for (let i = 0; i < keys.length; i++) {
+                let conrole = this.#memberConRoles[keys[i]];
+                if (document.getElementById('c_' + conrole.conRole).checked) {
+                    newConRoles[conrole.conRole] = 'Y';
+                }
+            }
+        }
+        postdata['newConRoles'] = JSON.stringify(newConRoles);
 
         if (this.#renumberNew)
             postdata['renumberNew'] = this.#renumberNew.value;
@@ -1003,7 +1108,7 @@ class Find {
         // manages
         postdata['managed'] = this.#managed;
 
-        var _this = this;
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -1030,13 +1135,27 @@ class Find {
             return;
         }
 
+        let peridChanged = data.hasOwnProperty('newPerid');
         // update the underlying row in the table
-        if (data.hasOwnProperty('newPerid')) {
+        if (peridChanged) {
+            data.updated.id = data.newPerid;
             this.#findTable.updateOrAddData(data.updated);
             this.#findTable.deleteRow(this.#editRow.id);
             this.#editRow.id = data.newPerId;
         } else {
             this.#findTable.updateData(data.updated);
+        }
+        let row = this.#findTable.getRow(data.updated.id);
+        if (row) {
+            if (peridChanged) {
+                let sorters = this.#findTable.getSorters();
+                this.#findTable.setSort(sorters);
+            }
+            this.#findPagination.set
+            if (this.#findPagination)
+                this.#findTable.setPageToRow(row);
+            row.getElement().scrollIntoView();
+            row.reformat();
         }
 
         this.clearForm();
@@ -1044,6 +1163,15 @@ class Find {
         this.#editModal.hide();
         if (data.success) {
             show_message(data.success, 'success');
+        }
+    }
+
+    // check for need to open the notes section
+    updateInterestSelect(id) {
+        let checked = document.getElementById('i_' + id).checked;
+        let prompt = document.getElementById('i_p_' + id).innerHTML;
+        if (prompt != '') {
+            document.getElementById('i_d_' + id).hidden = !checked;
         }
     }
 
@@ -1058,6 +1186,7 @@ class Find {
             this.#renumberNew.value = '';
         this.#addPersonBtn.disabled = true;
         this.#updateOverrideBTN.disabled = true;
+        this.#priorDeceased = '';
         clear_message('find_edit_message');
         clear_message();
         clearError();

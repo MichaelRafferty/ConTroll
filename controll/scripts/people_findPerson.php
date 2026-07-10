@@ -60,15 +60,11 @@ if (is_numeric($findPattern)) {
 WITH perids AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
-        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
-        p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId,
+        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
+        p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
         CASE
-            WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' '))
-            ELSE ''
-        END AS manager,
+            WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
         CASE
             WHEN mp.id IS NOT NULL THEN mp.id
             ELSE NULL
@@ -83,7 +79,7 @@ WITH perids AS (
     WHERE p.id = ? $excludeFree $excludeMerge
     GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
-        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
+        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 ), his AS (
     SELECT p.id, count(h.historyId) AS historyCount
@@ -123,15 +119,11 @@ EOS;
 WITH per AS (
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId,
+    p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
     CASE
-        WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) 
-        ELSE ''
-    END AS manager,
+        WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
     CASE
         WHEN mp.id IS NOT NULL THEN mp.id
         ELSE NULL
@@ -144,7 +136,7 @@ LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'pl
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE 1=1  $excludeFree $notMerge $excludeMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 ), perids AS (
@@ -219,6 +211,6 @@ $response['matches'] = $matches;
 if (count($matches) < $limit)
     $response['success'] = count($matches) . ' potential matches found';
 else
-    $response['success'] = "Too many records were matched, only the first $limit potential matches returned";
+    $response['warn'] = "Too many records were matched, only the first $limit potential matches returned";
 
 ajaxSuccess($response);

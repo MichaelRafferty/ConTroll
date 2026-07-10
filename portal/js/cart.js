@@ -68,7 +68,7 @@ class Cart {
         this.#cartContentsDiv = document.getElementById("cartContentsDiv");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
-        var id = document.getElementById("variablePriceModal");
+        let id = document.getElementById("variablePriceModal");
         if (id) {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
@@ -176,7 +176,7 @@ class Cart {
         this.#totalDue = 0;
         this.#countMemberships = 0;
         this.#unpaidMemberships = 0;
-        var html = `
+        let html = `
             <div class="row">
                 <div class="col-sm-1"><b>Remove</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
@@ -184,30 +184,30 @@ class Cart {
                 <div class="col-sm-4"><b>Membership</b></div>
             </div>
 `;
-        var col1 = '';
-        var now = new Date();
-        for (var row in this.#memberships) {
-            var membershipRec = this.#memberships[row];
+        let col1 = '';
+        let now = new Date();
+        for (let row in this.#memberships) {
+            let membershipRec = this.#memberships[row];
             if (membershipRec.status != 'in-cart' && membershipRec.status != 'unpaid')
                 continue;
 
             this.#countMemberships++;
-            var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
-            var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
+            let amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
+            let label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
                 (membershipRec.memAge != 'all' ? (' ' + ageListIdx[membershipRec.memAge].label) : '');
-            var expired = false;
+            let expired = false;
             if ((membershipRec.status == 'unpaid' || membershipRec.status == 'in-cart') && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
             if (membershipRec.status == 'unpaid' && membershipRec.paid == 0) {
-                var sd = new Date(membershipRec.startdate);
-                var ed = new Date(membershipRec.enddate);
+                let sd = new Date(membershipRec.startdate);
+                let ed = new Date(membershipRec.enddate);
                 if (sd.getTime() > now.getTime() || ed.getTime() < now.getTime()) {
                     expired = true;
                     label = "<span class='text-danger'><b>Expired: </b>" + label + "</span>";
                 }
             }
 
-            var btncolor = expired ? 'btn-danger' : 'btn-secondary';
+            let btncolor = expired ? 'btn-danger' : 'btn-secondary';
             col1 = membershipRec.create_date;
             if (membershipRec.toDelete)
                 continue;
@@ -253,12 +253,12 @@ class Cart {
     // add to cart
     membershipAdd(id) {
         clear_message();
-        var memrow = findMembership(id);
+        let memrow = findMembership(id);
         if (memrow == null)
             return;
 
-        var now = new Date();
-        var newMembership = {};
+        let now = new Date();
+        let newMembership = {};
         newMembership.id = this.#newIDKey;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
@@ -272,9 +272,9 @@ class Cart {
         newMembership.memCategory = memrow.memCategory;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
-        var memCat = memCategories[memrow.memCategory];
+        let memCat = memCategories[memrow.memCategory];
         if (memCat.variablePrice == 'Y') {
-            var mem = memListIdx[newMembership.memId];
+            let mem = memListIdx[newMembership.memId];
             // update the modal with the item
             this.#vpBody.innerHTML = `
     <div class="row">
@@ -291,7 +291,7 @@ class Cart {
             this.#amountField.addEventListener('keyup', cart.amountEventListener);
             newMembership.minPrice = mem.price;
             this.#newMembershipSave = newMembership;
-            var amountField = this.#amountField;
+            let amountField = this.#amountField;
             setTimeout(() => { amountField.focus({focusVisible: true}); }, 600);
             return;
         }
@@ -310,9 +310,9 @@ class Cart {
 
     // vpsubmit - handle return from modal popup
     vpSubmit() {
-        var priceField = document.getElementById('vpPrice');
-        var price = Number(priceField.value).toFixed(2);
-        var newMembership = this.#newMembershipSave;
+        let priceField = document.getElementById('vpPrice');
+        let price = Number(priceField.value).toFixed(2);
+        let newMembership = this.#newMembershipSave;
         if (Number(price) < Number(newMembership.minPrice)) {
             show_message("Your " + newMembership.label + " cannot be less than " + newMembership.minPrice, 'warn', 'vpMessageDiv');
             return;
@@ -342,7 +342,7 @@ class Cart {
             return;
         }
 
-        var mbr = this.#memberships[row];
+        let mbr = this.#memberships[row];
         if (mbr.status != 'in-cart') {
             show_message("Cannot remove that membership, only in-cart memberships can be removed.", "warn");
             return
@@ -351,11 +351,11 @@ class Cart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
-        for (var nrow in this.#memberships) {
+        let rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        for (let nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
-            var nmbr = this.#memberships[nrow];
+            let nmbr = this.#memberships[nrow];
             if (nmbr.toDelete)
                 continue;
             if (rules.testMembership(nmbr, true) == false) {
@@ -379,7 +379,7 @@ class Cart {
             return;
         }
 
-        var mbr = this.#memberships[row];
+        let mbr = this.#memberships[row];
         if (mbr.status != 'unpaid') {
             show_message("Cannot remove that membership, only unpaid membershipd can be removed.", "warn");
             return
@@ -398,11 +398,11 @@ class Cart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
-        for (var nrow in this.#memberships) {
+        let rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        for (let nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
-            var nmbr = this.#memberships[nrow];
+            let nmbr = this.#memberships[nrow];
             if (nmbr.toDelete)
                 continue;
             nmbr.toDelete = true;
@@ -423,8 +423,8 @@ class Cart {
         if (!this.#memberships)
             return null; // no list to search
 
-        for (var row in this.#memberships) {
-            var cartrow = this.#memberships[row];
+        for (let row in this.#memberships) {
+            let cartrow = this.#memberships[row];
             if (memId != cartrow.memId)
                 continue;
             return cartrow;  // return matching entry
@@ -434,7 +434,7 @@ class Cart {
 
     // save cart / return home button
     saveCart() {
-        var _this = this;
+        let _this = this;
         if (this.#cartChanges == 0) {
             // go back to the home page
             this.saveCartComplete([]);
@@ -442,8 +442,8 @@ class Cart {
         }
         this.#saveCartBtn.disabled = true;
 
-        var script = 'scripts/updateFromCart.php';
-        var data = {
+        let script = 'scripts/updateFromCart.php';
+        let data = {
             action: 'updateCart',
             loginId: config.id,
             loginType: config.idType,
@@ -480,7 +480,7 @@ class Cart {
     saveCartComplete(data) {
         // once saved, return home
         this.#leaveBeforeChanges = false;
-        var location = "portal.php?tab=" + config.tab;
+        let location = "portal.php?tab=" + config.tab;
         if (data.message) {
             window.location = location + '&messageFwd=' + encodeURI(data.message);
         } else {
@@ -492,7 +492,7 @@ class Cart {
     // if they haven't used the save/return button, ask if they want to leave
     confirmExit(event) {
         if (this.#leaveBeforeChanges) {
-            var buttonName = this.#saveCartBtn.innerHTML;
+            let buttonName = this.#saveCartBtn.innerHTML;
             event.preventDefault(); // if the browser lets us set our own variable
             if (!confirm("You are leaving without saving any changes you have made to your cart.\n" +
                 "Do you wish to leave anyway discarding any potential changes?")) {

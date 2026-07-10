@@ -4,11 +4,14 @@
 // Author: Syd Weinstein
 // Common routine to perform findRecord for any POS program (registration, atcon)
 // Retrieve perinfo, reg, note records for the Find and Add tabs
+// searchTid: 0 = perid only, 1 = perid over tid, 2 = tid over perid
 
-function posFindRecord() {
+function posFindRecord($searchTid) {
     $con = get_conf('con');
     $usePortal = getConfValue('controll', 'useportal', 1);
     $conid = intval($con['id']);
+    if ($searchTid === null)
+        $searchTid = 2; // prior system default behavior
 
 // findRecord:
 // load all perinfo/reg records matching the search string or unpaid if that flag is passed
@@ -28,10 +31,9 @@ SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_n
     TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, 
     TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     p.country, TRIM(p.email_addr) AS email_addr,
-    TRIM(p.phone) as phone, p.active, p.banned, IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    p.open_notes, p.managedBy, cnt.cntManages,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mgr.first_name, mgr.middle_name, mgr.last_name, mgr.suffix), ' +', ' ')) AS mgrFullName
+    TRIM(p.phone) as phone, p.active, p.banned, p.deceased, p.formerGoH,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
+    p.fullName, p.open_notes, p.managedBy, cnt.cntManages, mgr.fullName AS mgrFullName
 EOS;
     $withClauseMgr = <<<EOS
 , manages AS (
@@ -211,12 +213,20 @@ EOS;
 SELECT 'p' AS which, id
 FROM perinfo p
 WHERE p.id = ?
+EOS;
+            if ($searchTid > 0) {
+                $overlapQ .= <<<EOS
+
 UNION SELECT 't' AS which, id
 FROM transaction t 
 WHERE t.id = ? AND t.conid IN (?, ?);
 EOS;
-            $typestr = 'iiii';
-            $values = array ($name_search, $name_search, $conid, $conid + 1);
+                $typestr = 'iiii';
+                $values = array ($name_search, $name_search, $conid, $conid + 1);
+            } else {
+                $typestr = 'i';
+                $values = array ($name_search);
+            }
         }
         $overlapR = dbSafeQuery($overlapQ, $typestr, $values);
         if ($overlapR === false) {
@@ -243,8 +253,8 @@ EOS;
             exit();
         }
 
-        // tid has higher precidence than perid in the matching
-        if ($found_tid) {
+        // tid has higher precidence than perid in the matching, if searchTid == 2, and is requried if 1 and found_perid is false
+        if (($searchTid == 2 || $found_perid == false) && $found_tid) {
             // pull all the matching regs for this transid for this period
             $withClause = <<<EOS
 WITH regids AS (
@@ -401,8 +411,7 @@ WITH p1 AS (
             OR LOWER(p.email_addr) LIKE ?
             OR LOWER(CONCAT_WS(' ', p.first_name, p.last_name)) LIKE ?
             OR LOWER(CONCAT_WS(' ', p.last_name, p.first_name)) LIKE ?
-            OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))) LIKE ?
-
+            OR LOWER(p.fullName) LIKE ?
         )
         AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into'))
 ), manager AS (

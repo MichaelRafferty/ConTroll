@@ -40,6 +40,7 @@ if (!isset($_POST) || !isset($_POST['ajax_request_action'])) {
 $action = $_POST['ajax_request_action'];
 $response['action'] = $action;
 $updated = 0;
+$itemsUpdated = 0;
 
 $first = true;
 
@@ -50,6 +51,7 @@ if (array_key_exists('tablename', $_POST)) {
     $tablename = 'none';
 }
 $data = [];
+$response['success'] = '';
 
 if ($tablename != 'none') {
     try {
@@ -95,8 +97,17 @@ if ($tablename != 'none') {
     $insupdsql = <<<EOS
 INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
-ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, lastUpdate = NOW(), updatedBy = ?;
+ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, updatedBy = ?;
 EOS;
+    $insItemsql = <<<EOS
+INSERT INTO taxItems(conid, taxField, item, taxable, lastUpdate, updatedBy, sortorder)
+VALUES (?, ?, ?, ?, NOW(), ?, ?);
+EOS;
+    $delItemSql = <<<EOS
+DELETE FROM taxItems WHERE conid = ? AND taxField = ?;
+EOS;
+
+
 
     // now the updates, do the updates first in case we need to insert a new row with the same older key
     foreach ($data as $row) {
@@ -104,43 +115,52 @@ EOS;
             array ($conid, $row['taxField'], $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid,
                 $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid));
         $updated += $numrows;
+
+        // now rebuild the tax items from what was passed
+        $taxItems = $row['taxItems'];
+        $numDel = dbSafeCmd($delItemSql, 'is', array ($conid, $row['taxField']));
+        foreach ($taxItems as $item) {
+            $numrows = dbSafeCmd($insItemsql, 'isssii', array ($conid, $row['taxField'], $item['item'], $item['taxable'], $user_perid, $item['sortOrder']));
+            $itemsUpdated += $numrows;
+        }
     }
 
-    $response['message'] = "$tablename updated: $updated tax rates changed.";
+    $response['success'] .= "$tablename updated: $updated tax rates changed, $itemsUpdated tax items updated.<br/>";
 }
 
 
-// check to see if this is the first time in a new year
-$yearcheckR = dbSafeQuery("SELECT conid, COUNT(*) AS numRows FROM taxList WHERE conid IN (?, ?) GROUP BY conid;", 'ii', array($conid-1, $conid));
-if ($yearcheckR == false) {
-    $response['error'] = "Year check query failed";
-    ajaxSuccess($response);
-    exit();
-}
-$years = [];
-while ($yearL = $yearcheckR->fetch_assoc()) {
-    $years[$yearL['conid']] = $yearL['numRows'];
-}
-$yearcheckR->free();
-if (count($years) == 1 && array_key_exists($conid - 1, $years)) {
-    // There is data from last year and not this year..., so insert the new year data.
-    $ins = <<<EOS
-INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
-SELECT ?, taxField, label, rate, active, glNum, glLabel, now(), ?
-FROM taxList
-WHERE conid = ?;
+// build new year auto copies the tax list from last year.  This code will just upconvert an interim year from the config variables to the tax list entry.
+$checkTaxQ = <<<EOS
+SELECT COUNT(*) FROM taxList WHERE conid = ?;
 EOS;
-    $numRows=dbSafeCmd($ins, 'iii', array($conid, $user_perid, $conid - 1));
+$checkTaxR = dbSafeQuery($checkTaxQ, 'i', array ($conid));
+$taxCount = $checkTaxR->fetch_row()[0];
+$checkTaxR->free();
+if ($taxCount == 0) {
+    $taxRate = getConfValue('con', 'taxRate', null);
+    $taxLabel = getConfValue('con', 'taxLabel', null);
+    if ($taxRate != null && $taxLabel != null) {
+        $insQ = <<<EOS
+        INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
+        VALUES(?, 'tax1', ?, ?, 'Y', NOW(), NULL);
+EOS;
+        $numRows = dbSafeCmd($insQ, 'isd', array ($conid, $taxLabel, $taxRate));
+        if ($numRows > 0) {
+            $response['success'] .= 'converted obsolete configuration tax rate variables to taxList<br/>';
+        }
+    }
 }
+
 // now get the current list
-$taxList = getTaxConfig();
+    [$taxList, $taxable] = getTaxConfig();
 $response['taxList'] = $taxList;
+$response['taxable'] = $taxable;
 
 if ($hrtime) {
     $endHRtime = hrtime(true);
     $intervalTime = $endHRtime - $startHRtime;
     $secs = intval($intervalTime / 1000000000);
     $ns = $intervalTime % 1000000000;
-    $response['success'] = sprintf("Call took %d.%09d seconds", $secs, $ns);
+    $response['success'] .= sprintf("Call took %d.%09d seconds", $secs, $ns);
 }
 ajaxSuccess($response);

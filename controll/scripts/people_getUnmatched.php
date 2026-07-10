@@ -57,7 +57,7 @@ EOS;
         OR LOWER(email_addr) LIKE ?
         OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?
         OR LOWER(CONCAT(last_name, ' ', first_name)) LIKE ?
-        OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) LIKE ?)
+        OR LOWER(fullName) LIKE ?)
     ORDER BY last_name, first_name, id
 EOS;
     }
@@ -80,11 +80,10 @@ WHERE r.perid IS NULL AND n.perid IS NULL AND r.status IN ('paid', 'unpaid', 'pl
 GROUP BY n.id
 $cte
 )
-SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs,
-TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' ')) AS fullName,
+SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs, n.fullName,
 CASE     
-	WHEN mgrP.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrP.first_name, mgrP.last_name))
-    WHEN mgrN.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrN.first_name, mgrN.last_name))
+	WHEN mgrP.id IS NOT NULL THEN mgrP.fullName
+    WHEN mgrN.id IS NOT NULL THEN mgrN.fullName
     ELSE null
 END AS manager,
 CASE     

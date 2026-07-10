@@ -8,12 +8,7 @@ function getLoginMatch($email, $id = null, $validationType = null) {
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' ')) 
-    END AS fullName,
-    'p' AS tablename
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename
 FROM perinfo
 WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
@@ -22,12 +17,7 @@ EOS;
 // first get the perid items
         $regcountQ = <<<EOS
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS fullName,
-    'p' AS tablename
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename
 FROM perinfo
 WHERE email_addr = ? AND id = ?;
 EOS;
@@ -35,12 +25,7 @@ EOS;
     } else {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS fullName,
-    'p' AS tablename
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename
 FROM perinfo
 WHERE email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
 ORDER BY fullName;
@@ -62,12 +47,8 @@ EOS;
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned, 'N' AS deceased,
-    CASE 
-        WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), ' +', ' ')) 
-    END AS fullName,
-    'n' AS tablename
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename
 FROM newperson n
 WHERE n.id = ? AND n.perid IS NULL
 ORDER BY fullName;
@@ -76,12 +57,8 @@ EOS;
     } else if ($id != NULL) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned, 'N' AS deceased,
-    CASE 
-        WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), ' +', ' ')) 
-    END AS fullName,
-    'n' AS tablename
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename
 FROM newperson n
 WHERE n.email_addr = ? AND n.id = ? AND n.perid IS NULL
 ORDER BY fullName;
@@ -91,11 +68,7 @@ EOS;
         $regcountQ = <<<EOS
 SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
-    CASE 
-        WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), ' +', ' ')) 
-    END AS fullName,
-    'n' AS tablename
+       'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename
 FROM newperson n
 WHERE n.email_addr = ? AND n.perid IS NULL
 ORDER BY fullName;
@@ -120,11 +93,7 @@ EOS;
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS fullName,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH, fullName,
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
@@ -149,12 +118,7 @@ EOS;
     if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
-    CASE 
-        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS fullName,
-    'p' AS tablename
+    address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH, fullName, 'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
 WHERE pi.email_addr = ? AND pi.provider IN ('token', 'email', 'allow') AND pi.email_addr != p.email_addr

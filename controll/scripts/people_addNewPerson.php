@@ -41,10 +41,10 @@ if ($_POST['currentAgeType'] == '') {
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country, currentAgeConId, currentAgeType,
-    banned, active, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
+    banned, active, deceased, formerGoH, updatedBy)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?,?,?);
 EOS;
-$typestr = 'ssssssssssssssssisi';
+$typestr = 'ssssssssssssssssisssi';
 
 // built insert array
 $values = [
@@ -66,6 +66,8 @@ $values = [
     $_POST['country'] == null ? '' : $_POST['country'],
     $currentAgeConId,
     $currentAgeType,
+    $_POST['deceased'] == null ? 'N' : $_POST['deceased'],
+    $_POST['formerGoH'] == null ? 'N' : $_POST['formerGoH'],
 ];
 $values[] = $updatedBy;
 

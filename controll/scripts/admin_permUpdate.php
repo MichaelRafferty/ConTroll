@@ -73,10 +73,22 @@ if (($_POST['action'] == 'update') or ($_POST['action'] == 'create')) {
 
 if($_POST['action'] == 'clear') {
     error_log("deleting user $user");
+    // getting email for passkey deletion
+    $deleteQ = "SELECT email FROM user WHERE id = ?;";
+    $userR = dbSafeQuery($deleteQ, 'i', array($user));
+    if ($userR === false) {
+        ajaxError("Failed to retrieve user email for passkey deletion");
+        return;
+    }
+    $userEmail = $userR->fetch_row()[0];
+    $userR->free();
+    $rp = $_SERVER['HTTP_HOST'];
     $deleteQ = "DELETE FROM user_auth WHERE user_id = ?;";
     $deleted = dbSafeCmd($deleteQ, 'i', array($user));
     $deleteQ = "DELETE FROM user WHERE id = ?;";
     $deleted += dbSafeCmd($deleteQ, 'i', array($user));
+    $deleteQ = "DELETE FROM passkeys WHERE relyingParty = ? AND userName = ?;";
+    $deleted += dbSafeCmd($deleteQ, 'ss', array($rp, $userEmail));
     $response['query'] = $deleted;
 }
 

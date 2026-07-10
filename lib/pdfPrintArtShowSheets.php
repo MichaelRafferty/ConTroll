@@ -2,12 +2,13 @@
 // pdfPrintArtShowSheets.php - routines for creating the art show bid sheets, price tags and control sheets
 require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
 require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
+require_once(__DIR__ . '/../lib/barcodes.php');
 require_once ("pdfFunctions.php");
 
 global $pdf;
 $pdf = null;
 
-function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
+function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -23,7 +24,7 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = tru
 
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name, 
-       aI.id AS itemId, e.artistName
+       aI.id AS itemId, e.artistName, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -43,8 +44,11 @@ EOS;
     if ($itemR->num_rows == 0) {
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
-            $response['status'] = 'No art found requiring price tags';
-            echo "<h1>No art found requiring price tags</h1>\n";
+            $response['success'] = true;
+            $response['message'] = 'No art found requiring price tags';
+
+            if ($returnData == false)
+                echo "<h1>No art found requiring price tags</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -76,6 +80,10 @@ EOS;
     } else {
         $artistName = $artItems[0]['artistName'];
     }
+
+    $response['artistName'] = $artistName;
+    $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+    $response['ownerName'] = $artItems[0]['ownerName'];
 
     $pages = ceil($numTags / ($numrows * $numcols));
 
@@ -194,33 +202,44 @@ EOS;
             printXY($h + (0.97 * $isize) - $pricewidth, $v + $dataOffset, $priceFmt);
 
             if ($useBarCode) {
+                $encodedBC = ConTroll\BarcodeFcns::addEncode($print['itemId']);
                 $v += $blockheight;
-                $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
+                $barcodeData = sprintf("%7.7d,%3.3d", $encodedBC, $copy);
                 $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
-                $bctext = $print['itemId'] . ',' . $copy;
+                $bctext = "$encodedBC,$copy";
                 $length = $pdf->getStringWidth($bctext);
                 printXY($h + ($isize * 0.6) + 1.2 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
             }
         }
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$numTags output on $pages pages";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$numTags output on $pages pages";
+        }
     }
+
     return $response;
 }
 
-function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
+function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -282,7 +301,7 @@ function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $la
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
        aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type,
-       aI.id AS itemId, e.id, eR.name, e.artistName
+       aI.id AS itemId, e.id, eR.name, e.artistName, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -305,8 +324,11 @@ EOS;
 
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
-            $response['status'] = 'No art found requiring bid sheets';
-            echo "<h1>No art found requiring bid sheets</h1>\n";
+            $response['success'] = true;
+            $response['message'] = 'No art found requiring bid sheets';
+
+            if ($returnData == false)
+                echo "<h1>No art found requiring bid sheets</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -325,6 +347,10 @@ EOS;
     } else {
         $artistName = $artItems[0]['artistName'];
     }
+
+    $response['artistName'] = $artistName;
+    $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+    $response['ownerName'] = $artItems[0]['ownerName'];
 
     $pages = ceil($numSheets / ($numrows * $numcols));
 
@@ -524,11 +550,11 @@ EOS;
 
         if ($useBarCode) {
             $v += $blockheight;
-            $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
+            $encodedBC = ConTroll\BarcodeFcns::addEncode($art['itemId']);
+            $barcodeData = sprintf('%7.7d,%3.3d', $encodedBC, 1);
             $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
-            $bctext = $art['itemId'];
-            $length = $pdf->getStringWidth($bctext);
-            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
+            $length = $pdf->getStringWidth($encodedBC);
+            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $encodedBC);
         }
 
         if ($art['type'] != 'nfs') {
@@ -539,25 +565,34 @@ EOS;
         }
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$page pages output";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$page pages output";
+        }
     }
     return $response;
 }
 
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
-function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
+function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true, $returnData = false) {
     global $pdf;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -602,6 +637,8 @@ EOS;
     } else {
         $artistName = $artist['artistName'];
     }
+    $response['artistName'] = $artistName;
+
     $showContact = $artist['contactName'] != $artistName || $artist['contactPhone'] != $artist['exhibitorPhone'] ||
         $artist['exhibitorEmail'] != $artist['contactEmail'];
     $showShip = $artist['mailin'] == 'Y';
@@ -870,7 +907,7 @@ EOS;
 SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
        aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.quantity, aI.material, aI.type,
        aI.status, aI.bidder, aI.final_price, e.id, eR.name, e.artistName,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, eRY.ownerName, eRY.ownerEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -900,6 +937,10 @@ EOS;
             $artItems[] = $artItem;
         }
         $itemR->free();
+
+        $response['artistName'] = $artistName;
+        $response['ownerEmail'] = $artItems[0]['ownerEmail'];
+        $response['ownerName'] = $artItems[0]['ownerName'];
 
         pushFont('Roboto', '', 10);
         $numwidth = $pdf->GetStringWidth("123");
@@ -1245,18 +1286,27 @@ EOS;
         popFont();
     }
 
-    if ($first) {
-        header('Content-Type: application/pdf');
+    if ($returnData) {
+        $response['pdf'] = $pdf->Output('S');
         $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
         $filename = $fileLabel . '_' . $fileDate . '.pdf';
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-    }
-
-    if ($last) {
-        $output = $pdf->Output();
-        print($output);
+        $response['filename'] = $filename;
         $response['success'] = true;
         $response['message'] = "$page pages output";
+    } else {
+        if ($first) {
+            header('Content-Type: application/pdf');
+            $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+            $filename = $fileLabel . '_' . $fileDate . '.pdf';
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
+
+        if ($last) {
+            $output = $pdf->Output();
+            print($output);
+            $response['success'] = true;
+            $response['message'] = "$page pages output";
+        }
     }
     return $response;
 }

@@ -17,6 +17,7 @@ require_once 'lib/base.php';
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once '../lib/interests.php';
+require_once '../lib/conroles.php';
 require_once 'lib/sessionAuth.php';
 require_once 'lib/match.php';
 
@@ -27,6 +28,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
 }
 
 $regAdmin = $authToken->checkAuth('reg_admin');
+$regStaff = $authToken->checkAuth('reg_staff');
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -49,7 +51,8 @@ $controll = get_conf('controll');
 $conid = $con_conf['id'];
 $usps = get_conf('usps');
 $policies = getPolicies();
-$interests = getInterests();
+$interests = getInterests();;
+$conRoles = getConRoles();
 [$ageList, $ageListIdx] = getAgeList($conid);
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
@@ -68,8 +71,11 @@ $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
 $config_vars['interests'] = $interests;
+$config_vars['conRoles'] = $conRoles;
 $config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['ra'] = $regAdmin;
+
 $policiesCell = drawPoliciesCell($policies);
 ?>
 <script type='text/javascript'>
@@ -106,6 +112,14 @@ $policiesCell = drawPoliciesCell($policies);
                     <div class='row'>
                         <div class='col-sm-12' id='newpersonTable'></div>
                     </div>
+                    <div class='row mt-1 mb-2'>
+                        <div class="col-sm-auto">
+                            <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' type='button' id='createNewTop' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                                Create New Person
+                            </button>
+                        </div>
+                    </div>
                     <div class='row mt-1'>
                         <div class='col-sm-12 text-bg-secondary'>
                             Potential Matches
@@ -132,17 +146,20 @@ $policiesCell = drawPoliciesCell($policies);
                 </div>
                 <?php
                     echo matchEdit('match', 'editMatchTitle', 'Matched Person', 'New/Edited Value', 'Match Candidate',
-                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList);
+                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList, $regStaff, $regAdmin);
                 ?>
             </div>
-            <div class='modal-footer'>
+            <div class='modal-footer me-auto'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>Update Existing
-                    Person</button>
-                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>Create New
-                    Person</button>
-                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>Delete New
-                    Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>
+                    Update Existing Person
+                </button>
+                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                    Create New Person
+                </button>
+                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>
+                    Delete New Person
+                </button>
             </div>
             <div id='result_message_candidate' class='mt-4 p-2'></div>
         </div>
@@ -166,10 +183,15 @@ $policiesCell = drawPoliciesCell($policies);
                     </div>
 <?php
 drawEditPersonBlock($con_conf, $countryOptions, $useUSPS, $policies, 'find', true, true, $ageByDate,
-        array(), $ageListIdx,200, true, 'f_');
-drawInterestList($interests, true);
+        array(), $ageListIdx,200, true, 'f_', false, false, $regAdmin, $regStaff);
+drawInterestList($interests, true, 'findPerson');
+if (getConfValue('con', 'conRoles', 0) == 1)
+    drawConRolesList($conRoles);
 ?>
                     </form>
+                    <div class='row'>
+                        <div class='col-sm-12'><hr/></div>
+                    </div>
 <?php if ($regAdmin) { ?>
                     <div class='row mt-3' id='renumberHdr'>
                         <div class='col-sm-auto'><h2 class='size=h3'>Renumber This Person (change their perid)</h2></div>
@@ -367,7 +389,7 @@ drawInterestList($interests, true);
             <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
 <?php
     drawEditPersonBlock($con_conf, $countryOptions,true, $policies, 'addPerson', false, true,$ageByDate,
-            null, $ageListIdx, 100, true, 'a_');
+            null, $ageListIdx, 100, true, 'a_', false, false, $regAdmin, $regStaff);
 ?>
             </form>
             </div>

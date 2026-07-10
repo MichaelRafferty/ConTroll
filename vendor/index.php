@@ -30,19 +30,7 @@ $exhibitor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
 
-if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
-    $portalName = 'Artist';
-    $portalType = 'artist';
-} else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
-    $portalName = 'Exhibitor';
-    $portalType = 'exhibitor';
-} else if (str_starts_with($_SERVER['HTTP_HOST'], 'fan')){
-    $portalName = 'Fan';
-    $portalType = 'fan';
-} else {
-    $portalName = 'Vendor';
-    $portalType = 'vendor';
-}
+[$portalName, $portalType] = getPortalType();
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -80,6 +68,9 @@ $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
 $config_vars['regserver'] = getConfValue('reg','server');
+if (array_key_exists('msg', $_REQUEST)) {
+    $config_vars['msg'] = $_REQUEST['msg'];
+}
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
 $config_vars['termsArtistMailin'] = returnCustomText('invoice/termsArtistMailin');
@@ -121,9 +112,13 @@ echo getConfValue('reg', 'logotext');
         </div>
     </div>
     <?php
-if (getConfValue('vendor', 'open') != 1) { ?>
-    <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
-<?php
+$globalOpen = getConfValue('vendor', 'open', '0'); // this allows a global override to [global];
+$portalOpen = getConfValue('vendor', $portalType . 'Open', '0'); // also allows a global overide
+$otherPortalOpen = getConfValue('vendor', ($portalType == 'artist' ? 'vendor' : 'artist') . 'Open', '0'); // also allows a global overide
+if ($globalOpen != 1 || $portalOpen != 1) {
+    echo <<<EOS
+    <p class='text-primary'>The $portalName portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
+EOS;
     exit;
 }
 ?>
@@ -529,7 +524,13 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
                     </button>
                 <?php } ?>
                 <button class='btn btn-secondary m-1 h-100' onclick='changePasswordOpen();'>Change your password</button>
+                <?php
+if ($otherPortalOpen == 1) {
+    echo <<<EOS
                 <button class='btn btn-secondary m-1 h-100' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
+EOS;
+}
+                ?>
                 <button class="btn btn-secondary m-1 h-100" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
@@ -551,7 +552,7 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
     $pastItemsQ = <<<EOS
 SELECT conid, count(*) AS itemCount
 FROM artItems
-WHERE conid >= ? AND conid < ?
+WHERE conid >= ? AND conid <= ?
 GROUP BY conid
 HAVING count(*) > 0
 ORDER BY conid DESC;
@@ -666,21 +667,8 @@ EOS;
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {
-                                // check to see if there are any art items, if not, offer to import prior items if there are any
-                                $chkQ = <<<EOS
-SELECT COUNT(*)
-FROM artItems i
-JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
-WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
-EOS;
-
-                                $chR = dbSafeQuery($chkQ, 'ii', array (getSessionVar('eyID'), $regionYearId));
-                                if ($chR !== false) {
-                                    $numArtItems = $chR->fetch_row()[0];
-                                    $chR->free();
-                                    if ($numArtItems == 0)
-                                        itemRegistrationImportBtn($regionYearId);
-                                }
+                                // change - always allow import button, if there are items importable
+                                itemRegistrationImportBtn($regionYearId);
                                 itemRegistrationOpenBtn($conid, $regionYearId);
                             }
                         }
@@ -704,10 +692,14 @@ EOS;
         <div class="row mt-1">
 EOS;
             foreach ($pastYears as $year) {
+                if ($year == $conid)
+                    $name = "Current Year";
+                else
+                    $name = "$conname $year";
                 echo <<<EOS
             <div class="col-sm-auto p-1">
                 <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
-                for $conname $year</button>
+                for $name</button>
             </div>
 EOS;
             }

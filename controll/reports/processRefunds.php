@@ -49,9 +49,7 @@ $txnR = dbSafeQuery($txnQ, 'i', array($memTypes['Request Refund']));
 $failed_refunds = array();
 
 $badgeQ = <<<EOS
-SELECT R.create_trans, M.label, R.id,
-       TRIM(REGEXP_REPLACE(CONCAT(P.first_name, ' ', P.middle_name, ' ', P.last_name, ' ', P.suffix), ' +', ' ')) AS name,
-       P.email_addr, P.phone, P.address, P.addr_2, P.city, P.state, P.zip, P.country
+SELECT R.create_trans, M.label, R.id, p.fullName AS name, P.email_addr, P.phone, P.address, P.addr_2, P.city, P.state, P.zip, P.country
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)

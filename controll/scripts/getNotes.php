@@ -38,8 +38,8 @@ EOS;
     $response['notes'] = $notes;
     $pQ = <<<EOS
 SELECT m.label, CASE 
-    WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
-    WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+    WHEN p.id IS NOT NULL THEN p.fullName
+    WHEN n.id IS NOT NULL THEN n.fullName
     ELSE 'Unknown'
 END AS fullName
 FROM reg r

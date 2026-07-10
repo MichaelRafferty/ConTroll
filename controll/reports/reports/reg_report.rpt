@@ -17,12 +17,12 @@
 	minWidth=80
 [F010]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    sql="p.fullName"
     title="Full Name"
     minWidth=300
 [F011]
     name=fullAddr
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' '))"
+    sql="p.fullAddr"
     title="Full Address"
     minWidth=300
 [F020]
@@ -111,8 +111,8 @@
     item=conid
     datatype=s
 [where]
-	001="r.conid = ? GROUP BY p.id, r.id, fullName, fullAddr, locale, country, email_addr, label, price, paid, status, createdate, first_name, middle_name,
-	last_name"
+	001="r.conid = ? AND p.deceased != 'Y'"
+	002="GROUP BY p.id, r.id, fullName, fullAddr, locale, country, email_addr, label, price, paid, status, createdate, first_name, middle_name,	last_name"
 [sort]
 	001="last_name, first_name, middle_name,create_date, regid"
 

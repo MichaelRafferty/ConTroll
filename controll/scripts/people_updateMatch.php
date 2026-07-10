@@ -1,5 +1,6 @@
 <?php
 require_once "../lib/base.php";
+require_once "../lib/cleanDeceased.php";
 require_once('../../lib/log.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/policies.php');
@@ -65,17 +66,17 @@ if ($matchPerid && $matchPerid > 0) {
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, currentAgeConId, phone, badge_name, badgenameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country,
-    banned, active, managedBy, managedReason, change_notes, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+    banned, active, deceased, formerGoH, managedBy, managedReason, change_notes, updatedBy)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 $uP = <<<EOS
 UPDATE perinfo
 SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, currentAgeType = ?, currentAgeConId = ?, phone = ?,
     badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?,
-	banned = ?, active = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
+	banned = ?, active = ?, deceased = ?, formerGoH = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$typestr = 'ssssssisssssssssssssissi';
+$typestr = 'ssssssisssssssssssssssissi';
 
 // built insert/update array
 $values = [
@@ -98,7 +99,9 @@ $values = [
     $_POST['zip'] == null ? '' : $_POST['zip'],
     $_POST['country'] == null ? '' : $_POST['country'],
     $_POST['banned'] == null ? '' : $_POST['banned'],
-    $_POST['active'] == null ? '' : $_POST['active']
+    $_POST['active'] == null ? '' : $_POST['active'],
+    $_POST['deceased'] == null ? '' : $_POST['deceased'],
+    $_POST['formerGoH'] == null ? '' : $_POST['formerGoH']
 ];
 $managedBy = null;
 // add manager and reason
@@ -134,6 +137,19 @@ if ($type == 'n') {
     $response['success'] = "Person $perid created from match data edited from $newPerid";
 }
 if ($type == 'e') {
+    // get prior deceased value
+    $pdQ = <<<EOS
+SELECT deceased FROM perinfo WHERE id = ?;
+EOS;
+    $pdR = dbSafeQuery($pdQ, 'i', array($perid));
+    if ($pdR === false) {
+        $response['error'] = 'Error querying prior deceased status, check logs and seek assistance';
+        ajaxSuccess($response);
+        return;
+    }
+    $priorDeceased = $pdR->fetch_row()[0];
+    $pdR->free();
+
     // add perid for where clause
     $typestr .= 'i';
     $values[] = $perid;
@@ -202,7 +218,7 @@ if ($msg != '') {
      $email = $_POST['email_addr']; // the perinfo entry, to whom we send the associate email
      // get the email address and the full name of the manager
      $mQ = <<<EOS
-SELECT email_addr, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+SELECT email_addr, fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -291,4 +307,8 @@ EOS;
          $response['success'] .= "<br/>Request to associate (manage) email sent";
      }
 }
+
+ if ($type == 'e' && $priorDeceased != 'Y' && $_POST['deceased'] == 'Y') {
+     $response['success'] .= "<br/>" . cleanDeceasedUser($perid);
+ }
 ajaxSuccess($response);

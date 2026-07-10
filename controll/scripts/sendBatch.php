@@ -1,6 +1,5 @@
 <?php
 require_once "../lib/base.php";
-require_once "../lib/email.php";
 require_once(__DIR__ . "/../../lib/email__load_methods.php");
 require_once(__DIR__ . "/../../lib/global.php");
 require_once '../lib/sessionAuth.php';
@@ -14,7 +13,7 @@ $perm = 'admin';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
 $response['tokenStatus'] = $authToken->checkToken();
-if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+if (!$authToken->isLoggedIn()) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
@@ -32,6 +31,7 @@ if (!array_key_exists('data', $_POST)) {
     exit();
 }
 
+
 $con = get_conf("con");
 $conid=$con['id'];
 $conname = $con['conname'];
@@ -39,6 +39,21 @@ $code='';
 
 $json = urldecode(base64_decode($_POST['data']));
 $data = json_decode($json, true);
+
+// now that we have the data block, validate the permission
+switch ($data['emailType']) {
+    case 'invReminder':
+        $perm = 'exhibitor';
+        break;
+    default:
+        $perm = 'admin';
+}
+
+if ( !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
 
 if ($data['emailTest'] || $testsite) {
     $email = $data['emailTest'][0]['email'];

@@ -191,7 +191,7 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
     // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid, glnum (placeholder))
     // default perid to payorId if null (non bid on item)
     $version = 'art.02';
-    $perid = $art['perid'];
+    $perid = $art['bidder'];
     if ($perid == null)
         $perid = $payorId;
     if ($perid == null)

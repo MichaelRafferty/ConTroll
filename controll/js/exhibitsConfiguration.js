@@ -1,5 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // exhibits class - all exhibits space config functions
+var currencyFmt = null;
+
 class exhibitssetup {
     // exhibits region types
     #regionType = null;
@@ -19,6 +21,7 @@ class exhibitssetup {
     #regionsavebtn = null;
     #regionundobtn = null;
     #regionredobtn = null;
+    #regionsPagination = false;
 
     // exhibits region years
     #regionYears = null;
@@ -30,6 +33,7 @@ class exhibitssetup {
     #regionYearundobtn = null;
     #regionYearredobtn = null;
     #regionYearRoomStatuses = {precon: 'precon', bid: 'bid', checkout: 'checkout', closed: 'closed', all: 'all'};
+    #regionYearsPagination = false;
 
     // exhibits spaces (sections of a region)
     #spaces = null;
@@ -40,6 +44,7 @@ class exhibitssetup {
     #spacesavebtn = null;
     #spaceundobtn = null;
     #spaceredobtn = null;
+    #spacesPagination = false;
 
     // exhibits space prices
     #spacePrices = null;
@@ -48,6 +53,7 @@ class exhibitssetup {
     #spacePricesavebtn = null;
     #spacePriceundobtn = null;
     #spacePriceredobtn = null;
+    #spacePricesPagination = false;
 
     // global items
     #memList = null;
@@ -61,6 +67,8 @@ class exhibitssetup {
     #debugVisible = false;
     #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
     #insertID = -1;
+    #locale = 'en-us';
+    #currencyFmt = null;
 
     // exhibitsRegionYear Configuration items
     #exhibitsRegionYearModal = null;
@@ -72,6 +80,12 @@ class exhibitssetup {
 
     constructor(conid, debug) {
         this.#debug = debug;
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+        currencyFmt = this.#currencyFmt;
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
         this.#exhibits_pane = document.getElementById('configuration-pane');
@@ -522,7 +536,7 @@ class exhibitssetup {
         let neweditValue = editValue.replace(startRE,'');
         neweditValue = neweditValue.replace(endRE,'');
         if (neweditValue.match(/.*<p>.*/) == null) {
-            editValue = neweditValue;;
+            editValue = neweditValue;
         }
 
         let updArr = {};
@@ -737,12 +751,13 @@ class exhibitssetup {
         }
 
         this.#regiondirty = false;
+        this.#regionsPagination = this.#regions.length > 10;
         this.#regionsTable = new Tabulator('#regions-div', {
             history: true,
             movableRows: true,
             data: this.#regions,
             layout: "fitDataTable",
-            pagination: this.#regions.length > 10,
+            pagination: this.#regionsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -813,12 +828,13 @@ class exhibitssetup {
         }
 
         this.#regionYeardirty = false;
+        this.#regionYearsPagination = this.#regionYears.length > 10;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
             history: true,
             movableRows: true,
             data: this.#regionYears,
             layout: "fitDataTable",
-            pagination: this.#regionYears.length > 10,
+            pagination: this.#regionYearsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -866,8 +882,7 @@ class exhibitssetup {
                 {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: this.getEditMode("number"), },
                 {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
-                    editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
+                    formatter: localeMoney, editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
                 {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: this.getEditMode("number"),},
                 {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, headerFilter: true,
@@ -929,12 +944,13 @@ class exhibitssetup {
         }
 
         this.#spacedirty = false;
+        this.#spacesPagination = this.#spaces.length > 10;
         this.#spacesTable = new Tabulator('#spaces-div', {
             history: true,
             movableRows: true,
             data: this.#spaces,
             layout: "fitDataTable",
-            pagination: this.#spaces.length > 10,
+            pagination: this.#spacesPagination,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1004,12 +1020,13 @@ class exhibitssetup {
             this.#spacePrices = data.exhibitsSpacePrices;
 
         this.#spacePricedirty = false;
+        this.#spacePricesPagination = this.#spacePrices.length > 10;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
             history: true,
             movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
-            pagination: this.#spacePrices.length > 10,
+            pagination: this.#spacePricesPagination,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1039,7 +1056,7 @@ class exhibitssetup {
                 {
                     title: '&bigstar;Price', field: "price", headerHozAlign:"right", width: 120, hozAlign: "right", headerSort: false,
                     editor: "input", editorParams: {maxlength: "10"}, validator: "required",
-                    formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    formatter: localeMoney,
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
                 },
                 {
@@ -1293,10 +1310,15 @@ class exhibitssetup {
         let _this = this;
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function() {
+            if (_this.#regionsPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("shortname"));
+                    _this.checkRegionsUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("shortname"));
                 _this.checkRegionsUndoRedo();
-            });
+            }
         });
     }
 
@@ -1464,10 +1486,15 @@ class exhibitssetup {
         this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#regionYearsPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("ownerName"));
+                    _this.checkYearsUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("ownerName"));
                 _this.checkYearsUndoRedo();
-            });
+            }
         });
     }
 
@@ -1508,12 +1535,47 @@ class exhibitssetup {
         if (this.#regionsTable != null) {
             let _this = this;
 
+            // tabulator validations check
             let invalids = this.#regionYearsTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Region Years Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
+
+            // now tabulator value check is complete, check the owner email field and included and additional space entries
+            let yearsData = this.#regionYearsTable.getData();
+            let errmsg = '';
+            for (let i = 0; i < yearsData.length; i++) {
+                let row = yearsData[i];
+                let ownerEmail = row.ownerEmail;
+                if (ownerEmail == null || ownerEmail == undefined)
+                    ownerEmail = '';
+                let domain = ownerEmail.split('@');
+                if (domain.length != 2) {
+                    errmsg += "<br/>Row ID: " + row.id + ": " + ownerEmail + " is not a valid email address (no domain found)";
+                } else {
+                    domain = domain[1];
+                    if (config.validDomains != '' && !config.validDomains.includes(domain)) {
+                        errmsg += "<br/>Row ID: " + row.id + ": " + ownerEmail +
+                            " has a domain not valid for sending emails<br/>Valid domains are: " + config.validDomains.join(', ');
+                    }
+                }
+
+                // includedMemId and additionalMemId are required
+                if (row.includedMemId == null || row.includedMemId == undefined || row.includedMemId == '' || row.includedMemId <= 0) {
+                    errmsg += "<br/>Row ID: " + row.id + ": Included membership type is required";
+                }
+                if (row.additionalMemId == null || row.additionalMemId == undefined || row.additionalMemId == '' || row.additionalMemId <= 0) {
+                    errmsg += "<br/>Row ID: " + row.id + ": Additional membership type is required";
+                }
+            }
+            if (errmsg != '') {
+                show_message("Region Years Table contains errors:<br/>" + errmsg, 'error');
+                return false;
+            }
+
+            // passed our validations, proceed to save it
             this.#regionYearsavebtn.innerHTML = "Saving...";
             this.#regionYearsavebtn.disabled = true;
 
@@ -1624,10 +1686,15 @@ class exhibitssetup {
         this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#spacesPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("shortname"));
+                    _this.checkSpacesUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("shortname"));
                 _this.checkSpacesUndoRedo();
-            });
+            }
         });
     }
 
@@ -1775,11 +1842,17 @@ class exhibitssetup {
         this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#spacePricesPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("code"));
+                    setCellChanged(row.getCell("requestable"));
+                    _this.checkSpacePricesUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("code"));
                 setCellChanged(row.getCell("requestable"));
                 _this.checkSpacePricesUndoRedo();
-            });
+            }
         });
     }
 
@@ -1949,4 +2022,12 @@ function deleterow(e, row) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
 }
