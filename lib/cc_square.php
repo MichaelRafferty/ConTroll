@@ -11,14 +11,13 @@
 require_once("global.php");
 
 // draw_cc_html - exposed function to draw the credit card HTML window
-//      $cc = array of [cc] section of ini file
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
-    $sdk = $cc['webpaysdk'];
-    $appid = $cc['appid'];
-    $location = $cc['location'];
+function draw_cc_html($postal_code = "--", $type='all') : string {
+    $sdk = getConfValue('cc', 'webpaysdk', 'https://web.squarecdn.com/v1/square.js');
+    $appid = getConfValue('cc', 'appid');
+    $location = getConfValue('cc', 'location', '');
     $postalCode = '';
     if ($postal_code != '--') {
         $postalCode = "'postalCode': '$postal_code',\n";
@@ -147,15 +146,15 @@ function cc_getCurrency($con) : string {
 
 // build the order, pass it to square and get the order id
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
-    $cc = get_conf('cc');
     $con = get_conf('con');
     $squareDebug = getConfValue('debug', 'square', 0);
     $id = null;
 
     $client = new SquareClient(
-        token: $cc['token'],
+        token: getConfValue('cc', 'token'),
         options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                Environments::Production->value : Environments::Sandbox->value,
     ]);
     $currency = cc_getCurrency($con);
 
@@ -207,7 +206,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     if ($locationId == null) {
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
     }
 
     // SDK 41, builds the parts then passes them into the body
@@ -748,9 +747,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array | null {
     // Try updating the state of the order to CANCELED
-    $cc = get_conf('cc');
     if ($locationId == null)
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
 
     $squareDebug = getConfValue('debug', 'square', 0);
 
@@ -767,10 +765,11 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     ]);
 
     $client = new SquareClient(
-        token: $cc['token'],
+        token: getConfValue('cc', 'token'),
         options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-            ]);
+            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                Environments::Production->value : Environments::Sandbox->value,
+    ]);
 
     // pass update to cancel state to square
     $rtn = null;
@@ -795,7 +794,6 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 }
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
-    $cc = get_conf('cc');
     $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Orders\Requests\GetOrdersRequest([
@@ -803,10 +801,11 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     ]);
 
     $client = new SquareClient(
-        token: $cc['token'],
+        token: getConfValue('cc','token', ''),
         options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
+            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                Environments::Production->value : Environments::Sandbox->value,
+    ]);
 
     // pass update to cancel state to square
     try {
@@ -848,7 +847,6 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
-    $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
     $squareDebug = getConfValue('debug', 'square', 0);
 
@@ -935,10 +933,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $pbody = new CreatePaymentRequest($pbodyArgs);
 
     $client = new SquareClient(
-        token: $cc['token'],
+        token: getConfValue('cc', 'token'),
         options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
+            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                Environments::Production->value : Environments::Sandbox->value,
+    ]);
 
     try {
         if ($squareDebug & 14) sqcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
@@ -1053,7 +1052,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
-    $cc = get_conf('cc');
     $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Payments\Requests\GetPaymentsRequest([
@@ -1061,10 +1059,11 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     ]);
 
     $client = new SquareClient(
-        token: $cc['token'],
+        token: getConfValue('cc', 'token'),
         options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
+            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                Environments::Production->value : Environments::Sandbox->value,
+    ]);
 
     // pass update to cancel state to square
     try {

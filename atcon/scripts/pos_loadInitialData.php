@@ -37,7 +37,6 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
-$cc = get_conf('cc');
 load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
@@ -54,7 +53,7 @@ else
     $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
 $response['Manager'] = check_atcon('manager', $conid) ? 1 : 0;
-$response['cc_html'] = draw_cc_html($cc,'--','body');
+$response['cc_html'] = draw_cc_html('--','body');
 
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS

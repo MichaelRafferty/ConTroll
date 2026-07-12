@@ -44,7 +44,6 @@ if ($ajax_request_action != 'loadInitialData') {
     exit();
 }
 
-$cc = get_conf('cc');
 load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
@@ -55,7 +54,7 @@ $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
 $response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
 $response['user_id'] = $authToken->getPerid();
-$response['cc_html'] = draw_cc_html($cc,'--','body');
+$response['cc_html'] = draw_cc_html('--','body');
 // do as if statement such that it can check for both database error and no rows returned
 $response['Manager'] = $authToken->checkAuth('reg_admin') ? 1 : 0;
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.

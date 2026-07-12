@@ -4,14 +4,11 @@
 // [cc]
 // type=bypass - selects that reg is not to deal with payment
 
-
-
 // draw_cc_html - exposed function to draw the credit card HTML window
-//      $cc = array of [cc] section of ini file
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
+function draw_cc_html($postal_code = "--", $type='all') : string {
     $html = '';
     if ($type != 'js') {
         $html .= <<<EOS
@@ -27,7 +24,6 @@ EOS;
 
 // build the order structure (fake in this case) to mirror the flow of cc_square
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
-    $cc = get_conf('cc');
     $con = get_conf('con');
     $id = null;
 
@@ -288,7 +284,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     if ($locationId == null)
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
 
     $order = [
         'locationId' => $locationId,
@@ -369,10 +365,8 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($results, $buyer, $useLogWrite = false) {
-    $cc = get_conf('cc');
-
-    if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
-        if ($cc['env'] != 'sandbox' || getConfValue('reg','test') != 1) {
+    if (getConfValue('cc', 'demo', 0) != 1) { // allow demo override on test for cc
+        if (getConfValue('cc', 'env', '') != 'sandbox' || getConfValue('reg','test') != 1) {
             ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method'));
             exit();
         }

@@ -130,9 +130,8 @@ page_init($page, $tab,
     );
 
 if ($config_vars['creditonline'] == 1) {
-    $cc = get_conf('cc');
     load_cc_procs();
-    echo draw_cc_html($cc, '--', 'js');
+    echo draw_cc_html('--', 'js');
 }
 
 [$ageList, $ageListIdx] = getAgeList($conid);

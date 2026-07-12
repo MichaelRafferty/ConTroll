@@ -655,7 +655,6 @@ function draw_makePaymentModal() : void {
     $testsite = getConfValue('portal', 'test') == 1;
     $cardsAccepted = getConfValue('global', 'cardsAcceptedImage', 'cards_accepted_64.png');
     $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Mastercard, American Express, and Discover');
-    $cc = get_conf('cc');
     $con = get_conf('con');
     ?>
     <div id='makePaymentModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='makePayments' aria-hidden='true' style='--bs-modal-width: 96%;'>
@@ -691,7 +690,7 @@ function draw_makePaymentModal() : void {
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-12'><?php echo draw_cc_html($cc); ?></div>
+                            <div class='col-sm-12'><?php echo draw_cc_html(); ?></div>
                         </div>
                         <div class='row mt-2'>
                             <div class='col-sm-auto'>

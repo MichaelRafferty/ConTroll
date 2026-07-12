@@ -108,9 +108,8 @@ $config_vars['defaultCountry'] = $defaultCountry;
 
 if (array_key_exists('creditonline', $controll)) {
     if ($controll['creditonline'] == 1) {
-        $cc = get_conf('cc');
         load_cc_procs();
-        echo draw_cc_html($cc, '--', 'js');
+        echo draw_cc_html('--', 'js');
     }
 }
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.

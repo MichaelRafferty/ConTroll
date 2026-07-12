@@ -8,7 +8,6 @@ require_once("../lib/policies.php");
 require_once("../lib/interests.php");
 require_once("../lib/coupon.php");
 
-$cc = get_conf('cc');
 $con = get_conf('con');
 $reg_conf = get_conf('reg');
 $usps = get_conf('usps');
@@ -352,7 +351,7 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
                          </div>
                          <div class="row" id='chargeCart' hidden>
                              <div class="col-sm-12">
-                                   <?php echo draw_cc_html($cc); ?>
+                                   <?php echo draw_cc_html(); ?>
                              </div>
                          </div>
                          <div class="row">
