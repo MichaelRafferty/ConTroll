@@ -3,6 +3,7 @@
 var portal = null;
 var coupon = null;
 var profile = null;
+var ccType = null;
 
 // initial setup
 window.onload = function () {
@@ -269,6 +270,13 @@ class Portal {
         if (data != '') {
             this.#orderData = data;
             this.#totalAmountDue = data.rtn.totalAmt;
+            if (data.rtn.ccType) {
+                ccType = data.rtn.ccType;
+            }
+            if (ccType == 'stripe') {
+                currentPaymentIntentId = data.rtn.orderId;
+            }
+
         }
     }
 
@@ -1206,14 +1214,14 @@ class Portal {
                     }
                 }
             }
-            if (this.#orderData.rtn.taxAmt > 0) {
-                html += `
+
+            html += `
     <div class="row mt-1 mb-3">
         <div class="col-sm-4">Total Sales Tax:</div>
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
                     this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
-            }
+
         }
 
         if (plan == null || !done) {
@@ -1283,6 +1291,13 @@ class Portal {
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
             badges = this.#orderData.rtn.results.badges;
 
+        // if square or test, nonce is a string, if strip, its an object
+        let nonce = null;
+        if (label == 'stripe-confirm')
+            nonce = JSON.stringify(token);
+        else
+            nonce = token;
+
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = {
             loginId: config.id,
@@ -1294,7 +1309,7 @@ class Portal {
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
             otherMemberships: JSON.stringify(this.#orderMemberships),
-            nonce: token,
+            nonce: nonce,
             amount: this.#paymentAmount,
             totalAmountDue: this.#paymentAmount,
             preTaxAmount: preTaxAmount,

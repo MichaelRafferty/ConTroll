@@ -94,6 +94,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         <html lang="en">
         <head>
             <meta charset="utf-8"/>
+            <meta name='viewport' content='width=device-width, initial-scale=1' />
             <title><?php echo $title . '--' . getConfValue('con','conname', 'Missing-Conname')?> Reg</title>
             <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
             <link href='css/style.css' rel='stylesheet' type='text/css' />
@@ -111,9 +112,12 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
             <script type='text/javascript' src="jslib/global.js?v=<?php echo $globalJSversion;?>"></script>
             <script type='text/javascript' src="jslib/profile.js?v=<?php echo $globalJSversion;?>"></script>
-
             <script type='text/javascript' src="js/base.js?v=<?php echo $portalJSVersion;?>"></script>
             <?php
+           $ccType = getConfValue('cc', 'type', 'xxxxxxxxxx');
+           $jsFile = "jslib/cc_$ccType.js";
+           if (is_readable($jsFile))
+               echo "<script type='text/javascript' src='$jsFile?v=$globalJSversion'></script>\n";
 
             if(isset($js) && $js != null) {
                 foreach ($js as $script) {

@@ -9,113 +9,46 @@
 require_once("global.php");
 
 // draw_cc_html - exposed function to draw the credit card HTML window
-//      $cc = array of [cc] section of ini file
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
-    // need to create the place holder and then use elements api to add the content using the payment intent
-    /*
-    $sdk = $cc['webpaysdk'];
-    $appid = $cc['appid'];
-    $location = $cc['location'];
+function draw_cc_html($postal_code = "--", $type='all') : string {
+    if ($type == 'js') {
+        show_message("JS type integrtations of draw_cc_html are not yet supported", "error");
+        return '';
+    }
+
+    $sdk = getConfValue('cc', 'websdk', 'https://js.stripe.com/dahlia/stripe.js');
+    //$location = getConfValue('cc', 'location', null);
+    $pkkey = getConfValue('cc', 'pkkey', null);
     $postalCode = '';
     if ($postal_code != '--') {
         $postalCode = "'postalCode': '$postal_code',\n";
     }
 
     $html = '';
-    if ($type != 'body') {
+//    if ($type != 'body') {
+//        $html .= <<<EOS
+//<script src="$sdk"></script>
+//
+//<form id = "payment-form">
+//    <div class="container-fluid overflow-hidden" id="payment-element"></div>
+//    <button id = "submit">Purchase</button>
+//    <div class="mt-1 p-1" id="stripe-message"></div>
+//</form>
+//EOS;
         $html .= <<<EOS
 <script src="$sdk"></script>
-<!-- Configure the Web Payments SDK and Card payment method -->
- <script type="text/javascript">
-      ;
-      var payments = null;
-    
-      async function startCCPay() {
-          const appId = '$appid';
-          const locationId = '$location';
-          const payments = Square.payments(appId, locationId);
-          const card = await payments.card({
-              $postalCode        
-              "style": {
-                  ".input-container": {
-                      "borderColor": "blue",
-                      "borderWidth": "2px",
-                      "borderRadius": "12px",
-                  },
-                  "input": {
-                      "color": "blue",
-                      "fontSize": '24px',
-                  },
-                  "@media screen and (max-width: 600px)": {
-                      "input": {
-                          "fontSize": "24px",
-                      }
-                  }
-              }
-          });
-          document.getElementById("card-button").removeAttribute("hidden");
-          await card.attach('#card-container');
-
-          async function eventHandler(event) {
-              event.preventDefault();
-
-              try {
-                  const result = await card.tokenize();
-                  if (result.status === 'OK') {
-                      //console.log(`Payment token is ' + result.token);
-                      makePurchase(result.token, "card-button");
-                  }
-              } catch (e) {
-                  console.error(e);
-              }
-          };
-          const cardButton = document.getElementById('card-button');
-          cardButton.addEventListener('click', eventHandler);
-      }
-EOS;
-    }
-    if ($type == 'js') {
-        $html .= <<<EOS
-    
-    function startCC() {
-        if (!window.Square) {
-            throw new Error('Square.js failed to load properly');
-        }    
-          
-      startCCPay();
-      } 
-            
-EOS;
-    }
-    if ($type == 'all') {
-        $html .= <<<EOS
-      
-      document.addEventListener('DOMContentLoaded', async function () {
-         if (!window.Square) {
-            throw new Error('Square.js failed to load properly');
-          }    
-          
-          startCCPay();
-      });
-EOS;
-    }
-    if ($type == 'all' || $type == 'js') {
-        $html .= "</script>\n";
-    }
-
-    if ($type != 'js') {
-        $html .= <<<EOS
+<script src="jslib/cc_stripe_html.js"></script>
 <form id = "payment-form">
-    <div class="container-fluid overflow-hidden" id = "card-container"></div>
-    <button id = "card-button" type = "button"> Purchase</button>
+    <div class="container-fluid overflow-hidden" id="payment-element"></div>
+    <button id="purchase">Purchase</button>
+    <div class="mt-1 p-1" id="stripe-message"></div>
 </form>
+<script type='text/javascript'>
+const pkkey="$pkkey";
+</script>
 EOS;
-        }
-    */
-    $html = "<b>Stripe payment form: Not Yet</b>";
     return $html;
 };
 
@@ -172,7 +105,6 @@ function cc_getCurrency($con) : string {
 
 // build the order, pass it to stripe and get the payment intent id (order id)
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
-    $cc = get_conf('cc');
     $con = get_conf('con');
     $currency = cc_getCurrency($con);
     $currencyMultiplier = get_currencyMultiplier($currency);
@@ -224,7 +156,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // stripe locations appear to apply to devices, not api online???
     /*
     if ($locationId == null) {
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
     }
     */
 
@@ -712,6 +644,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $phpOrder['id'];
     $rtn['version'] = '1';
+    $rtn['ccType'] = 'stripe';
     $rtn['source'] = $source;
     $rtn['customerId'] = $phpOrder['customer'];
     $rtn['locationId'] = '';
@@ -730,9 +663,8 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     // need to rewrite for Stripe
     /*
     // Try updating the state of the order to CANCELED
-    $cc = get_conf('cc');
     if ($locationId == null)
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
 
     $stripeDebug = getConfValue('debug', 'square', 0);
 
@@ -781,7 +713,6 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
-    $cc = get_conf('cc');
     // need to rewrite for stripe
     /*
     $stripeDebug = getConfValue('debug', 'square', 0);
@@ -838,7 +769,6 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
-    $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
     $stripeDebug = getConfValue('debug', 'stripe', 0);
     // need to rewrite for stripe
@@ -1048,7 +978,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
-    $cc = get_conf('cc');
     // need to rewrite for stripe
     /*
     $stripeDebug = getConfValue('debug', 'square', 0);
