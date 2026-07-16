@@ -52,20 +52,20 @@ EOS;
     return $html;
 };
 
-//  from the stripe docs
-global $stripeUnitCurrencies;
-$stripeUnitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+//  from the stripe docs, useful for others, too.
+global $unitCurrencies;
+$unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
 
 // stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
 function get_currencyMultiplier($currency) {
-    global $stripeUnitCurrencies;
-    if (in_array($currency, $stripeUnitCurrencies)) {
+    global $unitCurrencies;
+    if (in_array(strtolower($currency), $unitCurrencies)) {
         return 1;
     }
     return 100;
 }
 
-function cc_getCurrency($con) : string {
+function cc_getCurrency() : string {
     // need to rewrite for stripe, return always correct for now
     $cur = strtolower(getConfValue('con', 'currency', 'USD'));
     // use the country
@@ -106,7 +106,7 @@ function cc_getCurrency($con) : string {
 // build the order, pass it to stripe and get the payment intent id (order id)
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $con = get_conf('con');
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
     $currencyMultiplier = get_currencyMultiplier($currency);
     //web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
     $stripeDebug = getConfValue('debug', 'stripe', 0);
@@ -568,7 +568,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         //TODO get/creater customer id 'customer' => $con['id'] . '-' . $custid,
         'description' => $con['conname'] . '-' . $source,
         'metadata' => $orderMetadata,
-        'setup_future_usage' => 'on_session',
+        //'setup_future_usage' => 'off_session',
     ];
 
 
@@ -769,10 +769,14 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
     $stripeDebug = getConfValue('debug', 'stripe', 0);
+
+    //web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
+    $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+
     // need to rewrite for stripe
-    /*
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -781,8 +785,10 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
 
     // 1. create payment for order
-    //  a. create payment object with order id and payment amount plus credit card nonce
-    //  b. pass payment to payment processor
+    //  a. extract the confirm id from the nonce structure passed in
+    //  b. attach the confirm to the payment intent for this order and process it
+    //  c. handle any next actions required
+    //      this is a TBD just throw an appropriate error for now.
     // 2. parse return results to return the proper information
     // failure fall through
 
@@ -809,7 +815,49 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
 
-    // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
+    // nonce = source or confirm ressponse
+    if (str_starts_with($sourceId, '{')) {
+        $confirmToken = json_decode($sourceId, true);
+        $card = $confirmToken['payment_method_preview']['card'];
+        $sourceId =$card['brand'];
+        $expire = $card['exp_month'] . '/' . $card['exp_year'];
+        $last4 = $card['last4'];
+
+        // attach the payment confirm to the payment intent
+        $orderId = $ccParams['orderId'];
+        $confirmFields = [
+            'confirmation_token' => $confirmToken['id'],
+            //'setup_future_usage' => 'off_session',
+            'return_url' => 'https://controlltest.philcon.org/test1.php',
+        ];
+        // pass order to stripe and get payment intent id
+        try {
+            if ($stripeDebug & 14) stcc_logObject(array ("payment Intent Confirm of $orderId:", json_decode(json_encode($confirmFields), true)),
+                $useLogWrite);
+            $paymentIntent = $client->paymentIntents->confirm($orderId, $confirmFields);
+            if ($stripeDebug & 14) stcc_logObject(array ("payment Intent Confirm response of $orderId", json_decode(json_encode($paymentIntent), true)), $useLogWrite);
+        }
+        catch (\Stripe\Exception\InvalidRequestException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+        }
+        catch (\Stripe\Exception\ApiErrorException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+        }
+        catch (Exception $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+        }
+    } else {
+        ajaxSuccess(array('error' => "Non credit payments not yet implimented"));
+        exit();
+    }
+
+    /*
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
         'sourceId' => $sourceId,
@@ -856,70 +904,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
 
-    $client = new SquareClient(
-        token: $cc['token'],
-        options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
-
-    try {
-        if ($stripeDebug & 14) stcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
-        $apiResponse = $client->payments->create($pbody);
-        $payment = $apiResponse->getPayment();
-        if ($stripeDebug & 14) stcc_logObject(array ('Payments API Response', json_decode(json_encode($payment), true)), $useLogWrite);
-    }
-    catch (SquareApiException $e) {
-        web_error_log('Order Square API Exception: ' . $e->getMessage());
-        $ebody = json_decode($e->getBody(),true);
-        $errors = $ebody['errors'];
-        if ($errors) {
-            if ($stripeDebug) stcc_logObject(array ('Payment returned non-success', $errors), $useLogWrite);
-            foreach ($errors as $error) {
-                $cat = $error['category'];
-                $code = $error['code'];
-                $detail = $error['detail'];
-                if ($useLogWrite) {
-                    logWrite('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
-                }
-                web_error_log('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
-
-                switch ($code) {
-                    case 'GENERIC_DECLINE':
-                        $msg = 'Card Declined';
-                        break;
-                    case 'CVV_FAILURE':
-                        $msg = 'Authorization error: Invalid CVV';
-                        break;
-                    case 'ADDRESS_VERIFICATION_FAILURE':
-                        $msg = 'Address Verification Failure: Zip Code';
-                        break;
-                    case 'INVALID_EXPIRATION':
-                        $msg = 'Authorization error: Invalid Expiration Date';
-                        break;
-                    default:
-                        $msg = $code;
-                }
-                if ($useLogWrite) {
-                    logWrite('Square card payment error for ' . $ccParams['transid'] . " of $msg");
-                }
-                web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
-
-                if ($cleanUpRegs)
-                    cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
-                exit();
-            }
-        }
-        if ($cleanUpRegs)
-            cleanRegs($ccParams['badges'], $ccParams['transid']);
-        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
-        exit();
-    }
-    catch (Exception $e) {
-        if ($cleanUpRegs)
-            cleanRegs($ccParams['badges'], $ccParams['transid']);
-        stcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
-    }
     $id = $payment->getId();
     $status = $payment->getStatus();
     if ($sourceId == 'CARD') {

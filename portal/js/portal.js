@@ -4,6 +4,11 @@ var portal = null;
 var coupon = null;
 var profile = null;
 var ccType = null;
+var currentPaymentIntentId = null;
+var currentElementsId = null;
+var currentOrder = null;
+var currentCurrency = 'usd';
+var currenMultiplier = 100;
 
 // initial setup
 window.onload = function () {
@@ -1221,7 +1226,6 @@ class Portal {
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
                     this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
-
         }
 
         if (plan == null || !done) {
@@ -1241,6 +1245,7 @@ class Portal {
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
+        startCCPay(this.#paymentAmount * 100);
     }
 
     // makePlanPayment - make a payment on a plan

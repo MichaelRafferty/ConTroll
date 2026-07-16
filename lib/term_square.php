@@ -278,7 +278,7 @@ function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : a
     $con = get_conf('con');
     $squareDebug = getConfValue('debug', 'square', 0);
 
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
 
     // get the device name
     $terminal = getTerminal($name);

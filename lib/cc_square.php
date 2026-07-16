@@ -32,7 +32,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
       ;
       var payments = null;
     
-      async function startCCPay() {
+      async function startCCPay(amount = 0) {
           const appId = '$appid';
           const locationId = '$location';
           const payments = Square.payments(appId, locationId);
@@ -73,6 +73,11 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
           };
           const cardButton = document.getElementById('card-button');
           cardButton.addEventListener('click', eventHandler);
+          if (amount > 0) {
+              stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
+          } else {
+              stripeSubmitBtn.textContent = "Purchase";
+    }
       }
 EOS;
     }
@@ -131,17 +136,29 @@ use Square\Types\OrderLineItemDiscount;
 use Square\Types\OrderLineItemDiscountScope;
 use Square\Types\OrderLineItemDiscountType;
 
-function cc_getCurrency($con) : string {
+function cc_getCurrency() : string {
     $cur = strtoupper(getConfValue('con', 'currency', 'USD'));
     $curT = Currency::from($cur);
     if ($curT) {
         $currency = $curT->value;
     } else {
-        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
-            ' not yet supported in Square, seek assistance.'));
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: Currency $cur not yet supported in Square, seek assistance."));
         exit();
     }
     return $currency;
+}
+
+//  from the stripe docs, useful for others, too.
+global $unitCurrencies;
+$unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+
+// stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
+function get_currencyMultiplier($currency) {
+    global $unitCurrencies;
+    if (in_array(strtolower($currency), $unitCurrencies)) {
+        return 1;
+    }
+    return 100;
 }
 
 // build the order, pass it to square and get the order id
@@ -156,7 +173,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
                 Environments::Production->value : Environments::Sandbox->value,
     ]);
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
 
     $loginPerid = getSessionVar('user_perid');
     $loginNewPerid = null;
@@ -314,7 +332,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'note' => $notesData['note'],
             'metadata' => $notesData['metadata'],
             'basePriceMoney' => new Money([
-                'amount' => round($results['total'] * 100),
+                'amount' => round($results['total'] * $currencyMultiplier),
                 'currency' => $currency,
             ]),
         ]);
@@ -350,7 +368,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($amount * 100 / $quantity),
+                        'amount' => round($amount * $currencyMultiplier / $quantity),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -393,7 +411,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'name' => mb_substr($couponName, 0, 128),
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => round($results['discount'] * 100),
+                    'amount' => round($results['discount'] * $currencyMultiplier),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::Order->value,
@@ -440,11 +458,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
-                    $amount = round($badge['balDue'] * 100);
+                    $amount = round($badge['balDue'] * $currencyMultiplier);
                 } else if (array_key_exists('paid', $badge)) {
-                    $amount = round(($badge['price']-$badge['paid']) * 100);
+                    $amount = round(($badge['price']-$badge['paid']) * $currencyMultiplier);
                 } else {
-                    $amount = round($badge['price'] * 100);
+                    $amount = round($badge['price'] * $currencyMultiplier);
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
@@ -551,7 +569,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($space['approved_price'] * 100),
+                        'amount' => round($space['approved_price'] * $currencyMultiplier),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -589,7 +607,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($itemPrice * 100),
+                        'amount' => round($itemPrice * $currencyMultiplier),
                         'currency' => $currency,
                         ]),
                 ]);
@@ -623,7 +641,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'metadata' => $notesData['metadata'],
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => round($deferment * 100),
+                    'amount' => round($deferment * $currencyMultiplier),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::LineItem->value,
@@ -713,8 +731,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $phpOrder = json_decode(json_encode($order), true);
     $rtn['items'] = $phpOrder['line_items'];
     $rtn['preTaxAmt'] = $orderValue;
-    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
-    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
+    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
+    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
     // build the return array of taxes applied to the order
     $rtnTaxes = [];
     if ($needTaxes) {
@@ -723,14 +741,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             $uid = $tax->getUid();
             $app = $tax->getAppliedMoney();
             $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / 100;
+            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
         }
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
+    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
     $rtn['version'] = $order->getVersion();
+    $rtn['ccType'] = 'square';
     $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['locationId'] = $order->getLocationId();
@@ -795,6 +814,8 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $squareDebug = getConfValue('debug', 'square', 0);
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
 
     $body = new Square\Orders\Requests\GetOrdersRequest([
         'orderId' => $orderId,
@@ -821,8 +842,8 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
     $rtn = array();
-    $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / 100;
-    $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
+    $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+    $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
     $rtnTaxes = [];
@@ -831,13 +852,13 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
             $uid = $tax->getUid();
             $app = $tax->getAppliedMoney();
             $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / 100;
+            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
         }
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
-    $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
-    $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / 100;
+    $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
+    $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / $currencyMultiplier;
+    $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / $currencyMultiplier;
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['order'] = $order;
 
@@ -847,7 +868,8 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
     $squareDebug = getConfValue('debug', 'square', 0);
 
     $source = 'onlinereg';
@@ -890,7 +912,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         'idempotencyKey' => guidv4(),
         'sourceId' => $sourceId,
         'amountMoney' => new Money([
-            'amount' => round($ccParams['total'] * 100),
+            'amount' => round($ccParams['total'] * $currencyMultiplier),
             'currency' => $currency,
             ]),
         'orderId' => $ccParams['orderId'],
@@ -911,11 +933,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         // add cash fields
         $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
             'buyerSuppliedMoney' => new Money([
-                'amount' => round($buyerSuppliedMoney * 100),
+                'amount' => round($buyerSuppliedMoney * $currencyMultiplier),
                 'currency' => $currency,
                 ]),
             'changeBackMoney' => new Money([
-                'amount' => round($change * 100),
+                'amount' => round($change * $currencyMultiplier),
                 'currency' => $currency,
             ]),
         ]);
@@ -1000,7 +1022,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $id = $payment->getId();
     $status = $payment->getStatus();
     if ($sourceId == 'CARD') {
-        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
+        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / $currencyMultiplier;
         $last4 = $payment->getCardDetails()->getCard()->getLast4();
         $auth = $payment->getCardDetails()->getAuthResultCode();
     } else {

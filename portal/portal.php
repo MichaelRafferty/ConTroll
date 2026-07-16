@@ -92,6 +92,8 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
+
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;

@@ -6,7 +6,7 @@ const currencyFmt = new Intl.NumberFormat(config.locale, {
     currency: config.currency,
 });
 
-function startCCPay(amount) {
+function startCCPay(amount = 0) {
     const stripeSubmitBtn = document.getElementById('purchase');
     stripe = Stripe(pkkey);
     // set listener
@@ -35,6 +35,7 @@ function startCCPay(amount) {
             elements,
             params: {
                 return_url: config.payRedirectURL,
+                //setup_future_usage: "off_session",
             },
         });
 
@@ -45,14 +46,19 @@ function startCCPay(amount) {
             return;
         }
 
+        console.log(confirmationToken);
         makePurchase(confirmationToken, "stripe-confirm");
     });
 
-    stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount/stripeCurrenMultiplier).toFixed(2));
+    if (amount > 0) {
+        stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
+    } else {
+        stripeSubmitBtn.textContent = "Purchase";
+    }
     const options = {
         mode: 'payment',
         amount: amount,
-        currency: stripeCurrency,
+        currency: currentCurrency,
         paymentMethodCreation: 'manual',
     };
     elements = stripe.elements(options);
