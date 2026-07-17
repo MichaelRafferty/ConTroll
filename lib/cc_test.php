@@ -539,7 +539,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     return $rtn;
 }
 
-// fetch an order to get its details (stub, bypass and test don't keep orders)
+// fetch an order to get its details (test doesn't keep orders)
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null {
     return $_SESSION['ccTestOrder'];
 }

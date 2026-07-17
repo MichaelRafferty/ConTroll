@@ -22,14 +22,6 @@ function load_cc_procs() : void {
             }
             require_once("cc_test.php");
             break;
-        case 'bypass':
-            if (isDirectAllowed()) {
-                require_once("cc_bypass.php");
-                break;
-            } else {
-                echo "Bypass is not a valid credit card processor for this configuration\n";
-                exit();
-            }
         default:
             echo "No valid credit card processor defined\n";
             exit();

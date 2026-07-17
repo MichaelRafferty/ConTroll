@@ -23,14 +23,6 @@ function load_term_procs() : void {
             }
             require_once("term_test.php");
             break;
-        case 'bypass':
-            if (isDirectAllowed()) {
-                require_once("term_bypass.php");
-                break;
-            } else {
-                echo "Bypass is not a valid credit card terminal provider for this configuration\n";
-                exit();
-            }
         default:
             echo "No valid credit card terminal provider defined\n";
             exit();
