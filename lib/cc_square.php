@@ -65,15 +65,25 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
 
           async function eventHandler(event) {
               event.preventDefault();
+              
+              const submitBtn =  document.getElementById("card-button");
+              let priorText = submitBtn.textContent;
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Processing...';
 
               try {
                   const result = await card.tokenize();
                   if (result.status === 'OK') {
                       //console.log(`Payment token is ' + result.token);
                       makePurchase(result.token, "card-button");
+                  } else {
+                      submitBtn.textContent = priorText;
+                      submitBtn.disabled = false;
                   }
               } catch (e) {
                   console.error(e);
+                  submitBtn.textContent = priorText;
+                  submitBtn.disabled = false;
               }
           };
           const cardButton = document.getElementById('card-button');
@@ -83,6 +93,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
           } else {
               cardButton.textContent = "Purchase";
           }
+          cardButton.disabled = false;
     }
 EOS;
     }
