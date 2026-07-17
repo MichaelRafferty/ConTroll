@@ -77,8 +77,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
               cardButton.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
           } else {
               cardButton.textContent = "Purchase";
-    }
-      }
+          }
 EOS;
     }
     if ($type == 'js') {
@@ -106,7 +105,7 @@ EOS;
       });
 EOS;
     }
-    if ($type == 'all' || $type == 'js') {
+    if ($type == 'all' || $type == 'js' || $type == 'portal') {
         $html .= "</script>\n";
     }
 
