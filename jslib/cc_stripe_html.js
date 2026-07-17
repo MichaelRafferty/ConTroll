@@ -51,7 +51,7 @@ function startCCPay(amount = 0) {
     });
 
     if (amount > 0) {
-        stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
+        stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currentMultiplier).toFixed(2));
     } else {
         stripeSubmitBtn.textContent = "Purchase";
     }

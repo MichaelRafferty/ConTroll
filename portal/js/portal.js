@@ -8,10 +8,12 @@ var currentPaymentIntentId = null;
 var currentElementsId = null;
 var currentOrder = null;
 var currentCurrency = 'usd';
-var currenMultiplier = 100;
+var currentMultiplier = 100;
 
 // initial setup
 window.onload = function () {
+    currentCurrency = config.currency;
+    currentMultiplier = config.currencyMultiplier;
     if (config.loadPlans) {
         paymentPlans = new PaymentPlans();
     }
