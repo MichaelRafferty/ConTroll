@@ -74,9 +74,9 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
           const cardButton = document.getElementById('card-button');
           cardButton.addEventListener('click', eventHandler);
           if (amount > 0) {
-              stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
+              cardButton.textContent = "Pay " + currencyFmt.format(Number(amount / currenMultiplier).toFixed(2));
           } else {
-              stripeSubmitBtn.textContent = "Purchase";
+              cardButton.textContent = "Purchase";
     }
       }
 EOS;

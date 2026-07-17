@@ -690,7 +690,7 @@ function draw_makePaymentModal() : void {
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-12'><?php echo draw_cc_html(); ?></div>
+                            <div class='col-sm-12'><?php echo draw_cc_html('--', 'portal'); ?></div>
                         </div>
                         <div class='row mt-2'>
                             <div class='col-sm-auto'>
