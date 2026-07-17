@@ -31,6 +31,11 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
  <script type="text/javascript">
       ;
       var payments = null;
+      
+      const currencyFmt = new Intl.NumberFormat(config.locale, {
+          style: 'currency',
+          currency: config.currency,
+      });
     
       async function startCCPay(amount = 0) {
           const appId = '$appid';
