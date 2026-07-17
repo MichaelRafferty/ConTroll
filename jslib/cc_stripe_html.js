@@ -58,7 +58,7 @@ function startCCPay(amount = 0) {
     const options = {
         mode: 'payment',
         amount: amount,
-        currency: currentCurrency,
+        currency: config.ccCurrency,
         paymentMethodCreation: 'manual',
     };
     elements = stripe.elements(options);

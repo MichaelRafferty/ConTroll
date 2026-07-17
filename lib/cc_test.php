@@ -197,7 +197,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item['taxes'] = buildTestAppliedTaxArray('artSales', $lineid);
+                    $item['taxes'] = buildCCAppliedTaxArray('artSales', $lineid);
                     $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
                 }
                 $orderLineItems[] = $item;
@@ -302,7 +302,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     }
 
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $taxArray = buildTestAppliedTaxArray($badgeTaxable, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -406,7 +406,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildTestAppliedTaxArray($spaceType, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -441,7 +441,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildTestAppliedTaxArray('artShipping', $lineid);
+                    $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;

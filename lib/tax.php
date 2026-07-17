@@ -111,7 +111,7 @@ function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     return $taxArray;
 }
 
-function buildTestAppliedTaxArray($taxitem = '', $lineid = 0) : array {
+function buildCCAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     global $taxRates;
     $taxArray = array();
     $prefix = $taxitem;
@@ -151,7 +151,7 @@ function buildSquareOrderTaxArray() : array {
     return $taxArray;
 }
 
-function buildTestOrderTaxArray() : array {
+function buildCCOrderTaxArray() : array {
     global $taxRates;
     $taxArray = array();
 

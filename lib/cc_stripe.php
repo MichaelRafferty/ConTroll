@@ -75,11 +75,11 @@ function cc_getCurrency() : string {
     $countrySpec = null;
 
     try {
-        if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
+        if ($stripeDebug & 32) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
         // get a client reference
         $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
         $countrySpec = $client->countrySpecs->retrieve($country, []);
-        if ($stripeDebug & 14) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
+        if ($stripeDebug & 32) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Invalid Country in system configuration, seek assistance.', $useLogWrite);;
@@ -151,7 +151,42 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     $customerID = null;
+    /*
     // look up if customer exists
+    $customerLookup = [
+        'query' => "customer_account:'$custid'",  // it says we cannot search by customer_account, and I see no way to assign an account to a customer
+        'limit' => 10,
+    ];
+
+    // query the customer id
+    try {
+        if ($stripeDebug & 14) stcc_logObject(array ('customer query', json_decode(json_encode($customerLookup), true)), $useLogWrite);
+        $customers = $client->customers->search($customerLookup);
+        if ($stripeDebug & 14) stcc_logObject(array ('customer query response', json_decode(json_encode($customers), true)), $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        if ($cleanUpRegs)
+            cleanRegs($results['badges'], $results['transid']);
+        stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        if ($cleanUpRegs)
+            cleanRegs($results['badges'], $results['transid']);
+        stcc_logException('cc_getCurrency', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+    }
+    catch (Exception $e) {
+        if ($cleanUpRegs)
+            cleanRegs($results['badges'], $results['transid']);
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+
+    if (array_key_exists('data', $customers))
+        $custData = $customers['data'];
+    else
+        $custData = [];
+*/
+
+
 
     // stripe locations appear to apply to devices, not api online???
     /*
@@ -508,21 +543,16 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderMetadata['mim' . $itemNumber] = json_encode($notesData['metadata']);
                 $orderValue += $itemPrice;
 
-                //TODO taxes on shipping fees
-                /*
                 // apply taxes to mail in fees based on the artShipping flag
                 if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildSquareAppliedTaxArray('artShipping', $lineid);
+                    $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
-                    $item->setAppliedTaxes($taxArray);
+                    $orderMetadata['mit'] = json_encode($taxArray);
+                    //TODO apply tax to order tax value
                 }
-
-                $orderLineitems[] = $item;
-                $orderValue += $itemPrice;
-                */
                 $lineid++;
             }
         }
@@ -556,6 +586,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $amount_details['discount_amount'] = $orderDiscount;
     }
     $amountDetails['line_items'] = $orderLineitems;
+
+    // get the stripe customer if it exists, if not create it.
 
     $orderFields = [
         'amount' => round($orderValue * $currencyMultiplier),
@@ -776,7 +808,18 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     //web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
     $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
 
-    // need to rewrite for stripe
+    // empty the return variables
+    $auth = '';
+    $txtime = '';
+    $last4 = '';
+    $auth = '';
+    $nonce = '';
+    $receipt_url = '';
+    $receipt_number = '';
+    $desc = '';
+    $status = '';
+    $approved_amt = 0;
+    $payment = null;
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -806,7 +849,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
         $buyer['phone'] = '';
 
-    $sourceId = $ccParams['nonce'];
+    $sourceIdStr = $ccParams['nonce'];
     if (array_key_exists('change', $ccParams)) {
         $change = $ccParams['change'];
     } else {
@@ -816,8 +859,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $paymentType = 'credit';
 
     // nonce = source or confirm ressponse
-    if (str_starts_with($sourceId, '{')) {
-        $confirmToken = json_decode($sourceId, true);
+    if (str_starts_with($sourceIdStr, '{')) {
+        $confirmToken = json_decode($sourceIdStr, true);
         $card = $confirmToken['payment_method_preview']['card'];
         $sourceId =$card['brand'];
         $expire = $card['exp_month'] . '/' . $card['exp_year'];
@@ -825,6 +868,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
         // attach the payment confirm to the payment intent
         $orderId = $ccParams['orderId'];
+        $desc = 'Stripe: ' . $sourceId;
+        $id = $orderId;
         $confirmFields = [
             'confirmation_token' => $confirmToken['id'],
             //'setup_future_usage' => 'off_session',
@@ -855,6 +900,49 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     } else {
         ajaxSuccess(array('error' => "Non credit payments not yet implimented"));
         exit();
+    }
+
+    // if type is charge, get the charge response as well
+    $charge = null;
+    $payment = json_decode(json_encode($paymentIntent), true);
+    $chargePHP = [];
+    if (array_key_exists('latest_charge', $payment)) {
+        $chargeId = $payment['latest_charge'];
+        if ($chargeId != null && $chargeId != '') {
+            try {
+                if ($stripeDebug & 14) stcc_logObject(array ("retrive charge $chargeId"), $useLogWrite);
+                $charge = $client->charges->retrieve($chargeId, []);
+                $chargePHP = json_decode(json_encode($charge), true);
+                if ($stripeDebug & 14) stcc_logObject(array ("charge response of $chargeId", $chargePHP),
+                    $useLogWrite);
+            }
+            catch (\Stripe\Exception\InvalidRequestException $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
+                stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+            }
+            catch (\Stripe\Exception\ApiErrorException $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
+                stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+            }
+            catch (Exception $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
+                error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+            }
+        }
+
+        $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
+        $card = $charge['payment_method_details']['card'];
+        $last4 = $card['last4'];
+        $nonce = $card['brand'] . '-' . $last4;
+        $auth = substr($card['fingerprint'], 0, 16);
+        $receipt_url = $chargePHP['receipt_url'];
+        $receipt_number = $chargePHP['id'];
+        $id = $chargePHP['id'];
+        $txtime = date('Y/m/d H:i:s T', $chargePHP['created']);
+        $status = $chargePHP['outcome']['seller_message'];
     }
 
     /*
@@ -920,6 +1008,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
+    */
+
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {
        $category =  $ccParams['exhibits'];
@@ -935,7 +1025,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
-        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $id, $loginPerid);
+        $txtime,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $orderId, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
@@ -952,11 +1042,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['description'] = $desc;
     $rtn['source'] = $source;
     $rtn['amount'] = $approved_amt;
-    $rtn['nonce'] = $ccParams['nonce'];
+    $rtn['nonce'] = $nonce;
     $rtn['change'] = $change;
-    */
-
-    $rtn = array(); // placeholder
     return $rtn;
 }
 
