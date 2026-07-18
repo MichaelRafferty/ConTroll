@@ -706,7 +706,7 @@ class Portal {
                 id.disabled = readOnly;
             }
             id = document.getElementById('i_d_' + interest.interest);
-            id.hidden = interest.interested != 'Y';
+            id.hidden = (interest.interested != 'Y' || interest.notesPrompt.trim() == '');
             id = document.getElementById('i_p_' + interest.interest);
             if (id)
                 id.innerHTML = interest.notesPrompt;
@@ -730,9 +730,7 @@ class Portal {
     updateInterestSelect(id) {
         let checked = document.getElementById('i_' + id).checked;
         let prompt = document.getElementById('i_p_' + id).innerHTML;
-        if (prompt != '') {
-            document.getElementById('i_d_' + id).hidden = !checked;
-        }
+        document.getElementById('i_d_' + id).hidden = ((!checked) || prompt.trim() == '');
     }
 
     // called on the close buttons for the modal, confirm close with changes pending
