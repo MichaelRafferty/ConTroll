@@ -1,7 +1,7 @@
 /* cc_stripe_html.js: javascript for stripe draw_cc_html
  */
 var elements = null;
-const currencyFmt = new Intl.NumberFormat(config.locale, {
+const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
     currency: config.currency,
 });
@@ -51,7 +51,7 @@ function startCCPay(amount = 0) {
     });
 
     if (amount > 0) {
-        stripeSubmitBtn.textContent = "Pay " + currencyFmt.format(Number(amount / currentMultiplier).toFixed(2));
+        stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currentMultiplier).toFixed(2));
     } else {
         stripeSubmitBtn.textContent = "Purchase";
     }

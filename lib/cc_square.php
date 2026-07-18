@@ -32,7 +32,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
       ;
       var payments = null;
       
-      const currencyFmt = new Intl.NumberFormat(config.locale, {
+      const currencyFmtCC = new Intl.NumberFormat(config.locale, {
           style: 'currency',
           currency: config.currency,
       });
@@ -89,7 +89,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
           const cardButton = document.getElementById('card-button');
           cardButton.addEventListener('click', eventHandler);
           if (amount > 0) {
-              cardButton.textContent = "Pay " + currencyFmt.format(Number(amount / currentMultiplier).toFixed(2));
+              cardButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currentMultiplier).toFixed(2));
           } else {
               cardButton.textContent = "Purchase";
           }

@@ -13,6 +13,8 @@ require_once("global.php");
 //
 
 function draw_cc_html($postal_code = "--", $type='all') : string {
+    global $libJSversion;
+
     if ($type == 'js') {
         show_message("JS type integrtations of draw_cc_html are not yet supported", "error");
         return '';
@@ -39,7 +41,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
 //EOS;
         $html .= <<<EOS
 <script src="$sdk"></script>
-<script src="jslib/cc_stripe_html.js"></script>
+<script src="jslib/cc_stripe_html.js?v=$libJSversion"></script>
 <form id = "payment-form">
     <div class="container-fluid overflow-hidden" id="payment-element"></div>
     <button id="purchase">Purchase</button>
