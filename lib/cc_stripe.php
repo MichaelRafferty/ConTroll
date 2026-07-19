@@ -906,6 +906,16 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     // if type is charge, get the charge response as well
     $charge = null;
     $payment = json_decode(json_encode($paymentIntent), true);
+    if (array_key_exists('status', $payment) && $payment['status'] == 'requires_action') {
+        // return the payment intent
+        ajaxSuccess(array(
+            'status' => 'next',
+            'intentStatus' => $payment['status'],
+            'clientSecret' => $payment['client_secret'],
+            )
+        );
+        exit();
+    }
     $chargePHP = [];
     if (array_key_exists('latest_charge', $payment)) {
         $chargeId = $payment['latest_charge'];
