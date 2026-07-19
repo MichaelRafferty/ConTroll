@@ -98,8 +98,7 @@ EOS;
         );
         $newERYId = dbSafeInsert($eRYI, 'iissiiiidii', $valueArray);
         if ($newERYId === false) {
-            error_log("Unable to insert new exhibitRegionYear");
-            var_error_log($valueArray);
+            labeled_error_log("exhibitsCheckOrBuild/Unable to insert new exhibitRegionYear-valueArray", $valueArray);
             continue;
         }
         
@@ -117,8 +116,7 @@ EOS;
             );
             $newESId = dbSafeInsert($eSI, 'isssiii', $valueArray);
             if ($newESId === false) {
-                error_log('Unable to insert new exhibitsSpaces');
-                var_error_log($valueArray);
+                labeled_error_log('exhibitsCheckOrBuild/Unable to insert new exhibitsSpaces-valueArray', $valueArray);
                 continue;
             }
 
@@ -136,8 +134,7 @@ EOS;
                 );
                 $newESPId = dbSafeInsert($eSPI, 'issddiiii', $valueArray);
                 if ($newESPId === false) {
-                    error_log('Unable to insert new exhibitsSpaces');
-                    var_error_log($valueArray);
+                    labeled_error_log('exhibitsCheckOrBuild/Unable to insert new exhibitsSpaces-valueArray', $valueArray);
                 }
             }
         }

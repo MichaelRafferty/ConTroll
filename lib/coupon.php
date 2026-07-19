@@ -304,8 +304,7 @@ function apply_overall_discount($coupon, $total) {
         $coupon = $result['coupon'];
         if (array_key_exists('mtypes', $result))
             $mtypes = $result['mtypes'];
-        //web_error_log("coupon:");
-        //var_error_log($coupon);
+        //labeled_error_log("apllyCouponToBadges/coupon", $coupon);
 
 
 // now apply the price discount to the array

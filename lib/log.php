@@ -24,3 +24,15 @@ function logWrite($message) {
   fprintf($fh, "%s\n", $res);
   logClose($fh);
   }
+
+function labeled_logWrite($message, $object) {
+    global $logFile;
+    if ($logFile == null || $logFile == '')
+        return;
+    $now = date('Y/m/d H:i:s');
+    $fh = logStart($logFile);
+    fprintf($fh, "\n%s: %s\n", $now, $message);
+    $res = print_r($object, true);
+    fprintf($fh, "%s\n", $res);
+    logClose($fh);
+}

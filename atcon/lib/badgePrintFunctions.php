@@ -35,7 +35,7 @@ function init_file($printer)//:string {
     if (!$tempfile) {
         $response['error'] = 'Unable to get unique file';
         $response['error_message'] = error_get_last();
-        //var_error_log($response);
+        //labeled_error_log("badgePrintFunctions/init_file-temperror", $response);
         ajaxSuccess($response);
         exit();
     }
@@ -393,7 +393,7 @@ function print_receipt($printer, $receipt)//:string | false {
     if (!$tempfile) {
         $response['error'] = 'Unable to get unique file';
         $response['error_message'] = error_get_last();
-        //var_error_log($response);
+        //labeled_error_log("badgePrintFunctions/print_receipt-temperror", $response);
         ajaxSuccess($response);
         exit();
     }
@@ -434,6 +434,6 @@ function print_receipt($printer, $receipt)//:string | false {
     $result = exec($command,$output,$result_code);
     web_error_log("executing command '$command' returned '$result', code: $result_code");
     unlink($tempfile); // TODO make this a configuration option
-    //var_error_log($output);
+    //labeled_error_log("badgePrintFunctions/print_receipt-output", $output);
     return $result_code;
 }

@@ -17,7 +17,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     exit();
 }
 
-//var_error_log($_POST);
+//labeled_error_log("regadmin_updateRules-_Post", $_POST);
 
 if (!(array_key_exists('action', $_POST) && array_key_exists('rules', $_POST))) {
     $response['error'] = 'Argument Error';

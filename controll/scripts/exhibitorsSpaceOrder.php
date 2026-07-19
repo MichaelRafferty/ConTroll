@@ -172,7 +172,7 @@ $includedMembershipsComputed = 0;
 $additionalMembershipsComputed = 0;
 $spaces = [];
 while ($space =  $spaceR->fetch_assoc()) {
-    var_error_log($space);
+    labeled_error_log("exhibitsSpaceOrder-space", $space);
     $spaces[$space['spaceId']] = $space;
     $spacePriceComputed += $space['approved_price'];
     $includedMembershipsComputed = max($includedMembershipsComputed, $space['includedMemberships']);

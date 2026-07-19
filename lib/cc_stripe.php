@@ -77,11 +77,11 @@ function cc_getCurrency() : string {
     $countrySpec = null;
 
     try {
-        if ($stripeDebug & 32) stcc_logObject(array ('countrySpecs->retrieve', $country), $useLogWrite);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/get_currency-countrySpecs->retrieve', $country, $useLogWrite);
         // get a client reference
         $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
         $countrySpec = $client->countrySpecs->retrieve($country, []);
-        if ($stripeDebug & 32) stcc_logObject(array ('countrySpecs->retrieve response', json_decode(json_encode($countrySpec), true)), $useLogWrite);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/countrySpecs->retrieve response', $countrySpec, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Invalid Country in system configuration, seek assistance.', $useLogWrite);;
@@ -162,9 +162,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // query the customer id
     try {
-        if ($stripeDebug & 14) stcc_logObject(array ('customer query', json_decode(json_encode($customerLookup), true)), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query', $customerLookup, $useLogWrite);
         $customers = $client->customers->search($customerLookup);
-        if ($stripeDebug & 14) stcc_logObject(array ('customer query response', json_decode(json_encode($customers), true)), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query response',$customers, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         if ($cleanUpRegs)
@@ -616,9 +616,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // pass order to stripe and get payment intent id
     try {
-        if ($stripeDebug & 14) stcc_logObject(array ('payment Intent Create', json_decode(json_encode($orderFields), true)), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/payment Intent Create-orderFields', $orderFields, $useLogWrite);
         $paymentIntent = $client->paymentIntents->create($orderFields);
-        if ($stripeDebug & 14) stcc_logObject(array ('payment Intent response', json_decode(json_encode($paymentIntent), true)), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/payment Intent response', $paymentIntent, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
@@ -723,10 +723,10 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     // pass update to cancel state to square
     $rtn = null;
     try {
-          if ($stripeDebug & 12) stcc_logObject(array ('Orders API order update', $body), $useLogWrite);
+          if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order update-body', $body, $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($stripeDebug & 12) stcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
+          if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order update response', $order, $useLogWrite);
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
@@ -763,10 +763,10 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($stripeDebug & 12) stcc_logObject(array ('Orders API order create', $body), $useLogWrite);
+        if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order create-body', $body, $useLogWrite);
         $apiResponse = $client->orders->get($body);
         $order = $apiResponse->getOrder();
-        if ($stripeDebug & 12) stcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+        if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order response', $order, $useLogWrite);
     }
     catch (SquareApiException $e) {
         stcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
@@ -879,10 +879,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ];
         // pass order to stripe and get payment intent id
         try {
-            if ($stripeDebug & 14) stcc_logObject(array ("payment Intent Confirm of $orderId:", json_decode(json_encode($confirmFields), true)),
-                $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
             $paymentIntent = $client->paymentIntents->confirm($orderId, $confirmFields);
-            if ($stripeDebug & 14) stcc_logObject(array ("payment Intent Confirm response of $orderId", json_decode(json_encode($paymentIntent), true)), $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment Intent Confirm response of $orderId-paymentIntent", $paymentIntent, $useLogWrite);
         }
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
@@ -912,11 +911,10 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $chargeId = $payment['latest_charge'];
         if ($chargeId != null && $chargeId != '') {
             try {
-                if ($stripeDebug & 14) stcc_logObject(array ("retrive charge $chargeId"), $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive charge $chargeId", $chargeId, $useLogWrite);
                 $charge = $client->charges->retrieve($chargeId, []);
                 $chargePHP = json_decode(json_encode($charge), true);
-                if ($stripeDebug & 14) stcc_logObject(array ("charge response of $chargeId", $chargePHP),
-                    $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/charge response of $chargeId", $chargePHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
@@ -1067,10 +1065,10 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($stripeDebug & 14) stcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/Payments API get payment-body', $body, $useLogWrite);
         $apiResponse = $client->payments->get($body);
         $payment = json_decode(json_encode($apiResponse->getPayment()), true);
-        if ($stripeDebug & 14) stcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_Stripe/Payments API get payment-payment', $payment, $useLogWrite);
     }
     catch (SquareApiException $e) {
         stcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
@@ -1085,21 +1083,18 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     return $payment;
 }
 
-function stcc_logObject($objArray, $useLogWrite = false) : void {
+function stcc_logObject($message, $objArray, $useLogWrite = false) : void {
+    $response = json_encode($objArray);
+    $response = json_decode($response, true);
     if ($useLogWrite) {
-        logWrite($objArray);
+        labeled_logWrite($message, $response);
     } else {
-        web_error_log($objArray[0]);
-        // stretched out for debugging breaksteps to see it in the debugger
-        $response = json_encode($objArray[1]);
-        $response = json_decode($response, true);
-        var_error_log($response, true);
+        labeled_error_log($message, $response);
     }
 }
 
 function stcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
-    error_log("$message:" . $e->getMessage());
-    var_error_log($e);
+    labeled_error_log("$message:" . $e->getMessage(), $e);
     if ($doExit) {
         ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage<br/>Ask them to check the logs."));
         exit();

@@ -166,7 +166,7 @@ $additionalMembershipsComputed = 0;
 $spaces = [];
 $mailIn = [];
 while ($space =  $spaceR->fetch_assoc()) {
-    var_error_log($space);
+    labeled_error_log("spaceOrder-space", $space);
     $spaces[$space['spaceId']] = $space;
     $spacePriceComputed += $space['approved_price'];
     $includedMembershipsComputed = max($includedMembershipsComputed, $space['includedMemberships']);

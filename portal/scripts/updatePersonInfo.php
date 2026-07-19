@@ -98,8 +98,7 @@ if (array_key_exists('age', $person)) {
 
 // temporary diagnostic, why are the other fields found and country is not found sometimes. (Rarely)
 if ($person['country'] == NULL || $person['country'] == '') {
-    error_log("Country missing on this post:");
-    var_error_log($_POST);
+    labeled_error_log("updatePersonalInfo-Country missing on this post", $_POST);
     //$person['country'] = 'USA'; // and force it to use as the default.
 }
 

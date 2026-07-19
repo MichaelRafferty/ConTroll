@@ -451,7 +451,7 @@ function sqterm_logObject($squareDebug, $objArray, $useLogWrite = false) : void 
         // stretched out for debugging breaksteps to see it in the debugger
         $response = json_encode($objArray[1]);
         $response = json_decode($response, true);
-        var_error_log($response, true);
+        labeled_error_log("term_square/sqterm_logobject-response", $response, true);
     }
 }
 

@@ -90,14 +90,10 @@ if (array_key_exists('location_portal', $cc)) {
 $conid = $condata['id'];
 logInit($log['reg']);
 $source = 'onlinereg';
-//web_error_log("badgestruct");
-//var_error_log($badgestruct);
-//web_error_log("couponCode");
-//var_error_log($couponCode);
-//web_error_log("nonce");
-//var_error_log($nonce);
-//web_error_log("purchaseform");
-//var_error_log($purchaseform);
+//labeled_error_log("makePurchase-badgestruct", $badgestruct);
+//labeled_error_log("makePurchase-couponCode", $couponCode);
+//labeled_error_log("makePurchase-nonce", $nonce);
+//labeled_error_log("makePurchase-purchaseform", $purchaseform);
 
 // we now have an array of badges, it needs to be priced, checked for rules, and have coupons applied.
 // first load all the data to process the items
@@ -475,7 +471,7 @@ $response = array(
   "trans"=>$transId,
   "email_error"=>$error_code
 );
-//var_error_log($response);
+//labeled_error_log('makePurchase-response', $response);
 ajaxSuccess($response);
 
 // cleanup up on a credit card failure (order or payment)

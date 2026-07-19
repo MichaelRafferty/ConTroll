@@ -114,8 +114,7 @@ EOS;
         // now update the session to show the new id
         setSessionVar('id', $perid);
         setSessionVar('idType', 'p');
-        error_log("Warning: resolved session of $perid");
-        var_error_log($updates);
+        labeled_error_log("isResolvedBanned-Warning: resolved session of $perid", $updates);
         return $updates;
     }
 

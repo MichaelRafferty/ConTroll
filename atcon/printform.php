@@ -80,7 +80,7 @@ while ($day <= $end) {
     $day += 24*60*60;
 }
 $dayQ->free();
-//var_error_log($days);
+//labeled_error_log("printform days", $days);
 
 ?>
 <div class='container-fluid mt-4'>

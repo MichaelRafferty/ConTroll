@@ -480,7 +480,7 @@ $response = array(
 
 unsetSessionVar('transId');
 unsetSessionVar('totalDue');
-//var_error_log($response);
+//labeled_error_log("portalPayment-response", $response);
 ajaxSuccess($response);
 return;
 

@@ -21,8 +21,7 @@ $con = get_conf('con');
 $conid=$con['id'];
 $nextconid=$conid + 1;
 
-//var_error_log($_POST);
-
+//labeled_error_log("c/regadmin_updateCondata-_POST", $_POST);
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
@@ -120,8 +119,7 @@ EOS;
                 }
             }
         }
-        //error_log("Keys to delete =");
-        //var_error_log($delete_keys);
+        //labeled_error_log("regadmin_updateConData/Keys to delete-delete_keys', $delete_keys);
         $deleted = 0;
         $inserted = 0;
         $updated = 0;
@@ -165,8 +163,7 @@ EOS;
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
                     $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'], IFNULL($row['badgeLabel'],''));
-                //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
-                //var_error_log($paramarray);
+                //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
@@ -174,8 +171,7 @@ EOS;
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
                     $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],IFNULL($row['badgeLabel'],''),$row['id']);
-                //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
-                //var_error_log($paramarray);
+                //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
             }
         }

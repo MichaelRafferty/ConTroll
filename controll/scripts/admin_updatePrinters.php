@@ -48,10 +48,8 @@ if (array_key_exists('servers', $_POST))
 else
     $servers = [];
 
-//web_error_log('updatePrinters: Servers:');
-//var_error_log($servers);
-//web_error_log('updatePrinters: Printers:');
-//var_error_log($printers);
+//labeled_error_log('c/admin_updatePrinters: Servers:', $servers);
+//labeled_error_log('c/admin_updatePrinters: Printers:', $printers);
 
 $servers_updated = 0;
 $servers_added = 0;
