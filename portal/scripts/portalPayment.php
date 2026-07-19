@@ -242,7 +242,7 @@ if ($amount > 0) {
     $rtn = cc_payOrder($results, $buyer, true);
 
 //log payment
-    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    labeled_logWrite("portalPayment-return from cc_payOrder", array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
 
     $approved_amt = $rtn['amount'];
     $type = $rtn['paymentType'];
@@ -329,9 +329,9 @@ if ($newplan == 1) {
         $transId, $planRec['balanceDue'], $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
     if ($newPlanId == false || $newPlanId < 0) {
-        logWrite(array("plan msg"=>"create of plan failed", "plan data" => $valArray ));
+        labeled_logWrite('p/portalPayment-plan create error', array("plan msg"=>"create of plan failed", "plan data" => $valArray ));
     } else {
-        logWrite(array("plan id" => $newPlanId, 'plan data' => $valArray));
+        labeled_logWrite('p/portalPayment-plan build', array("plan id" => $newPlanId, 'plan data' => $valArray));
     }
     $planRec['payorPlanId'] = $newPlanId;
 } else if ($planPayment == 1) {

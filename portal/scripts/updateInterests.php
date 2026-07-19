@@ -61,5 +61,5 @@ $response['status'] = 'success';
 $response['logmessage'] = $rows_upd == 0 ? "No changes" : "$rows_upd interests updated";
 $response['message'] = 'Interests successfully updated';
 logInit($log['reg']);
-logWrite($response);
+labeled_logWrite('p/updateInterests-response', $response);
 ajaxSuccess($response);

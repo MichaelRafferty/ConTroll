@@ -125,9 +125,9 @@ $results = array(
 );
 $response['amount'] = $amount;
 
-//log requested badges
+//log art to check out
 
-logWrite(array('con'=>$con['label'], 'payorId'=>$payorId, 'results'=>$results, 'request'=>$art));
+labeled_logWrite('artpos_buildOrder data', array('con'=>$con['label'], 'payorId'=>$payorId, 'results'=>$results, 'request'=>$art));
 
 $locationId = getSessionVar('terminal');
 if ($locationId) {
@@ -146,7 +146,8 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'payorId' => $payorId, 'error' => 'Order unable to be created'));
+    labeled_logWrite('artpos_buildOrder-cc_bulldOrder returned null',
+        array ('con' => $con['label'], 'payorId' => $payorId, 'error' => 'Order unable to be created'));
     ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
@@ -170,6 +171,6 @@ $valArray[] = $transId;
 $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 $response['rtn'] = $rtn;
-logWrite(array('con' => $con['label'], 'payorId' => $payorId, 'ccrtn' => $rtn));
+labeled_logWrite('artpos_buildorder-rtn', array('con' => $con['label'], 'payorId' => $payorId, 'ccrtn' => $rtn));
 ajaxSuccess($response);
 return;

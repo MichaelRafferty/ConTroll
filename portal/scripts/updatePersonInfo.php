@@ -153,6 +153,6 @@ $response['status'] = 'success';
 $response['logmessage'] = $message;
 $response['message'] = 'Information successfully updated';
 logInit($log['reg']);
-logWrite($response);
+labeled_logWrite('p/updatePersonInfo-response', $response);
 
 ajaxSuccess($response);
