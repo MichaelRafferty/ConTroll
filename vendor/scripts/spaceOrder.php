@@ -457,15 +457,17 @@ $results = array(
 $response['orderResults'] = $results;
 
 //log requested badges
-logWrite(array('Title' => 'Pre cc_makeOrder', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces,
-    'trans' => $transId, 'results' => $results, 'request' => $badges));
+labeled_logWrite('spaceOrder-build order request',
+    array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transId, 'results' => $results,
+        'request' => $badges));
 
 // end compute, create the order if there is something to pay
 if ($totprice > 0) {
     $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+        labeled_logWrite('spaceOrder/cc_buildOrder returned null',
+            array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
 
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanupRegs($badgeResults);
@@ -473,7 +475,8 @@ if ($totprice > 0) {
         exit();
     }
     $order = $rtn['order'];
-    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    labeled_logWrite('spaceOrder-order',
+        array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $referenceId = $transId . '-' . 'pay-' . time();
     $results = array(
         'source' => $portalType,

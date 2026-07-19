@@ -168,12 +168,13 @@ if ($totprice > 0) {
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanRegs($badgeResults, $transId);
         // note there is no reason cc_PayOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
+        labeled_logWrite('spacePayment-cc_payOrder returned null',
+            array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
-    logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$ccrtn));
+    labeled_logWrite('spacePayment-cc_payOrder return', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$ccrtn));
 
     $approved_amt = $ccrtn['amount'];
     $type = $ccrtn['paymentType'];
@@ -249,7 +250,7 @@ $typeStr = 'dss' . $taxStr . 'i';
     $taxes = array();
 }
 
-logwrite(array('Title' => 'Post cc_pay_order', 'rtn' => $ccrtn));
+labeled_logwrite('spacePayment-post cc_pay_order-rtn', $ccrtn));
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information

@@ -222,7 +222,8 @@ foreach ($sections as $key => $section) {
 }
 
 if ($dumpSQL > 0) {
-    logWrite(array("message" => "report $reportName SQL Dump", "SQL" => $sql, "typeStr" => $typeStr, "params" => $paramArray));
+    labelded_logWrite('c/loadReport-report $reportName SQL Dump'
+        array("SQL" => $sql, "typeStr" => $typeStr, "params" => $paramArray));
 }
 
 // run the SQL and get the data

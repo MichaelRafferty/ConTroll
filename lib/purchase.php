@@ -139,21 +139,21 @@ EOS;
                 $badgeCheckR = dbSafeQuery($badgeCheckQ, 'idid', array($badge['regId'], $badgePrice, $badge['regId'], $badgePrice));
                 if ($badgeCheckR !== false) {
                     if ($badgeCheckR->num_rows > 0) {
-                        logWrite(array('message' => 'Override of badge price accepted due to admin action causing it',
-                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                        labeled_logWrite('purchase-Override of badge price accepted due to admin action causing it',
+                            array('perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                        'memPrice' => $price, 'badgePrice' => $badgePrice));
                         $price = $badgePrice;
                         $badges[$key]['overRidePrice'] = $badgePrice;
                         $badgeCheckR->free();
                     } else {
-                        logWrite(array('message' => 'Override of badge price failed due to no admin action detected to cause it',
-                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                        labeled_logWrite('purchase-Override of badge price failed due to no admin action detected to cause it',
+                                       array('perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                        'memPrice' => $price, 'badgePrice' => $badgePrice));
                        $badges[$key]['overRidePrice'] = $price;
                     }
                 } else {
-                    logWrite(array('message' => 'Override of badge price failed due query error',
-                                   'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                    labeled_logWrite('purchase-Override of badge price failed due query error',
+                        array('perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                    'memPrice' => $price, 'badgePrice' => $badgePrice));
                     $badges[$key]['overRidePrice'] = $price;
                 }

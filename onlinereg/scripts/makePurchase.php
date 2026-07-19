@@ -319,19 +319,22 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
+labeled_logWrite('o/makePurchase-pre-buldOrder',
+    array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 
 // end compute, create the order if there is something to pay
 if ($total > 0) {
     $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+        labeled_logWrite('o/makePurchase-cc_buildOrder returned null',
+            array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
         ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
         exit();
     }
     $response['orderRtn'] = $rtn;
-    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    labeled_logWrite('o/makePurchase-order created',
+        array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $buyer['email'] = $purchaseform['cc_email'];
     $buyer['phone'] = '';
     $buyer['country'] = '';
@@ -379,12 +382,13 @@ EOS;
     $ccrtn = cc_payOrder($results, $buyer, true);
     if ($ccrtn === null) {
         // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
+        labeled_logWrite('o/makePurchase-cc_payOrder returned null',
+            array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
-    logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+    labeled_logWrite('o/makePurchase-pay succeeded', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
     $num_fields = sizeof($ccrtn['txnfields']);
     $val = array();
     for ($i = 0; $i < $num_fields; $i++) {

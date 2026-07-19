@@ -178,7 +178,8 @@ $response['amount'] = $amount;
 
 //log requested badges
 
-logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
+labeled_logWrite('c/pos_buildOrder-pre cc_buildOrder',
+    array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 
 if ($cancelOrderId) // cancel the old order if it exists
     cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
@@ -186,7 +187,8 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true, $ccLocation);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+    labeled_logWrite('c/pos_buildOrder-cc_buildOrder returned null',
+        array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
     ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
@@ -257,6 +259,6 @@ $valArray[] = $transId;
 $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 //$tnx_record = $rtn['tnx'];
-logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
+labeled_logWrite('c/pos_buildOrder-return', array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
 ajaxSuccess($response);
 return;

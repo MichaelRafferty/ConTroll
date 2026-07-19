@@ -451,7 +451,8 @@ $results = array(
 $response['orderResults'] = $results;
 
 //log requested badges
-logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
+labeled_logWrite('c/exhibitorsSpaceOrder-pre-cc_buildOrder',
+    array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
 if ($cancelOrderId) // cancel the old order if it exists
     cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
@@ -463,7 +464,8 @@ if ($totprice > 0) {
 // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanupRegs($badgeResults);
-        logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
+        labeled_logWrite('c/exhibitorsSpaceOrder-cc_buildOrder returned null',
+            array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
         ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
         exit();
     }
