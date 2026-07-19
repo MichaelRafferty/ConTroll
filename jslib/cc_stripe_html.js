@@ -1,13 +1,15 @@
 /* cc_stripe_html.js: javascript for stripe draw_cc_html
  */
 var elements = null;
+var stripe = null;
+var stripeSubmitBtn = null;
 const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
     currency: config.currency,
 });
 
 function startCCPay(amount = 0) {
-    const stripeSubmitBtn = document.getElementById('purchase');
+    stripeSubmitBtn = document.getElementById('purchase');
     stripe = Stripe(pkkey);
     // set listener
     <!-- Configure the Web SDK and Card payment intent -> elements -->
@@ -46,7 +48,7 @@ function startCCPay(amount = 0) {
             return;
         }
 
-        console.log(confirmationToken);
+        //console.log(confirmationToken);
         makePurchase(confirmationToken, "stripe-confirm");
     });
 
@@ -66,4 +68,19 @@ function startCCPay(amount = 0) {
     const paymentElementsOptions = { layout: 'accordion' };
     const paymentElement = elements.create('payment', paymentElementsOptions);
     paymentElement.mount('#payment-element');
+}
+
+async function stripe_nextActions(data) {
+    const { error, paymentIntent } = await stripe.handleNextAction({
+        clientSecret: data.clientSecret
+    });
+    if (error) {
+        show_message(error.message, 'error', 'stripe-message');
+        stripeSubmitBtn.disabled = false;
+        stripeSubmitBtn.textContent = priorText;
+        return;
+    }
+
+    clear_message('stripe-message');
+    portal.payActionComplete(paymentIntent);
 }
