@@ -68,7 +68,6 @@ function get_currencyMultiplier($currency) {
 }
 
 function cc_getCurrency() : string {
-    // need to rewrite for stripe, return always correct for now
     $cur = strtolower(getConfValue('con', 'currency', 'USD'));
     // use the country
     $country = strtoupper(getConfValue('cc', 'country', 'US'));
@@ -132,61 +131,229 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
     $cleanUpRegs = $source == 'onlinereg';
 
+    $cust_email = '';
+    $cust_name = '';
+    $cust_phone = '';
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
+        if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            $custType = substr($custid, 0, 1);
+            $custNum = substr($custid, 2);
+            foreach ($results['badges'] as $badge) {
+                if (($custType == 'p' && $custNum == $badge['perid']) || ($custType == 'n' && $custNum == $badge['newperid'])
+                    || ($custType == 'r' && $custNum == $badge['badge'])) {
+                    $cust_email = trim($badge['email_addr']);
+                    $cust_phone = trim($badge['phone']);
+                    $cust_name = trim($badge['fullName']);
+                    break;
+                }
+            }
+        }
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
         $badge = $results['badges'][0];
         if (array_key_exists('perid', $badge)) {
             $custid = 'p-' . $badge['perid'];
+            $custType = 'p';
+            $custNum = $badge['perid'];
         } else if (array_key_exists('newperid', $badge)) {
             $custid = 'n-' . $badge['newperid'];
+            $custType = 'n';
+            $custNum = $badge['newperid'];
         } else {
             $custid = 'r-' . $results['badges'][0]['badge'];
+            $custType = 'r';
+            $custNum = $results['badges'][0]['badge'];
         }
+        $cust_email = trim($badge['email_addr']);
+        $cust_phone = trim($badge['phone']);
+        $cust_name = trim($badge['fullName']);
     } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
+        $custType = 'e';
+        $custNum = $results['vendorId'];
         $source = $results['exhibits'];
         // failures in the exhibitor payments need to delete the regs they were going to product
         $cleanUpRegs = true;
     } else {
         $custid = 't-' . $results['transid'];
+        $custNum = $results['transid'];
+        $custType = 't';
     }
 
-    $customerID = null;
-    /*
-    // look up if customer exists
-    $customerLookup = [
-        'query' => "customer_account:'$custid'",  // it says we cannot search by customer_account, and I see no way to assign an account to a customer
-        'limit' => 10,
-    ];
+    $customerId = null;
+    if ($cust_email != '') {
+        // we have details to look up a customer
+        // try a customer search for:
+        // email or phone or fullname (all exact match)
+        $query = "email:\"$cust_email\"";
+        if ($cust_phone != '') {
+            $query .= " OR phone:\"$cust_phone\"";
+        }
+        if ($cust_name != '') {
+            $query .= " OR name:\"$cust_name\"";
+        }
+        $customerLookup = [
+            'query' => $query,
+            'limit' => 10,
+        ];
 
-    // query the customer id
-    try {
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query', $customerLookup, $useLogWrite);
-        $customers = $client->customers->search($customerLookup);
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query response',$customers, $useLogWrite);
-    }
-    catch (\Stripe\Exception\InvalidRequestException $e) {
-        if ($cleanUpRegs)
-            cleanRegs($results['badges'], $results['transid']);
-        stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
-    }
-    catch (\Stripe\Exception\ApiErrorException $e) {
-        if ($cleanUpRegs)
-            cleanRegs($results['badges'], $results['transid']);
-        stcc_logException('cc_getCurrency', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
-    }
-    catch (Exception $e) {
-        if ($cleanUpRegs)
-            cleanRegs($results['badges'], $results['transid']);
-        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
-    }
+        try {
+            if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query', $customerLookup, $useLogWrite);
+            $customers = $client->customers->search($customerLookup);
+            $customersPHP = json_decode(json_encode($customers), true);
+            if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query response', $customersPHP, $useLogWrite);
+        }
+        catch (\Stripe\Exception\InvalidRequestException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($results['badges'], $results['transid']);
+            stcc_logException('cc_buildOrder', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+        }
+        catch (\Stripe\Exception\ApiErrorException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($results['badges'], $results['transid']);
+            stcc_logException('cc_buildOrder', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+        }
+        catch (Exception $e) {
+            if ($cleanUpRegs)
+                cleanRegs($results['badges'], $results['transid']);
+            error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+        }
 
-    if (array_key_exists('data', $customers))
-        $custData = $customers['data'];
-    else
-        $custData = [];
-*/
+        if (array_key_exists('data', $customersPHP)) {
+            $custData = $customersPHP['data'];
+            if (count($custData) == 1)
+                $customerId = $custData[0]['id'];
+            else {
+                // find best match
+                $maxMatch = 0;
+                foreach ($custData as $cust) {
+                    $numMatch = 0;
+                    if (trim(strtolower($cust['name'])) == strtolower($cust_name))
+                        $numMatch++;
+                    if (trim(strtolower($cust['phone'])) == $cust_phone)
+                        $numMatch++;
+                    if (trim(strtolower($cust['email'])) == $cust_email)
+                        $numMatch += 2;
+
+                    if ($numMatch > $maxMatch) {
+                        $customerId = $cust['id'];
+                        $maxMatch = $numMatch;
+                    }
+                }
+            }
+        }
+
+        // ok, if it doesn't exist, create one
+        if ($customerId == null) {
+            $customer = [
+                'name' => $cust_name,
+                'email' => $cust_email,
+                'phone' => $cust_phone,
+                'description' => $custid,
+                ];
+
+            switch ($custType) {
+                case 'p':
+                    $query = <<<EOS
+SELECT address, addr_2, city, state, zip, country
+FROM perinfo
+WHERE id = ?;
+EOS;
+                    break;
+
+                case 'n':
+                    $query = <<<EOS
+SELECT address, addr_2, city, state, zip, country
+FROM newperson
+WHERE id = ?;
+EOS;
+                    break;
+
+                case 'r':
+                    $query = <<<EOS
+SELECT IFNULL(p.address, n.address) AS address, IFNULL(p.addr_2, n.addr_2) AS addr_2, IFNULL(p.city, n.city) AS city, 
+       IFNULL(p.state, n.state) AS state, IFNULL(p.zip, n.zip) AS zip, IFNULL(p.country, n.country) AS country
+FROM reg r
+LEFT OUTER JOIN perinfo p ON r.perid = p.id
+LEFT OUTER JOIN newperson n ON r.newperid = n.id
+EOS;
+                    break;
+
+                case 'e':
+                    $query = <<<EOS
+SELECT addr AS address, addr2 AS addr_2, city, state, zip, country
+FROM exhibitors
+WHERE id = ?;
+EOS;
+
+                break;
+
+                case 't':
+                    $query = <<<EOS
+SELECT IFNULL(p.address, n.address) AS address, IFNULL(p.addr_2, n.addr_2) AS addr_2, IFNULL(p.city, n.city) AS city, 
+       IFNULL(p.state, n.state) AS state, IFNULL(p.zip, n.zip) AS zip, IFNULL(p.country, n.country) AS country
+FROM transaction t
+LEFT OUTER JOIN perinfo p ON t.perid = p.id
+LEFT OUTER JOIN newperson n ON t.newperid = n.id
+EOS;
+                    break;
+
+                default:
+                    $query = '';
+            }
+
+            if ($query != '') {
+                $aR = dbSafeQuery($query, 'i', array($custNum));
+                if ($aR !== false && $aR->num_rows == 1) {
+                    $addr = $aR->fetch_assoc();
+                    $aR->close();
+
+                    $customer['adddress'] = [];
+                    if ($addr['address'] != null && $addr['address'] != '' && $addr['address'] != '/r')
+                        $customer['address']['line1'] = $addr['address'];
+                    if ($addr['addr_2'] != null && $addr['addr_2'] != '' && $addr['addr_2'] != '/r')
+                        $customer['address']['line2'] = $addr['addr_2'];
+                    if ($addr['city'] != null && $addr['city'] != '' && $addr['city'] != '/r')
+                        $customer['address']['city'] = $addr['city'];
+                    if ($addr['state'] != null && $addr['state'] != '' && $addr['state'] != '/r')
+                    $customer['address']['state'] = $addr['state'];
+                    if ($addr['zip'] != null && $addr['zip'] != '' && $addr['zip'] != '/r')
+                        $customer['address']['postal_code'] = $addr['zip'];
+                    if ($addr['country'] != null && $addr['country'] != '') {
+                        $ISO3 = loadCountryConvert();
+                        if (array_key_exists($addr['country'], $ISO3)) {
+                            $ISO2 = $ISO3[$addr['country']];
+                            $customer['address']['country'] = $ISO2;
+                        }
+                    }
+                }
+            }
+
+            try {
+                if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer create', $customer, $useLogWrite);
+                $customer = $client->customers->create($customer);
+                $customerPHP = json_decode(json_encode($customer), true);
+                if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer create response', $customerPHP, $useLogWrite);
+            }
+            catch (\Stripe\Exception\InvalidRequestException $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($results['badges'], $results['transid']);
+                stcc_logException('cc_buildOrder', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+            }
+            catch (\Stripe\Exception\ApiErrorException $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($results['badges'], $results['transid']);
+                stcc_logException('cc_buildOrder', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+            }
+            catch (Exception $e) {
+                if ($cleanUpRegs)
+                    cleanRegs($results['badges'], $results['transid']);
+                error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+            }
+
+            $customerId = $customerPHP['id'];
+        }
+    }
 
 
 
@@ -599,12 +766,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         ],
         'confirm' => false,
         'amount_details' => $amountDetails,
-        //TODO get/creater customer id 'customer' => $con['id'] . '-' . $custid,
         'description' => $con['conname'] . '-' . $source,
         'metadata' => $orderMetadata,
         //'setup_future_usage' => 'off_session',
     ];
-
+    if ($customerId != '')
+        $orderFields['customer'] = $customerId;
 
     // TODO taxes
     /*
@@ -1125,8 +1292,6 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
 
     // get the payment intent fresh to get the latest charge record
-    $newPi = $client->paymentIntents->retrieve($payment['id']);
-//    $newPmt = json_decode(json_encode($newPi), true);
     try {
         if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive payment intent", $payment['id'], $useLogWrite);
         $newPi = $client->paymentIntents->retrieve($payment['id'], []);
@@ -1210,37 +1375,46 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
-    // need to rewrite for stripe
-    /*
     $stripeDebug = getConfValue('debug', 'square', 0);
+    $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
 
-    $body = new Square\Payments\Requests\GetPaymentsRequest([
-        'paymentId' => $paymentid,
-    ]);
-
-    $client = new SquareClient(
-        token: $cc['token'],
-        options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
-
-    // pass update to cancel state to square
     try {
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/Payments API get payment-body', $body, $useLogWrite);
-        $apiResponse = $client->payments->get($body);
-        $payment = json_decode(json_encode($apiResponse->getPayment()), true);
-        if ($stripeDebug & 14) stcc_logObject('cc_Stripe/Payments API get payment-payment', $payment, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/getPayment retrieve payment intent', $paymentid, $useLogWrite);
+        $payment = $client->paymentIntents->retrieve($paymentid, []);
+        $payment = json_decode(json_encode($payment), true);
+        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/getPayment payment intent response for $paymentid", $payment, $useLogWrite);
     }
-    catch (SquareApiException $e) {
-        stcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable retrieve the payment, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('cc_getPayment', $e, 'other api error', 'Unable to retrieve the payment, seek assistance.', $useLogWrite);
     }
     catch (Exception $e) {
-        stcc_logException($source, $e, 'Payments API error while calling Square', 'Error connecting to Square', $useLogWrite);
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
     }
 
-     */
+    // now add the line items for other uses (than terminal)
+    try {
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/getPayment retrieve payment line items', $paymentid, $useLogWrite);
+        $lineItems = $client->paymentIntents->allAmountDetailsLineItems($paymentid, []);
+        $lineItems = json_decode(json_encode($lineItems), true);
+        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/getPayment retrieve payment line items for $paymentid", $lineItems, $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable retrieve the payment line items, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('cc_getPayment', $e, 'other api error', 'Unable to retrieve the payment line items, seek assistance.', $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
 
-    $payment = array(); // placeholder
+    if (!array_key_exists('amount_details', $payment))
+        $payment['amount_details'] = array();
+    $payment['amount_details']['lineItems'] = $lineItems['data'];
+
     return $payment;
 }
 

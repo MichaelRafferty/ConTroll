@@ -650,3 +650,14 @@ function loadCountryOptions($defaultCode = null) {
     fclose($fh);
     return $optionList;
 }
+
+// load conversion to 2 letter ISO
+function loadCountryConvert() {
+    $ISO3 = [];
+    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+        $ISO3[$data[1]] = $data[2];
+    }
+    fclose($fh);
+    return $ISO3;
+}
