@@ -861,110 +861,36 @@ EOS;
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array | null {
-    // need to rewrite for Stripe
-    /*
-    // Try updating the state of the order to CANCELED
-    if ($locationId == null)
-        $locationId = getConfValue('cc', 'location', null);
-
     $stripeDebug = getConfValue('debug', 'square', 0);
+    $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
 
-    $order = new Order([
-        'locationId' => $locationId,
-        'state' => 'CANCELED',
-        'version' => 1,
-    ]);
-
-    $body = new Square\Orders\Requests\UpdateOrderRequest([
-        'idempotencyKey' => guidv4(),
-        'orderId' => $orderId,
-        'order' => $order,
-    ]);
-
-    $client = new SquareClient(
-        token: $cc['token'],
-        options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-            ]);
-
-    // pass update to cancel state to square
     $rtn = null;
     try {
-          if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order update-body', $body, $useLogWrite);
-          $apiResponse = $client->orders->update($body);
-          $order = $apiResponse->getOrder();
-          if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order update response', $order, $useLogWrite);
-          $rtn = array();
-          $rtn['order'] = $order;
-          $rtn['state'] = $order->getState();
-          $rtn['version'] = $order->getVersion();
-      }
-      catch (SquareApiException $e) {
-          stcc_logException($source, $e, 'Order API update order Exception', 'Order cancel failed', $useLogWrite, false);
-      }
-      catch (Exception $e) {
-          stcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite, false);
-      }
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/cancelOrder cancel payment intent', $orderId, $useLogWrite);
+        $payment = $client->paymentIntents->cancel($paymentid, []);
+        $payment = json_decode(json_encode($payment), true);
+        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $paymentid", $payment, $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable cancel the order, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('cc_getPayment', $e, 'other api error', 'Unable to cancel the order, seek assistance.', $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
 
-     */
-
-    $rtn = array(); // placeholder
+    $rtn = array();
+    $rtn['order'] = $payment;
+    $rtn['state'] = $payment['status'];
     return $rtn;
 }
 
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
-    // need to rewrite for stripe
-    /*
-    $stripeDebug = getConfValue('debug', 'square', 0);
-
-    $body = new Square\Orders\Requests\GetOrdersRequest([
-        'orderId' => $orderId,
-    ]);
-
-    $client = new SquareClient(
-        token: $cc['token'],
-        options: [
-            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
-        ]);
-
-    // pass update to cancel state to square
-    try {
-        if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order create-body', $body, $useLogWrite);
-        $apiResponse = $client->orders->get($body);
-        $order = $apiResponse->getOrder();
-        if ($stripeDebug & 12) stcc_logObject('cc_stripe/Orders API order response', $order, $useLogWrite);
-    }
-    catch (SquareApiException $e) {
-        stcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
-    }
-    catch (Exception $e) {
-        stcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
-    }
-    $rtn = array();
-    $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / 100;
-    $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
-    // build the return array of taxes applied to the order
-    $taxAmounts = $order->getTaxes();
-    $rtnTaxes = [];
-    if (is_array($taxAmounts)) { // there have to be taxes to do this loop
-        foreach ($taxAmounts as $tax) {
-            $uid = $tax->getUid();
-            $app = $tax->getAppliedMoney();
-            $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / 100;
-        }
-    }
-    $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
-    $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
-    $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / 100;
-    $rtn['customerId'] = $order->getCustomerId();
-    $rtn['order'] = $order;
-     */
-
-    $rtn = array(); // placeholder
-    return $rtn;
+    // in stripe, this is the same as get payment as the payment intent is the order
+    return cc_getPayment($source, $orderId, $useLogWrite);
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
