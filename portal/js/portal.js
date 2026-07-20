@@ -89,6 +89,8 @@ class Portal {
     #selectedItems = false;
     #payDueSubmitButton = null;
     #preTaxLabel = '';
+    #currentNonce = null;
+    #currentToken = null;
 
     // receipt fields
     #receiptModal = null;
@@ -1303,6 +1305,9 @@ class Portal {
         else
             nonce = token;
 
+        this.#currentToken = token;
+        this.#currentNonce = nonce;
+
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = {
             loginId: config.id,
@@ -1349,7 +1354,7 @@ class Portal {
     }
 
     makePurchaseSuccess(data) {
-        console.log(data);
+        //console.log(data);
         if (data.status == 'error') {
             // our form
             let id = document.getElementById("purchase");
@@ -1372,6 +1377,12 @@ class Portal {
                 return;
             }
         }
+        // check for follow on actions (stripe)
+        if (data.status == 'next') {
+            //console.log('need actions');
+            let status = stripe_nextActions(data);
+            return;
+        }
 
         // clear any order in progress
         this.#orderData = null;
@@ -1383,6 +1394,82 @@ class Portal {
             let message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
             window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(message);
         }
+    }
+
+    // pay action receipt - a callback from stripe to complete an authorization required transaction
+    payActionComplete(paymentIntent) {
+        console.log("completed action");
+        console.log(paymentIntent);
+
+        // compute existing values from above
+        let newplan = false;
+        if (this.#paymentPlan != null)
+            if (this.#paymentPlan.new)
+                newplan = true;
+
+        let id = document.getElementById("purchase");
+        let ids = document.getElementById("card-button");
+        let totalAmountDue = this.#paymentAmount;
+        let taxAmount = 0
+        let preTaxAmount = totalAmountDue;
+        if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
+            preTaxAmount = this.#orderData.rtn.preTaxAmt;
+            taxAmount = this.#orderData.rtn.taxAmt;
+        }
+
+        let orderId = '';
+        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId) {
+            orderId = this.#orderData.rtn.orderId;
+        }
+
+        let badges = [];
+        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
+            badges = this.#orderData.rtn.results.badges;
+
+        // transaction comes from session, person paying come from session, we will compute what was paid
+        let data = {
+            loginId: config.id,
+            loginType: config.idType,
+            action: 'paymentComplete',
+            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            existingPlan: this.#existingPlan,
+            planRec: this.#paymentPlan,
+            newplan: newplan ? 1 : 0,
+            planPayment: this.#planPayment,
+            otherMemberships: JSON.stringify(this.#orderMemberships),
+            nonce: this.#currentNonce,
+            amount: this.#paymentAmount,
+            totalAmountDue: this.#paymentAmount,
+            preTaxAmount: preTaxAmount,
+            taxAmount: taxAmount,
+            couponDiscount: this.#couponDiscount,
+            preCouponAmountDue: this.#preCouponAmountDue,
+            couponCode: coupon.getCouponCode(),
+            couponSerial: coupon.getCouponSerial(),
+            planRecast: this.#planRecast ? 1 : 0,
+            orderId: orderId,
+            badges: JSON.stringify(badges),
+            paymentIntent: paymentIntent,
+        };
+        $.ajax({
+            url: "scripts/portalPayment.php",
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
+                portal.makePurchaseSuccess(data);
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (id)
+                    id.disabled = false;
+                // squares form
+                if (ids)
+                    ids.disabled = false;
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
     }
 
     // fetch a receipt by transaction number

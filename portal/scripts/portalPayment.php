@@ -41,6 +41,8 @@ if (!(isSessionVar('id') && isSessionVar('idType'))) {
     exit();
 }
 
+$action = $_POST['action'];
+
 validateLoginId();
 
 // check for being resolved/baned
@@ -239,7 +241,10 @@ if ($amount > 0) {
 
 // call the credit card processor to make the payment
 
-    $rtn = cc_payOrder($results, $buyer, true);
+    if ($action == 'portalPayment')
+        $rtn = cc_payOrder($results, $buyer, true);
+    else
+        $rtn = cc_payComplete($results, $_POST['paymentIntent'], true);
 
 //log payment
     labeled_logWrite("portalPayment-return from cc_payOrder", array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));

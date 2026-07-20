@@ -1057,6 +1057,138 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     return $rtn;
 }
 
+
+// cc_payComplete - compute the return array for a payment complete async call
+function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
+    $con = get_conf('con');
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
+
+    //web_error_log("currenty = $currency, currencyMultiplier = $currencyMultiplier");
+    $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+
+    // build the non ccParams fields again:
+    $auth = '';
+    $txtime = '';
+    $last4 = '';
+    $nonce = '';
+    $receipt_url = '';
+    $receipt_number = '';
+    $desc = '';
+    $status = '';
+    $sourceId = 'unknown';
+    $approved_amt = 0;
+    $payment = json_decode(json_encode($paymentIntent), true);
+    $paymentType = 'credit';
+
+
+    $loginPerid = getSessionVar('user_perid');
+    if ($loginPerid == null) {
+        $userType = getSessionVar('idType');
+        if ($userType == 'p')
+            $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
+    }
+
+    // set category based on if exhibits is a portal type
+    if (array_key_exists('exhibits', $ccParams)) {
+        $category =  $ccParams['exhibits'];
+    } else if ($ccParams['source'] == 'artsales') {
+        $category = 'artsales';
+    } else {
+        $category = 'reg';
+    }
+
+    $source = 'onlinereg';
+    if (array_key_exists('source', $ccParams)) {
+        $source = $ccParams['source'];
+    }
+
+    $sourceIdStr = $ccParams['nonce'];
+    if (array_key_exists('change', $ccParams)) {
+        $change = $ccParams['change'];
+    } else {
+        $change = 0;
+    }
+    $buyerSuppliedMoney = $ccParams['total'] + $change;
+
+    // nonce = source or confirm ressponse
+    if (str_starts_with($sourceIdStr, '{')) {
+        $confirmToken = json_decode($sourceIdStr, true);
+        $card = $confirmToken['payment_method_preview']['card'];
+        $sourceId = $card['brand'];
+        $expire = $card['exp_month'] . '/' . $card['exp_year'];
+        $last4 = $card['last4'];
+    }
+
+    $pm = [];
+    if (array_key_exists('payment_method', $payment)) {
+        $paymentMethodId = $payment['payment_method'];
+        if ($paymentMethodId != null && $paymentMethodId != '') {
+            try {
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive payment method $paymentMethodId", $paymentMethodId, $useLogWrite);
+                $paymentMethod = $client->paymentMethods->retrieve($paymentMethodId, []);
+                $pm = json_decode(json_encode($paymentMethod), true);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment method response of $paymentMethodId", $pm, $useLogWrite);
+            }
+            catch (\Stripe\Exception\InvalidRequestException $e) {
+                stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+            }
+            catch (\Stripe\Exception\ApiErrorException $e) {
+                stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+            }
+            catch (Exception $e) {
+                error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+            }
+        }
+
+        $approved_amt = $payment['amount'] / $currencyMultiplier;
+        $card = $pm['card'];
+        $last4 = $card['last4'];
+        $nonce = $card['brand'] . '-' . $last4;
+        $auth = substr($card['fingerprint'], 0, 16);
+        $receipt_url = 'unknown'; // $chargePHP['receipt_url'];
+        $receipt_number = $pm['id'];
+        $id = $pm['id'];
+        $txtime = date('Y/m/d H:i:s T', $pm['created']);
+    }
+
+    $status = $payment['status'];
+
+    $orderId = $ccParams['orderId'];
+    $desc = 'Stripe: ' . $sourceId;
+    $id = $orderId;
+
+    $rtn = array();
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId','cashier');
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+        's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+        $txtime,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $orderId, $loginPerid);
+    $rtn['url'] = $receipt_url;
+    $rtn['rid'] = $receipt_number;
+    $rtn['payment'] = $payment;
+    $rtn['paymentType'] = $paymentType;
+    $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['auth'] = $auth;
+    $rtn['paymentId'] = $id;
+    $rtn['last4'] = $last4;
+    $rtn['txTime'] = $txtime;
+    $rtn['status'] = $status;
+    $rtn['transId'] = $ccParams['transid'];
+    $rtn['category'] = $category;
+    $rtn['description'] = $desc;
+    $rtn['source'] = $source;
+    $rtn['amount'] = $approved_amt;
+    $rtn['nonce'] = $nonce;
+    $rtn['change'] = $change;
+    return $rtn;
+}
+
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     // need to rewrite for stripe
