@@ -1123,15 +1123,34 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
         $last4 = $card['last4'];
     }
 
-    $pm = [];
-    if (array_key_exists('payment_method', $payment)) {
-        $paymentMethodId = $payment['payment_method'];
-        if ($paymentMethodId != null && $paymentMethodId != '') {
+
+    // get the payment intent fresh to get the latest charge record
+    $newPi = $client->paymentIntents->retrieve($payment['id']);
+//    $newPmt = json_decode(json_encode($newPi), true);
+    try {
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive payment intent", $payment['id'], $useLogWrite);
+        $newPi = $client->paymentIntents->retrieve($payment['id'], []);
+        $newPmt = json_decode(json_encode($newPi), true);
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment intent response", $newPmt, $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+    $chargePHP = [];
+    if (array_key_exists('latest_charge', $newPmt)) {
+        $chargeId = $newPmt['latest_charge'];
+        if ($chargeId != null && $chargeId != '') {
             try {
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive payment method $paymentMethodId", $paymentMethodId, $useLogWrite);
-                $paymentMethod = $client->paymentMethods->retrieve($paymentMethodId, []);
-                $pm = json_decode(json_encode($paymentMethod), true);
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment method response of $paymentMethodId", $pm, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive charge $chargeId", $chargeId, $useLogWrite);
+                $charge = $client->charges->retrieve($chargeId, []);
+                $chargePHP = json_decode(json_encode($charge), true);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/charge response of $chargeId", $chargePHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
@@ -1144,22 +1163,22 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
             }
         }
 
-        $approved_amt = $payment['amount'] / $currencyMultiplier;
-        $card = $pm['card'];
+        $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
+        $card = $charge['payment_method_details']['card'];
         $last4 = $card['last4'];
         $nonce = $card['brand'] . '-' . $last4;
         $auth = substr($card['fingerprint'], 0, 16);
-        $receipt_url = 'unknown'; // $chargePHP['receipt_url'];
-        $receipt_number = $pm['id'];
-        $id = $pm['id'];
-        $txtime = date('Y/m/d H:i:s T', $pm['created']);
+        $receipt_url = $chargePHP['receipt_url'];
+        $receipt_number = $chargePHP['id'];
+        $id = $chargePHP['id'];
+        $txtime = date('Y/m/d H:i:s T', $chargePHP['created']);
+        $payment = $newPmt;
     }
 
-    $status = $payment['status'];
+    $status = $newPmt['status'];
 
     $orderId = $ccParams['orderId'];
     $desc = 'Stripe: ' . $sourceId;
-    $id = $orderId;
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
