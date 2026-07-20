@@ -644,7 +644,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
         }
 
-        // TODO: if an item is in plan, set the plan discount to apply only to those line items
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
