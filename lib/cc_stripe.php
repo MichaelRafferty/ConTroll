@@ -73,10 +73,12 @@ function cc_getCurrency() : string {
         if ($stripeDebug & 32) stcc_logObject('cc_stripe/countrySpecs->retrieve response', $countrySpec, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
-        stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Invalid Country in system configuration, seek assistance.', $useLogWrite);;
+        stcc_logException('cc_getCurrency/country', $e, 'Invalid Request Exception', 'Invalid Country in system configuration, seek assistance.',
+            $useLogWrite);;
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
-        stcc_logException('cc_getCurrency', $e, 'other api error', 'Unable to validate currency in system configuration, seek assistance.', $useLogWrite);
+        stcc_logException('cc_getCurrency/country', $e, 'other api error', 'Unable to validate currency in system configuration, seek assistance.',
+            $useLogWrite);
     }
     catch (Exception $e) {
         error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
@@ -188,20 +190,20 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         ];
 
         try {
-            if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query', $customerLookup, $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/customer query', $customerLookup, $useLogWrite);
             $customers = $client->customers->search($customerLookup);
             $customersPHP = json_decode(json_encode($customers), true);
-            if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer query response', $customersPHP, $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/customer query response', $customersPHP, $useLogWrite);
         }
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
-            stcc_logException('cc_buildOrder', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+            stcc_logException('cc_buildOrder/customer search', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
         }
         catch (\Stripe\Exception\ApiErrorException $e) {
             if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
-            stcc_logException('cc_buildOrder', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+            stcc_logException('cc_buildOrder/customer search', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
         }
         catch (Exception $e) {
             if ($cleanUpRegs)
@@ -320,20 +322,21 @@ EOS;
             }
 
             try {
-                if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer create', $customer, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/customer create', $customer, $useLogWrite);
                 $customer = $client->customers->create($customer);
                 $customerPHP = json_decode(json_encode($customer), true);
-                if ($stripeDebug & 14) stcc_logObject('cc_stripe/customer create response', $customerPHP, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject('cc_sripe/buildOrder/customer create response', $customerPHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($results['badges'], $results['transid']);
-                stcc_logException('cc_buildOrder', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+                stcc_logException('cc_buildOrder/customer create', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.',
+                    $useLogWrite);;
             }
             catch (\Stripe\Exception\ApiErrorException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($results['badges'], $results['transid']);
-                stcc_logException('cc_buildOrder', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+                stcc_logException('cc_buildOrder/customer create', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
             }
             catch (Exception $e) {
                 if ($cleanUpRegs)
@@ -745,8 +748,7 @@ EOS;
         $amount_details['discount_amount'] = $orderDiscount;
     }
     $amountDetails['line_items'] = $orderLineitems;
-
-    // get the stripe customer if it exists, if not create it.
+    $orderMetadata['totalTax'] = $orderTax * $currencyMultiplier;
 
     $orderFields = [
         'amount' => round($orderValue * $currencyMultiplier),
@@ -773,19 +775,20 @@ EOS;
 
     // pass order to stripe and get payment intent id
     try {
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/payment Intent Create-orderFields', $orderFields, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/payment Intent Create-orderFields', $orderFields, $useLogWrite);
         $paymentIntent = $client->paymentIntents->create($orderFields);
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/payment Intent response', $paymentIntent, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/payment Intent response', $paymentIntent, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
-            stcc_logException('cc_getCurrency', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.', $useLogWrite);;
+            stcc_logException('cc_buildOrder/payment intent create', $e, 'Invalid Request Exception', 'Unable to create the order, seek assistance.',
+                $useLogWrite);;
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
         if ($cleanUpRegs)
             cleanRegs($results['badges'], $results['transid']);
-            stcc_logException('cc_getCurrency', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
+            stcc_logException('cc_buildOrder/payment intent create', $e, 'other api error', 'Unable to create the order, seek assistance.', $useLogWrite);
     }
     catch (Exception $e) {
         if ($cleanUpRegs)
@@ -862,10 +865,10 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
         if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $paymentid", $payment, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
-        stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable cancel the order, seek assistance.', $useLogWrite);;
+        stcc_logException('cc_cancelOrder', $e, 'Invalid Request Exception', 'Unable cancel the order, seek assistance.', $useLogWrite);;
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
-        stcc_logException('cc_getPayment', $e, 'other api error', 'Unable to cancel the order, seek assistance.', $useLogWrite);
+        stcc_logException('cc_cancelOrder', $e, 'other api error', 'Unable to cancel the order, seek assistance.', $useLogWrite);
     }
     catch (Exception $e) {
         error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
@@ -963,19 +966,19 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ];
         // pass order to stripe and get payment intent id
         try {
-            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
             $paymentIntent = $client->paymentIntents->confirm($orderId, $confirmFields);
-            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment Intent Confirm response of $orderId-paymentIntent", $paymentIntent, $useLogWrite);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment Intent Confirm response of $orderId-paymentIntent", $paymentIntent, $useLogWrite);
         }
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
-            stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+            stcc_logException('cc_payOrder/confirm', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
         }
         catch (\Stripe\Exception\ApiErrorException $e) {
             if ($cleanUpRegs)
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
-            stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+            stcc_logException('cc_payOrder/confirm', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
         }
         catch (Exception $e) {
             if ($cleanUpRegs)
@@ -1005,20 +1008,20 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $chargeId = $payment['latest_charge'];
         if ($chargeId != null && $chargeId != '') {
             try {
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive charge $chargeId", $chargeId, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/retrive charge $chargeId", $chargeId, $useLogWrite);
                 $charge = $client->charges->retrieve($chargeId, []);
                 $chargePHP = json_decode(json_encode($charge), true);
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/charge response of $chargeId", $chargePHP, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/charge response of $chargeId", $chargePHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+                stcc_logException('cc_payOrder/charge', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
             }
             catch (\Stripe\Exception\ApiErrorException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+                stcc_logException('cc_payOrder/charge', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
             }
             catch (Exception $e) {
                 if ($cleanUpRegs)
@@ -1189,16 +1192,16 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
     // get the payment intent fresh to get the latest charge record
     try {
-        if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive payment intent", $payment['id'], $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/payComplete/retrive payment intent", $payment['id'], $useLogWrite);
         $newPi = $client->paymentIntents->retrieve($payment['id'], []);
         $newPmt = json_decode(json_encode($newPi), true);
-        if ($stripeDebug & 14) stcc_logObject("cc_stripe/payment intent response", $newPmt, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/payComplete/payment intent response", $newPmt, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
-        stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+        stcc_logException('cc_payComplete/retrieve', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
-        stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+        stcc_logException('cc_payComplete/retrieve', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
     }
     catch (Exception $e) {
         error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
@@ -1208,16 +1211,16 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
         $chargeId = $newPmt['latest_charge'];
         if ($chargeId != null && $chargeId != '') {
             try {
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/retrive charge $chargeId", $chargeId, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payComplete/retrive charge $chargeId", $chargeId, $useLogWrite);
                 $charge = $client->charges->retrieve($chargeId, []);
                 $chargePHP = json_decode(json_encode($charge), true);
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/charge response of $chargeId", $chargePHP, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payComplete/charge response of $chargeId", $chargePHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
-                stcc_logException('cc_payOrder', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+                stcc_logException('cc_payComplete/charge', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
             }
             catch (\Stripe\Exception\ApiErrorException $e) {
-                stcc_logException('cc_payOrder', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+                stcc_logException('cc_payComplete/charge', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
             }
             catch (Exception $e) {
                 error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
@@ -1273,12 +1276,14 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $stripeDebug = getConfValue('debug', 'square', 0);
     $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
 
     try {
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/getPayment retrieve payment intent', $paymentid, $useLogWrite);
         $payment = $client->paymentIntents->retrieve($paymentid, []);
         $payment = json_decode(json_encode($payment), true);
-        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/getPayment payment intent response for $paymentid", $payment, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/getPayment payment intent response for $paymentid", $payment, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable retrieve the payment, seek assistance.', $useLogWrite);;
@@ -1295,21 +1300,26 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/getPayment retrieve payment line items', $paymentid, $useLogWrite);
         $lineItems = $client->paymentIntents->allAmountDetailsLineItems($paymentid, []);
         $lineItems = json_decode(json_encode($lineItems), true);
-        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/getPayment retrieve payment line items for $paymentid", $lineItems, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject("cc_stripe/getPayment retrieve payment line items for $paymentid", $lineItems, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
-        stcc_logException('cc_getPayment', $e, 'Invalid Request Exception', 'Unable retrieve the payment line items, seek assistance.', $useLogWrite);;
+        stcc_logException('cc_getPayment/line items', $e, 'Invalid Request Exception', 'Unable retrieve the payment line items, seek assistance.',
+            $useLogWrite);;
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
-        stcc_logException('cc_getPayment', $e, 'other api error', 'Unable to retrieve the payment line items, seek assistance.', $useLogWrite);
+        stcc_logException('cc_getPayment/line items', $e, 'other api error', 'Unable to retrieve the payment line items, seek assistance.', $useLogWrite);
     }
     catch (Exception $e) {
         error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
     }
 
-    if (!array_key_exists('amount_details', $payment))
-        $payment['amount_details'] = array();
-    $payment['amount_details']['lineItems'] = $lineItems['data'];
+    if (!array_key_exists('amount_details', $payment)) {
+        $payment['amount_details'] = array ();
+        $payment['amount_details']['lineItems'] = $lineItems['data'];
+    }
+    $payment['totalAmountDue'] = $payment['amount'] / $currencyMultiplier;
+    $payment['taxAmount'] = $payment['metadata']['totalTax'];
+    $payment['customerId'] = $payment['customer'];
 
     return $payment;
 }

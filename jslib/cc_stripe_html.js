@@ -48,6 +48,16 @@ function startCCPay(amount = 0) {
             return;
         }
 
+        if (config.allowedCCBrands.length > 0) {
+            let brand = confirmationToken.payment_method_preview.card.brand;
+            if (!config.allowedCCBrands.includes(brand)) {
+                show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'stripe-message');
+                stripeSubmitBtn.disabled = false;
+                stripeSubmitBtn.textContent = priorText;
+                return;
+            }
+        }
+
         //console.log(confirmationToken);
         makePurchase(confirmationToken, "stripe-confirm");
     });
