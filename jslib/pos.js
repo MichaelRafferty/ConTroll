@@ -105,7 +105,7 @@ class Pos {
     #print_tab = null;
     #current_tab = null;
 
-// find people fields
+    // find people fields
     #id_div = null;
     #pattern_field = null;
     #find_result_table = null;
@@ -113,7 +113,7 @@ class Pos {
     #find_unpaid_button = null;
     #name_search = '';
 
-// add/edit person fields
+    // add/edit person fields
     #add_index_field = null;
     #add_perid_field = null;
     #add_memIndex_field = null;
