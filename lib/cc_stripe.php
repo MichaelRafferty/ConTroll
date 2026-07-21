@@ -29,16 +29,6 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
     }
 
     $html = '';
-//    if ($type != 'body') {
-//        $html .= <<<EOS
-//<script src="$sdk"></script>
-//
-//<form id = "payment-form">
-//    <div class="container-fluid overflow-hidden" id="payment-element"></div>
-//    <button id = "submit">Purchase</button>
-//    <div class="mt-1 p-1" id="stripe-message"></div>
-//</form>
-//EOS;
         $html .= <<<EOS
 <script src="$sdk"></script>
 <script src="jslib/cc_stripe_html.js?v=$libJSversion"></script>
@@ -953,8 +943,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
 
-    // nonce = source or confirm ressponse
+    // nonce = source (non online credit card) or confirm ressponse (online credit card)
     if (str_starts_with($sourceIdStr, '{')) {
+        // online credit card from a payment confirm.
         $confirmToken = json_decode($sourceIdStr, true);
         $card = $confirmToken['payment_method_preview']['card'];
         $sourceId =$card['brand'];
@@ -1049,27 +1040,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     /*
-    $pbodyArgs = array(
-        'idempotencyKey' => guidv4(),
-        'sourceId' => $sourceId,
-        'amountMoney' => new Money([
-            'amount' => round($ccParams['total'] * 100),
-            'currency' => $currency,
-            ]),
-        'orderId' => $ccParams['orderId'],
-        'autocomplete' => true,
-        'locationId' => $ccParams['locationId'],
-        'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-' . time(),
-        'note' => "$source payment from " . $ccParams['source'],
-    );
-    if ($buyer['email'] != '')
-        $pbodyArgs['buyerEmailAddress'] = $buyer['email'];
-    if ($buyer['phone'] != '') {
-        $phone = phoneNumberNormalize($buyer);
-        if ($phone != '')
-            $pbodyArgs['buyerPhoneNumber'] = $phone;
-    }
-
     if ($sourceId == 'CASH') {
         // add cash fields
         $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
