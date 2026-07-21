@@ -128,9 +128,9 @@ EOS;
 
     if ($type != 'js') {
         $html .= <<<EOS
-<form id = "payment-form">
-    <div class="container-fluid overflow-hidden" id = "card-container"></div>
-    <button id = "card-button" type = "button"> Purchase</button>
+<form id="payment-form">
+    <div class="container-fluid overflow-hidden" id="card-container"></div>
+    <button id="card-button" type="button">Purchase</button>
 </form>
 EOS;
         }
