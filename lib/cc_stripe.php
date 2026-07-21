@@ -860,9 +860,9 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     $rtn = null;
     try {
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/cancelOrder cancel payment intent', $orderId, $useLogWrite);
-        $payment = $client->paymentIntents->cancel($paymentid, []);
+        $payment = $client->paymentIntents->cancel($orderId, []);
         $payment = json_decode(json_encode($payment), true);
-        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $paymentid", $payment, $useLogWrite);
+        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $orderId", $payment, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         stcc_logException('cc_cancelOrder', $e, 'Invalid Request Exception', 'Unable cancel the order, seek assistance.', $useLogWrite);;
@@ -965,6 +965,23 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'return_url' => 'https://controlltest.philcon.org/test1.php',
         ];
         // pass order to stripe and get payment intent id
+        $cardDeclineCodes = [
+            'card_declined',
+            'generic_decline',
+            'incorrect_cvc',
+            'authentication_required',
+            'insufficient_funds',
+            'incorrect_card_details',
+            'expired_card',
+            'suspected_fraud',
+            'payment_limit_exceeded',
+            'invalid_customer_account',
+            'lost_card',
+            'stolen_card',
+            'processing_error',
+            'incorrect_number',
+            'card_velocity_exceeded',
+        ];
         try {
             if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
             $paymentIntent = $client->paymentIntents->confirm($orderId, $confirmFields);
@@ -973,11 +990,21 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
+            $code = $e->getError()->decline_code;
+            if (in_array($code, $cardDeclineCodes)) {
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: ' . $e->getError()->message));
+                exit();
+            }
             stcc_logException('cc_payOrder/confirm', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
         }
         catch (\Stripe\Exception\ApiErrorException $e) {
             if ($cleanUpRegs)
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
+            $code = $e->getError()->decline_code;
+            if (in_array($code, $cardDeclineCodes)) {
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: ' . $e->getError()->message));
+                exit();
+            }
             stcc_logException('cc_payOrder/confirm', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
         }
         catch (Exception $e) {
