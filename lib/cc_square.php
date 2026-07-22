@@ -1047,6 +1047,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
     $receipt_url = $payment->getReceiptUrl();
     $desc = 'Square: ' . $payment->getApplicationDetails()->getSquareProduct();
+    if ($ccParams['desc'] != '') {
+        $desc .= '; ' . $ccParams['desc'];
+    }
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 

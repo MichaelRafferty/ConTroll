@@ -969,7 +969,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
         // attach the payment confirm to the payment intent
         $orderId = $ccParams['orderId'];
-        $desc = 'Stripe: ' . $sourceId;
         $id = $orderId;
         $confirmFields = [
             'confirmation_token' => $confirmToken['id'],
@@ -1067,6 +1066,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
                 error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
             }
+        }
+
+        $desc = 'Stripe: ' . $sourceId;
+        if ($ccParams['desc'] != '') {
+            $desc .= '; ' . $ccParams['desc'];
         }
 
         $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
@@ -1282,6 +1286,9 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
     $orderId = $ccParams['orderId'];
     $desc = 'Stripe: ' . $sourceId;
+    if ($ccParams['desc'] != '') {
+        $desc .= '; ' . $ccParams['desc'];
+    }
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
