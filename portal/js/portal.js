@@ -91,6 +91,7 @@ class Portal {
     #preTaxLabel = '';
     #currentNonce = null;
     #currentToken = null;
+    #payPostData = null;
 
     // receipt fields
     #receiptModal = null;
@@ -1327,6 +1328,7 @@ class Portal {
             orderId: orderId,
             badges: JSON.stringify(badges),
         };
+        this.#payPostData = data;
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,
@@ -1339,6 +1341,8 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
+                if (data.restoreBtn)
+                    stripeRestoreBtnTxt();
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1388,58 +1392,15 @@ class Portal {
 
     // pay action receipt - a callback from stripe to complete an authorization required transaction
     payActionComplete(paymentIntent) {
-        console.log("completed action");
-        console.log(paymentIntent);
-
-        // compute existing values from above
-        let newplan = false;
-        if (this.#paymentPlan != null)
-            if (this.#paymentPlan.new)
-                newplan = true;
-
+        //console.log("completed action");
+        //console.log(paymentIntent);
         let id = document.getElementById("card-button");
-        let totalAmountDue = this.#paymentAmount;
-        let taxAmount = 0
-        let preTaxAmount = totalAmountDue;
-        if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
-            preTaxAmount = this.#orderData.rtn.preTaxAmt;
-            taxAmount = this.#orderData.rtn.taxAmt;
-        }
+        if (id)
+            id.disabled = true;
 
-        let orderId = '';
-        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId) {
-            orderId = this.#orderData.rtn.orderId;
-        }
-
-        let badges = [];
-        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
-            badges = this.#orderData.rtn.results.badges;
-
-        // transaction comes from session, person paying come from session, we will compute what was paid
-        let data = {
-            loginId: config.id,
-            loginType: config.idType,
-            action: 'paymentComplete',
-            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
-            existingPlan: this.#existingPlan,
-            planRec: this.#paymentPlan,
-            newplan: newplan ? 1 : 0,
-            planPayment: this.#planPayment,
-            otherMemberships: JSON.stringify(this.#orderMemberships),
-            nonce: this.#currentNonce,
-            amount: this.#paymentAmount,
-            totalAmountDue: this.#paymentAmount,
-            preTaxAmount: preTaxAmount,
-            taxAmount: taxAmount,
-            couponDiscount: this.#couponDiscount,
-            preCouponAmountDue: this.#preCouponAmountDue,
-            couponCode: coupon.getCouponCode(),
-            couponSerial: coupon.getCouponSerial(),
-            planRecast: this.#planRecast ? 1 : 0,
-            orderId: orderId,
-            badges: JSON.stringify(badges),
-            paymentIntent: paymentIntent,
-        };
+        let data = this.#payPostData;
+        data.action = 'paymentComplete';
+        data.paymentIntent = paymentIntent;
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,
@@ -1452,7 +1413,7 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-       ;
+
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1796,4 +1757,8 @@ function addPerson(data) {
 
 function redoAddress() {
     portal.editPersonSubmit();
+}
+
+function payActionComplete(paymentIntent) {
+    portal.payActionComplete(paymentIntent);
 }

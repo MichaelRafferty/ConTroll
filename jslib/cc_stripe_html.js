@@ -103,5 +103,5 @@ async function stripe_nextActions(data) {
     }
 
     clear_message('stripe-message');
-    portal.payActionComplete(paymentIntent);
+    payActionComplete(paymentIntent);
 }

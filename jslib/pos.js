@@ -49,6 +49,7 @@ class Pos {
     #ccOnlineStarted = false;
     #ccNonce = null;
     #totalAmountDue = 0;
+    #payPostData = null;
 
     // Data Items
     #unpaid_table = [];
@@ -2555,10 +2556,37 @@ class Pos {
         this.#pay_button_pay.disabled = true;
         let _this = this;
         clear_message();
+        if (config.creditProcessor == 'stripe')
+            clear_message('stripe-message');
+
+        this.#payPostData = postData;
         $.ajax({
             method: "POST",
             url: "scripts/pos_processPayment.php",
             data: postData,
+            success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
+                _this.paySuccess(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                _this.#pay_button_pay.disabled = false;
+                $('#' + _this.#purchase_label).removeAttr("disabled");
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    // pay action complete - a callback from stripe to complete an authorization required transaction
+    payActionComplete(paymentIntent) {
+        // transaction comes from session, person paying come from session, we will compute what was paid
+        let data = this.#payPostData;
+        data.ajax_request_action =  'paymentComplete';
+        data.paymentIntent = paymentIntent;
+        let _this = this;
+        $.ajax({
+            url: "scripts/pos_processPayment.php",
+            data: data,
+            method: 'POST',
             success: function (data, textstatus, jqxhr) {
                 checkRefresh(data);
                 _this.paySuccess(data);

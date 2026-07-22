@@ -368,7 +368,6 @@ if ($amt > 0 || $discountAmt > 0) {
             else
                 $rtn = cc_payComplete($ccParam, $_POST['paymentIntent'], true);
 
-            $rtn = cc_payOrder($ccParam, $buyer, true);
             if ($rtn === null) {
                 ajaxSuccess(array ('error' => 'Credit card not approved'));
                 exit();
