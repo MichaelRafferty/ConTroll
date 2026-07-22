@@ -2,7 +2,7 @@
 
 var change_password = null;
 var changePasswordTitleDiv = null;
-var purchase_label = 'purchase';
+var purchase_label = 'card-button';
 var switchPortalbtn = null;
 var newPasskeyBtn = null;
 var exhibitorProfile = null;

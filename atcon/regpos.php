@@ -89,6 +89,8 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['posType'] = 'a';
 $config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
 $config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
+$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
@@ -97,6 +99,11 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+if ($config_vars['creditonline'] == 1) {
+    load_cc_procs();
+}
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
@@ -130,7 +137,6 @@ page_init($page, $tab,
     );
 
 if ($config_vars['creditonline'] == 1) {
-    load_cc_procs();
     echo draw_cc_html('--', 'js');
 }
 

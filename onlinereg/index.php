@@ -345,7 +345,8 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
                          <div class='row' id='noChargeCart' hidden>
                              <div class='col-sm-12'>
                                  No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
-                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'purchase');">Purchase</button>&nbsp;
+                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'card-button');
+">Purchase</button>&nbsp;
                                  <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>

@@ -56,7 +56,7 @@ var payOverride = 0;
 var payPoll = 0;
 var cc_html = '';
 var ccOnlineStarted = false;
-var purchase_label = 'purchase';
+var purchase_label = 'card-button';
 var ccNonce = '';
 
 // release items
@@ -1491,12 +1491,7 @@ function setPayType(ptype) {
     if (ptype == 'online') {
         if (ccOnlineStarted == false) {
             let button = document.getElementById('card-button');
-            if (button)
-                button.innerHTML = 'Validate Credit Card';
-            else {
-                button = document.getElementById('purchase');
-                button.value = "Verify Credit Card";
-            }
+            button.innerHTML = 'Validate Credit Card';
             console.log('calling startCC');
             startCC();
             console.log('startCC returned');
@@ -2087,7 +2082,7 @@ function drawPay(readWrite = true) {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pay('');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
@@ -2188,7 +2183,7 @@ function drawPay(readWrite = true) {
         payHtml = '';
     }
     document.getElementById('pay-div-pay').innerHTML = payHtml;
-    pay_button_pay = document.getElementById('pay-btn-pay');
+    pay_button_pay = document.getElementById('card-button');
     pay_button_rcpt = document.getElementById('pay-btn-rcpt');
     pay_button_ercpt = document.getElementById('pay-btn-ercpt');
 }

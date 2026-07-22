@@ -58,7 +58,7 @@ class ExhibitorInvoice {
         this.#payCheckno = document.getElementById('pay-checkno');
         this.#payCcauth = document.getElementById('pay-ccauth');
         this.#payDescription = document.getElementById('pay-desc');
-        this.#payButton = document.getElementById('pay-btn-pay');
+        this.#payButton = document.getElementById('card-button');
         this.#overrideButton = document.getElementById('pay-override-pay');
         this.#payAmt = document.getElementById('pay-amt');
         this.#totalInvCost = document.getElementById('vendor_inv_cost');

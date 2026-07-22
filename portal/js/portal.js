@@ -8,12 +8,12 @@ var currentPaymentIntentId = null;
 var currentElementsId = null;
 var currentOrder = null;
 var currentCurrency = 'usd';
-var currentMultiplier = 100;
+var currencyMultiplier = 100;
 
 // initial setup
 window.onload = function () {
-    currentCurrency = config.currency;
-    currentMultiplier = config.currencyMultiplier;
+    currentCurrency = config.ccCurrency;
+    currencyMultiplier = config.currencyMultiplier;
     if (config.loadPlans) {
         paymentPlans = new PaymentPlans();
     }
@@ -1267,14 +1267,9 @@ class Portal {
             token = document.getElementById(token).value;
         }
 
-        // our form
-        let id = document.getElementById("purchase");
+        let id = document.getElementById("card-button");
         if (id)
             id.disabled = true;
-        // squares form
-        let ids = document.getElementById("card-button");
-        if (ids)
-            ids.disabled = true;
 
         let newplan = false;
         if (this.#paymentPlan != null)
@@ -1344,9 +1339,6 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-                // squares form
-                if (ids)
-                    ids.disabled = false;
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1355,15 +1347,19 @@ class Portal {
 
     makePurchaseSuccess(data) {
         //console.log(data);
+        if (data.status == 'next') {
+            //console.log('need actions');
+            let status = stripe_nextActions(data);
+            return;
+        }
         if (data.status == 'error') {
-            // our form
-            let id = document.getElementById("purchase");
+            // check for follow on actions (stripe)
+            let id = document.getElementById("card-button");
             if (id)
                 id.disabled = false;
-            // squares form
-            id = document.getElementById("card-button");
-            if (id)
-                id.disabled = false;
+
+            if (data.restoreBtn)
+                stripeRestoreBtnTxt();
             if (data.error) {
                 show_message(data.error, 'error', 'makePayMessageDiv');
                 return;
@@ -1376,12 +1372,6 @@ class Portal {
                 show_message(data.data, 'error', 'makePayMessageDiv');
                 return;
             }
-        }
-        // check for follow on actions (stripe)
-        if (data.status == 'next') {
-            //console.log('need actions');
-            let status = stripe_nextActions(data);
-            return;
         }
 
         // clear any order in progress
@@ -1407,8 +1397,7 @@ class Portal {
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        let id = document.getElementById("purchase");
-        let ids = document.getElementById("card-button");
+        let id = document.getElementById("card-button");
         let totalAmountDue = this.#paymentAmount;
         let taxAmount = 0
         let preTaxAmount = totalAmountDue;
@@ -1463,9 +1452,7 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-                // squares form
-                if (ids)
-                    ids.disabled = false;
+       ;
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },

@@ -121,9 +121,12 @@ function getConfValue($section, $key, $default = '') : null|string {
             return $configData[$section][$key];
         }
     }
-    if (array_key_exists('global', $configData)) {
-        if (array_key_exists($key, $configData['global'])) {
-            return $configData['global'][$key];
+
+    if (!in_array($section, replaceConfigTokensSkip)) {
+        if (array_key_exists('global', $configData)) {
+            if (array_key_exists($key, $configData['global'])) {
+                return $configData['global'][$key];
+            }
         }
     }
 

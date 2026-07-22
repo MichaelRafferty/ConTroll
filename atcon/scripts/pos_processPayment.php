@@ -17,11 +17,11 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid = $con['id'];
-$ajax_request_action = '';
+$action = '';
 if ($_POST && $_POST['ajax_request_action']) {
-    $ajax_request_action = $_POST['ajax_request_action'];
+    $action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'processPayment') {
+if ($action != 'processPayment' && $action != 'paymentComplete') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -363,6 +363,11 @@ if ($amt > 0 || $discountAmt > 0) {
             labeled_logWrite('pos_processPayment-request',
                 array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
             load_cc_procs();
+            if ($action == 'processPayment')
+                $rtn = cc_payOrder($ccParam, $buyer, true);
+            else
+                $rtn = cc_payComplete($ccParam, $_POST['paymentIntent'], true);
+
             $rtn = cc_payOrder($ccParam, $buyer, true);
             if ($rtn === null) {
                 ajaxSuccess(array ('error' => 'Credit card not approved'));

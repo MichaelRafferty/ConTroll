@@ -36,7 +36,7 @@ class Pos {
     #managerDiscount = 0;
     #drow = null;
     #cc_html = '';
-    #purchase_label = 'purchase';
+    #purchase_label = 'card-button';
     #pay_currentOrderId = null;
     #preTaxAmt = null;
     #taxAmt = null;
@@ -48,6 +48,7 @@ class Pos {
     #payForcePayShown = false;
     #ccOnlineStarted = false;
     #ccNonce = null;
+    #totalAmountDue = 0;
 
     // Data Items
     #unpaid_table = [];
@@ -2205,11 +2206,11 @@ class Pos {
         if (ptype == 'online') {
             if (this.#ccOnlineStarted == false) {
                 let button = document.getElementById('card-button');
-                if (button)
+                if (button) {
                     button.innerHTML = 'Validate Credit Card';
-                console.log('calling startCC');
-                startCC();
-                console.log('startCC returned');
+                    button.disabled = false;
+                }
+                startCC(this.#totalAmountDue * currencyMultiplier);
                 this.#ccOnlineStarted = true;
             }
         }
@@ -2224,6 +2225,7 @@ class Pos {
         }
         this.#ccNonce = token;
         this.#pay_button_pay.disabled = false;
+        this.pay('');
     }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
@@ -2316,7 +2318,7 @@ class Pos {
         let ptype = null;
         let crow = null;
         let cprow = null;
-        let total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
         let pt_online = document.getElementById('pt-online');
@@ -2325,6 +2327,9 @@ class Pos {
         let pt_discount = document.getElementById('pt-discount');
 
         document.getElementById('overrideRow').hidden = true;
+        clear_message();
+        if (config.creditProcessor == 'stripe')
+            clear_message('stripe-message');
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
@@ -2368,19 +2373,19 @@ class Pos {
             if (pt_cash) {
                 let eltenderedamt = document.getElementById('pay-tendered');
                 tendered_amt = Number(eltenderedamt.value);
-                if (tendered_amt + 0.004 < total_amount_due) {
+                if (tendered_amt + 0.004 < this.#totalAmountDue) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
 
-                if ((tendered_amt - total_amount_due) > 0.008) {
+                if ((tendered_amt - this.#totalAmountDue) > 0.008) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
-                            "Customer owes " + this.#currencyFmt.format(total_amount_due.toFixed(2)) +
+                            "Customer owes " + this.#currencyFmt.format(this.#totalAmountDue.toFixed(2)) +
                             ", and tendered " + this.#currencyFmt.format(tendered_amt.toFixed(2)) +
                             "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
-                            "Confirm change give to customer of " + this.#currencyFmt.format((tendered_amt - total_amount_due).toFixed(2)) +
+                            "Confirm change give to customer of " + this.#currencyFmt.format((tendered_amt - this.#totalAmountDue).toFixed(2)) +
                             "</div>\n</div>\n";
                         return;
                     }
@@ -2441,6 +2446,10 @@ class Pos {
             if (pt_online) {
                 ptype = 'online';
                 if (this.#ccNonce == null) {
+                    if (config.creditProcessor == 'stripe') {
+                        stripeCardFormSubmit();
+                        return;
+                    }
                     alert("Credit Card Processing Error: Unable to obtain nonce token");
                     $('#' + this.#purchase_label).removeAttr("disabled");
                     return;
@@ -2464,7 +2473,7 @@ class Pos {
             if (pt_discount) {
                 let eltenderedamt = document.getElementById('pay-discount');
                 discount_amt = Number(eltenderedamt.value);
-                if (discount_amt <= 0 || discount_amt > total_amount_due) {
+                if (discount_amt <= 0 || discount_amt > this.#totalAmountDue) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
@@ -2478,19 +2487,19 @@ class Pos {
                 document.getElementById('pay-discount').value = '';
                 eldesc.value = '';
                 // check if full paid now
-                if (discount_amt < total_amount_due) {
+                if (discount_amt < this.#totalAmountDue) {
                     this.setPayType('none');
                     this.#payForcePayShown = true;
                     pos.gotoPay();
                     return;
                 }
-                total_amount_due -= discount_amt;
+                this.#totalAmountDue -= discount_amt;
             }
 
             if (tendered_amt > 0) {
                 let change = 0;
-                if (tendered_amt > total_amount_due) {
-                    change = tendered_amt - total_amount_due;
+                if (tendered_amt > this.#totalAmountDue) {
+                    change = tendered_amt - this.#totalAmountDue;
                     crow = {
                         index: cart.getPmtLength() + 1, amt: -change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
                     };
@@ -2510,7 +2519,7 @@ class Pos {
                 country = cart.getCountry(payor);
             }
             prow = {
-                index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
+                index: cart.getPmtLength(), amt: this.#totalAmountDue, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
                 type: ptype, nonce: nonce, coupon: couponCode,
                 payor: {
                     email: email,
@@ -2535,7 +2544,7 @@ class Pos {
             pay_tid_amt: this.#pay_tid_amt,
             preTaxAmt: this.#preTaxAmt,
             taxAmt: this.#taxAmt,
-            totalAmtDue: total_amount_due,
+            totalAmtDue: this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             override: this.#payOverride,
             poll: this.#payPoll,
@@ -2564,8 +2573,12 @@ class Pos {
 
     paySuccess(data) {
         // reset the disabled items
+        if (data.status == 'next') {
+            //console.log('need actions');
+            let status = stripe_nextActions(data);
+            return;
+        }
         $('#' + this.#purchase_label).removeAttr("disabled");
-
 
         // things that stop us cold....
         if (typeof data == 'string') {
@@ -2582,6 +2595,7 @@ class Pos {
         }
 
         if (data.error !== undefined) {
+            // check for follow on actions (stripe)
             show_message(data.error, 'error');
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
@@ -2589,8 +2603,12 @@ class Pos {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
-            else
+            else {
                 this.#pay_button_pay.disabled = false;
+                this.#ccNonce = null;
+            }
+            if (data.restoreBtn)
+                stripeRestoreBtnTxt()
             return;
         }
 
@@ -2602,8 +2620,12 @@ class Pos {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
-            else
+            else {
                 this.#pay_button_pay.disabled = false;
+                this.#ccNonce = null;
+            }
+            if (data.restoreBtn)
+                stripeRestoreBtnTxt()
             return;
         }
 
@@ -2900,8 +2922,8 @@ class Pos {
         let unpaidCouponDiscount = cart.getTotalCouponDiscountUnpaid();
         if (unpaidCouponDiscount === this.#couponDiscount)
             totalPaid -= this.#couponDiscount; // if it's in the membership rows,
-        let total_amount_due = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
-        if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
+        this.#totalAmountDue = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        if (this.#totalAmountDue < 0.01) { // allow for rounding error, no need to round here
             this.#pay_currentOrderId = null;
             // nothing more to pay
             if (this.#print_tab)
@@ -2965,7 +2987,7 @@ class Pos {
             let pay_html = `
 <div id='payBody' class="container-fluid">
  <div id="payFormDiv" class="container-fluid form-floating">
-  <form id='payForm' action='javascript: return false; ' class="form-floating">
+ <!--<form id='payForm' action='javascript: return false; ' class="form-floating">-->
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
@@ -3065,18 +3087,18 @@ class Pos {
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">` +
-                this.#currencyFmt.format(Number(total_amount_due).toFixed(2)) + `</div>
+                this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
 `;
-            if (this.#ccTerminalAvailable) {
+            if (this.#ccTerminalAvailable && this.#totalAmountDue > 0.50) {
                 pay_html += `
             <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onchange='pos.setPayType("terminal");'/>
             <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
 `;
-            } else if (config.creditonline == 1) {
+            } else if (config.creditonline == 1 && this.#totalAmountDue > 0.50) {
                 pay_html += `
             <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='pos.setPayType("online");'/>
             <label for="pt-online">Online Credit Card&nbsp;&nbsp;&nbsp;</label>
@@ -3164,7 +3186,7 @@ class Pos {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pos.pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pos.pay('');">Confirm Pay</button>
         </div>
     </div>
     <div class="row mt-3" id="overrideRow" hidden>
@@ -3184,7 +3206,7 @@ class Pos {
             <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="pos.payPoll(0);">Cancel Payment</button>
         </div>
     </div>
-  </form>
+  <!--</form>-->
 </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
     <div class="row mt-3">
@@ -3202,7 +3224,7 @@ class Pos {
 `;
 
             this.#pay_div.innerHTML = pay_html;
-            this.#pay_button_pay = document.getElementById('pay-btn-pay');
+            this.#pay_button_pay = document.getElementById('card-button');
             this.#pay_button_ercpt = document.getElementById('pay-btn-ercpt');
             this.#pay_button_rcpt = document.getElementById('pay-btn-rcpt');
             this.#pay_button_rcpt.disabled = !this.#receiptPrinterAvailable;

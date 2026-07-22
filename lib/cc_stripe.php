@@ -15,9 +15,15 @@ require_once("global.php");
 function draw_cc_html($postal_code = "--", $type='all') : string {
     global $libJSversion;
 
-    if ($type == 'js') {
-        show_message("JS type integrtations of draw_cc_html are not yet supported", "error");
-        return '';
+    if ($type == 'body') {
+        $html =  <<<EOS
+<form id="payment-form">
+    <div class="container-fluid overflow-hidden" id="payment-element"></div>
+    <!--<button id="card-button">Purchase</button>-->
+    <div class="mt-1 p-1" id="stripe-message"></div>
+</form>
+EOS;
+        return $html;
     }
 
     $sdk = getConfValue('cc', 'websdk', 'https://js.stripe.com/dahlia/stripe.js');
@@ -29,18 +35,24 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
     }
 
     $html = '';
-        $html .= <<<EOS
+    $html .= <<<EOS
 <script src="$sdk"></script>
 <script src="jslib/cc_stripe_html.js?v=$libJSversion"></script>
-<form id = "payment-form">
+EOS;
+    if ($type != 'js')
+        $html .= <<<EOS
+<form id="payment-form">
     <div class="container-fluid overflow-hidden" id="payment-element"></div>
-    <button id="purchase">Purchase</button>
+    <button id="card-button">Purchase</button>
     <div class="mt-1 p-1" id="stripe-message"></div>
 </form>
+EOS;
+    $html .= <<<EOS
 <script type='text/javascript'>
 const pkkey="$pkkey";
 </script>
 EOS;
+
     return $html;
 };
 
@@ -992,7 +1004,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
             $code = $e->getError()->decline_code;
             if (in_array($code, $cardDeclineCodes)) {
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: ' . $e->getError()->message));
+                ajaxSuccess(array ('status' => 'error', 'restoreBtn' => 1, 'data' => 'Error: ' . $e->getError()->message));
                 exit();
             }
             stcc_logException('cc_payOrder/confirm', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
@@ -1002,7 +1014,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
             $code = $e->getError()->decline_code;
             if (in_array($code, $cardDeclineCodes)) {
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: ' . $e->getError()->message));
+                ajaxSuccess(array ('status' => 'error', 'restoreBtn' => 1, 'data' => 'Error: ' . $e->getError()->message));
                 exit();
             }
             stcc_logException('cc_payOrder/confirm', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);

@@ -5,7 +5,7 @@
 var badges = { count: 0, total: 0, memTypeCount: {}, badges: [] };
 // prices = array by memId of prices for badges
 var prices = {};
-var $purchase_label = 'purchase';
+var $purchase_label = 'card-button';
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
