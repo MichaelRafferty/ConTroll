@@ -1032,6 +1032,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $charge = null;
     $payment = json_decode(json_encode($paymentIntent), true);
     if (array_key_exists('status', $payment) && $payment['status'] == 'requires_action') {
+        if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
         // return the payment intent
         ajaxSuccess(array(
             'status' => 'next',
