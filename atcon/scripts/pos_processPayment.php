@@ -362,7 +362,6 @@ if ($amt > 0 || $discountAmt > 0) {
             //log requested badges
             labeled_logWrite('pos_processPayment-request',
                 array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
-            load_cc_procs();
             if ($action == 'processPayment')
                 $rtn = cc_payOrder($ccParam, $buyer, true);
             else

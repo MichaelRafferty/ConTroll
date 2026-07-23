@@ -68,8 +68,8 @@ function findMembership(id) {
 }
 
 function makePurchase(token, label) {
-    console.log(token);
-    console.log(label);
+    //console.log(token);
+    //console.log(label);
 
     // if square or test, nonce is a string, if strip, its an object
     let nonce = null;

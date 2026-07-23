@@ -96,22 +96,16 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
-if (array_key_exists('creditoffline', $controll)) {
-    $config_vars['creditoffline'] = $controll['creditoffline'];
-}
-if (array_key_exists('creditonline', $controll)) {
-    $config_vars['creditonline'] = $controll['creditonline'];
-}
+$config_vars['creditoffline'] = getConfValue('controll', 'creditoffline', 1);
+$config_vars['creditonline'] = getConfValue('controll', 'creditonline', 0);
+$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
-
-if (array_key_exists('creditonline', $controll)) {
-    if ($controll['creditonline'] == 1) {
-        load_cc_procs();
-        echo draw_cc_html('--', 'js');
-    }
-}
+load_cc_procs();
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
 //    $useUSPS = true;
@@ -124,6 +118,11 @@ if (array_key_exists('creditonline', $controll)) {
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
+<?php
+    if ($config_vars['creditonline'] == 1) {
+        echo draw_cc_html('--', 'js');
+    }
+?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">

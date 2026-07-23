@@ -25,11 +25,11 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     exit();
 }
 
-$ajax_request_action = '';
+$action = '';
 if ($_POST && $_POST['ajax_request_action']) {
-    $ajax_request_action = $_POST['ajax_request_action'];
+    $action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'processPayment') {
+if ($action != 'processPayment' && $action != 'paymentComplete') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -292,8 +292,12 @@ if ($amt > 0 || $discountAmt > 0) {
         //log requested badges
         labeled_logWrite('c/pos_processPayment-pre-cc_payOrder',
             array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
-        load_cc_procs();
-        $rtn = cc_payOrder($ccParam, $buyer, true);
+
+        if ($action == 'processPayment')
+            $rtn = cc_payOrder($ccParam, $buyer, true);
+        else
+            $rtn = cc_payComplete($ccParam, $_POST['paymentIntent'], true);
+
         if ($rtn === null) {
             ajaxSuccess(array ('error' => 'Credit card not approved'));
             exit();
@@ -315,7 +319,7 @@ if ($amt > 0 || $discountAmt > 0) {
     $status = $rtn['status'];
     $transId = $rtn['transId'];
     $category = $rtn['category'];
-    $description = $rtn['description'];
+    $description = substr($rtn['description'], 0, 64);
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
     if ($nonce == 'EXTERNAL')

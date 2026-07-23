@@ -99,9 +99,7 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
-if ($config_vars['creditonline'] == 1) {
-    load_cc_procs();
-}
+load_cc_procs();
 $config_vars['ccCurrency'] = cc_getCurrency();
 $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
