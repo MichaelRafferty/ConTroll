@@ -50,6 +50,10 @@ $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
+$config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
@@ -337,31 +341,33 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
                                  <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
                              </div>
                          </div>
-                         <div class="row" id="emptyCart">
-                             <div class="col-sm-12">
-                                 Your cart does not contain any primary memberships.  Please add memberships to the cart before checking out.
-                             </div>
-                         </div>
-                         <div class='row' id='noChargeCart' hidden>
-                             <div class='col-sm-12'>
-                                 No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
-                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'card-button');
-">Purchase</button>&nbsp;
-                                 <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
-                             </div>
-                         </div>
-                         <div class="row" id='chargeCart' hidden>
-                             <div class="col-sm-12">
-                                   <?php echo draw_cc_html(); ?>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-12 ms-0 me-0 p-0">
-                                 <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
-                             </div>
-                         </div>
                      </div>
                  </form>
+                 <div class="container-fluid">
+                     <div class="row" id="emptyCart">
+                         <div class="col-sm-12">
+                             Your cart does not contain any primary memberships.  Please add memberships to the cart before checking out.
+                         </div>
+                     </div>
+                     <div class='row' id='noChargeCart' hidden>
+                         <div class='col-sm-12'>
+                             No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
+                             <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'card-button');
+">Purchase</button>&nbsp;
+                             <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
+                         </div>
+                     </div>
+                     <div class="row" id='chargeCart' hidden>
+                         <div class="col-sm-12">
+                               <?php echo draw_cc_html(); ?>
+                         </div>
+                     </div>
+                     <div class="row">
+                         <div class="col-sm-12 ms-0 me-0 p-0">
+                             <hr style="height:4px; color:#0d6efd;background-color:#0d6efd;border-width:0;"/>
+                         </div>
+                     </div>
+                 </div>
                  <div class='container-fluid'>
                      <div class='row'>
                          <div class="col-sm-12">We Accept</div>

@@ -2577,7 +2577,7 @@ class Pos {
     }
 
     // pay action complete - a callback from stripe to complete an authorization required transaction
-    payActionComplete(paymentIntent) {
+    payActionComplete(paymentIntent, post, payParams) {
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = this.#payPostData;
         data.ajax_request_action =  'paymentComplete';

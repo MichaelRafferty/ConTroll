@@ -1391,7 +1391,7 @@ class Portal {
     }
 
     // pay action receipt - a callback from stripe to complete an authorization required transaction
-    payActionComplete(paymentIntent) {
+    payActionComplete(paymentIntent, post, payParams) {
         //console.log("completed action");
         //console.log(paymentIntent);
         let id = document.getElementById("card-button");
@@ -1759,6 +1759,6 @@ function redoAddress() {
     portal.editPersonSubmit();
 }
 
-function payActionComplete(paymentIntent) {
-    portal.payActionComplete(paymentIntent);
+function payActionComplete(paymentIntent, post, payParams) {
+    portal.payActionComplete(paymentIntent, post, payParams);
 }

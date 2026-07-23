@@ -39,6 +39,13 @@ var profile = null;
 var currencyFmt = null;
 var locale = null;
 
+// credit card related
+var ccType = null;
+var currentPaymentIntentId = null;
+var currentElementsId = null;
+var currentOrder = null;
+var currentCurrency = 'usd';
+var currencyMultiplier = 100;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
@@ -87,7 +94,7 @@ function addMembership(formData) {
     clear_message('addMessageDiv');
 
     // build name and legal name
-    var name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
+    let name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
     name = name.trim();
     if (formData.legalName=='') {
         formData.legalName = name;
@@ -101,9 +108,9 @@ function addMembership(formData) {
 
     repriceCart();
   
-    var badgename = badgeNameDefault(formData.badge_name, formData.badgeNameL2, formData.fname, formData.lname);
+    let badgename = badgeNameDefault(formData.badge_name, formData.badgeNameL2, formData.fname, formData.lname);
     // add this person to the "who is paying" "person" list
-    var option = $(document.createElement('option'))
+    let option = $(document.createElement('option'))
         .append(name)
         .data('info', formData)
         .attr('value', name);
@@ -115,12 +122,12 @@ function addMembership(formData) {
     }
 
     // build badge block in Badges list
-    var memId = formData.memId;
+    let memId = formData.memId;
     // find matching mtype in array
-    var found = false;
-    var mtype = null;
-    for (var row in mtypes) {
-        var mbrType = mtypes[row];
+    let found = false;
+    let mtype = null;
+    for (let row in mtypes) {
+        let mbrType = mtypes[row];
         if (mbrType.id == memId) {
             mtype = mbrType;
             found = true;
@@ -128,9 +135,9 @@ function addMembership(formData) {
         }
     }
 
-    var age_text='unknown';
-    var labeldivtext = 'Unknown';
-    var addon = '';
+    let age_text='unknown';
+    let labeldivtext = 'Unknown';
+    let addon = '';
 
     if (found) {
         age_text = mtype.memAge;
@@ -139,14 +146,14 @@ function addMembership(formData) {
             addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
     }
 
-    var age_color = 'text-white';
+    let age_color = 'text-white';
     if (age_text != 'adult' && age_text != 'child' && age_text != 'youth' && age_text != 'kit')
         age_color = 'text-black';
-    var re = /\-+/g;
+    let re = /\-+/g;
     labeldivtext = labeldivtext.replace(re, '-<br/>');
 
-    var bdivid="badge" + badges.count;
-    var html = "<div id='" + bdivid + "' data-index='" + (badges.count - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
+    let bdivid="badge" + badges.count;
+    let html = "<div id='" + bdivid + "' data-index='" + (badges.count - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
         "  <div class='row'>\n" +
         "    <div class='col-sm-3 p-0 m-0 text-wrap " + age_text + "'>\n" +
         "      <h4><span class='badge " + age_color + ' ' + age_text + " text-wrap'>" + labeldivtext + "</span></h4>" + addon + "\n" +
@@ -173,21 +180,21 @@ function addMembership(formData) {
 }
 
 function removeBadge(bdivid) {
-    var toRemove = document.getElementById(bdivid);
-    var i = toRemove.getAttribute('data-index');
-    var badge_age = badges.badges[i].age;
+    let toRemove = document.getElementById(bdivid);
+    let i = toRemove.getAttribute('data-index');
+    let memId = badges.badges[i].memId;
 
-    badges.memTypeCount[badge_age] -= 1;
+    badges.memTypeCount[memId] -= 1;
     badges.count -= 1;
-    repriceCart();
-
     badges.badges[i]={};
+
+    repriceCart();
     toRemove.remove();
 }
 
 function updateAddr() {
-    var selOpt = $("#personList option:selected");
-    var optData = selOpt.data('info');
+    let selOpt = $("#personList option:selected");
+    let optData = selOpt.data('info');
     $('#cc_email').val(optData.email1);
 }
 
@@ -221,7 +228,7 @@ function makePurchase(token, label) {
     }
 
     // validate CC email address for receipt
-    var cc_email = document.getElementById('cc_email').value;
+    let cc_email = document.getElementById('cc_email').value;
     if (!validateAddress(cc_email)) {
         alert("The 'who's paying for the order' email address is not valid, please use the Edit button to put in a valid email address for the receipt");
         $('#cc_email').addClass('need');
@@ -230,7 +237,7 @@ function makePurchase(token, label) {
     $('#cc_email').removeClass('need');
 
     $('#' + $purchase_label).attr("disabled", "disabled");
-    var postdata = badges.badges;
+    let postdata = badges.badges;
     if (postdata.length == 0) {
         alert("You don't have any memberships to buy, please add some memberships");
         if (newBadge != null) {
@@ -239,7 +246,7 @@ function makePurchase(token, label) {
         }
         return false;        
     }
-    var data = {
+    let data = {
         badges: JSON.stringify(badges),
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
@@ -258,7 +265,28 @@ function makePurchase(token, label) {
         data: data,
         method: 'POST',
         success: mp_ajax_success,
-        error: mp_ajax_error
+        error: mp_ajax_error,
+    });
+}
+
+// pay action receipt - a callback from stripe to complete an authorization required transaction
+function payActionComplete(paymentIntent, post, payParams) {
+    //console.log("completed action");
+    //console.log(paymentIntent);
+    let id = document.getElementById("card-button");
+    if (id)
+        id.disabled = true;
+
+    let data = post;
+    data.action = 'paymentComplete';
+    data.payParams = payParams;
+    data.paymentIntent = paymentIntent;
+    $.ajax({
+        url: "scripts/makePurchase.php",
+        data: data,
+        method: 'POST',
+        success: mp_ajax_success,
+        error: mp_ajax_error,
     });
 }
 
@@ -309,19 +337,19 @@ function repriceCart() {
         console.log(mtypes);
         console.log(badges);
     }
-    var html = '';
-    var nbrs = badges.memTypeCount;
-    var total = 0;
-    var mbrtotal = 0;
-    var cartDiscountable = false;
-    var couponmemberships = 0;
-    var couponPrimaryMemberships = 0;
-    var primaryMemberships = 0;
+    let html = '';
+    let nbrs = badges.memTypeCount;
+    let total = 0;
+    let mbrtotal = 0;
+    let cartDiscountable = false;
+    let couponmemberships = 0;
+    let couponPrimaryMemberships = 0;
+    let primaryMemberships = 0;
 
     if (typeof mtypes != 'undefined' && mtypes != null) {
-        for (var row in mtypes) {
-            var mbrType = mtypes[row];
-            var num = num = nbrs[mbrType.id];
+        for (let row in mtypes) {
+            let mbrType = mtypes[row];
+            let num = nbrs[mbrType.id];
             if (num > 0) {
 
                 if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.price, 'coupon')) {
@@ -351,10 +379,10 @@ function repriceCart() {
 
     // now compute discountable totals
     total = 0;
-    var maxMbrDiscounts = coupon.getMaxMemberships();
-    var couponDiscounts = 0;
-    var thisDiscount = 0;
-    var itemtype = '';
+    let maxMbrDiscounts = coupon.getMaxMemberships();
+    let couponDiscounts = 0;
+    let thisDiscount = 0;
+    let itemtype = '';
     for (row in mtypes) {
         mbrType = mtypes[row];
         if (nbrs[mbrType.id] > 0) {
@@ -389,7 +417,7 @@ function repriceCart() {
 
     html = '';
     if (cartDiscountable)  {
-        var cartDiscount = coupon.CartDiscount(mbrtotal);
+        let cartDiscount = coupon.CartDiscount(mbrtotal);
         couponDiscounts += cartDiscount;
         total -= cartDiscount;
     }
@@ -402,6 +430,8 @@ function repriceCart() {
     noChargeCart.hidden = primaryMemberships == 0 || badges.total > 0;
     chargeCart.hidden = primaryMemberships == 0 || badges.total == 0;
     totalDue = total;
+    if (totalDue > 0)
+        startCCPay(totalDue * currencyMultiplier)
 }
 
 function togglePopup() {
@@ -432,18 +462,20 @@ function updateInterestSelect(id) {
 
 window.onload = function () {
 // formatting items
+    currentCurrency = config.ccCurrency;
+    currencyMultiplier = config.currencyMultiplier;
     locale = config.locale;
     currencyFmt = new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: config.currency,
     });
 
-    var badge_modal = document.getElementById('anotherBadge');
+    let badge_modal = document.getElementById('anotherBadge');
     if (badge_modal != null) {
         anotherBadge = new bootstrap.Modal(badge_modal, { focus: true, backdrop: 'static' });
     }
 
-    var new_badge = document.getElementById('newBadge');
+    let new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
         newBadge = new bootstrap.Modal(new_badge, {focus: true, backdrop: 'static'});
         addToCartBtn = document.getElementById("addToCartBtn");
@@ -468,9 +500,9 @@ window.onload = function () {
         couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
         if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
-            for (var row in mtypes) {
-                var mbrType = mtypes[row];
-                var memId = mbrType.id;
+            for (let row in mtypes) {
+                let mbrType = mtypes[row];
+                let memId = mbrType.id;
                 prices[memId] = Number(mbrType.price);
                 badges.memTypeCount[memId] = 0;
                 shortnames[memId] = mbrType.shortname.replace(',', '<br/>');

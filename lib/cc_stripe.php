@@ -1037,6 +1037,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         // return the payment intent
         ajaxSuccess(array(
             'status' => 'next',
+            'payParams' => $ccParams,
+            'post' => $_POST,
             'intentStatus' => $payment['status'],
             'clientSecret' => $payment['client_secret'],
             )

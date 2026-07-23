@@ -81,6 +81,6 @@ function makePurchase(token, label) {
     pos.onlineCCEntered(nonce, label);
 }
 
-function payActionComplete(paymentIntent) {
-    pos.payActionComplete(paymentIntent);
+function payActionComplete(paymentIntent, post, payParams) {
+    pos.payActionComplete(paymentIntent, post, payParams);
 }

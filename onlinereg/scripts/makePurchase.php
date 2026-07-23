@@ -25,6 +25,8 @@ try {
     exit();
 }
 
+$action = $_POST['action'];
+
 if (array_key_exists('couponCode', $_POST)) {
     $couponCode = $_POST['couponCode'];
     if ($couponCode == '')
@@ -78,7 +80,6 @@ load_email_procs();
 
 $condata = get_con();
 $log = get_conf('log');
-$cc = get_conf('cc');
 $cc = get_conf('cc');
 if (array_key_exists('location_portal', $cc)) {
     $ccLocation = $cc['location_portal'];
@@ -144,8 +145,6 @@ INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pro
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
            IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?, ?);
 EOS;
-
-
 
 $intInsertQ = <<<EOS
 INSERT INTO memberInterests(newperid, conid, interest, interested, notes)
@@ -318,23 +317,25 @@ $results = array(
     'taxList' => $taxList,
 );
 
-//log requested badges
-labeled_logWrite('o/makePurchase-pre-buldOrder',
-    array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
-
 // end compute, create the order if there is something to pay
 if ($total > 0) {
-    $rtn = cc_buildOrder($results, true, $ccLocation);
-    if ($rtn == null) {
-        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        labeled_logWrite('o/makePurchase-cc_buildOrder returned null',
-            array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
-        exit();
+    if ($action != 'paymentComplete') {
+        //log requested badges
+        labeled_logWrite('o/makePurchase-pre-buldOrder',
+            array ('con' => $condata['name'], 'trans' => $transId, 'results' => $results, 'request' => $badges));
+
+        $rtn = cc_buildOrder($results, true, $ccLocation);
+        if ($rtn == null) {
+            // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+            labeled_logWrite('o/makePurchase-cc_buildOrder returned null',
+                array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+            ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
+            exit();
+        }
+        $response['orderRtn'] = $rtn;
+        labeled_logWrite('o/makePurchase-order created',
+            array ('status' => 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     }
-    $response['orderRtn'] = $rtn;
-    labeled_logWrite('o/makePurchase-order created',
-        array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $buyer['email'] = $purchaseform['cc_email'];
     $buyer['phone'] = '';
     $buyer['country'] = '';
@@ -379,7 +380,11 @@ EOS;
     $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 // call the credit card processor to make the payment
-    $ccrtn = cc_payOrder($results, $buyer, true);
+    if ($action != 'paymentComplete')
+        $ccrtn = cc_payOrder($results, $buyer, true);
+    else
+        $ccrtn = cc_payComplete($_POST['payParams'], $_POST['paymentIntent'], true);
+
     if ($ccrtn === null) {
         // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         labeled_logWrite('o/makePurchase-cc_payOrder returned null',

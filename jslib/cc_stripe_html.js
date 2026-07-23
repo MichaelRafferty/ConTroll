@@ -3,6 +3,7 @@
 var elements = null;
 var stripe = null;
 var stripeSubmitBtn = null;
+var paymentElement = null;
 var stripePaystripePayPriorText = '';
 const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
@@ -69,7 +70,12 @@ function stripeRestoreBtnTxt() {
 
 function startCCPay(amount = 0) {
     stripeSubmitBtn = document.getElementById('card-button');
-    stripe = Stripe(pkkey);
+    if (!stripe)
+        stripe = Stripe(pkkey);
+    if (paymentElement) {
+        paymentElement.destroy();
+        paymentElement = null;
+    }
     // set listener
     document.getElementById('payment-form').addEventListener('submit', stripeCardFormSubmit);
 
@@ -87,7 +93,7 @@ function startCCPay(amount = 0) {
     elements = stripe.elements(options);
 
     const paymentElementsOptions = { layout: 'accordion' };
-    const paymentElement = elements.create('payment', paymentElementsOptions);
+    paymentElement = elements.create('payment', paymentElementsOptions);
     paymentElement.mount('#payment-element');
 }
 
@@ -103,5 +109,5 @@ async function stripe_nextActions(data) {
     }
 
     clear_message('stripe-message');
-    payActionComplete(paymentIntent);
+    payActionComplete(paymentIntent, data.post, data.payParams);
 }
