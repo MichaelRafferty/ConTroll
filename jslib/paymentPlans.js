@@ -90,12 +90,12 @@ class PaymentPlans {
                     }
 
                     if (plan.memList != null && plan.memList.length > 0) {
-                        if (plan.memListArray.indexOf(mem.id.toString()) == -1)
+                        if (plan.memListArray.indexOf(mem.memId.toString()) == -1)
                             eligible = true;
                     }
 
                     if (plan.excludeList != null && plan.excludeList.length > 0) {
-                        if (plan.excludeListArray.indexOf(mem.id.toString()) != -1)
+                        if (plan.excludeListArray.indexOf(mem.memId.toString()) != -1)
                             eligible = false;
                     }
 
