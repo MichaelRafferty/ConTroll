@@ -23,6 +23,12 @@ class VendorInvoice {
     #paymentForDiv = null;
     #orderData = null;
 
+    #currentNonce = null;
+    #currentToken = null;
+    #payPostData = null;
+    #currentPaymentIntent = null;
+    #totalAmountDue = null;
+
     constructor() {
         let id = document.getElementById('vendor_invoice');
         if (id != null) {
@@ -306,8 +312,8 @@ class VendorInvoice {
                 </div>
             </div>
 `;
-            if (taxHtml != '') {
-                html += `
+        if (taxHtml != '') {
+            html += `
             <div class='row'>
                 <div class='col-sm-auto'>
                     Total Pre Tax Order: <span id='vendor_pay_cost'></span>
@@ -328,8 +334,8 @@ class VendorInvoice {
                 </div>
             </div>
 `;
-            } else {
-                html += `
+        } else {
+            html += `
             <div class='row'>
                 <div class='col-sm-auto'>
                     &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
@@ -341,8 +347,8 @@ class VendorInvoice {
                 </div>
             </div> 
 `;
-            }
-            html += `
+        }
+        html += `
             <div class='row'>
                 <div class='col-sm-12'><hr/></div> 
             </div>          
@@ -359,6 +365,15 @@ class VendorInvoice {
         let totalWithTax = data.rtn.totalAmt;
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
+        this.#totalAmountDue = data.rtn.totalAmt;
+        if (data.rtn.ccType) {
+            ccType = data.rtn.ccType;
+        }
+
+        if (ccType == 'stripe') {
+            this.#currentPaymentIntentId = data.rtn.orderId;
+        }
+
         let id = document.getElementById(this.#purchaseLabel);
         if (id)
             id.disabled = false;

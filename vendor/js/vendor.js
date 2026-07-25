@@ -10,16 +10,25 @@ var si_password = null;
 var currencyFmt = null;
 var vendorInvoice = null;
 var profile = null;
+var ccType = null;
+var currentPaymentIntentId = null;
+var currentElementsId = null;
+var currentOrder = null;
+var currentCurrency = 'usd';
+var currencyMultiplier = 100;
 
 // initial setup
 window.onload = function () {
+    currentCurrency = config.ccCurrency;
+    currencyMultiplier = config.currencyMultiplier;
+    currencyFmt = new Intl.NumberFormat(config.locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
+
     id = document.getElementById('changePassword');
     if (id != null) {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        currencyFmt = new Intl.NumberFormat(config.locale, {
-            style: 'currency',
-            currency: config.currency,
-        });
     }
 
     newPasskeyBtn = document.getElementById('newPasskeyBtn');

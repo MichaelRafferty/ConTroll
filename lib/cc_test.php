@@ -170,7 +170,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // Art Sales
     if ($artSales == 1) {
-        $needTaxes = $hasTax;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
             foreach ($results['art'] as $artItem) {
                 if (!array_key_exists('paid', $artItem)) {
@@ -197,8 +196,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item['taxes'] = buildCCAppliedTaxArray('artSales', $lineid);
-                    $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
+                    $taxArray = buildCCAppliedTaxArray('artSales', $lineid);
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
                 }
                 $orderLineItems[] = $item;
                 $orderValue += $artItem['amount'];
@@ -381,7 +383,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $spaceType = 'artSpace';
                 } else {
                     $itemName .= $space['exhibitorName'];
-                    $spaceType = 'exhibitSpace';
+                    $spaceType = 'vendorSpace';
                 }
                 $incCount = 0;
                 $addCount = 0;

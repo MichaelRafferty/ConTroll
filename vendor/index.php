@@ -12,6 +12,7 @@ require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
 require_once('../lib/policies.php');
 require_once('../lib/profile.php');
+require_once('../lib/log.php');
 require_once('../lib/tax.php');
 
 $cc = get_conf('cc');
@@ -20,6 +21,8 @@ $conid = $con['id'];
 $conname = $con['conname'];
 $minConid = getConfValue('controll', 'viewPriorLimit', $conid - 1);
 $usps = get_conf('usps');
+logInit(getConfValue('log', 'vendors'));
+
 load_cc_procs();
 
 $condata = get_con();
@@ -80,6 +83,11 @@ $config_vars['termsFan'] = returnCustomText('invoice/termsFan');
 $config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
+$config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
+
 $config_vars['taxRates'] = getTaxRates();
 $startdate = new DateTime($condata['startdate']);
 $config_vars['ageByDate'] = $startdate->format('F j, Y');
