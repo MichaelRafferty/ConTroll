@@ -752,7 +752,7 @@ EOS;
                     $item['taxes'] = $taxArray;
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
-                $orderTaxLineItems = $item;
+                $orderTaxLineItems[] = $item;
                 $orderMetadata['min' . $itemNumber] = $notesData['note'];
                 $orderMetadata['mim' . $itemNumber] = json_encode($notesData['metadata']);
                 $orderValue += $itemPrice;

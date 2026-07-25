@@ -26,7 +26,7 @@ class VendorInvoice {
     #currentNonce = null;
     #currentToken = null;
     #payPostData = null;
-    #currentPaymentIntent = null;
+    #currentPaymentIntentId = null;
     #totalAmountDue = null;
 
     constructor() {
