@@ -1390,7 +1390,7 @@ class Portal {
         }
     }
 
-    // pay action receipt - a callback from stripe to complete an authorization required transaction
+    // pay action complete - a callback from stripe to complete an authorization required transaction
     payActionComplete(paymentIntent, post, payParams) {
         //console.log("completed action");
         //console.log(paymentIntent);
