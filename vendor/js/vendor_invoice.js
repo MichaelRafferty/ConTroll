@@ -376,7 +376,7 @@ class VendorInvoice {
             this.#currentPaymentIntentId = data.rtn.orderId;
         }
 
-        let id = document.getElementById(this.#purchaseLabel);
+        let id = document.getElementById('card-button');
         if (id)
             id.disabled = false;
         this.#vendorPayment.show();
@@ -431,10 +431,9 @@ class VendorInvoice {
         postData['orderData'] = JSON.stringify(data);
         postData['portalType'] = config.portalType;
         postData['portalName'] = config.portalName;
-        let submitId = document.getElementById(this.#purchaseLabel);
+        let submitId = document.getElementById('card-button');
         submitId.disabled = true;
         clear_message('inv_result_message');
-        let purchaseLabel = this.#purchaseLabel;
         let hideElement = this.#vendorPayment;
         $.ajax({
             url: 'scripts/spacePayment.php',
@@ -445,11 +444,11 @@ class VendorInvoice {
                     console.log(data);
                 if (data['error']) {
                     show_message(data['error'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
                     show_message(data['data'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
                     hideElement.hide();
@@ -478,11 +477,11 @@ class VendorInvoice {
                     console.log(data);
                 if (data['error']) {
                     show_message(data['error'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
                     show_message(data['data'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
                     hideElement.hide();
@@ -490,7 +489,7 @@ class VendorInvoice {
                     return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 }
             }

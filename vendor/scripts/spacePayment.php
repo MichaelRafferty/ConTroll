@@ -40,6 +40,7 @@ $eyID = getSessionVar('eyID');
 $data = json_decode($_POST['orderData'], true);
 if (array_key_exists('nonce', $_POST) && $_POST['nonce'] == 'c') {
     $results = $data['results'];
+    cc_cancelOrder($results['source'], $data['orderId']);
     cleanRegs($results['badges'], $results['transid']);
     ajaxSuccess(array('status'=>'success', 'message'=>'Payment canceled'));
     exit;
@@ -250,7 +251,7 @@ $typeStr = 'dss' . $taxStr . 'i';
     $taxes = array();
 }
 
-labeled_logwrite('spacePayment-post cc_pay_order-rtn', $ccrtn));
+labeled_logwrite('spacePayment-post cc_pay_order-rtn', $ccrtn);
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
