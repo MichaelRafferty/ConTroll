@@ -599,7 +599,7 @@ EOS;
                     ($addMbr ? ' Mbr ' : ' ') . 'for ' . $fullname;
 
                 $itemNumber++;
-                $item[] = [
+                $item = [
                     'product_code' => 'badge-' . $badge['memId'],
                     'product_name' => mb_substr($itemName, 0, 1024),
                     'quantity' => 1,
@@ -613,7 +613,7 @@ EOS;
                     } else {
                         $badgeTaxable = 'nontaxMem';
                     }
-                    $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
+                    $item['basePriceMoney'] = $item['unit_cost']; // convert to common name for tax comps
 
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
@@ -803,7 +803,7 @@ EOS;
     // now update the tax for each line item
     for ($lineno = 0; $lineno < count($orderTaxLineItems); $lineno++) {
         $taxLine = $orderTaxLineItems[$lineno];
-        if (array_key_exists('taxes', $taxLine)) {
+        if (array_key_exists('taxAmounts', $taxLine)) {
             $taxes = $taxLine['taxAmounts'];
             $totalTax = $taxes['totalTax'];
             for ($taxLineno = 1; $taxLineno <= 5; $taxLineno++) {
