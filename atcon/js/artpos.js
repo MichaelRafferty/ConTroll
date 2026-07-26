@@ -357,6 +357,9 @@ function buildOrder() {
         ajax_request_action: 'buildOrder',
         cart_art: JSON.stringify(cart.getCartArt()),
         perid: currentPerson.id,
+        name: currentPerson.fullName,
+        phone: currentPerson.phone,
+        email: currentPerson.email_addr,
         pay_tid: pay_tid,
     };
     if (pay_currentOrderId) {

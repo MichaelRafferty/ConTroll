@@ -194,6 +194,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
         // failures in the exhibitor payments need to delete the regs they were going to product
         $cleanUpRegs = true;
+    } if ($results['source'] == 'artpos') {
+        $cust_email = trim($results['email']);
+        $cust_phone = trim($results['phone']);
+        $cust_name = trim($results['name']);
     } else {
         $custid = 't-' . $results['transid'];
         $custNum = $results['transid'];

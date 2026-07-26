@@ -122,6 +122,9 @@ $results = array(
     'payorId' => $payorId,
     'discount' => 0,
     'transid' => $transId,
+    'name' => $_POST['name'],
+    'email' => $_POST['email'],
+    'phone' => $_POST['phone'],
 );
 $response['amount'] = $amount;
 
