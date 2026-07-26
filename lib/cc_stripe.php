@@ -516,15 +516,18 @@ EOS;
                     'unit_cost' => round($amount * $currencyMultiplier / $quantity),
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for tax until computed later
                 ];
+                $orderLineItems[] = $item;
+                $item['basePriceMoney'] = $item['unit_cost']; // convert to common name for tax comps
                 // compute the art line item tax
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
                     $item['taxes'] = buildCCAppliedTaxArray('artSales', $lineid);
                     $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
                 }
-                $orderLineItems[] = $item;
+                $orderTaxLineItems[] = $item;
+
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
-                $orderMetadata['im' . $itemNumber] = $notesData['metadata'];
+                $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
                 $orderValue += $art['amount'];
                 $lineid++;
