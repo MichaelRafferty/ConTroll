@@ -17,6 +17,9 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$ccType = getConfValue('cc', 'type', 'offline');
+$ccEnv = getConfValue('cc', 'env', 'sandbox');
+
 $cdn = getTabulatorIncludes();
 page_init($page, 'admin',
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
@@ -36,6 +39,9 @@ page_init($page, 'admin',
                 role='tab' aria-controls='nav-printers' aria-selected='false' onclick="settab('printers-pane');">Printers
         </button>
     </li>
+<?php
+    if ($ccType == 'square' && $ccEnv = 'production') {
+?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='terminals-tab' data-bs-toggle='pill' data-bs-target='#terminals-pane' type='button'
                 role='tab' aria-controls='nav-terminals' aria-selected='false' onclick="settab('terminals-pane');">Square Terminals
@@ -46,6 +52,9 @@ page_init($page, 'admin',
                 role='tab' aria-controls='nav-payments' aria-selected='false' onclick="settab('payments-pane');">Terminal Payment Issues
         </button>
     </li>
+<?php
+    }
+?>
 </ul>
 <div class='tab-content' id='admin-content'>
     <div class='tab-pane fade show active' id='users-pane' role='tabpanel' aria-labelledby='users-tab' tabindex='0'>
@@ -116,6 +125,10 @@ page_init($page, 'admin',
             </div>
         </div>
     </div>
+<?php
+    if ($ccType == 'square' && $ccEnv = 'production') {
+
+?>
     <div class='tab-pane fade' id='terminals-pane' role='tabpanel' aria-labelledby='terminals-tab' tabindex='0'>
         <div class='container-fluid'>
             <div class='row'>
@@ -146,7 +159,13 @@ page_init($page, 'admin',
             </div>
         </div>
     </div>
+<?php
+    }
+?>
 </div>
+<?php
+    if ($ccType == 'square' && $ccEnv = 'production') {
+?>
 <!--- status details modal popup -->
 <div class='modal modal-xl' id='statusDetails' tabindex='-4' aria-labelledby='statusDetails' data-bs-backdrop='static' style='--bs-modal-width: 90%;'
      aria-hidden='true'>
@@ -292,7 +311,7 @@ page_init($page, 'admin',
         </div>
     </div>
 </div>
-<!--- status details modal popup -->
+<!--- add terminal modal popup -->
 <div class='modal modal-xl' id='addTerminal' tabindex='-4' aria-labelledby='addTerminal' data-bs-backdrop='static' style='--bs-modal-width: 80%;'
      aria-hidden='true'>
     <div class='modal-dialog'>
@@ -396,5 +415,8 @@ page_init($page, 'admin',
         </div>
     </div>
 </div>
+<?php
+    }
+?>
 <div id="result_message" class="mt-4 p-2"></div>
 <pre id='test'></pre>
