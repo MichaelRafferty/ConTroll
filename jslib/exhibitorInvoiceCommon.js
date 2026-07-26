@@ -260,10 +260,16 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     let html = `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">` + label + ' Member ' + (mnum + 1) + `:</div>
-</div>
+</div>`;
+    if (config.useUSPS) {
+        html += `
+   
 <div class="row">
     <div class="col-sm-8">
         <div class="container-fluid">
+`;
+    }
+    html += `
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="` + prefix + `fname" class="form-label-sm">
@@ -363,14 +369,17 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
                 </div>
             </div>`;
     tabindex += 2;
-    html += `
+    if (config.useUSPS) {
+        html += `
         </div>
     </div>
     <div class="col-sm-4" id="` + prefix + `uspsblock"></div>
 </div>
 <div class="row">
     <div class="col-sm-12">
-        <div class="container-fluid">
+        <div class="container-fluid">`;
+    }
+    html += `
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="` + prefix + `email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
@@ -417,10 +426,13 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
                         'size="35" maxlength="32" tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
-    html += `
+    if (config.useUSPS) {
+        html += `
             </div>
         </div>
-    </div>
+    </div>`;
+    }
+    html += `
 </div>
 `;
     if (policies == null || policies.length == 0)

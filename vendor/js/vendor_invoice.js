@@ -234,7 +234,6 @@ class VendorInvoice {
         submitId.disabled = true;
         let formData = $('#vendor_invoice_form').serialize()
         clear_message('inv_result_message');
-        let _this = this;
         $.ajax({
             url: 'scripts/spaceOrder.php',
             method: 'POST',
@@ -249,7 +248,7 @@ class VendorInvoice {
                     show_message(data['data'], 'error', 'inv_result_message');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    _this.getPaymentInfo(data);
+                    vendorInvoice.getPaymentInfo(data);
                     return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
@@ -408,12 +407,11 @@ class VendorInvoice {
         clear_message('inv_result_message');
         let hideElement = this.#vendorPayment;
         this.#payPostData = postData;
-        let _this = this;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
             data: postData,
-            success: _this.processPayComplete,
+            success: processPayComplete,
             error: function (jqXHR, textStatus, errorThrown) {
                 if (submitId)
                     submitId.disabled = false;
@@ -435,12 +433,11 @@ class VendorInvoice {
         let data = this.#payPostData;
         data.action = 'paymentComplete';
         data.paymentIntent = paymentIntent;
-        let _this = this;
         $.ajax({
             url: 'scripts/spacePayment.php',
             data: data,
             method: 'POST',
-            success: _this.processPayComplete,
+            success: processPayComplete,
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
@@ -451,7 +448,7 @@ class VendorInvoice {
         });
     }
 
-    processPayComplete(data, textStatus, jqXhr) {
+    processPayComplete(data) {
         if (config['debug'] & 1)
             console.log(data);
         if (data.status == 'next') {
@@ -468,13 +465,13 @@ class VendorInvoice {
             let submitId = document.getElementById('card-button');
             submitId.disabled = false;
         } else if (data['status'] == 'success') {
-            hideElement.hide();
+            this.#vendorPayment.hide();
             let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
                 " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
             window.location.href = '/index.php?msg=' + encodeURIComponent(message);
             return;
         } else {
-            hideElement.hide();
+            this.#vendorPayment.hide();
             show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
             return;
         }
@@ -587,4 +584,10 @@ function updatePaidStatusBlock() {
         return;
 
     vendorInvoice.updatePaidStatusBlock();
+}
+
+function processPayComplete(data, textStatus, jqXhr) {
+    if (vendorInvoice == null)
+        return;
+    vendorInvoice.processPayComplete(data);
 }

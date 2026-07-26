@@ -1127,7 +1127,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         }
 
         $desc = 'Stripe: ' . $sourceId;
-        if ($ccParams['desc'] != '') {
+        if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
             $desc .= '; ' . $ccParams['desc'];
         }
 
