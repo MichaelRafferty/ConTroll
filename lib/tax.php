@@ -259,14 +259,14 @@ EOS;
     return array($taxConfigArray, $taxable);
 }
 
-function computeTax($item, $currencyMultiplier) : array {
+function computeTax($item) : array {
     // item has taxable Y/N and taxes for each tax rage
     $taxes = array();
     $taxes['totalTax'] = 0;
     $taxes['totalTax_base'] = 0;
     foreach ($item['taxes'] as $tax) {
         $taxField  = $tax['taxUid'];
-        $amt = round($item['basePriceMoney'] * $tax['percentage'] / $currencyMultiplier, 2);
+        $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 2);
         $taxes[$taxField] = $amt;
         $taxes[$taxField . '_base'] = $item['basePriceMoney'];
         $taxes['totalTax'] += $amt;
@@ -276,7 +276,7 @@ function computeTax($item, $currencyMultiplier) : array {
     return $taxes;
 }
 
-function computeTotalTax(&$items, $currencyMultiplier) {
+function computeTotalTax(&$items) {
     $taxableAmounts = array();
     $taxes = array();
     $rates = array();
@@ -306,10 +306,10 @@ function computeTotalTax(&$items, $currencyMultiplier) {
 
     // now recompute the total tax and fudge the largest item in the list
     foreach ($taxes as $taxField => $tax) {
-        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / $currencyMultiplier;
+        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100.0;
         if ($totalTax != $tax['tax']) { // fudge largest item in the list so the decimal part adds up
             $item = $maxItem[$taxField];
-            $item['taxes'][$taxField] += $totalTax - $tax['tax'];
+             $item['taxAmounts'][$taxField] += $totalTax - $tax['tax'];
         }
     }
 

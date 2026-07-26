@@ -514,10 +514,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if ($needTaxes) {
         foreach ($orderLineItems as $ord => $item) {
             if (array_key_exists('taxable', $item)) {
-                $orderLineItems[$ord]['taxAmounts'] = computeTax($item, $currencyMultiplier);
+                $orderLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderLineItems, $currencyMultiplier);
+        $taxAmounts = computeTotalTax($orderLineItems);
     }
 
     $rtn = array ();

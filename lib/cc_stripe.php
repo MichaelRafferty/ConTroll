@@ -64,9 +64,9 @@ $unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 
 function get_currencyMultiplier($currency) {
     global $unitCurrencies;
     if (in_array(strtolower($currency), $unitCurrencies)) {
-        return 1;
+        return 1.0;
     }
-    return 100;
+    return 100.0;
 }
 
 function cc_getCurrency() : string {
@@ -387,7 +387,7 @@ EOS;
     // 3. call the api using all of the items of the payment intent structure.
     // 4. set up all rtn variables, and return the payment intent id for future use
 
-    $orderLineitems = []; // array (non associative) where each item is a line item of the order in a very basic form
+    $orderLineItems = []; // array (non associative) where each item is a line item of the order in a very basic form
     $orderTaxLineitems = []; // array (non associative) same as orderLineItems + stuff to compute the taxes
     $itemNumber = 0;
     $orderMetadata = [];  // associative array of items we can't store in the line item structure, as well as overall order metadata
@@ -464,7 +464,8 @@ EOS;
             'unit_cost' => round($results['total'] * $currencyMultiplier),
             'tax' => ['total_tax_amount' => 0 ],
             ];
-        $orderLineitems[] = $item;
+        $orderLineItems[] = $item;
+        $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
         $orderTaxLineItems[] = $item;
         $orderValue = $results['total'];
         $orderMetadata['in' . $itemNumber] = $notesData['note'];
@@ -612,6 +613,7 @@ EOS;
                     } else {
                         $badgeTaxable = 'nontaxMem';
                     }
+                    $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
 
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
@@ -708,6 +710,7 @@ EOS;
                 $orderLineItems[] = $item;
                 // compute the art line item tax
                 if ($hasTax)  {
+                    $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
                     $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
@@ -741,9 +744,10 @@ EOS;
                     'unit_cost' => round($itemPrice * $currencyMultiplier),
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
-                $orderLineitems[] = $item;
+                $orderLineItems[] = $item;
                 // apply taxes to mail in fees based on the artShipping flag
                 if ($hasTax)  {
+                    $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
                     $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
@@ -794,31 +798,34 @@ EOS;
                 $orderTaxLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderLineItems);
+        $taxAmounts = computeTotalTax($orderTaxLineItems);
     }
     // now update the tax for each line item
     for ($lineno = 0; $lineno < count($orderTaxLineItems); $lineno++) {
         $taxLine = $orderTaxLineItems[$lineno];
         if (array_key_exists('taxes', $taxLine)) {
-            $taxes = $taxLine['taxes'];
-            $totalTax = array_sum($taxes);
-            for ($taxLineno = 0; $taxLineno < count($taxes); $taxLineno++) {
-                $key = 'ol' . ($lineno + 1) . 't' . $taxLineno;
-                $orderMetaData[$key] = $taxes[$taxLineno];
+            $taxes = $taxLine['taxAmounts'];
+            $totalTax = $taxes['totalTax'];
+            for ($taxLineno = 1; $taxLineno <= 5; $taxLineno++) {
+                $key = 'tax' . $taxLineno;
+                if (array_key_exists($key, $taxes)) {
+                    $metaKey = 'ol' . ($lineno + 1) . $key;
+                    $orderMetadata[$metaKey] = $taxes[$key];
+                }
             }
             $orderTax += $totalTax;
-            $orderLineitems[$lineno]['tax']['total_tax_amount'] = $totalTax * $currencyMultiplier;
+            $orderLineItems[$lineno]['tax']['total_tax_amount'] = $totalTax;
         }
     }
     $amountDetails = [];
     if ($orderDiscount > 0) {
         $amount_details['discount_amount'] = $orderDiscount;
     }
-    $amountDetails['line_items'] = $orderLineitems;
-    $orderMetadata['totalTax'] = $orderTax * $currencyMultiplier;
+    $amountDetails['line_items'] = $orderLineItems;
+    $orderMetadata['totalTax'] = $orderTax;
 
     $orderFields = [
-        'amount' => round($orderValue * $currencyMultiplier),
+        'amount' => round($orderValue * $currencyMultiplier) + $orderTax,
         'currency' => $currency,
         'automatic_payment_methods' => [
             'enabled' => true,
@@ -860,7 +867,7 @@ EOS;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $paymentIntent;
     $phpOrder = json_decode(json_encode($paymentIntent), true);
-    $rtn['items'] = $orderLineitems;
+    $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
     if (array_key_exists('discount_amount', $amountDetails)) {
         $rtn['discountAmt'] = $amountDetails['discount_amount'] / $currencyMultiplier;
@@ -879,8 +886,6 @@ EOS;
     $rtn['taxes'] = $rtnTaxes;
     $rtn['taxAmt'] = $taxAmount / 100;
     $rtn['taxAmount'] = $taxAmount / 100;
-
-    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $phpOrder['amount'] / $currencyMultiplier;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $phpOrder['id'];
