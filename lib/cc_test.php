@@ -36,10 +36,26 @@ EOS;
     return $html;
 }
 
+
+//  from the stripe docs, useful for others, too.
+global $unitCurrencies;
+$unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+
+// stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
+function get_currencyMultiplier($currency) {
+    global $unitCurrencies;
+    if (in_array(strtolower($currency), $unitCurrencies)) {
+        return 1.0;
+    }
+    return 100.0;
+}
+
 // build the order structure (fake in this case) to mirror the flow of cc_square
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $con = get_conf('con');
     $id = null;
+    $currency = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $currencyMultiplier = get_currencyMultiplier($currency);
 
     $loginPerid = getSessionVar('user_perid');
     $loginNewperid = null;
@@ -161,7 +177,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'quantity' => 1,
             'note' => $notesData['note'],
             'metadata' => $notesData['metadata'],
-            'basePriceMoney' => round($results['total'] * 100),
+            'basePriceMoney' => round($results['total'] * $currencyMultiplier),
         ];
         $orderLineItems[] = $item;
         $orderValue = $results['total'];
@@ -192,7 +208,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => $quantity,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($amount * 100),
+                    'basePriceMoney' => round($amount * $currencyMultiplier),
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
@@ -234,7 +250,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'uid' => 'discount',
                 'name' => mb_substr($couponName, 0, 128),
                 'type' => 'FixedAmount',
-                'amountMoney' => round($results['discount'] * 100),
+                'amountMoney' => round($results['discount'] * $currencyMultiplier),
             ];
             $discountAmt += $item['amountMoney'];
             $orderDiscounts[] = $item;
@@ -293,7 +309,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $notesData['note'],
-                    'basePriceMoney' => round($amount * 100),
+                    'basePriceMoney' => round($amount * $currencyMultiplier),
                     'metadata' => $notesData['metadata'],
                 ];
                 if ($hasTax)  {
@@ -343,7 +359,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
             if (array_key_exists('discount', $results) && $results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
-                $totalDiscount = $results['discount'] * 100;
+                $totalDiscount = $results['discount'] * $currencyMultiplier;
                 $discountRemaining = $totalDiscount;
                 $lastItemNo = -1;
                 $maxAmt = -1;
@@ -401,7 +417,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($space['approved_price'] * 100),
+                    'basePriceMoney' => round($space['approved_price'] * $currencyMultiplier),
                 ];
 
                 // apply taxes to spaces based on the space taxable flag
@@ -436,7 +452,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($itemPrice * 100),
+                    'basePriceMoney' => round($itemPrice * $currencyMultiplier),
                 ];
 
                 // apply taxes to mail in fees based on the artShipping flag
@@ -468,7 +484,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
                 'metadata' => $notesData['metadata'],
                 'type' => 'FixedAmount',
-                'amountMoney' => round($deferment * 100),
+                'amountMoney' => round($deferment * $currencyMultiplier),
             ];
             $discountAmt += $item['amountMoney'];
             $orderDiscounts[] = $item;
@@ -498,10 +514,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if ($needTaxes) {
         foreach ($orderLineItems as $ord => $item) {
             if (array_key_exists('taxable', $item)) {
-                $orderLineItems[$ord]['taxAmounts'] = computeTax($item);
+                $orderLineItems[$ord]['taxAmounts'] = computeTax($item, $currencyMultiplier);
             }
         }
-        $taxAmounts = computeTotalTax($orderLineItems);
+        $taxAmounts = computeTotalTax($orderLineItems, $currencyMultiplier);
     }
 
     $rtn = array ();
@@ -510,19 +526,19 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['order'] = $order;
     $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
-    $rtn['discountAmt'] = $discountAmt / 100;
+    $rtn['discountAmt'] = $discountAmt / $currencyMultiplier;
 
     $rtnTaxes = [];
     foreach ($taxAmounts as $taxField => $tax) {
-        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / 100;
+        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / $currencyMultiplier;
         $rtnTaxes[$taxField]['name'] = $tax['name'];
         $taxAmount += $tax['tax'];
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxAmount'] = $taxAmount / 100;
-    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / 100);
-    $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
+    $rtn['taxAmt'] = $taxAmount / $currencyMultiplier;
+    $rtn['taxAmount'] = $taxAmount / $currencyMultiplier;
+    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
+    $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
     $rtn['source'] = $source;
@@ -682,6 +698,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
 // fetch an order to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $currency = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $currencyMultiplier = get_currencyMultiplier($currency);
     $ccTestResults = $_SESSION['ccTestPayment'];
 
     $payment = [
@@ -714,7 +732,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         'location_id' => $ccTestResults['locationId'],
         'order_id' => $ccTestResults['orderId'],
         'total_money' => [
-            'amount' => $ccTestResults['totalAmt'] * 100,
+            'amount' => $ccTestResults['totalAmt'] * $currencyMultiplier,
             'currency' => 'USD',
         ],
         'approved_money' => [
