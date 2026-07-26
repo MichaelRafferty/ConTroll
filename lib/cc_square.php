@@ -172,9 +172,9 @@ $unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 
 function get_currencyMultiplier($currency) {
     global $unitCurrencies;
     if (in_array(strtolower($currency), $unitCurrencies)) {
-        return 1;
+        return 1.0;
     }
-    return 100;
+    return 100.0;
 }
 
 // build the order, pass it to square and get the order id
