@@ -68,7 +68,7 @@ function stripeRestoreBtnTxt() {
     stripeSubmitBtn.textContent = stripePayPriorText;
 }
 
-function startCCPay(amount = 0) {
+function startCCPay(amount = 0, formName = 'payment-form') {
     stripeSubmitBtn = document.getElementById('card-button');
     if (!stripe)
         stripe = Stripe(pkkey);
@@ -77,7 +77,7 @@ function startCCPay(amount = 0) {
         paymentElement = null;
     }
     // set listener
-    document.getElementById('payment-form').addEventListener('submit', stripeCardFormSubmit);
+    document.getElementById(formName).addEventListener('submit', stripeCardFormSubmit);
 
     if (amount > 0) {
         stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));

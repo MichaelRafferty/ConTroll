@@ -241,3 +241,7 @@ function makePurchase(token, label) {
 
     vendorInvoice.makePurchase(token, label);
 }
+
+function payActionComplete(paymentIntent, post, payParams) {
+    vendorInvoice.payActionComplete(paymentIntent, post, payParams);
+}

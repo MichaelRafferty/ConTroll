@@ -140,7 +140,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $cust_phone = '';
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
-        if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+        if (array_key_exists('vendor', $results)) {
+            $vendor = $results['vendor'];
+            $cust_email = $vendor['exhibitorEmail'];
+            if (array_key_exists('artistName', $vendor) && $vendor['artistName'] != '')
+                $cust_name = trim($vendor['artistName']);
+            else
+                $cust_name = trim($vendor['exhibitorName']);
+            $cust_phone = trim($vendor['exhibitorPhone']);
+        } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             $custType = substr($custid, 0, 1);
             $custNum = substr($custid, 2);
             foreach ($results['badges'] as $badge) {
@@ -176,6 +184,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $custType = 'e';
         $custNum = $results['vendorId'];
         $source = $results['exhibits'];
+        $vendor = $results['vendor'];
+        $cust_email = $vendor['exhibitorEmail'];
+        if (array_key_exists('artistName', $vendor) && $vendor['artistName'] != '')
+            $cust_name = trim($vendor['artistName']);
+        else
+            $cust_name = trim($vendor['exhibitorName']);
+        $cust_phone = trim($vendor['exhibitorPhone']);
+
         // failures in the exhibitor payments need to delete the regs they were going to product
         $cleanUpRegs = true;
     } else {
@@ -232,11 +248,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $maxMatch = 0;
                 foreach ($custData as $cust) {
                     $numMatch = 0;
-                    if (trim(strtolower($cust['name'])) == strtolower($cust_name))
+                    if (array_key_exists ('name', $cust) && $cust['name'] != null && trim(strtolower($cust['name'])) == strtolower($cust_name))
                         $numMatch++;
-                    if (trim(strtolower($cust['phone'])) == $cust_phone)
+                    if (array_key_exists ('phone', $cust) && $cust['phone'] != null && trim(strtolower($cust['phone'])) == $cust_phone)
                         $numMatch++;
-                    if (trim(strtolower($cust['email'])) == $cust_email)
+                    if (array_key_exists ('email', $cust) && $cust['email'] != null && trim(strtolower($cust['email'])) == $cust_email)
                         $numMatch += 2;
 
                     if ($numMatch > $maxMatch) {
@@ -1072,8 +1088,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $charge = null;
     $payment = json_decode(json_encode($paymentIntent), true);
     if (array_key_exists('status', $payment) && $payment['status'] == 'requires_action') {
-        if ($cleanUpRegs)
-                cleanRegs($ccParams['badges'], $ccParams['transid']);
         // return the payment intent
         ajaxSuccess(array(
             'status' => 'next',
@@ -1330,7 +1344,7 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
     $orderId = $ccParams['orderId'];
     $desc = 'Stripe: ' . $sourceId;
-    if ($ccParams['desc'] != '') {
+    if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
         $desc .= '; ' . $ccParams['desc'];
     }
 
