@@ -967,7 +967,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         }
         $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
             'type' => $ccParams['externalType'],
-            'source' => $ccParams['desc'],
+            'source' => $ccParamDesc,
         ]);
         $paymentType = $ccParams['externalType'];
     }
