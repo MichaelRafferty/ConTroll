@@ -50,6 +50,7 @@ class Pos {
     #ccNonce = null;
     #totalAmountDue = 0;
     #payPostData = null;
+    #paymentElementDiv = null;
 
     // Data Items
     #unpaid_table = [];
@@ -192,6 +193,7 @@ class Pos {
         // pay items
         this.#pay_div = document.getElementById('pay-div');
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
+        this.#paymentElementDiv = document.getElementById("payment-element");
 
         // print items
         this.#printDiv = document.getElementById("print-div");
@@ -715,6 +717,28 @@ class Pos {
         bootstrap.Tab.getOrCreateInstance(this.#find_tab).show();
         this.#pattern_field.focus();
         this.#review_dirty = false;
+        // clear the payment form
+        let id = document.getElementById('pt-online');
+        if (id) {
+            resetCCPay(this.#paymentElementDiv);
+            id.checked = false;
+        }
+        id = document.getElementById('pt-credit');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-cash');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-check');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pay-desc');
+        if (id) {
+            id.value = '';
+        }
     }
 
     // add search person/transaction from result_perinfo record to the cart
@@ -2312,6 +2336,12 @@ class Pos {
 
 // Process a payment against the transaction
     pay(nomodal, prow = null, nonce = null) {
+        let pt_online = document.getElementById('pt-online');
+        if (nomodal == 'checkCCType') {
+            if (pt_online != null && pt_online.checked)
+                return; // this is the direct click call, let draw_cc_html handle calling pay from makePurchase()
+        }
+
         let checked = false;
         let ccauth = null;
         let checkno = null;
@@ -2322,7 +2352,7 @@ class Pos {
         this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
-        let pt_online = document.getElementById('pt-online');
+
         let pt_credit = document.getElementById('pt-credit');
         let pt_terminal = document.getElementById('pt-terminal');
         let pt_discount = document.getElementById('pt-discount');
@@ -3204,7 +3234,7 @@ class Pos {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pos.pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pos.pay('checkCCType');">Confirm Pay</button>
         </div>
     </div>
     <div class="row mt-3" id="overrideRow" hidden>

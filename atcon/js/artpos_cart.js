@@ -255,6 +255,8 @@ class artpos_cart {
         ccOnlineStarted = false;
         ccNonce = '';
         // clear the payment form items
+        this.hideNext();
+        this.hidePay();
         let id = document.getElementById('pt-online');
         if (id) {
             resetCCPay(this.#paymentElementDiv);
@@ -277,9 +279,6 @@ class artpos_cart {
             id.value = '';
         }
 
-
-        this.hideNext();
-        this.hidePay();
         this.#in_pay = false;
         this.drawCart();
         this.showStartOver();
