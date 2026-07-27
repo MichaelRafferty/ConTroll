@@ -530,8 +530,18 @@ class ExhibitorInvoice {
         if (id)
             id.disabled = false;
         this.#totalAmountDue = Number(totalWithTax);
-        this.#exhibitorPaymentModal.show();
+        // now make sure the payment form is clear
+        this.#payAmt.style.backgroundColor = '';
+        this.#payAmt.value = '';
+        this.#paymentTypeDiv.style.backgroundColor = '';
+        document.getElementById('pt-cash').checked = false;
+        document.getElementById('pt-check').checked = false;
+        document.getElementById('pt-credit').checked = false;
+        document.getElementById('pay-ccauth').value = '';
+        document.getElementById('pay-checkno').value = '';
+        document.getElementById('pay-desc').value = '';
 
+        this.#exhibitorPaymentModal.show();
     }
 
     // process payment
