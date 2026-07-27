@@ -19,7 +19,6 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
         $html =  <<<EOS
 <form id="payment-form">
     <div class="container-fluid overflow-hidden" id="payment-element"></div>
-    <!--<button id="card-button">Purchase</button>-->
     <div class="mt-1 p-1" id="stripe-message"></div>
 </form>
 EOS;
@@ -822,6 +821,14 @@ EOS;
             }
         }
         $taxAmounts = computeTotalTax($orderTaxLineItems);
+        $metaTaxAmounts = $taxAmounts;
+        // this needs to be converted back to the decimal currenty
+        if ($currencyMultiplier != 1) {
+            foreach ($metaTaxAmounts as $key => $taxarr) {
+                $metaTaxAmounts[$key]['tax'] = $taxarr['tax'] / $currencyMultiplier;
+            }
+        }
+        $orderMetadata['taxesjson'] = json_encode($metaTaxAmounts);
     }
     // now update the tax for each line item
     for ($lineno = 0; $lineno < count($orderTaxLineItems); $lineno++) {
@@ -1426,11 +1433,15 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     if (!array_key_exists('amount_details', $payment)) {
         $payment['amount_details'] = array ();
-        $payment['amount_details']['lineItems'] = $lineItems['data'];
     }
+    $payment['amount_details']['lineItems'] = $lineItems['data'];
     $payment['totalAmountDue'] = $payment['amount'] / $currencyMultiplier;
     $payment['taxAmount'] = $payment['metadata']['totalTax'];
     $payment['customerId'] = $payment['customer'];
+    if (array_key_exists('taxesjson', $payment['metadata']))
+        $payment['taxes'] = json_decode($payment['metadata']['taxesjson'], true);
+    else
+        $payment['taxes'] = array();
 
     return $payment;
 }

@@ -8,6 +8,7 @@ class artpos_cart {
     #next_button = null;
     #release_button = null;
     #cart_div = null;
+    #paymentElementDiv = null;
 
 // cart states
     #in_pay = false;
@@ -44,6 +45,7 @@ class artpos_cart {
         this.#release_button = document.getElementById("release_btn");
         this.#add_button = document.getElementById("add_btn");
         this.#pay_button = document.getElementById("pay_btn");
+        this.#paymentElementDiv = document.getElementById("payment-element");
     }
 
     // simple get/set/hide/show methods
@@ -249,6 +251,32 @@ class artpos_cart {
         this.#cart_art = [];
         this.#cart_pmt = [];
         this.#freeze_cart = false;
+
+        ccOnlineStarted = false;
+        ccNonce = '';
+        // clear the payment form items
+        let id = document.getElementById('pt-online');
+        if (id) {
+            resetCCPay(this.#paymentElementDiv);
+            id.checked = false;
+        }
+        id = document.getElementById('pt-credit');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-cash');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-check');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pay-desc');
+        if (id) {
+            id.value = '';
+        }
+
 
         this.hideNext();
         this.hidePay();

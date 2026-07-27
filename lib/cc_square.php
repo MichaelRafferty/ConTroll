@@ -94,6 +94,11 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
               cardButton.textContent = "Purchase";
           }
           cardButton.disabled = false;
+          
+          function resetCCPay(div) {
+              return;
+          }
+
     }
 EOS;
     }

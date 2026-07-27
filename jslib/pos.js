@@ -2452,7 +2452,7 @@ class Pos {
                         return;
                     }
                     alert("Credit Card Processing Error: Unable to obtain nonce token");
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                    this.#pay_button_pay.disabled = false;
                     return;
                 }
                 nonce = this.#ccNonce;
@@ -2467,7 +2467,7 @@ class Pos {
             if (!checked) {
                 elptdiv.style.backgroundColor = 'var(--bs-warning)';
                 if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                    this.#pay_button_pay.disabled = false;
                 return;
             }
 
@@ -2570,7 +2570,6 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                $('#' + _this.#purchase_label).removeAttr("disabled");
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
@@ -2593,7 +2592,6 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                $('#' + _this.#purchase_label).removeAttr("disabled");
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
@@ -2606,7 +2604,7 @@ class Pos {
             let status = stripe_nextActions(data);
             return;
         }
-        $('#' + this.#purchase_label).removeAttr("disabled");
+        this.#pay_button_pay.disabled = false;
 
         // things that stop us cold....
         if (typeof data == 'string') {
@@ -2614,11 +2612,8 @@ class Pos {
             if (data.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
-            else
-                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2628,7 +2623,6 @@ class Pos {
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             else {
@@ -2645,11 +2639,9 @@ class Pos {
             if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             else {
-                this.#pay_button_pay.disabled = false;
                 this.#ccNonce = null;
             }
             if (data.restoreBtn)
@@ -2662,13 +2654,11 @@ class Pos {
             // warn means we could not get the terminal, ask if we want to override it
             if (data.status != 'OFFLINE') {
                 document.getElementById('overrideRow').hidden = false;
-                this.#pay_button_pay.disabled = false;
                 return;
             }
         }
 
         this.#payPoll = 0;
-        this.#pay_button_pay.disabled = false;
         // and things that continue
         if (data.message !== undefined) {
             show_message(data.message, 'success');

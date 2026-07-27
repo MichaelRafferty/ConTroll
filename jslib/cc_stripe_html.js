@@ -5,6 +5,7 @@ var stripe = null;
 var stripeSubmitBtn = null;
 var paymentElement = null;
 var stripePaystripePayPriorText = '';
+var stripeCCForm = null;
 const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
     currency: config.currency,
@@ -73,11 +74,16 @@ function startCCPay(amount = 0, formName = 'payment-form') {
     if (!stripe)
         stripe = Stripe(pkkey);
     if (paymentElement) {
+        paymentElement.unmount();
         paymentElement.destroy();
         paymentElement = null;
     }
     // set listener
-    document.getElementById(formName).addEventListener('submit', stripeCardFormSubmit);
+    stripeCCForm = document.getElementById('card-button');
+    if (stripeCCForm)
+        stripeCCForm.addEventListener('click', stripeCardFormSubmit);
+    else
+        show_message("Internal Credit Card Processing error -seek assistance", 'error', 'stripe-message');
 
     if (amount > 0) {
         stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
@@ -110,4 +116,28 @@ async function stripe_nextActions(data) {
 
     clear_message('stripe-message');
     payActionComplete(paymentIntent, data.post, data.payParams);
+}
+
+function resetCCPay(div) {
+    if (paymentElement) {
+        paymentElement.unmount();
+        paymentElement.destroy();
+        paymentElement = null;
+    }
+    // set clear element from screen
+    if (paymentElement) {
+        paymentElement.unmount();
+        paymentElement.destroy();
+        paymentElement = null;
+    }
+    // set listener
+    if (stripeCCForm) {
+        stripeCCForm.removeEventListener('click', stripeCardFormSubmit);
+    }
+    // clear the HTML area
+    if (div)
+        div.innerHTML = '';
+
+    // clear the message field
+    clear_message('stripe-message');
 }

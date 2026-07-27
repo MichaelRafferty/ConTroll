@@ -31,6 +31,10 @@ EOS;
     function startCC() {
         console.log("startCC called from cc_test");
     }
+    
+    function resetCCPay(div) {
+        return;
+    }
 </script>
 EOS;
     return $html;
