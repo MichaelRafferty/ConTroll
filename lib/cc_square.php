@@ -988,7 +988,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
     }
     catch (SquareApiException $e) {
-        web_error_log('Order Square API Exception: ' . $e->getMessage());
+        web_error_log('Patment Square API Exception: ' . $e->getMessage());
         $ebody = json_decode($e->getBody(),true);
         $errors = $ebody['errors'];
         if ($errors) {
