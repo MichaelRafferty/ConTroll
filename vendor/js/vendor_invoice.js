@@ -496,6 +496,7 @@ class VendorInvoice {
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
                     hideElement.hide();
+                    resetCCPay(null);
                     show_message(data['message'], 'success');
                     return;
                 } else {

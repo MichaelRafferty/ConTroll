@@ -287,7 +287,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                 <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
                                     <button class='btn btn-primary btn-sm' type='button' id='card-button' disabled
-                                            onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                                            onclick="exhibitorInvoice.pay('nomodal');" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
                                     <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
