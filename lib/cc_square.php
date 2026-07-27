@@ -960,6 +960,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     if ($sourceId == 'EXTERNAL') {
+        if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
+            $ccParamDesc = $ccParams['desc'];
+        } else {
+            $ccParamDesc = null;
+        }
         $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
             'type' => $ccParams['externalType'],
             'source' => $ccParams['desc'],
@@ -1047,7 +1052,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
     $receipt_url = $payment->getReceiptUrl();
     $desc = 'Square: ' . $payment->getApplicationDetails()->getSquareProduct();
-    if ($ccParams['desc'] != '') {
+    if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
         $desc .= '; ' . $ccParams['desc'];
     }
     $txtime = $payment->getCreatedAt();
