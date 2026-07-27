@@ -19,7 +19,6 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
         $html =  <<<EOS
 <form id="payment-form">
     <div class="container-fluid overflow-hidden" id="payment-element"></div>
-    <!--<button id="card-button">Purchase</button>-->
     <div class="mt-1 p-1" id="stripe-message"></div>
 </form>
 EOS;
@@ -43,7 +42,7 @@ EOS;
         $html .= <<<EOS
 <form id="payment-form">
     <div class="container-fluid overflow-hidden" id="payment-element"></div>
-    <button id="card-button">Purchase</button>
+    <button class="btn btn-primary btn-sm mt-2" id="card-button">Purchase</button>
     <div class="mt-1 p-1" id="stripe-message"></div>
 </form>
 EOS;
