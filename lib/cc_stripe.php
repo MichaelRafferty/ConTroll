@@ -381,7 +381,7 @@ EOS;
 
 
 
-    // stripe locations appear to apply to devices, not api online???
+    //TODO stripe locations appear to apply to devices, not api online???
     /*
     if ($locationId == null) {
         $locationId = getConfValue('cc', 'location', null);
@@ -450,9 +450,11 @@ EOS;
             array_key_exists('name', $results['planRec']['plan'])) {
             $planName = $results['planRec']['plan']['name'];
             $planId = 'TBA';
-            $downPmt = $results['planRec']['downPayment'];
-            $nonPlanAmt = $results['planRec']['nonPlanAmt'];
-            $balanceDue = $results['planRec']['balanceDue'];
+            $planRec = $results['planRec'];
+            $downPmt = $planRec['downPayment'];
+            $nonPlanAmt = $planRec['nonPlanAmt'];
+            $balanceDue = $planRec['balanceDue'] * $currencyMultiplier;
+            $planAmount = $planRec['planAmt'] * $currencyMultiplier;
         }
     }
 
@@ -564,7 +566,7 @@ EOS;
             $orderDiscount += round($results['discount'] * $currencyMultiplier);
             $orderMetadata['orderCoupon'] = $couponName;
 
-            //$orderValue -= $results['discount'];
+            $orderValue -= $results['discount'];
         }
 
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -628,6 +630,16 @@ EOS;
                     'unit_cost' => $amount,
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for after tax computation
                 ];
+                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+                   if ($badge['inPlan']) {
+                       $planDiscountAmount = round(($amount / $planAmount) * $balanceDue);
+                       if ($planDiscountAmount > 0) {
+                           $item['discount_amount'] = $planDiscountAmount;
+                           $orderValue -= round($planDiscountAmount / $currencyMultiplier);
+                       }
+                   }
+               }
+
                 $orderLineItems[] = $item;
                 if ($hasTax)  {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
@@ -648,16 +660,7 @@ EOS;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
-                //TODO: new plan needs to be worked into system
-                /*
-                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-                    if ($badge['inPlan'])
-                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
-                            'uid' => 'planDeferment-' . $lineid,
-                            'discountUid' => 'planDeferment',
-                        ])));
-                }
-                * end new plan */
+
 
                 //TODO: line item coupon needs to be worked into system
                 /*
@@ -673,17 +676,7 @@ EOS;
                 }
                 * end line item coupon
                 */
-                //TODO: manager discount needs to be worked into system
-                /*
-                if ($managerDiscount &&
-                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
-                        'uid' => 'managerDiscount-' . $lineid,
-                        'discountUid' => 'discount' ,
-                    ])));
-                }
-                * end Manager Discount
-                */
+
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
