@@ -36,6 +36,24 @@ EOS;
     return $html;
 }
 
+// get the db currency
+function cc_getCurrency() : string {
+    return strtoupper(getConfValue('con', 'currency', 'USD'));
+}
+
+//  from the stripe docs, useful for others, too.
+global $unitCurrencies;
+$unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+
+// stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
+function get_currencyMultiplier($currency) {
+    global $unitCurrencies;
+    if (in_array(strtolower($currency), $unitCurrencies)) {
+        return 1;
+    }
+    return 100;
+}
+
 // build the order structure (fake in this case) to mirror the flow of cc_square
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $con = get_conf('con');
