@@ -41,6 +41,11 @@ EOS;
 }
 
 
+// get the db currency
+function cc_getCurrency() : string {
+    return strtoupper(getConfValue('con', 'currency', 'USD'));
+}
+
 //  from the stripe docs, useful for others, too.
 global $unitCurrencies;
 $unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
