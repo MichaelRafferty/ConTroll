@@ -660,8 +660,6 @@ EOS;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
-
-
                 //TODO: line item coupon needs to be worked into system
                 /*
                 if ($couponDiscount &&
@@ -1123,8 +1121,28 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             $status = $chargePHP['outcome']['seller_message'];
         }
     } else {
-        // for cash and check, need to do a create of a payment record to record the payment and then update the payment intent to show it completed
+        // for cash and check, need to do a create of a payment record to record the payment, adding the payment intent data we can as metadata,
+        // this will cancel the payment intent.
         $orderId = $ccParams['orderId'];
+
+        $paymentIntent = cc_fetchOrder($source, $orderId, $useLogWrite);
+        $metadata = $paymentIntent['metadata'];
+        $custId = $paymentIntent['customer'];
+        $lineItems = $paymentIntent['amount_details']['lineItems'];
+        // convert line items to meta data
+        for ($i = 0; $i < count($lineItems); $i++) {
+            $li = $lineItems[$i];
+            $lineItem = [
+                'product_code' => $li['product_code'],
+                'product_name' => $li['product_name'],
+                'quantity' => $li['quantity'],
+                'taxes' => $li['tax'],
+                'unit_cost' => $li['unit_cost']
+            ];
+            $metadata['li' . $i + 1] = json_encode($lineItem);
+        }
+
+
         $sourceId = $ccParams['nonce'];
         if ($sourceId == 'CASH') {
             $paymentType = 'cash';
@@ -1135,6 +1153,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
             $desc .= '; ' . $ccParams['desc'];
         }
+
+        // for cash/checks we have no payment intent to comfirm, we will have to cancel it.
         $paymentRecordFields = [
             'amount_requested' => [
                 'currency' => $currency,
@@ -1159,6 +1179,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'guaranteed' => [
                 'guaranteed_at' => time(),
                 ],
+            'metadata' => $metadata,
+            'customer_details' => [ 'customer' => $custId ],
             ];
 
         try {
@@ -1229,6 +1251,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
             $paymentRecord = json_decode(json_encode($refundRecord), true);
         }
+
+        // now cancel the order (payment intent)
+        cc_cancelOrder($source, $orderId, $useLogWrite) ;
 
         $approved_amt = $ccParams['total'];
         $card = $paymentType;
