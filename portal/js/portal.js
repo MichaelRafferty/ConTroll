@@ -1304,6 +1304,10 @@ class Portal {
         this.#currentToken = token;
         this.#currentNonce = nonce;
 
+        clear_message();
+        clear_message('makePayMessageDiv');
+        clear_message('ccPayMessageDiv');
+
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = {
             loginId: config.id,
@@ -1397,6 +1401,10 @@ class Portal {
         let id = document.getElementById("card-button");
         if (id)
             id.disabled = true;
+
+        clear_message();
+        clear_message('makePayMessageDiv');
+        clear_message('ccPayMessageDiv');
 
         let data = this.#payPostData;
         data.action = 'paymentComplete';

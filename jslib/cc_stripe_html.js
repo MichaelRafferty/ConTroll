@@ -27,7 +27,7 @@ async function stripeCardFormSubmit(e = null){
     // Trigger form validation and wallet collection
     const {error: submitError} = await elements.submit();
     if (submitError) {
-        show_message(submitError.message, 'error', 'stripe-message');
+        show_message(submitError.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
@@ -43,7 +43,7 @@ async function stripeCardFormSubmit(e = null){
     });
 
     if (error) {
-        show_message(error.message, 'error', 'stripe-message');
+        show_message(error.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
@@ -52,7 +52,7 @@ async function stripeCardFormSubmit(e = null){
     if (config.allowedCCBrands.length > 0) {
         let brand = confirmationToken.payment_method_preview.card.brand;
         if (!config.allowedCCBrands.includes(brand)) {
-            show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'stripe-message');
+            show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'ccPayMessageDiv');
             stripeSubmitBtn.disabled = false;
             stripeSubmitBtn.textContent = stripePayPriorText;
             return;
@@ -96,12 +96,12 @@ async function stripe_nextActions(data) {
         clientSecret: data.clientSecret
     });
     if (error) {
-        show_message(error.message, 'error', 'stripe-message');
+        show_message(error.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
     }
 
-    clear_message('stripe-message');
+    clear_message('ccPayMessageDiv');
     payActionComplete(paymentIntent);
 }
