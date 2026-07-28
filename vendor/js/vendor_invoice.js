@@ -404,7 +404,10 @@ class VendorInvoice {
         postData['action'] = 'spacePayment';
         let submitId = document.getElementById('card-button');
         submitId.disabled = true;
+        clear_message('');
         clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         let hideElement = this.#vendorPayment;
         this.#payPostData = postData;
         $.ajax({
@@ -433,6 +436,10 @@ class VendorInvoice {
         let data = this.#payPostData;
         data.action = 'paymentComplete';
         data.paymentIntent = paymentIntent;
+        clear_message('');
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: 'scripts/spacePayment.php',
             data: data,
@@ -479,6 +486,10 @@ class VendorInvoice {
 
     orderCancel() {
         let hideElement = this.#vendorPayment;
+        clear_message('');
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',

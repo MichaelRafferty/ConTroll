@@ -578,6 +578,8 @@ class Pos {
             };
             let _this = this;
             clear_message();
+            clear_message('ccPayMessageDiv');
+
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_cancelPayment.php",
@@ -2275,6 +2277,8 @@ class Pos {
         };
         let _this = this;
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/pos_cancelPayment.php",
@@ -2586,8 +2590,7 @@ class Pos {
         this.#pay_button_pay.disabled = true;
         let _this = this;
         clear_message();
-        if (config.creditProcessor == 'stripe')
-            clear_message('ccPayMessageDiv');
+        clear_message('ccPayMessageDiv');
 
         this.#payPostData = postData;
         $.ajax({
@@ -2612,6 +2615,9 @@ class Pos {
         data.ajax_request_action =  'paymentComplete';
         data.paymentIntent = paymentIntent;
         let _this = this;
+        clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: "scripts/pos_processPayment.php",
             data: data,
@@ -3554,6 +3560,8 @@ class Pos {
                 user_id: this.#user_id,
             };
             clear_message();
+            clear_message('ccPayMessageDiv');
+
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_cancelPayment.php",

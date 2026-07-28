@@ -1329,6 +1329,9 @@ class Portal {
             badges: JSON.stringify(badges),
         };
         this.#payPostData = data;
+        clear_message('');
+        clear_message('inv_result_message');
+
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,
@@ -1401,6 +1404,9 @@ class Portal {
         let data = this.#payPostData;
         data.action = 'paymentComplete';
         data.paymentIntent = paymentIntent;
+        clear_message('');
+        clear_message('inv_result_message');
+
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,

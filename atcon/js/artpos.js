@@ -237,6 +237,8 @@ function startOver(reset_all) {
             user_id: user_id,
         };
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/artpos_cancelPayment.php",
@@ -1542,6 +1544,8 @@ function payPollfcn(action) {
         user_id: user_id,
     };
     clear_message();
+    clear_message('ccPayMessageDiv');
+
     $.ajax({
         method: "POST",
         url: "scripts/artpos_cancelPayment.php",
@@ -1764,6 +1768,8 @@ function pay(nomodal, prow = null, nonce = null) {
     pay_button_pay.disabled = true;
     payPostData = postData;
     clear_message();
+    clear_message('ccPayMessageDiv');
+
     $.ajax({
         method: "POST",
         url: "scripts/artpos_processPayment.php",
@@ -1785,6 +1791,9 @@ function payActionComplete(paymentIntent, post, payParams) {
     data.ajax_request_action =  'paymentComplete';
     data.paymentIntent = paymentIntent;
     let _this = this;
+    clear_message('');
+    clear_message('ccPayMessageDiv');
+
     $.ajax({
         url: "scripts/artpos_processPayment.php",
         data: data,
@@ -2463,6 +2472,8 @@ function onExit() {
         };
         let _this = this;
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/artpos_cancelPayment.php",

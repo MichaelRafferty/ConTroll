@@ -603,6 +603,10 @@ class ExhibitorInvoice {
     // cancel the order and close the modal
     orderCancel() {
         let hideElement = this.#exhibitorPaymentModal;
+        clear_message();
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
@@ -737,7 +741,10 @@ class ExhibitorInvoice {
             postData.cancelOrderId = this.#currentOrderId;
             this.#currentOrderId = null;
         }
+        clear_message();
         clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
