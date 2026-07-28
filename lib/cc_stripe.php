@@ -1003,7 +1003,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         // online credit card from a payment confirm.
         $confirmToken = json_decode($sourceIdStr, true);
         $card = $confirmToken['payment_method_preview']['card'];
-        $sourceId =$card['brand'];
+        $sourceId = $card['brand'];
         $expire = $card['exp_month'] . '/' . $card['exp_year'];
         $last4 = $card['last4'];
 
@@ -1063,113 +1063,184 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 cleanRegs($ccParams['badges'], $ccParams['transid']);
             error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
         }
-    } else {
-        ajaxSuccess(array('error' => "Non credit payments not yet implimented"));
-        exit();
-    }
 
-    // if type is charge, get the charge response as well
-    $charge = null;
-    $payment = json_decode(json_encode($paymentIntent), true);
-    if (array_key_exists('status', $payment) && $payment['status'] == 'requires_action') {
-        // return the payment intent
-        ajaxSuccess(array(
-            'status' => 'next',
-            'payParams' => $ccParams,
-            'post' => $_POST,
-            'intentStatus' => $payment['status'],
-            'clientSecret' => $payment['client_secret'],
-            )
-        );
-        exit();
-    }
-    $chargePHP = [];
-    if (array_key_exists('latest_charge', $payment)) {
-        $chargeId = $payment['latest_charge'];
-        if ($chargeId != null && $chargeId != '') {
+        // type is charge, get the charge response as well
+        $charge = null;
+        $payment = json_decode(json_encode($paymentIntent), true);
+        if (array_key_exists('status', $payment) && $payment['status'] == 'requires_action') {
+            // return the payment intent
+            ajaxSuccess(array(
+                    'status' => 'next',
+                    'payParams' => $ccParams,
+                    'post' => $_POST,
+                    'intentStatus' => $payment['status'],
+                    'clientSecret' => $payment['client_secret'],
+                )
+            );
+            exit();
+        }
+        $chargePHP = [];
+        if (array_key_exists('latest_charge', $payment)) {
+            $chargeId = $payment['latest_charge'];
+            if ($chargeId != null && $chargeId != '') {
+                try {
+                    if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/retrive charge $chargeId", $chargeId, $useLogWrite);
+                    $charge = $client->charges->retrieve($chargeId, []);
+                    $chargePHP = json_decode(json_encode($charge), true);
+                    if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/charge response of $chargeId", $chargePHP, $useLogWrite);
+                }
+                catch (\Stripe\Exception\InvalidRequestException $e) {
+                    if ($cleanUpRegs)
+                        cleanRegs($ccParams['badges'], $ccParams['transid']);
+                    stcc_logException('cc_payOrder/charge', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+                }
+                catch (\Stripe\Exception\ApiErrorException $e) {
+                    if ($cleanUpRegs)
+                        cleanRegs($ccParams['badges'], $ccParams['transid']);
+                    stcc_logException('cc_payOrder/charge', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+                }
+                catch (Exception $e) {
+                    if ($cleanUpRegs)
+                        cleanRegs($ccParams['badges'], $ccParams['transid']);
+                    error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+                }
+            }
+
+            $desc = 'Stripe: ' . $sourceId;
+            if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
+                $desc .= '; ' . $ccParams['desc'];
+            }
+
+            $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
+            $card = $charge['payment_method_details']['card'];
+            $last4 = $card['last4'];
+            $nonce = $card['brand'] . '-' . $last4;
+            $auth = substr($card['fingerprint'], 0, 16);
+            $receipt_url = $chargePHP['receipt_url'];
+            $receipt_number = $chargePHP['id'];
+            $id = $chargePHP['id'];
+            $txtime = date('Y/m/d H:i:s T', $chargePHP['created']);
+            $status = $chargePHP['outcome']['seller_message'];
+        }
+    } else {
+        // for cash and check, need to do a create of a payment record to record the payment and then update the payment intent to show it completed
+        $orderId = $ccParams['orderId'];
+        $sourceId = $ccParams['nonce'];
+        if ($sourceId == 'CASH') {
+            $paymentType = 'cash';
+        } else {
+            $paymentType = $ccParams['externalType'];
+        }
+        $desc = 'Stripe: ' . $sourceId;
+        if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
+            $desc .= '; ' . $ccParams['desc'];
+        }
+        $paymentRecordFields = [
+            'amount_requested' => [
+                'currency' => $currency,
+                'value' => $buyerSuppliedMoney * $currencyMultiplier,
+                ],
+            'customer_presence' => 'on_session',
+            'description' => $desc,
+            'initiated_at' => time(),
+            'payment_method_details' => [
+                'custom' => [
+                    'display_name' => $sourceId . ': ' . $paymentType,
+                    ],
+                'type' => 'custom',
+                ],
+            'processor_details' => [
+                'custom' => [
+                    'payment_reference' => $orderId,
+                    ],
+                'type' => 'custom',
+                ],
+            'outcome' => 'guaranteed',
+            'guaranteed' => [
+                'guaranteed_at' => time(),
+                ],
+            ];
+
+        try {
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment record create $orderId-paymentRecordFields",
+                $paymentRecordFields, $useLogWrite);
+            $paymentRecord = $client->paymentRecords->reportPayment($paymentRecordFields);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment record response of $orderId", $paymentRecord, $useLogWrite);
+        }
+        catch (\Stripe\Exception\InvalidRequestException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            stcc_logException('cc_payOrder/paymentRecordCreate', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.',
+                $useLogWrite);;
+        }
+        catch (\Stripe\Exception\ApiErrorException $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            stcc_logException('cc_payOrder/paymentRecordCreate', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+        }
+        catch (Exception $e) {
+            if ($cleanUpRegs)
+                cleanRegs($ccParams['badges'], $ccParams['transid']);
+            error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+        }
+
+        $paymentRecord = json_decode(json_encode($paymentRecord), true);
+
+        // now if cash and change is > 0, note change as refunded amount
+        if ($sourceId == 'CASH' && $change > 0) {
+            $refundFields = [
+                'processor_details' => [
+                    'type' => 'custom',
+                    'custom' => ['refund_reference' => 'change returned'],
+                ],
+                'outcome' => 'refunded',
+                'refunded' => ['refunded_at' => time() + 1 ], // force to be after paid at
+                'amount' => [
+                    'currency' => $currency,
+                    'value' => $change * $currencyMultiplier,
+                ],
+                'initiated_at' => time(),
+            ];
+            $paymentRecordId = $paymentRecord['id'];
+
             try {
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/retrive charge $chargeId", $chargeId, $useLogWrite);
-                $charge = $client->charges->retrieve($chargeId, []);
-                $chargePHP = json_decode(json_encode($charge), true);
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/charge response of $chargeId", $chargePHP, $useLogWrite);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment change refund create $paymentRecordId-refundFields",
+                    $refundFields, $useLogWrite);
+                $refundRecord = $client->paymentRecords->reportRefund($paymentRecordId, $refundFields);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment refund response of $paymentRecordId", $refundRecord, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                stcc_logException('cc_payOrder/charge', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.', $useLogWrite);;
+                stcc_logException('cc_payOrder/paymentRecordRefundCreate', $e, 'Invalid Request Exception', 'Unable process the payment, seek assistance.',
+                    $useLogWrite);;
             }
             catch (\Stripe\Exception\ApiErrorException $e) {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                stcc_logException('cc_payOrder/charge', $e, 'other api error', 'Unable to process the payment, seek assistance.', $useLogWrite);
+                stcc_logException('cc_payOrder/paymentRecordRefundCreate', $e, 'other api error', 'Unable to process the payment, seek assistance.',
+                    $useLogWrite);
             }
             catch (Exception $e) {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
                 error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
             }
+
+            $paymentRecord = json_decode(json_encode($refundRecord), true);
         }
 
-        $desc = 'Stripe: ' . $sourceId;
-        if (array_key_exists('desc', $ccParams) && $ccParams['desc'] != '') {
-            $desc .= '; ' . $ccParams['desc'];
-        }
-
-        $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
-        $card = $charge['payment_method_details']['card'];
-        $last4 = $card['last4'];
-        $nonce = $card['brand'] . '-' . $last4;
-        $auth = substr($card['fingerprint'], 0, 16);
-        $receipt_url = $chargePHP['receipt_url'];
-        $receipt_number = $chargePHP['id'];
-        $id = $chargePHP['id'];
-        $txtime = date('Y/m/d H:i:s T', $chargePHP['created']);
-        $status = $chargePHP['outcome']['seller_message'];
-    }
-
-    /*
-    if ($sourceId == 'CASH') {
-        // add cash fields
-        $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
-            'buyerSuppliedMoney' => new Money([
-                'amount' => round($buyerSuppliedMoney * 100),
-                'currency' => $currency,
-                ]),
-            'changeBackMoney' => new Money([
-                'amount' => round($change * 100),
-                'currency' => $currency,
-            ]),
-        ]);
-        $paymentType = 'cash';
-    }
-
-    if ($sourceId == 'EXTERNAL') {
-        $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
-            'type' => $ccParams['externalType'],
-            'source' => $ccParams['desc'],
-        ]);
-        $paymentType = $ccParams['externalType'];
-    }
-
-    $pbody = new CreatePaymentRequest($pbodyArgs);
-
-    $id = $payment->getId();
-    $status = $payment->getStatus();
-    if ($sourceId == 'CARD') {
-        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
-        $last4 = $payment->getCardDetails()->getCard()->getLast4();
-        $auth = $payment->getCardDetails()->getAuthResultCode();
-    } else {
-        $last4 = '';
-        $auth = '';
         $approved_amt = $ccParams['total'];
+        $card = $paymentType;
+        $last4 ='';
+        $nonce = $sourceId;
+        $auth = '';
+        $receipt_url = '';
+        $receipt_number = $paymentRecord['id'];
+        $id = $paymentRecord['id'];
+        $txtime = date('Y/m/d H:i:s T', $paymentRecord['created']);
+        $status = 'success';
     }
-    $receipt_url = $payment->getReceiptUrl();
-    $desc = 'Square: ' . $payment->getApplicationDetails()->getSquareProduct();
-    $txtime = $payment->getCreatedAt();
-    $receipt_number = $payment->getReceiptNumber();
-
-    */
 
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {
