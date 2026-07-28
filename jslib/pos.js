@@ -2360,7 +2360,7 @@ class Pos {
         document.getElementById('overrideRow').hidden = true;
         clear_message();
         if (config.creditProcessor == 'stripe')
-            clear_message('stripe-message');
+            clear_message('ccPayMessageDiv');
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
@@ -2587,7 +2587,7 @@ class Pos {
         let _this = this;
         clear_message();
         if (config.creditProcessor == 'stripe')
-            clear_message('stripe-message');
+            clear_message('ccPayMessageDiv');
 
         this.#payPostData = postData;
         $.ajax({

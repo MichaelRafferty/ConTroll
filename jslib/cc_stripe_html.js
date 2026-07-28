@@ -29,7 +29,7 @@ async function stripeCardFormSubmit(e = null){
     // Trigger form validation and wallet collection
     const {error: submitError} = await elements.submit();
     if (submitError) {
-        show_message(submitError.message, 'error', 'stripe-message');
+        show_message(submitError.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
@@ -45,7 +45,7 @@ async function stripeCardFormSubmit(e = null){
     });
 
     if (error) {
-        show_message(error.message, 'error', 'stripe-message');
+        show_message(error.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
@@ -54,7 +54,7 @@ async function stripeCardFormSubmit(e = null){
     if (config.allowedCCBrands.length > 0) {
         let brand = confirmationToken.payment_method_preview.card.brand;
         if (!config.allowedCCBrands.includes(brand)) {
-            show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'stripe-message');
+            show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'ccPayMessageDiv');
             stripeSubmitBtn.disabled = false;
             stripeSubmitBtn.textContent = stripePayPriorText;
             return;
@@ -83,7 +83,7 @@ function startCCPay(amount = 0, formName = 'payment-form') {
     if (stripeCCForm)
         stripeCCForm.addEventListener('click', stripeCardFormSubmit);
     else
-        show_message("Internal Credit Card Processing error -seek assistance", 'error', 'stripe-message');
+        show_message("Internal Credit Card Processing error -seek assistance", 'error', 'ccPayMessageDiv');
 
     if (amount > 0) {
         stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
@@ -108,13 +108,13 @@ async function stripe_nextActions(data) {
         clientSecret: data.clientSecret
     });
     if (error) {
-        show_message(error.message, 'error', 'stripe-message');
+        show_message(error.message, 'error', 'ccPayMessageDiv');
         stripeSubmitBtn.disabled = false;
         stripeSubmitBtn.textContent = stripePayPriorText;
         return;
     }
 
-    clear_message('stripe-message');
+    clear_message('ccPayMessageDiv');
     payActionComplete(paymentIntent, data.post, data.payParams);
 }
 
@@ -139,5 +139,5 @@ function resetCCPay(div) {
         div.innerHTML = '';
 
     // clear the message field
-    clear_message('stripe-message');
+    clear_message('ccPayMessageDiv');
 }
