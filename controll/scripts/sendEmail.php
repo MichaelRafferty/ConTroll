@@ -82,7 +82,7 @@ case 'expire':
     FROM reg r
     JOIN perinfo p ON p.id = r.perid
     JOIN memLabel m ON m.id = r.memId
-    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60 AND p.deceased != 'Y'
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(m.enddate, now()) < 35 AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
