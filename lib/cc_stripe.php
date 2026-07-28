@@ -778,29 +778,6 @@ EOS;
                 $lineid++;
             }
         }
-
-        // TODO: if an item is in plan, set the plan discount to apply only to those line items
-        /*
-        // if a plan, set a discount called deferred payment for plan to the amount not in this payment
-        if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-            // deferment is total of the items - total of the payment
-            $deferment = $orderValue - $results['total'];
-            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
-            // this is the down payment on a payment plan
-            $item = new OrderLineItemDiscount ([
-                'uid' => 'planDeferment',
-                'name' => mb_substr("Payment Deferral Amount: " . $notesData['note'], 0, 128),
-                'metadata' => $notesData['metadata'],
-                'type' => OrderLineItemDiscountType::FixedAmount->value,
-                'amountMoney' => new Money([
-                    'amount' => round($deferment * 100),
-                    'currency' => $currency,
-                ]),
-                'scope' => OrderLineItemDiscountScope::LineItem->value,
-            ]);
-            $orderDiscounts[] = $item;
-        }
-        */
     }
 
     // now compute the taxes for each orderTaxLineItem and set the total tax
