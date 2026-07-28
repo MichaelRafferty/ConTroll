@@ -520,13 +520,19 @@ class ExhibitorInvoice {
         let regionList = region_list[this.#regionYearId];
         let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
         let membershipCost = data.results.preTaxAmt - totalSpacePrice;
-        document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
+        let id = document.getElementById('vendor_pay_mbr_cost');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
         let totalPreOrder = data.results.preTaxAmt;
-        document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
+        id = document.getElementById('vendor_pay_cost');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
         let totalWithTax = data.orderRtn.totalAmt;
-        document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        id = document.getElementById('vendor_pay_total_due');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
-        let id = document.getElementById(this.#purchaseLabel);
+        id = document.getElementById(this.#purchaseLabel);
         if (id)
             id.disabled = false;
         this.#totalAmountDue = Number(totalWithTax);
