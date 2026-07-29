@@ -382,8 +382,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                                 if ($thisItemDiscount > $discountRemaining)
                                     $thisItemDiscount = $discountRemaining;
                                 $discountRemaining -= $thisItemDiscount;
-                                if ($item['basePriceMoney'] > $maxAmt)
+                                if ($item['basePriceMoney'] > $maxAmt) {
                                     $lastItemNo = $itemNo;
+                                    $maxAmt = $item['basePriceMoney'];
+                                }
                                 $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
                             }
                         }
