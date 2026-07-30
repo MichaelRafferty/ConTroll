@@ -199,51 +199,6 @@ $response['rtn'] = $rtn;
 if (array_key_exists('results', $rtn) && array_key_exists('badges', $rtn['results']))
     $response['badges'] = $rtn['results']['badges'];
 
-/* move this directly to cc_stripe/cc_square/cc_test as it varies by credit card where things come from, don't depend on the meaining of items.
-// if coupon discount, update the badges with the coupon discount to update the in memory cart
-if ($coupon != null) {
-    foreach ($rtn['items'] as $item) {
-        if (array_key_exists('applied_discounts', $item)) {
-            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
-                $discount = $item['applied_discounts'][$discountNo];
-                if (str_starts_with($discount['uid'], 'couponDiscount')) {
-                    if (array_key_exists('applied_amount', $discount))
-                        $thisItemDiscount = $discount['applied_amount'];
-                    else
-                        $thisItemDiscount = $discount['applied_money']['amount'];
-                    // now find the reg entry to match this item
-                    $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
-                    $badges[$rowno]['coupon'] = $coupon['id'];
-                }
-            }
-        }
-    }
-}
-if ($drow != null) {
-    foreach ($rtn['items'] as $item) {
-        if (array_key_exists('applied_discounts', $item)) {
-            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
-                $discount = $item['applied_discounts'][$discountNo];
-                if (str_starts_with($discount['uid'], 'managerDiscount')) {
-                    if (array_key_exists('applied_amount', $discount))
-                        $thisItemDiscount = $discount['applied_amount'];
-                    else
-                        $thisItemDiscount = $discount['applied_money']['amount'];
-                    // now find the reg entry to match this item
-                    $rowno = $item['metadata']['rowno'];
-                    if (!array_key_exists('paid', $badges[$rowno]))
-                        $badges[$rowno]['paid'] = 0;
-                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
-                        $badges[$rowno]['couponDiscount'] = 0;
-                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / $currencyMultiplier;
-                }
-            }
-        }
-    }
-    $response['badges'] = $badges;
-
-} */
 $taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
