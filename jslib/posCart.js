@@ -293,9 +293,12 @@ class PosCart {
         let mem =  this.#cartPerinfo[pindex].memberships;
         for (let i = 0; i < mem.length; i++) {
             if (mem[i].regid == regid) {
-                this.#cartPerinfo[pindex].memberships[i].paid = paid;
-                this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
-                this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
+                if (paid != null)
+                    this.#cartPerinfo[pindex].memberships[i].paid = paid;
+                if (discount != null)
+                    this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                if (couponId != null)
+                    this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
                 break;
             }
         }

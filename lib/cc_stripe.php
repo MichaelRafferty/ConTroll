@@ -562,16 +562,15 @@ EOS;
                 $couponName = 'Discount Applied';
                 $managerDiscount = true;
             }
-
-            $orderDiscount += round($results['discount'] * $currencyMultiplier);
             $orderMetadata['orderCoupon'] = $couponName;
-
-            $orderValue -= $results['discount'];
+            $orderMetadata['orderDiscount'] = $results['discount'];
         }
 
+        $totalDiscountable = 0;
+        $discountRows = [];
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             $rowno = 0;
-            foreach ($results['badges'] as $badge) {
+            foreach ($results['badges'] as $ord => $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
                 }
@@ -638,7 +637,31 @@ EOS;
                            $orderValue -= round($planDiscountAmount / $currencyMultiplier);
                        }
                    }
-               }
+                }
+                // for coupon compute totaldiscountable
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array ('standard', 'supplement', 'upgrade', 'add-on', 'virtual'))) {
+                        $discountRows[] = [
+                            'row' => count($orderLineItems),
+                            'amt' => $amount,
+                            'type' => 'c',
+                            'ord' => $ord,
+                        ];
+                        $totalDiscountable += $amount;
+                    }
+                }
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $discountRows[] = [
+                        'row' => count($orderLineItems),
+                        'amt' => $amount,
+                        'type' => 'm',
+                        'ord' => $ord,
+                    ];
+                    $totalDiscountable += $amount;
+                }
 
                 $orderLineItems[] = $item;
                 if ($hasTax)  {
@@ -660,21 +683,6 @@ EOS;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
-                //TODO: line item coupon needs to be worked into system
-                /*
-                if ($couponDiscount &&
-                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $cat = $badge['memCategory'];
-                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
-                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
-                            'uid' => 'couponDiscount-' . $lineid,
-                            'discountUid' => 'discount' ,
-                        ])));
-                    }
-                }
-                * end line item coupon
-                */
-
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
@@ -684,6 +692,44 @@ EOS;
                 }
                 $lineid++;
                 $rowno++;
+            }
+
+            // now actually compute the discounts
+            if ($couponDiscount || $managerDiscount) {
+                $totalDiscount = $results['discount'] * $currencyMultiplier;
+                if ($totalDiscount > $totalDiscountable) {
+                    $totalDiscount /= $currencyMultiplier;
+                    $totalDiscountable /= $currencyMultiplier;
+                    ajaxSuccess(array('error' =>
+                        "The total discount of $totalDiscount cannot exceed the total amount discountable of $totalDiscountable"));
+                    exit();
+                }
+                $discountRemaining = $totalDiscount;
+                $orderValue -= $totalDiscount / $currencyMultiplier;
+                $lastItemNo = -1;
+                $maxAmt = -1;
+                foreach ($discountRows as $row) {
+                    $thisItemDiscount = round(($row['amt'] * $totalDiscount) / $totalDiscountable);
+                    if ($thisItemDiscount > $discountRemaining)
+                        $thisItemDiscount = $discountRemaining;
+                    $discountRemaining -= $thisItemDiscount;
+                    if ($row['amt'] > $maxAmt) {
+                        $lastItemNo = $row['row'];
+                        $lastOrd = $row['ord'];
+                        $maxAmt = $row['amt'];
+                    }
+                    if ($thisItemDiscount > 0) {
+                        $orderLineItems[$row['row']]['discount_amount'] = $thisItemDiscount;
+                        $results['badges'][$row['ord']]['coupon'] = $coupon;
+                        $results['badges'][$row['ord']]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
+                    }
+                }
+
+                 // deal with rounding error by fudging largest item
+                if ($discountRemaining > 0 && $lastItemNo >= 0) {
+                    $orderLineItems[$lastItemNo]['discount_amount'] += $discountRemaining;
+                    $results['badges'][$lastOrd]['couponDiscount'] += $discountRemaining / $currencyMultiplier;
+                }
             }
         }
 
@@ -817,7 +863,7 @@ EOS;
     }
     $amountDetails = [];
     if ($orderDiscount > 0) {
-        $amount_details['discount_amount'] = $orderDiscount;
+        $amountDetails['discount_amount'] = $orderDiscount;
     }
     $amountDetails['line_items'] = $orderLineItems;
     $orderMetadata['totalTax'] = $orderTax;

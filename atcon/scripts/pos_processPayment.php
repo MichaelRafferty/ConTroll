@@ -89,8 +89,8 @@ else
 $new_payment = $_POST['new_payment'];
 // if pure discount, newpayment can be null or empty string
 if (is_array($new_payment)) {
-    if (!array_key_exists('amt', $new_payment) || ($discountAmt == 0 && $new_payment['amt'] <= 0) || ($discountAmt > 0 && $new_payment['amt'] < 0)) {
-        ajaxError('invalid payment amount passed: payment <= 0');
+    if (!array_key_exists('amt', $new_payment) && $new_payment['amt'] <= 0) {
+        ajaxSuccess(array('error' => 'invalid payment amount passed: payment <= 0'));
         return;
     }
     $amt = (float) $new_payment['amt'];
@@ -118,13 +118,11 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-$preTaxAmt -= $couponDiscount + $discountAmt;
-
 $offset = $amt - ($preTaxAmt + $taxAmt);
 if (abs($offset) > 0.008) {
     error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    return;
+    ajaxSucess(array('error' => "Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
+    exit();
 }
 
 try {
@@ -138,8 +136,8 @@ catch (Exception $e) {
     exit();
 }
 if (sizeof($cart_perinfo) <= 0) {
-    ajaxError('The cart is empty');
-    return;
+    ajaxSucess(array('error' => 'The cart is empty'));
+    exit();
 }
 
 if (array_key_exists('drow', $_POST))
@@ -213,7 +211,7 @@ EOS;
     }
 }
 
-if (array_key_exists('coupon', $_POST)) {
+if (array_key_exists('coupon', $_POST) && $_POST['coupon'] != '') {
     $coupon = $_POST['coupon'];
 }
 else {
@@ -221,13 +219,13 @@ else {
 }
 
 $crow = null;
-if (array_key_exists('change', $_POST)) {
+if (array_key_exists('change', $_POST) && $_POST['change'] != '') {
     $crow = $_POST['change'];
     $response['crow'] = $crow;
 }
 
 $couponPayment = null;
-if (array_key_exists('couponPayment', $_POST)) {
+if (array_key_exists('couponPayment', $_POST) && $_POST['couponPayment'] != '') {
     $couponPayment = $_POST['couponPayment'];
     $response['couponPayment'] = $couponPayment;
 }
@@ -238,7 +236,7 @@ $payor_perid = $new_payment['payor']['perid'];
 $payor_country = $new_payment['payor']['country'];
 
 $pay_tid_amt = -1;
-if (array_key_exists('pay_tid_amt', $_POST)) {
+if (array_key_exists('pay_tid_amt', $_POST) && $_POST['pay_tid_amt'] != '') {
     $pay_tid_amt = $_POST['pay_tid_amt'];
 }
 
@@ -259,7 +257,7 @@ EOS;
 }
 
 $change = 0;
-if ($amt > 0 || $discountAmt > 0) {
+if ($amt > 0) {
     if ($new_payment['type'] != 'terminal') {
         // cash, online credit card (square), cash, external: (check, discount, coupon)
         //      everything now goes to square

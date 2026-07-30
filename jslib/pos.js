@@ -2353,7 +2353,7 @@ class Pos {
         let ptype = null;
         let crow = null;
         let cprow = null;
-        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt);
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
 
@@ -2363,8 +2363,7 @@ class Pos {
 
         document.getElementById('overrideRow').hidden = true;
         clear_message();
-        if (config.creditProcessor == 'stripe')
-            clear_message('ccPayMessageDiv');
+        clear_message('ccPayMessageDiv');
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
@@ -2409,6 +2408,7 @@ class Pos {
                 let eltenderedamt = document.getElementById('pay-tendered');
                 tendered_amt = Number(eltenderedamt.value);
                 if (tendered_amt + 0.004 < this.#totalAmountDue) {
+                    show_message("Cannot pay less than the amount due.",'warn');
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
@@ -2437,6 +2437,7 @@ class Pos {
                 ptype = 'discount';
                 desc = eldesc.value;
                 if (desc == null || desc == '') {
+                    show_message("Discount requires an explanation in the Description field",'warn');
                     eldesc.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 } else {
@@ -2458,6 +2459,7 @@ class Pos {
                 checkno = elcheckno.value;
                 if (checkno == null || checkno == '') {
                     elcheckno.style.backgroundColor = 'var(--bs-warning)';
+                    show_message("Check number required",'warn');
                     return;
                 } else {
                     elcheckno.style.backgroundColor = '';
@@ -2470,6 +2472,7 @@ class Pos {
                 let elccauth = document.getElementById('pay-ccauth');
                 ccauth = elccauth.value;
                 if (ccauth == null || ccauth == '') {
+                    show_message("CC Auth Code required",'warn');
                     elccauth.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 } else {
@@ -2499,6 +2502,7 @@ class Pos {
             }
 
             if (!checked) {
+                show_message("Select a payment type",'warn');
                 elptdiv.style.backgroundColor = 'var(--bs-warning)';
                 if (pt_online)
                     this.#pay_button_pay.disabled = false;
@@ -2510,6 +2514,7 @@ class Pos {
                 discount_amt = Number(eltenderedamt.value);
                 if (discount_amt <= 0 || discount_amt > this.#totalAmountDue) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                    show_message("Discount amount cannot be less than or equal to 0 or exceed the amount due",'warn');
                     return;
                 }
                 this.#drow = {
@@ -3092,7 +3097,7 @@ class Pos {
                 pay_html += `
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` +
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">` +
                     this.#currencyFmt.format(Number(this.#managerDiscount).toFixed(2)) + `</div>
     </div>
 `;

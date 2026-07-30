@@ -66,6 +66,7 @@ $drow = null;
 if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
     $drow = $_POST['drow'];
     $discount = $_POST['discountAmt'];
+    $response['drow'] = $drow;
 }
 
 try {
@@ -100,7 +101,10 @@ foreach ($cart_perinfo as $row) {
     foreach ($row['memberships'] as $membership) {
         $price = $membership['price'];
         $paid = $membership['paid'];
-        $couponDiscount = $membership['couponDiscount'];
+        if (array_key_exists('couponDiscount', $membership))
+            $couponDiscount = $membership['couponDiscount'];
+        else
+            $couponDiscount = 0;
         $unpaid = $price - ($paid + $couponDiscount);
         if ($unpaid == 0)
             continue;
@@ -189,9 +193,15 @@ if ($rtn == null) {
     ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
+
+$currency = cc_getCurrency();
+$currencyMultiplier = get_currencyMultiplier($currency);
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+if (array_key_exists('results', $rtn) && array_key_exists('badges', $rtn['results']))
+    $response['badges'] = $rtn['results']['badges'];
 
+/* move this directly to cc_stripe/cc_square/cc_test as it varies by credit card where things come from, don't depend on the meaining of items.
 // if coupon discount, update the badges with the coupon discount to update the in memory cart
 if ($coupon != null) {
     foreach ($rtn['items'] as $item) {
@@ -205,7 +215,7 @@ if ($coupon != null) {
                         $thisItemDiscount = $discount['applied_money']['amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
+                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
                     $badges[$rowno]['coupon'] = $coupon['id'];
                 }
             }
@@ -228,15 +238,14 @@ if ($drow != null) {
                         $badges[$rowno]['paid'] = 0;
                     if (!array_key_exists('couponDiscount', $badges[$rowno]))
                         $badges[$rowno]['couponDiscount'] = 0;
-                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
+                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / $currencyMultiplier;
                 }
             }
         }
     }
     $response['badges'] = $badges;
-    $response['drow'] = $drow;
-}
 
+} */
 $taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
