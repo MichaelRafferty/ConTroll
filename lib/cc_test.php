@@ -369,7 +369,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             if (array_key_exists('discount', $results) && $results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
                 $totalDiscount = $results['discount'] * $currencyMultiplier;
+                if ($totalDiscount > $totalDiscountable) {
+                    $totalDiscount /= $currencyMultiplier;
+                    $totalDiscountable /= $currencyMultiplier;
+                    ajaxSuccess(array('error' =>
+                        "The total discount of $totalDiscount cannot exceed the total amount discountable of $totalDiscountable"));
+                    exit();
+                }
                 $discountRemaining = $totalDiscount;
+                $orderValue -= $totalDiscount;
                 $lastItemNo = -1;
                 $maxAmt = -1;
                 for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
