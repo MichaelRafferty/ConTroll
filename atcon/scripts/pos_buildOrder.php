@@ -194,8 +194,6 @@ if ($rtn == null) {
     exit();
 }
 
-$currency = cc_getCurrency();
-$currencyMultiplier = get_currencyMultiplier($currency);
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
 if (array_key_exists('results', $rtn) && array_key_exists('badges', $rtn['results']))
