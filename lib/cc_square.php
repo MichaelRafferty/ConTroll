@@ -412,9 +412,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     // if not built, it's spaces + memberships
+    $couponDiscount = false;
+    $managerDiscount = false;
     if (!$itemsBuilt) {
-        $couponDiscount = false;
-        $managerDiscount = false;
         // create the coupon or discount amount, if it exists
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
@@ -731,6 +731,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order create-body', $body, $useLogWrite);
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
+        $phpOrder = json_decode(json_encode($order), true);
         if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $order, $useLogWrite);
     }
     catch (SquareApiException $e) {
@@ -743,12 +744,57 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
-
+    
+    // now actually compute the discounts
+    if ($couponDiscount) {
+        $items = $phpOrder['line_items'];
+        foreach ($items as $item) {
+            if (array_key_exists('applied_discounts', $item)) {
+                for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                    $discount = $item['applied_discounts'][$discountNo];
+                    if (str_starts_with($discount['uid'], 'couponDiscount')) {
+                        if (array_key_exists('applied_amount', $discount))
+                            $thisItemDiscount = $discount['applied_amount'];
+                        else
+                            $thisItemDiscount = $discount['applied_money']['amount'];
+                        // now find the reg entry to match this item
+                        $rowno = $item['metadata']['rowno'];
+                        $results['badges'][$rowno]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
+                        $results['badges'][$rowno]['coupon'] = $coupon['id'];
+                    }
+                }
+            }
+        }
+    }
+    
+    if ($managerDiscount) {
+        $items = $phpOrder['line_items'];
+        foreach ($items as $item) {
+            if (array_key_exists('applied_discounts', $item)) {
+                for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                    $discount = $item['applied_discounts'][$discountNo];
+                    if (str_starts_with($discount['uid'], 'managerDiscount')) {
+                        if (array_key_exists('applied_amount', $discount))
+                            $thisItemDiscount = $discount['applied_amount'];
+                        else
+                            $thisItemDiscount = $discount['applied_money']['amount'];
+                        // now find the reg entry to match this item
+                        $rowno = $item['metadata']['rowno'];
+                        if (!array_key_exists('paid', $results['badges'][$rowno]))
+                            $results['badges'][$rowno]['paid'] = 0;
+                        if (!array_key_exists('couponDiscount', $results['badges'][$rowno]))
+                            $results['badges'][$rowno]['couponDiscount'] = 0;
+                        $results['badges'][$rowno]['couponDiscount'] += $thisItemDiscount / $currencyMultiplier;
+                    }
+                }
+            }
+        }        
+    }
+    
     $rtn = array();
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
-    $phpOrder = json_decode(json_encode($order), true);
     $rtn['items'] = $phpOrder['line_items'];
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
