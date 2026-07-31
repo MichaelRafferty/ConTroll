@@ -323,7 +323,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             </div>
             <div class="row mt-2">
                 <div class="col-sm-auto">
-                    If you need more access please email the appropriate person with the email and sub value listed below.<br/>
+                    If you need more access please email the appropriate person with the email and perid value listed below.<br/>
                 </div>
             </div>
 <?php
