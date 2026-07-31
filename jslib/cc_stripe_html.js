@@ -2,10 +2,9 @@
  */
 var elements = null;
 var stripe = null;
-var stripeSubmitBtn = null;
+var paySubmitButton = null;
 var paymentElement = null;
-var stripePaystripePayPriorText = '';
-var stripeCCForm = null;
+var stripePaypaySubmitButtonPayPriorText = '';
 const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
     currency: config.currency,
@@ -19,19 +18,19 @@ async function stripeCardFormSubmit(e = null){
     if (e)
         e.preventDefault();
     // prevent double click
-    if (stripeSubmitBtn.disabled)
+    if (paySubmitButton.disabled)
         return;
 
-    stripePayPriorText = stripeSubmitBtn.textContent;
-    stripeSubmitBtn.disabled = true;
-    stripeSubmitBtn.textContent = 'Processing...';
+    paySubmitButtonPayPriorText = paySubmitButton.textContent;
+    paySubmitButton.disabled = true;
+    paySubmitButton.textContent = 'Processing...';
 
     // Trigger form validation and wallet collection
     const {error: submitError} = await elements.submit();
     if (submitError) {
         show_message(submitError.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
@@ -46,8 +45,8 @@ async function stripeCardFormSubmit(e = null){
 
     if (error) {
         show_message(error.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
@@ -55,8 +54,8 @@ async function stripeCardFormSubmit(e = null){
         let brand = confirmationToken.payment_method_preview.card.brand;
         if (!config.allowedCCBrands.includes(brand)) {
             show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'ccPayMessageDiv');
-            stripeSubmitBtn.disabled = false;
-            stripeSubmitBtn.textContent = stripePayPriorText;
+            paySubmitButton.disabled = false;
+            paySubmitButton.textContent = paySubmitButtonPayPriorText;
             return;
         }
     }
@@ -65,12 +64,12 @@ async function stripeCardFormSubmit(e = null){
     makePurchase(confirmationToken, "stripe-confirm");
 }
 
-function stripeRestoreBtnTxt() {
-    stripeSubmitBtn.textContent = stripePayPriorText;
+function ccRestoreBtnTxt() {
+    paySubmitButton.textContent = paySubmitButtonPayPriorText;
 }
 
 function startCCPay(amount = 0, formName = 'payment-form') {
-    stripeSubmitBtn = document.getElementById('card-button');
+    paySubmitButton = document.getElementById('card-button');
     if (!stripe)
         stripe = Stripe(pkkey);
     if (paymentElement) {
@@ -79,16 +78,15 @@ function startCCPay(amount = 0, formName = 'payment-form') {
         paymentElement = null;
     }
     // set listener
-    stripeCCForm = document.getElementById('card-button');
-    if (stripeCCForm)
-        stripeCCForm.addEventListener('click', stripeCardFormSubmit);
+    if (paySubmitButton)
+        paySubmitButton.addEventListener('click', stripeCardFormSubmit);
     else
         show_message("Internal Credit Card Processing error -seek assistance", 'error', 'ccPayMessageDiv');
 
     if (amount > 0) {
-        stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+        paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
     } else {
-        stripeSubmitBtn.textContent = "Purchase";
+        paySubmitButton.textContent = "Purchase";
     }
     const options = {
         mode: 'payment',
@@ -109,8 +107,8 @@ async function stripe_nextActions(data) {
     });
     if (error) {
         show_message(error.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
@@ -119,11 +117,6 @@ async function stripe_nextActions(data) {
 }
 
 function resetCCPay(div) {
-    if (paymentElement) {
-        paymentElement.unmount();
-        paymentElement.destroy();
-        paymentElement = null;
-    }
     // set clear element from screen
     if (paymentElement) {
         paymentElement.unmount();
@@ -131,8 +124,8 @@ function resetCCPay(div) {
         paymentElement = null;
     }
     // set listener
-    if (stripeCCForm) {
-        stripeCCForm.removeEventListener('click', stripeCardFormSubmit);
+    if (paySubmitButton) {
+        paySubmitButton.removeEventListener('click', stripeCardFormSubmit);
     }
     // clear the HTML area
     if (div)

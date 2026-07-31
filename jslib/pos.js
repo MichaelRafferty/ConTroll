@@ -2234,12 +2234,15 @@ class Pos {
             if (this.#ccOnlineStarted == false) {
                 let button = document.getElementById('card-button');
                 if (button) {
-                    button.innerHTML = 'Validate Credit Card';
+                    button.innerHTML = 'Pay Credit Card';
                     button.disabled = false;
                 }
                 startCC(this.#totalAmountDue * currencyMultiplier);
                 this.#ccOnlineStarted = true;
             }
+        } else {
+            resetCCPay(this.#paymentElementDiv);
+            this.#ccOnlineStarted = false;
         }
     }
 
@@ -2671,7 +2674,7 @@ class Pos {
                 this.#ccNonce = null;
             }
             if (data.restoreBtn)
-                stripeRestoreBtnTxt()
+                ccRestoreBtnTxt()
             return;
         }
 
@@ -2686,7 +2689,7 @@ class Pos {
                 this.#ccNonce = null;
             }
             if (data.restoreBtn)
-                stripeRestoreBtnTxt()
+                ccRestoreBtnTxt()
             return;
         }
 

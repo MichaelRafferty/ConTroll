@@ -60,6 +60,7 @@ var ccNonce = '';
 var currentCurrency = 'usd';
 var currencyMultiplier = 100;
 var payPostData = null;
+var paymentElementDiv = null;
 
 // release items
 var releaseModal = null;
@@ -153,6 +154,7 @@ window.onload = function initpage() {
     add_found_div = document.getElementById('add-found-div');
     // pay items
     pay_div = document.getElementById('pay-div');
+    paymentElementDiv = document.getElementById("payment-element");
 
     // add events
     find_tab.addEventListener('shown.bs.tab', findShown)
@@ -295,6 +297,12 @@ function startOver(reset_all) {
     // empty cart
     cart.startOver();
     cart.hideRelease();
+    // clear the payment form
+    let id = document.getElementById('pt-online');
+    if (id) {
+        resetCCPay(paymentElementDiv);
+        id.checked = false;
+    }
     // empty search strings and results
     currentPerson = null;
     pickupPerids = null;
@@ -1505,6 +1513,9 @@ function setPayType(ptype) {
             ccOnlineStarted = true;
             pay_button_pay.disabled = false;
         }
+    } else {
+        resetCCPay(paymentElementDiv);
+        ccOnlineStarted = false;
     }
 }
 

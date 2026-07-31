@@ -31,17 +31,21 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
  <script type="text/javascript">
       ;
       var payments = null;
+      var paySubmitButton = null;
+      var paySubmitButtonPayPriorText = '';
+      var squarePayments = null;
+      var squareCard = null;
       
       const currencyFmtCC = new Intl.NumberFormat(config.locale, {
           style: 'currency',
           currency: config.currency,
       });
-    
+          
       async function startCCPay(amount = 0) {
           const appId = '$appid';
           const locationId = '$location';
-          const payments = Square.payments(appId, locationId);
-          const card = await payments.card({
+          squarePayments = Square.payments(appId, locationId);
+          squareCard = await squarePayments.card({
               $postalCode        
               "style": {
                   ".input-container": {
@@ -60,57 +64,69 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
                   }
               }
           });
-          document.getElementById("card-button").removeAttribute("hidden");
-          await card.attach('#card-container');
+          paySubmitButton = document.getElementById("card-button");
+          paySubmitButton.removeAttribute("hidden");
+          await squareCard.attach('#card-container');
+          if (amount > 0) {
+              paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+          } else {
+              paySubmitButton.textContent = "Purchase";
+          }
 
           async function eventHandler(event) {
               event.preventDefault();
               
               const submitBtn =  document.getElementById("card-button");
-              let priorText = submitBtn.textContent;
+              paySubmitButtonPayPriorText = submitBtn.textContent;
               submitBtn.disabled = true;
               submitBtn.textContent = 'Processing...';
 
               try {
-                  const result = await card.tokenize();
+                  const result = await squareCard.tokenize();
                   if (result.status === 'OK') {
                       //console.log(`Payment token is ' + result.token);
                       makePurchase(result.token, "card-button");
                   } else {
-                      submitBtn.textContent = priorText;
+                      submitBtn.textContent = paySubmitButtonPayPriorText;
                       submitBtn.disabled = false;
                   }
               } catch (e) {
                   console.error(e);
-                  submitBtn.textContent = priorText;
+                  submitBtn.textContent = paySubmitButtonPayPriorText;
                   submitBtn.disabled = false;
               }
           };
-          const cardButton = document.getElementById('card-button');
-          cardButton.addEventListener('click', eventHandler);
-          if (amount > 0) {
-              cardButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
-          } else {
-              cardButton.textContent = "Purchase";
-          }
-          cardButton.disabled = false;
           
-          function resetCCPay(div) {
-              return;
+          paySubmitButton.addEventListener('click', eventHandler);
+          if (amount > 0) {
+              paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+          } else {
+              paySubmitButton.textContent = "Purchase";
           }
-
+          paySubmitButton.disabled = false;
     }
+    
+    function resetCCPay(div) {
+          squareCard.detach('#card-container')
+          squareCard = null;
+          squarePayments = null;
+          return;
+      }
+      
+      function ccRestoreBtnTxt() {
+          paySubmitButton.textContent = paySubmitButtonPayPriorText;
+      }
 EOS;
     }
     if ($type == 'js') {
         $html .= <<<EOS
     
-    function startCC() {
+    function startCC(amount = 0) {
         if (!window.Square) {
             throw new Error('Square.js failed to load properly');
         }    
           
-      startCCPay();
+      startCCPay(amount);
       } 
             
 EOS;
@@ -123,7 +139,7 @@ EOS;
             throw new Error('Square.js failed to load properly');
           }    
           
-          startCCPay();
+          startCCPay(999999);
       });
 EOS;
     }
@@ -135,7 +151,7 @@ EOS;
         $html .= <<<EOS
 <form id="payment-form">
     <div class="container-fluid overflow-hidden" id="card-container"></div>
-    <button class="btn btn-primary btn-sm mt-2" id="card-button" type="button">Purchase</button>
+    <div class="mt-1 p-1" id="ccPayMessageDiv"></div>
 </form>
 EOS;
         }
@@ -1076,7 +1092,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
+                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg", 'restoreBtn' => 1,));
                 exit();
             }
         }
