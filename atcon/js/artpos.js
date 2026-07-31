@@ -1528,6 +1528,8 @@ function makePurchase(token, label) {
         nonce = JSON.stringify(token);
     else if (token == 'test_ccnum')
         nonce = document.getElementById(token).value;
+    else
+        nonce = token;
 
     ccNonce = nonce;
     pay_button_pay.disabled = false;
