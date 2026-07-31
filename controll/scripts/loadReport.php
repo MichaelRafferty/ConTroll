@@ -222,7 +222,7 @@ foreach ($sections as $key => $section) {
 }
 
 if ($dumpSQL > 0) {
-    labelded_logWrite('c/loadReport-report $reportName SQL Dump'
+    labelded_logWrite('c/loadReport-report $reportName SQL Dump',
         array("SQL" => $sql, "typeStr" => $typeStr, "params" => $paramArray));
 }
 
