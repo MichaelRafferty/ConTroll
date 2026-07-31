@@ -369,19 +369,23 @@ EOS;
             <div class="row">
                 <div class="col-sm-auto mt-4 mb-0">
                     <pre><?php
+                            $isAdmin = $authToken->checkAuth('admin');
+                            $isRegadmin = $authToken->checkAuth('reg-admin');
                             echo "Email: $user_email\n";
-                            echo "User id: $user_id\n";
+                            if ($isAdmin) echo "User id: $user_id\n";
                             echo "User perid: $user_perid\n";
-                            echo "Source: $source\n";
-                            echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
-                            echo 'Current Time: ' . date('c') . PHP_EOL;
-                            echo "Token Expires: " . date('c', $authToken->getExpire()) . PHP_EOL;
-                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . PHP_EOL;
-                            echo "PHP Version: " . phpversion() . PHP_EOL;
+                            echo "Token Source: $source\n";
+                            if ($isAdmin)  echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
+                            echo 'Current Time: ' . date('Y-m-d h:i:s T') . PHP_EOL;
+                            echo "Next Refresh: " . date('Y-m-d h:i:s T', $authToken->getRefresh()) . PHP_EOL;
+                            echo 'Token Expires: ' . date('Y-m-d h:i:s T', $authToken->getExpire()) . PHP_EOL;
+                            if ($isAdmin) echo "PHP Version: " . phpversion() . PHP_EOL;
                             echo returnReleaseNotesLink('', $authToken) . PHP_EOL;
-                            echo "$versionText";
-                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
-                            echo "Database Patch Level: $patchLevel\n";
+                            if ($isAdmin) {
+                                echo "$versionText";
+                                echo "Database Patch Level: $patchLevel\n";
+                            }
+                            if ($isAdmin || $isRegadmin) echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
                             echo "Conid: $conid\n";
                         ?>
                     </pre>
