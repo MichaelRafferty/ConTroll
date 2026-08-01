@@ -932,6 +932,10 @@ class consetup {
             for (let row of tabledata) {
                 let label =  row.shortname;
                 let notes = row.notes;
+                if (label.length > 64) {
+                    valid = false;
+                    message += "Label (shortname) of row " + row.memId + " is too long at " + label.length + ", it cannot exceed 64 characters.<br/>";
+                }
                 if (label.substring(0, 8) == 'Bundle: ') {
                     let indexMark = notes.indexOf('/');
                     if (indexMark < 0) {

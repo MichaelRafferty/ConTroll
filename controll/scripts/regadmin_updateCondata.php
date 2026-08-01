@@ -157,8 +157,14 @@ EOS;
                 if ($row['cartDesc'] == '')
                     $row['cartDesc'] = null;
             }
+            if (!array_key_exists('catBadgeLabel', $row))
+                $row['catBadgeLabel'] = '';
+            if (!array_key_exists('badgeLabel', $row))
+                $row['badgeLabel'] = '';
             if (IFNULL($row['catBadgeLabel'],'') == IFNULL($row['badgeLabel'],''))
                 $row['badgeLabel'] = '';
+            if (strlen($row['shortname']) > 64) // truncate it if it gets to here as too long, the .js should catch it first.
+                $row['shortname'] = substr($row['shortname'], 0, 64);
             if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
