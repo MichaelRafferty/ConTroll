@@ -74,6 +74,8 @@ function makePurchase(token, label) {
     let nonce = null;
     if (label == 'stripe-confirm')
         nonce = JSON.stringify(token);
+    else if (token == 'test_ccnum')
+        nonce = document.getElementById(token).value;
     else
         nonce = token;
 
