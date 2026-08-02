@@ -3049,7 +3049,6 @@ class Pos {
             let pay_html = `
 <div id='payBody' class="container-fluid">
  <div id="payFormDiv" class="container-fluid form-floating">
- <!--<form id='payForm' action='javascript: return false; ' class="form-floating">-->
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
@@ -3268,7 +3267,6 @@ class Pos {
             <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="pos.payPoll(0);">Cancel Payment</button>
         </div>
     </div>
-  <!--</form>-->
 </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
     <div class="row mt-3">
