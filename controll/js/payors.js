@@ -102,7 +102,7 @@ class Payors {
                     headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: ''}, },
                 {title: "Last Pmt Amt", field: "lastPaymentAmt", width: 100, headerWordWrap: true, headerFilter: true,
                     headerHozAlign: "right", hozAlign: "right", headerFilterFunc: numberHeaderFilter, },
-                /*{title: "Next Pmt Due", field: "nextPatmentDue", width: 100, headerWordWrap: true, headerFilter: true, headerSort: true, },*/
+                /*{title: "Next Pmt Due", field: "nextPaYmentDue", width: 100, headerWordWrap: true, headerFilter: true, headerSort: true, },*/
             ],
         });
     }

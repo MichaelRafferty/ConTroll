@@ -111,6 +111,8 @@ class VendorInvoice {
         let nonce = null;
         if (label == 'stripe-confirm')
             nonce = JSON.stringify(token);
+        else if (token == 'test_ccnum')
+            nonce = document.getElementById(token).value;
         else
             nonce = token;
         this.#token = nonce;
@@ -419,6 +421,8 @@ class VendorInvoice {
                 if (submitId)
                     submitId.disabled = false;
 
+                ccRestoreBtnTxt();
+
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -448,6 +452,7 @@ class VendorInvoice {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
+                ccRestoreBtnTxt();
 
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
@@ -467,10 +472,14 @@ class VendorInvoice {
             show_message(data['error'], 'error', 'pay_result_message');
             let submitId = document.getElementById('card-button');
             submitId.disabled = false;
+            if (data.restoreBtn)
+                ccRestoreBtnTxt();
         } else if (data['status'] == 'error') {
             show_message(data['data'], 'error', 'pay_result_message');
             let submitId = document.getElementById('card-button');
             submitId.disabled = false;
+            if (data.restoreBtn)
+                ccRestoreBtnTxt();
         } else if (data['status'] == 'success') {
             this.#vendorPayment.hide();
             let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +

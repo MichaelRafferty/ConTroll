@@ -1346,8 +1346,8 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-                if (data.restoreBtn)
-                    ccRestoreBtnTxt();
+
+                ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1421,7 +1421,7 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-
+                ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },

@@ -237,9 +237,14 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             </div>
                             <div class='row'>
                                 <div class='col-sm-12'>
-                                    <?php echo draw_cc_html('--', 'all'); ?>
+                                    <?php echo draw_cc_html('--', 'vendor'); ?>
                                 </div>
                             </div>
+                             <div class='row'>
+                                 <div class='col-sm-12'>
+                                     <button class='btn btn-sm btn-primary mt-2' type='button' id='card-button'>Pay</button>
+                                 </div>
+                             </div>
                             </form>
 <?php
                                 outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);

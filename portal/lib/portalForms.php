@@ -692,11 +692,6 @@ function draw_makePaymentModal() : void {
                         <div class='row'>
                             <div class='col-sm-12'><?php echo draw_cc_html('--', 'portal'); ?></div>
                         </div>
-                        <div class='row'>
-                            <div class='col-sm-12'>
-                                <button class='btn btn-sm btn-primary mt-2' type="button" id="card-button">Pay</button>
-                            </div>
-                        </div>
                         <div class='row mt-2'>
                             <div class='col-sm-auto'>
                                 <p>Is the purchase button not working? Try clicking in the last field of the payment form, then press tab.
