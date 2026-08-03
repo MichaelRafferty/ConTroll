@@ -332,6 +332,12 @@ if ($test) {
     $email_test = [];
     //$email_array[0]['email'] = $email;
     $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
+    // add macrosubstitution items to email_test
+    if (count($email_array) > 0) {
+        foreach ($email_array[0] as $field =>$value) {
+            $email_test[0][$field] = "test value for $field";
+        }
+    }
     $response['emailTest'] = $email_test;
 }
 
