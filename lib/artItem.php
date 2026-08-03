@@ -117,8 +117,8 @@ function drawEditPane($tabIndex=100)
                 </div>
                 <div class="modal-footer">
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-secondary' onClick="artItemModal.resetEditPane()">Reset</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="artItemModal.updateArtItem()">
+                    <button class='btn btn-sm btn-secondary' onclick="artItemModal.resetEditPane()">Reset</button>
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onclick="artItemModal.updateArtItem()">
                         Update Art Item
                     </button>
                 </div>

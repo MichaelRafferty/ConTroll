@@ -208,7 +208,7 @@ class ExhibitorRequest {
         this.#exhibitor_req_btn.innerHTML = prompt + regionName + ' Space';
         let selection = document.getElementById('exhibibitor_req_price_id');
         //selection.innerHTML = options;
-        this.#exhibitor_req_btn.setAttribute('onClick', "exhibitorRequest.spaceReq(" + regionYearId + ',' + cancel + ')');
+        this.#exhibitor_req_btn.setAttribute('onclick', "exhibitorRequest.spaceReq(" + regionYearId + ',' + cancel + ')');
 
         // see if over limit already
         this.#exhibitor_request.show();

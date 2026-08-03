@@ -1327,7 +1327,7 @@ class Pos {
         html += `</div>
         <div class="col-sm-2">`;
         if (baseManagerEnabled && this.#manager) {
-            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
+            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
         }
 
         html += `

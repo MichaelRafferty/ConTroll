@@ -1334,7 +1334,7 @@ class PosCart {
         pos.setMissingPolicies(0);
         let html = `
 <div id='reviewBody' class="container-fluid form-floating">
-  <form id='reviewForm' action='javascript:void(0); ' class="form-floating">
+  <form id='reviewForm' onsubmit='return false; ' class="form-floating">
 `;
         let rownum = null;
         let row;

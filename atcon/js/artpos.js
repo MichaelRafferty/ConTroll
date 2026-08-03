@@ -2049,10 +2049,10 @@ function showStats(which) {
         ],
     });
 
-    statsTable.on("cellClick", personClicked);
+    statsTable.on("cellClick", personclicked);
 }
 
-function personClicked(e, cell) {
+function personclicked(e, cell) {
     badgeid_field.value = cell.getData().perid;
     findPerson('search');
 }
@@ -2084,7 +2084,7 @@ function drawPay(readWrite = true) {
 // draw the pay amount area first
     let payHtml = `
 <div id='payBody' class="container-fluid form-floating">
-  <form id='payForm' action='javascript:void(0); ' class="form-floating">
+  <form id='payForm' onsubmit='return false;' class="form-floating">
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>

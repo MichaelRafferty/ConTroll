@@ -306,7 +306,7 @@ function bs_tinymceModal() : void {
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='saveEdit' onClick='saveEdit()'>Save Edit</button>
+                <button class='btn btn-sm btn-primary' id='saveEdit' onclick='saveEdit()'>Save Edit</button>
             </div>
             <div id='result_message_edit' class='mt-4 p-2'></div>
         </div>

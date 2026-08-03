@@ -408,7 +408,7 @@ EOS;
                     <div class='row mb-1'>
                         <div class='col-sm-12' id='edit_coupon_preform'></div>
                     </div>
-                    <form id='coupon_form' class='form-floating' action='javascript:void(0);'>
+                    <form id='coupon_form' class='form-floating' onsubmit='return false;'>
                         <input type='hidden' name='couponId' id='form_couponId'/>
                         <div class='row mb-1'>
                             <div class='col-sm-4'>
@@ -538,7 +538,7 @@ EOS;
                             <div class="col-sm-auto p-0">
                                 <button id="form_submit" type="button" class="btn btn-primary btn-sm" onclick="coupons.UpdateCoupon();">Update Coupon</button>
                                 <button id="form_delete" type="button" class="btn btn-warning btn-sm" onclick="coupons.DeleteCoupon();">Delete Unused Coupon</button>
-                                <button id="form_cancel" type="button" class="btn btn-secondary btn-sm" onClick="coupons.HideEditModal();">Cancel</button>
+                                <button id="form_cancel" type="button" class="btn btn-secondary btn-sm" onclick="coupons.HideEditModal();">Cancel</button>
                             </div>
                         </div>
                     </form>

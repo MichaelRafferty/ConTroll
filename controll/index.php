@@ -402,7 +402,7 @@ EOS;
             if ($nyF == 0) { ?>
                 <div class='row'>
                     <div class='col-sm-auto m-4'>
-                        <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
+                        <button class="btn btn-sm btn-primary" onclick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
                     </div>
                 </div>
                 <?php

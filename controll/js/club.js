@@ -38,7 +38,7 @@ function showBadgeList(data) {
 
 function showPerson(data) {
   var formid = "badge"+data['id'];
-  var ret = "<form id='"+formid+"' action='javascript:void(0)'>";
+  var ret = "<form id='"+formid+"' onsubmit='return false;'>";
   ret += "<input type='hidden' form='"+formid+"' name='perid' value='"+data['perid']+"'/>";
   var cont = false;
     ret+= "<td>"+data['name']+"</td>";
@@ -50,7 +50,7 @@ function showPerson(data) {
         + "' name='year'/>";
     ret+="</td>";
     ret+= "<td>";
-    ret+= "<input form='"+formid+"' type='submit' value='update' onClick='updateReg(\"#"+formid+"\"); return false;'/>";
+    ret+= "<input form='"+formid+"' type='submit' value='update' onclick='updateReg(\"#"+formid+"\"); return false;'/>";
   ret += '</td>'
   ret += "</form>";
 
@@ -158,10 +158,10 @@ function addShowHide(block, id) {
   hide.addClass('hidelink');
   show.attr('id', id + "ShowLink");
   hide.attr('id', id + "HideLink");
-  show.attr('href', "javascript:void(0)");
-  hide.attr('href', "javascript:void(0)");
-  show.click(function () { showBlock("#" + id); });
-  hide.click(function () { hideBlock("#" + id); });
+  show.attr('href', "#");
+  hide.attr('href', "#");
+  show.click(function () { showBlock("#" + id); return false; });
+  hide.click(function () { hideBlock("#" + id); return false; });
   show.append("(show)");
   hide.append("(hide)");
   block.append(" ").append(show).append(" ").append(hide);

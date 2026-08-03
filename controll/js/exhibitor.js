@@ -544,13 +544,13 @@ class exhibitorsAdm {
             "       <div class='col-sm-auto p-1 ms-4'>\n";
         if (config.exhibitorConid == config.conid)
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onclick=" + '"exhibitors.addNewSpace();">' +
             "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onclick=" + '"exhibitors.addNew();">' +
             "               Add New Exhibitor</button>\n";
         if (data.usesInventory == 'Y' && config.exhibitorConid == config.conid) {
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onclick=" + '"exhibitors.sendInvReminder();">' +
             "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
         }
         html +=
@@ -606,8 +606,8 @@ class exhibitorsAdm {
             "    <div class='row mt-2'>\n" +
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'></div>\n" +
             "        <div class='col-sm-auto'>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onclick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onclick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
             "            <button id='" + groupid + "-exh-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.exhDownload(\"csv\"); return false;'>Download CSV</button>\n" +
         "           <button id='" + groupid + "-exh-xlsx' type='button' class='btn btn-info btn-sm'" +

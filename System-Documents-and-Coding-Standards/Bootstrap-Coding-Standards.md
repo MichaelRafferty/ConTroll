@@ -198,7 +198,7 @@ The modal HTML is usually output by the PHP script as
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='actionBtn' onClick='actionBtns();'>Action</button>
+                    <button class='btn btn-sm btn-primary' id='actionBtn' onclick='actionBtns();'>Action</button>
                      ...
                 </div>
                 <div id='result_message_idName' class='mt-4 p-2'></div>

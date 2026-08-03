@@ -117,7 +117,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                 </div>
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id="exhibitorProfileForm" name="exhibitorProfileForm" action="javascript:void(0);" class="form-floating">
+                        <form id="exhibitorProfileForm" name="exhibitorProfileForm" onsubmit="return false;" class="form-floating">
                             <input type="hidden" id='profileMode' name='profileMode' value="admin"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <?php
@@ -540,7 +540,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                         Cancel
                     </button>
                     <button class='btn btn-sm btn-primary' id='profileSubmitBtn' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                            onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')">Admin</button>
+                            onclick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')">Admin</button>
                 </div>
             </div>
         </div>
@@ -567,7 +567,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <?php if ($portalType != 'admin') outputCustomText('signup/top'); ?>
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id='exhibitorProfileForm' name='exhibitorProfileForm' action='javascript:void(0);' class='form-floating'>
+                        <form id='exhibitorProfileForm' name='exhibitorProfileForm' onsubmit='return false;' class='form-floating'>
                             <input type="hidden" id='profileMode' name='profileMode' value="admin"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <?php
@@ -1064,7 +1064,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                             onclick="exhibitorProfile.prevPage();" disabled>Previous Page</button>
                     <button class='btn btn-sm btn-primary' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                             id='nextPageBtn' onclick="exhibitorProfile.nextPage();">Next Page</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')"
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onclick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')"
                             tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" disabled>Admin</button>
                 </div>
             </div>

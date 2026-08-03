@@ -904,7 +904,7 @@ class Portal {
             html += `
     <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
-            onClick="portal.makeOrder(null, 2);" disabled>
+            onclick="portal.makeOrder(null, 2);" disabled>
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
@@ -914,7 +914,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-2" id="paySelectedPlanRow" hidden>
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTNPlan"
-            onClick="portal.buildPlan(2);">
+            onclick="portal.buildPlan(2);">
             Make Plan for Selected
         </button></div>
         <div class="col-sm-auto">
@@ -927,7 +927,7 @@ class Portal {
         html += `
     <div class="row mt-1 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.makeOrder(null);">Pay All</button></div>
+            onclick="portal.makeOrder(null);">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total` + this.#preTaxLabel + ` amount due for all memberships is ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
@@ -935,7 +935,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-3" id="payAllPlanRow">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.buildPlan(1);">Make Plan for All</button></div>
+            onclick="portal.buildPlan(1);">Make Plan for All</button></div>
         <div class="col-sm-auto">
             <b>Create a payment plan for the total` + this.#preTaxLabel + ` amount due for all memberships of ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
@@ -1033,7 +1033,7 @@ class Portal {
         this.#payDueSubmitButton.innerHTML = buttonName;
         html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null , ` +
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onclick='portal.makeOrder(null , ` +
             makeOrderOther + `);'>` +
                 buttonName + `</button></div>
         <div class="col-sm-auto">

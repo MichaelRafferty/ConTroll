@@ -71,13 +71,13 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
                 <span id="<?php echo $idPrefix . 'l_' . $name;?>" name="<?php echo $idPrefix . 'l_' . $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
-            <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
+            <span class="small"><a href='#' onclick='$("#<?php echo $idPrefix . $name;?>Tip").toggle();return false;'>
                     <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
                          tabindex="<?php echo $tabindex; $tabindex += 1;?>"/>
                 </a></span>
         <div id='<?php echo $idPrefix . $name;?>Tip' class='padded highlight' style='display:none'>
             <p class='text-body'><?php echo $description; ?>
-                <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
+                <span class='small'><a href='#' onclick='$("#<?php echo $idPrefix . $name;?>Tip").toggle();return false;'>
                       <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'
                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                     </a></span>
@@ -135,14 +135,14 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
                 <p class='text-body'>
                     <?php echo $prompt; ?></span>
                     <?php if ($description != '') { ?>
-                    <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
+                    <span class="small"><a href='#' onclick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle();return false;'>
                     <img src="/lib/infoicon.png" alt="click this info icon for more information" style="max-height: 25px;"/>
                         </a>
                     </span>
                 </p>
                 <div id='<?php echo  $id . '_' . $name; ?>Tip' class='padded highlight' style='display:none'>
                     <p class='text-body'><?php echo $description; ?>
-                        <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
+                        <span class='small'><a href='#' onclick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle();return false;'>
                       <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'/>
                     </a></span>
                     </p>

@@ -216,7 +216,7 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
                 <div class="modal-body" style="padding: 4px;">
                      <div id='newBadgeBody' class="container-fluid form-floating" style="background:#f4f4ff;">
                         <h3 class="text-primary">New Convention Memberships</h3>
-                        <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
+                        <form id='newBadgeForm' onsubmit='return false;' class="form-floating">
 <?php
     drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class, /* modal */ true, /* editEmail */ true, $ageByDate,
             $membershiptypes, $ageListIdx, /* tabIndexStart  */ 100);
@@ -256,7 +256,7 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
      <div class="container-fluid form-floating">
          <div class="row">
              <div class="col-sm-6 p-2 border border-2 border-primary">
-                 <form action='javascript:void(0)' id='purchaseForm'>
+                 <form onsubmit='return false;' id='purchaseForm'>
                      <div class="container-fluid form-floating">
                          <div class="row">
                              <div class="col-sm-12">

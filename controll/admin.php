@@ -60,7 +60,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
-                    <form id='add-search' action='javascript:void(0)'>
+                    <form id='add-search' onsubmit='return false;'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
                                 <label for='add_name_search' id='addName'>Name:</label>
@@ -85,7 +85,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
+                <button class='btn btn-sm btn-primary' id='addSearch' onclick='add_find()'>Find Person</button>
             </div>
 
         </div>
@@ -201,7 +201,7 @@ draw_fileManagerModals($authToken);
         }
                     ?>
                     <tr>
-                        <form id='<?php echo $user['id'];?>' action='javascript:void(0)'>
+                        <form id='<?php echo $user['id'];?>' onsubmit='return false;'>
                             <input type='hidden' name='user_id' value='<?php echo $user['id'];?>' />
                             <input type='hidden' name='perid' value='<?php echo $user['perid'];?>' />
                             <?php
