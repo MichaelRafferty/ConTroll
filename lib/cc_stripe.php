@@ -779,8 +779,8 @@ EOS;
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
                 $orderTaxLineItems[] = $item;
-                $orderMetadata['sn' . $itemNumber] = $notesData['note'];
-                $orderMetadata['sm' . $itemNumber] = json_encode($notesData['metadata']);
+                $orderMetadata['in' . $itemNumber] = $notesData['note'];
+                $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -816,8 +816,8 @@ EOS;
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
                 $orderTaxLineItems[] = $item;
-                $orderMetadata['min' . $itemNumber] = $notesData['note'];
-                $orderMetadata['mim' . $itemNumber] = json_encode($notesData['metadata']);
+                $orderMetadata['in' . $itemNumber] = $notesData['note'];
+                $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
                 $orderValue += $itemPrice;
                 $lineid++;
             }
@@ -853,17 +853,19 @@ EOS;
             for ($taxLineno = 1; $taxLineno <= 5; $taxLineno++) {
                 $key = 'tax' . $taxLineno;
                 if (array_key_exists($key, $taxes)) {
-                    $metaKey = 'ol' . ($lineno + 1) . $key;
+                    $metaKey = 'it' . ($lineno + 1) . $key;
                     $orderMetadata[$metaKey] = $taxes[$key];
                 }
             }
             $orderTax += $totalTax;
             $orderLineItems[$lineno]['tax']['total_tax_amount'] = $totalTax;
         }
+        $orderMetadata['il' . ($lineno + 1)] = json_encode($orderLineItems[$lineno]);
     }
     $amountDetails = [];
     if ($orderDiscount > 0) {
         $amountDetails['discount_amount'] = $orderDiscount;
+        $orderMetadata['order_discount'] = $orderDiscount;
     }
     $amountDetails['line_items'] = $orderLineItems;
     $orderMetadata['totalTax'] = $orderTax;
@@ -1174,21 +1176,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $paymentIntent = cc_fetchOrder($source, $orderId, $useLogWrite);
         $metadata = $paymentIntent['metadata'];
         $custId = $paymentIntent['customer'];
-        $lineItems = $paymentIntent['amount_details']['lineItems'];
-        // convert line items to meta data
-        for ($i = 0; $i < count($lineItems); $i++) {
-            $li = $lineItems[$i];
-            $lineItem = [
-                'product_code' => $li['product_code'],
-                'product_name' => $li['product_name'],
-                'quantity' => $li['quantity'],
-                'taxes' => $li['tax'],
-                'unit_cost' => $li['unit_cost']
-            ];
-            $metadata['li' . $i + 1] = json_encode($lineItem);
-        }
-
-
         $sourceId = $ccParams['nonce'];
         if ($sourceId == 'CASH') {
             $paymentType = 'cash';
