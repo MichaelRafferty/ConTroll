@@ -299,6 +299,7 @@ SELECT IFNULL(p.address, n.address) AS address, IFNULL(p.addr_2, n.addr_2) AS ad
 FROM reg r
 LEFT OUTER JOIN perinfo p ON r.perid = p.id
 LEFT OUTER JOIN newperson n ON r.newperid = n.id
+WHERE r.id = ?;
 EOS;
                     break;
 
@@ -318,6 +319,7 @@ SELECT IFNULL(p.address, n.address) AS address, IFNULL(p.addr_2, n.addr_2) AS ad
 FROM transaction t
 LEFT OUTER JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN newperson n ON t.newperid = n.id
+WHERE t.id = ?;
 EOS;
                     break;
 
