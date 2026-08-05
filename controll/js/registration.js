@@ -79,7 +79,7 @@ function makePurchase(token, label) {
     else
         nonce = token;
 
-    pos.onlineCCEntered(nonce, label);
+    pos.onlineCCEntered(nonce);
 }
 
 function payActionComplete(paymentIntent, post, payParams) {

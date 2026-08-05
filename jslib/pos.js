@@ -36,7 +36,6 @@ class Pos {
     #managerDiscount = 0;
     #drow = null;
     #cc_html = '';
-    #purchase_label = 'card-button';
     #pay_currentOrderId = null;
     #preTaxAmt = null;
     #taxAmt = null;
@@ -51,7 +50,7 @@ class Pos {
     #totalAmountDue = 0;
     #payPostData = null;
     #paymentElementDiv = null;
-
+    #payOldText = 'Confirm Pay';
     // Data Items
     #unpaid_table = [];
     #result_perinfo = [];
@@ -2214,9 +2213,8 @@ class Pos {
         if (couponRow && eldiscount)
             couponRow.hidden = document.getElementById('pt-discount').checked;
 
-        this.#pay_button_pay.innerHTML = 'Confirm Pay';
+        this.#pay_button_pay.textContent = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
-
 
         if (ptype != 'check') {
             document.getElementById('pay-checkno').value = null;
@@ -2232,11 +2230,8 @@ class Pos {
         }
         if (ptype == 'online') {
             if (this.#ccOnlineStarted == false) {
-                let button = document.getElementById('card-button');
-                if (button) {
-                    button.innerHTML = 'Pay Credit Card';
-                    button.disabled = false;
-                }
+                this.#pay_button_pay.innerHTML = 'Pay Credit Card';
+                this.#pay_button_pay.disabled = false;
                 startCC(this.#totalAmountDue * currencyMultiplier);
                 this.#ccOnlineStarted = true;
             }
@@ -2245,21 +2240,12 @@ class Pos {
             this.#ccOnlineStarted = false;
         }
         if (ptype == 'terminal') {
-            let button = document.getElementById('card-button');
-            if (button) {
-                button.innerHTML = 'Send to Terminal';
-                button.disabled = false;
-            }
+            this.#pay_button_pay.innerHTML = 'Send to Terminal';
+            this.#pay_button_pay.disabled = false;
         }
     }
 
-    onlineCCEntered(token, label) {
-        if (label != '') {
-            this.#purchase_label = label;
-        }
-        if (token == 'test_ccnum') {  // this is the test form
-            token = document.getElementById(token).value;
-        }
+    onlineCCEntered(token) {
         this.#ccNonce = token;
         this.#pay_button_pay.disabled = false;
         this.pay('');
@@ -2608,6 +2594,15 @@ class Pos {
         clear_message('ccPayMessageDiv');
 
         this.#payPostData = postData;
+        let button = null;
+        if (!pt_online)
+            button = this.#pay_button_pay;
+        this.#payOldText = 'Confirm Pay';
+        let priorText = this.#payOldText;
+        if (button) {
+            this.#payOldText = button.textContent;
+            button.textContent = 'Processing...';
+        }
         $.ajax({
             method: "POST",
             url: "scripts/pos_processPayment.php",
@@ -2618,6 +2613,8 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
+                if (button)
+                    button.textContent = priorText;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
@@ -2643,6 +2640,7 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
+                _this.#pay_button_pay.textContent = _this.#payOldText;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
@@ -2663,8 +2661,14 @@ class Pos {
             if (data.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-            } else if (this.#payPoll == 1)
+                return;
+            }
+            if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
                 document.getElementById('pollRow').hidden = false;
+            } else {
+                this.#pay_button_pay.textContent = this.#payOldText;
+            }
             return;
         }
 
@@ -2674,10 +2678,12 @@ class Pos {
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-            } else if (this.#payPoll == 1)
+            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
+                this.#pay_button_pay.disabled = true;
                 document.getElementById('pollRow').hidden = false;
-            else {
-                this.#pay_button_pay.disabled = false;
+            } else {
+                this.#pay_button_pay.textContent = this.#payOldText;
                 this.#ccNonce = null;
             }
             if (data.restoreBtn)
@@ -2690,10 +2696,13 @@ class Pos {
             if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-            } else if (this.#payPoll == 1)
+            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
+                this.#pay_button_pay.disabled = true;
                 document.getElementById('pollRow').hidden = false;
-            else {
+            }  else {
                 this.#ccNonce = null;
+                this.#pay_button_pay.textContent = this.#payOldText;
             }
             if (data.restoreBtn)
                 ccRestoreBtnTxt()

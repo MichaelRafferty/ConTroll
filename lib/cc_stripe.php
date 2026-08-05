@@ -1080,6 +1080,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'processing_error',
             'incorrect_number',
             'card_velocity_exceeded',
+            'test_mode_live_card',
         ];
         try {
             if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
