@@ -107,7 +107,9 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
     }
     
     function resetCCPay(div) {
-          squareCard.detach('#card-container')
+          if (squareCard) {
+              squareCard.detach('#card-container')
+          }
           squareCard = null;
           squarePayments = null;
           return;
