@@ -2244,6 +2244,13 @@ class Pos {
             resetCCPay(this.#paymentElementDiv);
             this.#ccOnlineStarted = false;
         }
+        if (ptype == 'terminal') {
+            let button = document.getElementById('card-button');
+            if (button) {
+                button.innerHTML = 'Send to Terminal';
+                button.disabled = false;
+            }
+        }
     }
 
     onlineCCEntered(token, label) {
