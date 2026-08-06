@@ -158,6 +158,18 @@ EOS;
 </form>
 EOS;
         }
+
+    if ($type == 'portal') {
+        $html .= <<<EOS
+<div class="row">
+    <div class="col-12">
+        <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button">Pay</button>
+    </div>
+</div>
+
+
+EOS;
+    }
     return $html;
 };
 
