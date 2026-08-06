@@ -3,12 +3,6 @@
 	auth=reg_admin
 	csvfile="expiringRegs"
     index=regid
-[F000]
-    name=edays
-    sql="DATEDIFF(m.enddate, NOW())"
-    title="Days"
-    align=right
-    minWidth=80
 [F001]
     name=Expires
     sql=m.enddate
