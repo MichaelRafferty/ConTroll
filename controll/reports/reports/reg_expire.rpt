@@ -3,6 +3,12 @@
 	auth=reg_admin
 	csvfile="expiringRegs"
     index=regid
+[F000]
+    name=edays
+    sql="DATEDIFF(m.enddate, NOW())"
+    title="Days"
+    align=right
+    minWidth=80
 [F001]
     name=Expires
     sql=m.enddate
@@ -85,7 +91,11 @@
     section=con
     item=id
     datatype=i
+[P002]
+    type=prompt
+    item=days
+    datatype=i
 [where]
-	001="r.conid = ? AND r.status = 'unpaid' AND r.price > 0  AND r.paid = 0 AND m.enddate < l.enddate"
+	001="r.conid = ? AND r.status = 'unpaid' AND r.price > 0  AND IFNULL(r.paid,0) = 0 AND m.enddate < l.enddate AND DATEDIFF(m.enddate, NOW()) <= ?"
 [sort]
 	001="m.enddate, last_name, first_name, middle_name"
