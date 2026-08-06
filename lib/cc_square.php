@@ -65,7 +65,8 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
               }
           });
           paySubmitButton = document.getElementById("card-button");
-          paySubmitButton.removeAttribute("hidden");
+          if (paySubmitButton)
+              paySubmitButton.removeAttribute("hidden");
           await squareCard.attach('#card-container');
           if (amount > 0) {
               paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
