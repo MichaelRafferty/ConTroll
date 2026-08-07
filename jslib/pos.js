@@ -1736,7 +1736,9 @@ class Pos {
             });
             if (trantbl.length == 1) { // only 1 row, add it to the cart and go to pay tab
                 tid = trantbl[0];
-                for (row in this.#result_perinfo) {
+                for (let prow in this.#result_perinfo) {
+                    let result_membership = this.#result_perinfo[prow].memberships;
+                    for (let row in result_membership)
                     if (result_membership[row].tid == tid) {
                         index = result_membership[row].pindex;
                         pos.addToCart(index, 'result');
