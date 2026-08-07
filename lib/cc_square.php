@@ -117,7 +117,8 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
       }
       
       function ccRestoreBtnTxt() {
-          paySubmitButton.textContent = paySubmitButtonPayPriorText;
+          if (paySubmitButtonPayPriorText != '')
+              paySubmitButton.textContent = paySubmitButtonPayPriorText;
       }
 EOS;
     }

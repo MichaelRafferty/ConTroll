@@ -65,7 +65,8 @@ async function stripeCardFormSubmit(e = null){
 }
 
 function ccRestoreBtnTxt() {
-    paySubmitButton.textContent = paySubmitButtonPayPriorText;
+    if (paySubmitButtonPayPriorText != '')
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
 }
 
 function startCCPay(amount = 0, formName = 'payment-form') {

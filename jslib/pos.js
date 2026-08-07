@@ -2617,6 +2617,8 @@ class Pos {
                 _this.#pay_button_pay.disabled = false;
                 if (button)
                     button.textContent = priorText;
+                else
+                    ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
