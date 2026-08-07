@@ -187,9 +187,14 @@ function requestPermission(id, tag) {
             } else {
                 if (config.debug & 1)
                     console.log(data);
-                // now redraw that section of the screen to show permission requested
-                document.getElementById(tag).innerHTML = data.block;
-                show_message(data.message, 'success');
+                if (data.redraw == 0) {
+                    // now redraw that section of the screen to show permission requested
+                    document.getElementById(tag).innerHTML = data.block;
+                    show_message(data.message, 'success');
+                } else {
+                    // refresh the page with the deferred message
+                    window.location.href="/index.php?msg=" + encodeURI(data.message);
+                }
             }
         }
     });
