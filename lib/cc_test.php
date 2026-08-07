@@ -18,22 +18,70 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
     $html = '';
     if ($type != 'js') {
         $html .= <<<EOS
-<p>This is a test site, it doesn't really take credit cards</p>
-Scenario: <select name='ccnum' id="test_ccnum">
-	<option value=1>1 - Success</option>
-	<option value=2>2 - Failure</option>
-</select>
-<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="makePurchase('test_ccnum', 'card-button')" value="Purchase">
+<div class="row">
+    <div class="col-sm-12 warn">This is a test site, it doesn't really take credit cards</div>
+</div>
+<div class="row mt-2 mb-2">
+    <div class="col-sm-auto">Test Pay Result:</div>
+    <div class="col-sm-auto">
+         <select name='ccnum' id="test_ccnum">
+            <option value=1>1 - Success</option>
+            <option value=2>2 - Failure</option>
+        </select>
+    </div>
+</div>
+EOS;
+    }
+    if ($type == 'portal' || $type == 'vendor') {
+        $html .= <<<EOS
+<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="makePurchase('test_ccnum', 'card-button')" value="Pay">
 EOS;
     }
     $html .= <<<EOS
 <script type="text/javascript">
-    function startCC() {
-        console.log("startCC called from cc_test");
+var paySubmitButton = null;
+var paySubmitButtonPayPriorText = '';
+
+const currencyFmtCC = new Intl.NumberFormat(config.locale, {
+      style: 'currency',
+      currency: config.currency,
+        });
+
+
+    function startCC(amount) {
+        console.log("startCC called from cc_test, amount=" + amount);
+        paySubmitButton = document.getElementById('card-button');
+        if (paySubmitButton)
+            paySubmitButton.removeAttribute('hidden');
+        
+        paySubmitButtonPayPriorText = paySubmitButton.textContent;
+        if (amount > 0) {
+            paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+        } else {
+            paySubmitButton.textContent = "Purchase";
+        }
+        
+        function eventHandler(event) {
+              event.preventDefault();
+              
+              const submitBtn =  document.getElementById("card-button");
+              paySubmitButtonPayPriorText = submitBtn.textContent;
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Processing...';
+
+              makePurchase('test_ccnum', "card-button");
+          };
+          
+          paySubmitButton.addEventListener('click', eventHandler);
     }
     
     function resetCCPay(div) {
         return;
+    }
+    
+    function ccRestoreBtnTxt() {
+        if (paySubmitButtonPayPriorText != '')
+            paySubmitButton.textContent = paySubmitButtonPayPriorText;
     }
 </script>
 EOS;
@@ -175,7 +223,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         } else {
             if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.', 'restoreBtn' => 1,));
             exit();
         }
 
@@ -239,10 +287,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $itemsBuilt = true;
     }
 
+    $couponDiscount = false;
+    $managerDiscount = false;
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
-        $couponDiscount = false;
-        $managerDiscount = false;
         // create the coupon or discount amount, if it exists
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
@@ -492,6 +540,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
         }
 
+        // TODO: if an item is in plan, set the plan discount to apply only to those line items
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
@@ -594,7 +643,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (getConfValue('cc', 'demo', 0) != 1) { // allow demo override on test for cc
         if (getConfValue('cc', 'env', '') != 'sandbox' || getConfValue('reg','test') != 1) {
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method'));
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method', 'restoreBtn' => 1,));
             exit();
         }
     }
@@ -638,7 +687,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($pNonce[0] != '1') {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number', 'restoreBtn' => 1,));
                 exit();
             }
         } else {
@@ -647,7 +696,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             else if ($pNonce != '1' && $pNonce != 'admin') {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number', 'restoreBtn' => 1,));
                 exit();
             }
         }
