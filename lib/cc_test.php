@@ -23,7 +23,7 @@ Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
 	<option value=2>2 - Failure</option>
 </select>
-<button type="button" id="card-button" onclick="makePurchase('test_ccnum', 'card-button')" value="Purchase">
+<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="makePurchase('test_ccnum', 'card-button')" value="Purchase">
 EOS;
     }
     $html .= <<<EOS

@@ -240,11 +240,6 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     <?php echo draw_cc_html('--', 'vendor'); ?>
                                 </div>
                             </div>
-                             <div class='row'>
-                                 <div class='col-sm-12'>
-                                     <button class='btn btn-sm btn-primary mt-2' type='button' id='card-button'>Pay</button>
-                                 </div>
-                             </div>
                             </form>
 <?php
                                 outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);
@@ -291,7 +286,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             <div class='row mt-3 pb-2'>
                                 <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
-                                    <button class='btn btn-primary btn-sm' type='button' id='card-button' disabled
+                                    <button class='btn btn-primary btn-sm mt-2' type='button' id='card-button' disabled
                                             onclick="exhibitorInvoice.pay('nomodal');" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>

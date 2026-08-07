@@ -3263,7 +3263,7 @@ class Pos {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pos.pay('checkCCType');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="pos.pay('checkCCType');">Confirm Pay</button>
         </div>
     </div>
     <div class="row mt-3" id="overrideRow" hidden>

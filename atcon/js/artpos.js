@@ -2142,7 +2142,7 @@ function drawPay(readWrite = true) {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pay('checkCCType');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="pay('checkCCType');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>

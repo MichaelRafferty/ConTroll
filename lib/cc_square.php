@@ -159,7 +159,7 @@ EOS;
 EOS;
         }
 
-    if ($type == 'portal') {
+    if ($type == 'portal' || $type == 'vendor') {
         $html .= <<<EOS
 <div class="row">
     <div class="col-12">
