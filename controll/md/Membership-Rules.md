@@ -76,7 +76,7 @@ validating if a memList entry can be removed or deleted from the cart such that 
    1. If the memCategory entry has OnlyOne set to 'Y', and there already is an item in the cart with this memCategory, this memList entry is denied.
     (this is ignored for removing it from the cart)
    2. If the memCategory is 'managed' make sure the logged in person is the manager (portal) or that the manager is in the cart (POS)
-   3. If the memmcCategory is 'formerGoH' make sure this person is a former GoH
+   3. If the memCategory is 'formerGoH' make sure this person is a former GoH
 
 ### Explicit Rules;  The system then loops over all of the rules.
 First a rule is checked based on the criteria for matching in the memRules table. (a Boolean AND across all of the matching criteria)
