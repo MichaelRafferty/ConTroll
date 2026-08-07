@@ -735,7 +735,7 @@ EOS;
             }
         }
 
-        // exhibotor spaces
+        // exhibitor spaces
         if (array_key_exists('spaces', $results)) {
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
