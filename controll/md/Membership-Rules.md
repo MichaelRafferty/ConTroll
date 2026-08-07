@@ -9,32 +9,63 @@ The rules are stored in two tables:
 
 Membership rules are configured in the Registration Admin section of ConTroll and executed any time the system needs to display a set of
 memberships to purchase.  The configuration page includes a simulator that emulates the rules for a cart containing only a single person.
-It currently allos for a simulated date, but only applies to online entries.  It need to be extended to support atcon and
-mail in registration(all entries)
+It currently allows for a simulated date, but only applies to:
+* Registration (All Membership Items)
+  * Ignores dates
+  * Shows all entries independent Online and Atcon flags
+* Testing (Online = Y or Atcon = Y)
+  * For debugging only, not application actually uses this flag set
+  * Honors Simulated Current Date to limit to enteries active on that date
+* Online (Online = Y)
+  * Simulates Portal and Online Reg
+  * Honors Simulated Current Date to limit to enteries active on that date
+* Atcon (Atcon = Y)
+  * Simulates Atcon Cashier/Checkin
+  * Honors Simulated Current Date to limit to enteries active on that date
+  * This is the at convention registration desk
+  * It is often used ahead of the convention at fan tables and parties.
 
 ## How the rules system chooses memList entries to display:
 
-Each process that uses membership rules loads the memList table into an associative array with process enforcing the date range limitation
-and the atcon or online flags.  Once the array is built, the rest is up to the rules javascript. NOTE: at present rules are only available
+Each process that uses membership rules loads the memList table into an associative array using a query that enforcing the date range limitation if 
+applicable. If also filters on the acton or online flags based on the application.
+
+Once the array is built, the rest is up to the rules engine in javascript. NOTE: at present rules are only available
 in the browser as javascript, and not in the server as PHP.
 
 A membership is allowed to be shown unless it fails any rule. (every rule is considered as a Boolean AND, so any denial denies the entry)
 
-Membership Rules loops over all memList entries in the array:
-* All memberships are checked against the existing cart.
-* It first applies some implicit rules unless the skipImplicit flag is set.  (skipImplicit is set to false by default, and true when
+There are two uses of the rules:
+* Which memberships to show
+   * Membership Rules loops over all the memList entries in the array
+* Given the membership in a cart, can it be removed from the cart or does another membership depend on it
+   * Membership Rules loops over the contents of the cart
+
+The Rules engine checks all memberships owned or in the cart of the person buying the membership (collectively called the cart),
+or in some cases the entire account of all managed people plus the manager.
+
+The rules engine first applies some implicit rules unless the skipImplicit flag is set.  (skipImplicit is set to false by default, and true when
 validating if a memList entry can be removed or deleted from the cart such that the remaining items in the cart are still valid.
   * Example: if an attending requires a club, then removing club while there is an attending in the cart should not be allowed.)
 
+### Age Matching: (applied before the implicit rules and always applied)
+
+1. If memAge is 'all' allow this entry to continue the checks
+2. If memAge is defined and not 'all' perform the age check
+   1. If the memberhship is yearahead and the person is not an Adult, allow any age, let the person choose themselves.
+   2. If the memAge does not match persons age, fail this entry (skip it)
+
 ### Implicit Rules: (apply to the memList entry and the cart for the current person)
 
-1. If the memList memType is full and the memList memCategory is not upgrade this implicit rule is applied.
-    1. If the cart already has a full membership in it, this memList entry is denied. 
-    2. This check is enforced independently for the current convention year and for any year-ahead memberships.
+1. Only one 'full' membership is allowed, and no fulls are allowed if there is a one day membership
+   1. If the memList memType is full and the memList memCategory is not upgrade this implicit rule is applied.
+   2. If the cart already has a full membership in it, this memList entry is denied.
+   3. If the cart has any one day memberships this memList entry is denied.
+   4. This check is enforced independently for the current convention year and for any year-ahead memberships independenty.
 
-2. One day and full are mutually exclusive. 
+2. One day and full are mutually exclusive.
    1. If the memList memtype is full this implicit rule is applied
-      1. If the cart alread has a one day membership, this memList entry is denied.
+      1. If the cart alread has a oneday membership, this memList entry is denied.
    2. If the memList memtype is oneday this implicit rule is applied
       1. If the cart alread has a full membership, this memList entry is denied.
 
@@ -43,7 +74,9 @@ validating if a memList entry can be removed or deleted from the cart such that 
 
 4. Enforce the memCategory based implicit rules
    1. If the memCategory entry has OnlyOne set to 'Y', and there already is an item in the cart with this memCategory, this memList entry is denied.
+    (this is ignored for removing it from the cart)
    2. If the memCategory is 'managed' make sure the logged in person is the manager (portal) or that the manager is in the cart (POS)
+   3. If the memmcCategory is 'formerGoH' make sure this person is a former GoH
 
 ### Explicit Rules;  The system then loops over all of the rules.
 First a rule is checked based on the criteria for matching in the memRules table. (a Boolean AND across all of the matching criteria)
