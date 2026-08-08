@@ -1013,7 +1013,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
-    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
+    $cleanUpRegs = $source == 'onlinereg';
 
     // 1. create payment for order
     //  a. extract the confirm id from the nonce structure passed in
@@ -1080,6 +1080,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'processing_error',
             'incorrect_number',
             'card_velocity_exceeded',
+            'insufficient_funds',
             'test_mode_live_card',
         ];
         try {
