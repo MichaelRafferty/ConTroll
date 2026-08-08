@@ -1080,7 +1080,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'processing_error',
             'incorrect_number',
             'card_velocity_exceeded',
-            'insufficient_funds',
             'test_mode_live_card',
         ];
         try {
