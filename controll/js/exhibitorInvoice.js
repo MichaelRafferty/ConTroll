@@ -50,6 +50,9 @@ class ExhibitorInvoice {
         if (id != null) {
             this.#exhibitorPaymentModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#paymentForDiv = document.getElementById("paymentForDiv");
+            id.addEventListener('hidden.bs.modal', function (event) {
+                orderCancel(false);
+            });
         }
         this.#membershipCostdiv = document.getElementById("membershipCost");
         this.#elcheckno = document.getElementById('pay-check-div');
@@ -607,12 +610,19 @@ class ExhibitorInvoice {
     }
 
     // cancel the order and close the modal
-    orderCancel() {
+    orderCancel(doHide = true) {
         let hideElement = this.#exhibitorPaymentModal;
         clear_message();
         clear_message('inv_result_message');
         clear_message('ccPayMessageDiv');
 
+        if (this.#orderData == null) {
+            if (doHide)
+                hideElement.hide();
+            return;
+        }
+
+        let _this = this;
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
@@ -629,7 +639,9 @@ class ExhibitorInvoice {
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    hideElement.hide();
+                    _this.#orderData = null;
+                    if (doHide)
+                        hideElement.hide();
                     show_message(data['message'], 'success');
                     return;
                 } else {
@@ -783,6 +795,7 @@ class ExhibitorInvoice {
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         } else if (data.status == 'success') {
+            this.#orderData = null;
             this.#exhibitorPaymentModal.hide();
             show_message(data.message + "Payment for space recorded.");
             if (data.exhibitor_spacelist) {
@@ -868,9 +881,9 @@ function incrPayValidate() {
     exhibitorInvoice.incrPayValidate();
 }
 
-function orderCancel() {
+function orderCancel(doHide) {
     if (exhibitorInvoice == null)
         return;
 
-    exhibitorInvoice.orderCancel();
+    exhibitorInvoice.orderCancel(doHide);
 }
