@@ -33,6 +33,9 @@ class VendorInvoice {
         id = document.getElementById('vendor_payment');
         if (id != null) {
             this.#vendorPayment = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            id.addEventListener('hidden.bs.modal', function (event) {
+                orderCancel(false);
+            });
         }
         this.#membershipCostDiv = document.getElementById("membershipCost");
         this.#paymentForDiv = document.getElementById("paymentForDiv");
@@ -481,6 +484,7 @@ class VendorInvoice {
             if (data.restoreBtn)
                 ccRestoreBtnTxt();
         } else if (data['status'] == 'success') {
+            this.#orderData = null;
             this.#vendorPayment.hide();
             let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
                 " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
@@ -493,12 +497,19 @@ class VendorInvoice {
         }
     }
 
-    orderCancel() {
+    orderCancel(doHide = true) {
         let hideElement = this.#vendorPayment;
         clear_message('');
         clear_message('inv_result_message');
         clear_message('ccPayMessageDiv');
 
+        if (this.#orderData == null) {
+            if (doHide)
+                hideElement.hide();
+            return;
+        }
+
+        let _this = this;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
@@ -515,7 +526,9 @@ class VendorInvoice {
                     let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    hideElement.hide();
+                    _this.#orderData = null;
+                    if (doHide)
+                        hideElement.hide();
                     resetCCPay(null);
                     show_message(data['message'], 'success');
                     return;
@@ -593,11 +606,11 @@ function incrPayValidate() {
     vendorInvoice.incrPayValidate();
 }
 
-function orderCancel() {
+function orderCancel(doHide) {
     if (vendorInvoice == null)
         return;
 
-    vendorInvoice.orderCancel();
+    vendorInvoice.orderCancel(doHide);
 }
 
 function updatePaidStatusBlock() {
