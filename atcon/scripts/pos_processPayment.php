@@ -338,6 +338,7 @@ if ($amt > 0) {
                 $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
                 $taxes = $oRtn['taxes'];
             }
+            $paymentAmt = round($amt - ($couponDiscount + $discountAmt), 2);
             $ccParam = array (
                 'transid' => $master_tid,
                 'counts' => 0,
@@ -346,7 +347,7 @@ if ($amt > 0) {
                 'taxAmt' => $taxAmt,
                 'taxes' => $taxes,
                 'preTaxAmt' => $preTaxAmt,
-                'total' => $amt,
+                'total' => $paymentAmt,
                 'orderId' => $orderId,
                 'nonce' => $nonce,
                 'coupon' => $coupon,
