@@ -299,6 +299,11 @@ case 'exhAttReminder':
     } else {
         $regionName = 'Art Show';
     }
+    if (array_key_exists('portalType', $_POST)) {
+        $portalType = $_POST['portalType'];
+    } else {
+        $portalType = 'artist';
+    }
     if (array_key_exists('exhibitsRegionYearId', $_POST)) {
         $exhibitsRegionYearId = $_POST['exhibitsRegionYearId'];
     } else {
@@ -315,19 +320,21 @@ WITH soldCount AS (
 )
 SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
-      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email,
+      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
+JOIN exhibitsregions er ON er.id = r.exhibitsRegion
 WHERE r.conid = ?
 GROUP BY first_name, email
 EOQ;
     $typestr = 'iii';
     $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
-    $email_text = returnCustomText('exhAttReminder/text', null, false);
-    $email_html = returnCustomText('exhAttReminder/html');
+    $email_text = returnCustomText($portalType . 'AttReminder/text', null, false);
+    $email_html = returnCustomText($portalType . 'exhAttReminder/html');
     $macroSubstitution = true;
     $email_subject = "Thank you for being in the $regionName. $label starts soon!";
     break;

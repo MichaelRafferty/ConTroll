@@ -2223,7 +2223,14 @@ class exhibitorsAdm {
             action = 'test';
         }
 
-        let data = { action: action, email: email, type: 'exhAttReminder', regionName: this.#regionName, exhibitsRegionYearId: this.#exhibitsRegionYearId };
+        let data = {
+            action: action,
+            email: email,
+            type: 'exhAttReminder',
+            regionName: this.#regionName,
+            portalType: this.#portalType,
+            exhibitsRegionYearId: this.#exhibitsRegionYearId,
+        };
         emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
     }
 };
