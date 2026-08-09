@@ -35,10 +35,10 @@ INSERT INTO `controllTxtItems` VALUES
 <p>All attendees need a membership in the convention to attend. If you are not sure if you have a membership, or if you need to
 check the status of your, or the rest of your family''s, registration you can always visit the registration portal at #server#.</p>
 <p>This year we are at the same hotel, which is now the #hotelname#, at #hoteladdr#.</p>
-<p>Badges can be picked up or purchased at #conname# Registration, which is #pickupareatext#. #addlpickuptext#</p>
+<p>Badges can be picked up or purchased at #conname# Registration.</p>
 <p>See you at the convention!</p>\n'),
 ('exhibitor','emails','artistAttReminder','text',
-'Dear [[FirstName]],\n\n#label# is almost upon us!  You are receiving this email because your email address is associated with a valid registration as an artist in this year''s [[regionName]].\n\nFor further information about checking in for the [[regionName]], please see their page on our website at #website#.\n\nAll attendees need a membership in the convention to attend.  If you are not sure if you have a membership, or if you need to check the status of your, or the rest of your family''s, registration you can always visit the registration portal at #server#.\n\nThis year we are at the same hotel, which is now the #hotelname#, at #hoteladdr#.\n\nBadges can be picked up or purchased at #conname# Registration, which is #pickupareatext#. #addlpickuptext#\n\nSee you at the convention!\n');
+'Dear [[FirstName]],\n\n#label# is almost upon us!  You are receiving this email because your email address is associated with a valid registration as an artist in this year''s [[regionName]].\n\nFor further information about checking in for the [[regionName]], please see their page on our website at #website#.\n\nAll attendees need a membership in the convention to attend.  If you are not sure if you have a membership, or if you need to check the status of your, or the rest of your family''s, registration you can always visit the registration portal at #server#.\n\nThis year we are at the same hotel, which is now the #hotelname#, at #hoteladdr#.\n\nBadges can be picked up or purchased at #conname# Registration. #addlpickuptext#\n\nSee you at the convention!\n');
 
 INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
 SELECT a.appName, a.appPage, a.appSection, a.txtItem, CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,

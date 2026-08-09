@@ -327,14 +327,13 @@ JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
-JOIN exhibitsregions er ON er.id = r.exhibitsRegion
-WHERE r.conid = ?
-GROUP BY first_name, email
+JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+WHERE r.conid = ?;
 EOQ;
     $typestr = 'iii';
     $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
     $email_text = returnCustomText($portalType . 'AttReminder/text', null, false);
-    $email_html = returnCustomText($portalType . 'exhAttReminder/html');
+    $email_html = returnCustomText($portalType . 'AttReminder/html');
     $macroSubstitution = true;
     $email_subject = "Thank you for being in the $regionName. $label starts soon!";
     break;
