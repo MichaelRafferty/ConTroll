@@ -68,7 +68,7 @@ if ($email == null || $email == '') {
 
 $response['test'] = $test;
 $macroSubstitution = false;
-if ($email_type == 'invReminder')
+if ($email_type == 'invReminder' || $email_type == 'exhAttReminder')
     loadCustomText('exhibitor', 'emails', 'production');
 else
     loadCustomText('controll', 'emails', 'production');
