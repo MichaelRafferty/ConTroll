@@ -293,6 +293,45 @@ EOQ;
     $email_subject = "Thank you for being in the $regionName. Don't forget to fill out your item registration data";
     break;
 
+case 'exhAttReminder':
+    if (array_key_exists('regionName', $_POST)) {
+        $regionName = $_POST['regionName'];
+    } else {
+        $regionName = 'Art Show';
+    }
+    if (array_key_exists('exhibitsRegionYearId', $_POST)) {
+        $exhibitsRegionYearId = $_POST['exhibitsRegionYearId'];
+    } else {
+        $response['error'] = 'Invalid parameter for which region year is relevant, seek assistance.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $emailQ = <<<EOQ
+WITH soldCount AS (
+    SELECT ry.id, COUNT(s.item_purchased) AS numPurchased
+    FROM exhibitorSpaces s
+    JOIN exhibitorRegionYears ry ON ry.exhibitsRegionYearId = ? AND s.exhibitorRegionYear = ry.id
+    GROUP BY ry.id
+)
+SELECT 
+      CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email
+FROM exhibitors e
+JOIN exhibitorYears y ON e.id = y.exhibitorId
+JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
+JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
+JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
+WHERE r.conid = ?
+GROUP BY first_name, email
+EOQ;
+    $typestr = 'iii';
+    $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
+    $email_text = returnCustomText('exhAttReminder/text', null, false);
+    $email_html = returnCustomText('exhAttReminder/html');
+    $macroSubstitution = true;
+    $email_subject = "Thank you for being in the $regionName. $label starts soon!";
+    break;
+
 default:
     $response['error'] = "invalid email type";
     ajaxSuccess($response);
