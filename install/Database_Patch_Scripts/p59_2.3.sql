@@ -10,6 +10,11 @@
  * exhibitor attenance reminder custom text items
  */
 
+INSERT INTO `controllAppSections` VALUES
+    ('exhibitor','emails','artistAttReminder','In exhibitor, attendance reminder emails'),
+    ('exhibitor','emails','exhibitorAttReminder','In exhibitor, attendance reminder emails'),
+    ('exhibitor','emails','fanAttReminder','In exhibitor, attendance reminder emails'),
+    ('exhibitor','emails','vendorAttReminder','In exhibitor, attendance reminder emails');
 
 
 INSERT INTO `controllAppItems` VALUES
