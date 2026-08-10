@@ -131,6 +131,13 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
+                                    <div class='col-sm-2'>Rpt Grouping:</div>
+                                    <div class='col-sm-10'>
+                                        <input type='text' name='editMemListRptGrouping' id='editMemListRptGrouping' placeholder='Report Grouping'
+                                               onchange='rptGroupingChange(editListMasterRow);' size='64' maxlength='128'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
                                     <div class='col-sm-2'>Cart Description:</div>
                                     <div class='col-sm-10'>
                                         <textarea name='editMemListCartDesc' id='editMemListCartDesc' placeholder='Cart Description'
@@ -291,9 +298,16 @@ draw_fileManagerModals($authToken);
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
                         <div class="col-sm-1">At-Con ONL</div>
+
+                        <?php if ($config_vars['finance']) { ?>
                         <div class='col-sm-1'>O/Ride Label</div>
+                        <div class='col-sm-1'>Rpt Grp</div>
                         <div class="col-sm-1">GL Num</div>
-                        <div class="col-sm-2">GL Label</div>
+                        <div class="col-sm-1">GL Label</div>
+                        <?php } else { ?>
+                        <div class='col-sm-2'>O/Ride Label</div>
+                        <div class='col-sm-2'>Rpt Grp</div>
+                        <?php } ?>
                     </div>
 <?php
     for ($i = 0; $i < 10; $i++) {
@@ -331,9 +345,15 @@ draw_fileManagerModals($authToken);
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
+                        <?php if ($config_vars['finance']) { ?>
                         <div class='col-sm-1'>
                             <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
                                    onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='12' maxlength='128'
+                                   onchange="tsRptGroupingChange(<?php echo $i;?>)"
                             />
                         </div>
                         <div class='col-sm-1'>
@@ -341,11 +361,23 @@ draw_fileManagerModals($authToken);
                                    onchange="tsGlNumChange(<?php echo $i;?>)"
                             />
                         </div>
-                        <div class='col-sm-2'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='40' maxlength='64'
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='12' maxlength='64'
                                    onchange="tsGlLabelChange(<?php echo $i;?>)"
                             />
                         </div>
+                        <?php } else { ?>
+                            <div class='col-sm-2'>
+                                <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
+                                       onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                                />
+                            </div>
+                            <div class='col-sm-2'>
+                                <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='12' maxlength='128'
+                                       onchange="tsRptGroupingChange(<?php echo $i;?>)"
+                                />
+                            </div>
+                        <?php } ?>
                     </div>
 <?php
         if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>

@@ -602,6 +602,7 @@ class consetup {
         document.getElementById('editMemListNotes').value = notes;
         let cartDesc = rowData.cartDesc == null ? '' : rowData.cartDesc;
         document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
+        document.getElementById('editMemListRptGrouping').value = rowData.rptGrouping;
         document.getElementById('editMemListGLNum').value = rowData.glNum;
         document.getElementById('editMemListGLLabel').value = rowData.glLabel;
         document.getElementById('catBadgeLabel').innerHTML = rowData.catBadgeLabel;
@@ -1051,10 +1052,14 @@ class consetup {
             'atcon',
             'online',
             'notes',
-            'glNum',
-            'glLabel',
-            'sort_order',
+            'cartDesc',
+            'badgeLabel',
+            'rptGrouping'
         ];
+        if (config.finance == 1) {
+            fieldList.push('glNum', 'glLabel');
+        }
+        fieldList.push('sort_order');
         downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
@@ -1280,6 +1285,7 @@ class consetup {
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
@@ -1341,6 +1347,7 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.defaultNewRowValues(row, '');
                     this.#editData[index].shortname = shortname;
+                    this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                     this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
@@ -1368,6 +1375,7 @@ class consetup {
                 this.#editData[index].notes = notes;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
+                this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping   ').value;
                 this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
                 this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
                 index++;
@@ -1381,7 +1389,8 @@ class consetup {
         this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
-        this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+        this.#editData[index].glNum = document.getElementById('editMemListGLNumeditMemListGLNum').value;
+        this.#editData[index].rptGrouping = document.getElementById('editMemListGLNumeditMemListRptGrouping').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
         this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
@@ -1458,6 +1467,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
             document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
+            document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
             document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
             document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
             document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
@@ -1472,6 +1482,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = '';
             document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
             document.getElementById('EMLTS' + index + '_Online').value = 'N';
+            document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
             document.getElementById('EMLTS' + index + '_glNum').value = '';
             document.getElementById('EMLTS' + index + '_glLabel').value = '';
             if (bundle) {
@@ -1748,6 +1759,12 @@ function onlineChange(masterRow) {
     memListModalDirty = true;
 }
 
+// top section edited rptGrouping, set bottom screen
+function rptGroupingChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_rptGrouping').value = document.getElementById('editMemListRptGrouping').value;
+    memListModalDirty = true;
+}
+
 // top section edited glNum, set bottom screen
 function glNumChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_glNum').value = document.getElementById('editMemListGLNum').value;
@@ -1830,6 +1847,14 @@ function tsAtconChange(row) {
 function tsOnlineChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited rpt Grouping, set top screen
+function tsRptGroupingChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListRptGrouping').value = document.getElementById('EMLTS' + row + '_rptGrouping').value;
         memListModalDirty = true;
     }
 }
