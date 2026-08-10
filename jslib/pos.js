@@ -3166,9 +3166,9 @@ class Pos {
             }
             pay_html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">` +
-                this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + `</div>
+        <div class="col-sm-2 ms-0 me-2 p-0"><b>Amount Due:</b></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due"><b>` +
+                this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + `</b></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
