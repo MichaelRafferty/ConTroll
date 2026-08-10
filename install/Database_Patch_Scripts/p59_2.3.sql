@@ -3,8 +3,7 @@
  *
  */
 
-/* exhibitor attendance reminder email custom text */
-
+ALTER TABLE payments MODIFY COLUMN description varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
 
 /*
  * exhibitor attenance reminder custom text items
@@ -50,5 +49,12 @@ WHERE t.contents is NULL;
 
 UPDATE controllAppItems SET txtItemDescription = 'Custom Text for the html enter your item registration reminder email'
 WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder' and txtItem = 'html';
+
+/*
+ * Add new field to memList for rptGrouping and copy in the glLabel data to this field for initial starting values.
+ *      For switching the reporting over
+ */
+ALTER TABLE memList ADD COLUMN rptGrouping varchar(128) DEFAULT '' AFTER notes;
+UPDATE memList SET rptGrouping = glLabel;
 
 INSERT INTO patchLog(id, name) VALUES(59x, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
