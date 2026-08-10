@@ -368,6 +368,95 @@ class consetup {
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
         this.#memTablePagination = data['memlist'].length > 25;
+        let columns = [
+            {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+            {
+                title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                cellClick: function (e, cell) {
+                    deleterow(e, cell.getRow());
+                }
+            },
+            {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+            {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
+            {
+                title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
+                headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+            },
+            {field: "memlistkey", visible: false,},
+            {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
+            {
+                title: "Category", field: "memCategory",
+                editor: "list", editorParams: {values: data['memCats'],},
+                headerFilter: true, headerFilterParams: {values: data['memCats']}
+            },
+            {
+                title: "Type", field: "memType",
+                editor: "list",  editorParams: {values: data['memTypes'],},
+                headerFilter: true,
+                headerFilterParams: {values: data['memTypes'],}
+            },
+            {
+                title: "Age", field: "memAge",
+                editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
+            },
+            {
+                title: "Label", field: "shortname", width: 200,
+                tooltip: function (e, cell, onRendered) {
+                    return cell.getRow().getCell("label").getValue();
+                },
+                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                formatter: "textarea", headerFilter: true
+            },
+            {title: "Label", field: "label", visible: false},
+            {
+                title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+            },
+            {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
+                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
+            {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
+                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
+            {
+                title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
+                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+            },
+            {
+                title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
+                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+            },
+            {
+                title: "Notes", field: "notes", width: 200,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                headerFilter: true, formatter: "textarea",
+            },
+            {
+                title: "Cart Desc", field: "cartDesc", width: 300,
+                headerFilter: true, formatter: "html",
+            },
+            {
+                title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
+            },
+            {
+                title: "Report Grouping", field: "rptGrouping", width: 200, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, headerFilter: true,
+            }
+        ];
+
+        if (config.finance == 1) {
+            columns.push({
+                title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
+            },
+            {
+                title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                headerFilter: true, formatter: "textarea",
+            });
+        }
+        columns.push({ field: "to_delete", visible: false,},{ field: "catBadgeLabel", visible: false,});
+
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,
@@ -381,89 +470,7 @@ class consetup {
             initialSort:[
                 {column:"sort_order", dir:"asc"}, //sort by this first
             ],
-            columns: [
-                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-                {
-                    title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
-                {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
-                {
-                    title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
-                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-                },
-                {field: "memlistkey", visible: false,},
-                {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
-                {
-                    title: "Category", field: "memCategory",
-                    editor: "list", editorParams: {values: data['memCats'],},
-                    headerFilter: true, headerFilterParams: {values: data['memCats']}
-                },
-                {
-                    title: "Type", field: "memType",
-                    editor: "list",  editorParams: {values: data['memTypes'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['memTypes'],}
-                },
-                {
-                    title: "Age", field: "memAge",
-                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
-                    headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
-                },
-                {
-                    title: "Label", field: "shortname", width: 200,
-                    tooltip: function (e, cell, onRendered) {
-                        return cell.getRow().getCell("label").getValue();
-                    },
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    formatter: "textarea", headerFilter: true
-                },
-                {title: "Label", field: "label", visible: false},
-                {
-                    title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-                },
-                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
-                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
-                {
-                    title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-                },
-                {
-                    title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-                },
-                {
-                    title: "Notes", field: "notes", width: 200,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
-                    headerFilter: true, formatter: "textarea",
-                },
-                {
-                    title: "Cart Desc", field: "cartDesc", width: 300,
-                    headerFilter: true, formatter: "html",
-                },
-                {
-                    title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
-                },
-                {
-                    title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
-                },
-                {
-                    title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true, formatter: "textarea",
-                },
-                {field: "to_delete", visible: false,},
-                {field: "catBadgeLabel", visible: false,},
-            ],
-
+            columns: columns,
         });
 
         this.#memtable.on("dataChanged", function (data) {
