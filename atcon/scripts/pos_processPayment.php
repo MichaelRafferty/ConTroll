@@ -567,7 +567,7 @@ EOS;
     $status = $rtn['status'];
     $transId = $rtn['transId'];
     $category = $rtn['category'];
-    $description = substr($rtn['description'], 0, 64);
+    $description = substr($rtn['description'], 0, 120);
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
     if ($nonce == 'EXTERNAL')
