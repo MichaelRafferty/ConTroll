@@ -871,7 +871,7 @@ viewPriorLimit=
 ;; H+Note: GL Code are still defined, but all blank (or prior value) if this is disabled
 ;; D:l:0,1
 ;; B:O
-useGlCodes=1
+useGLCodes=1
 ;; N:artEditYear
 ;; R:H,finance
 ;; P:Min Edit Conid

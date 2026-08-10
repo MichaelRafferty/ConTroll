@@ -17,7 +17,7 @@ $finance = $authToken->checkAuth('finance');
 $regAdmin = $authToken->checkAuth('reg_admin');
 $admin = $authToken->checkAuth('admin');
 if ($finance) {
-    $useGL = getConfValue('controll', 'useGlCodes', 1);
+    $useGL = getConfValue('controll', 'useGLCodes', 1);
 } else {
     $useGL = 0;
 }
@@ -225,14 +225,12 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-auto'>Category Badge Label:</div>
                                     <div class='col-sm-auto' id='catBadgeLabel'></div>
                                     <div class='col-sm-auto'>Override Badge Label:</div>
-                                    <div class='col-sm-auto'>
+                                    <div class='col-sm-2'>
                                         <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
-                                               size='20'
-                                               maxlength='16'
-                                               onchange='badgeLabelChange(editListMasterRow);'
-                                        />
+                                               size='20' maxlength='16' onchange='badgeLabelChange(editListMasterRow);'/>
                                     </div>
                                 </div>
+                                <?php if ($config_vars['useGL'] == 1) { ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Gen. Ledger</div>
                                     <div class='col-sm-auto me-0'>Num:</div>
@@ -248,6 +246,10 @@ draw_fileManagerModals($authToken);
                                         />
                                     </div>
                                 </div>
+                                <?php } else { ?>
+                                    <input type='hidden' name='editMemListGLNum' id='editMemListGLNum'/>
+                                    <input type='hidden' name='editMemListGLLabel' id='editMemListGLLabel'/>
+                                <?php } ?>
                             </div>
                         </div>
                         <div class="col-sm-5">
