@@ -57,4 +57,16 @@ WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder
 ALTER TABLE memList ADD COLUMN rptGrouping varchar(128) DEFAULT '' AFTER notes;
 UPDATE memList SET rptGrouping = glLabel;
 
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memLabel AS SELECT
+         m.id, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge, a.shortname AS ageShortName, m.label AS shortname,
+         concat(m.label,' [',a.label,']') AS label, m.cartDesc, m.notes, m.rptGrouping, m.price, m.badgeLabel, m.startdate, m.enddate,
+         m.atcon, m.online, m.glNum, m.glLabel, c.taxable, c.badgeLabel AS catBadgeLabel
+     FROM memList m
+     JOIN ageList a ON m.memAge = a.ageType and m.conid = a.conid
+     JOIN memCategories c ON m.memCategory = c.memCategory;
+
+
 INSERT INTO patchLog(id, name) VALUES(59x, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
