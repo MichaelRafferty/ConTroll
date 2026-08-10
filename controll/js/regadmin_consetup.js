@@ -454,6 +454,8 @@ class consetup {
                 editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
                 headerFilter: true, formatter: "textarea",
             });
+        } else {
+            columns.push({ field: "glNum", visible: false,}, { field: "glLabel", visible: false,});
         }
         columns.push({ field: "to_delete", visible: false,},{ field: "catBadgeLabel", visible: false,});
 
@@ -1288,8 +1290,10 @@ class consetup {
                 this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
-                document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
-                document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                if (config.finance == 1) {
+                    document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
+                    document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                }
                 document.getElementById('EMLTS' + index + '_badgeLabel').value = this.#editData[index].badgeLabel;
                 document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
                 document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
@@ -1375,9 +1379,11 @@ class consetup {
                 this.#editData[index].notes = notes;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
-                this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping   ').value;
-                this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
-                this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping').value;
+                if (config.finance == 1) {
+                    this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
+                    this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                }
                 index++;
             }
         }
@@ -1389,8 +1395,8 @@ class consetup {
         this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
-        this.#editData[index].glNum = document.getElementById('editMemListGLNumeditMemListGLNum').value;
-        this.#editData[index].rptGrouping = document.getElementById('editMemListGLNumeditMemListRptGrouping').value;
+        this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+        this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
         this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
@@ -1468,8 +1474,10 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
             document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
-            document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
-            document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            if (config.finance == 1) {
+                document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
+                document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            }
             document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
         }
 
@@ -1483,8 +1491,10 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
             document.getElementById('EMLTS' + index + '_Online').value = 'N';
             document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
-            document.getElementById('EMLTS' + index + '_glNum').value = '';
-            document.getElementById('EMLTS' + index + '_glLabel').value = '';
+            if (config.finance == 1) {
+                document.getElementById('EMLTS' + index + '_glNum').value = '';
+                document.getElementById('EMLTS' + index + '_glLabel').value = '';
+            }
             if (bundle) {
                 document.getElementById('EMLTS' + index + '_contains').value = '';
             }

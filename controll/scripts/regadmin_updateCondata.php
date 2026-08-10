@@ -187,7 +187,7 @@ EOS;
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
                     $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['rptGrouping'],
-                    $glNum,glLabel,IFNULL($row['badgeLabel'],''),$row['id']);
+                    $glNum,$glLabel,IFNULL($row['badgeLabel'],''),$row['id']);
                 //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
             }

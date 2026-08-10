@@ -367,13 +367,13 @@ draw_fileManagerModals($authToken);
                             />
                         </div>
                         <?php } else { ?>
-                            <div class='col-sm-2'>
+                            <div class='col-sm-1'>
                                 <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
                                        onchange="tsBadgeLabelChange(<?php echo $i;?>)"
                                 />
                             </div>
-                            <div class='col-sm-2'>
-                                <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='12' maxlength='128'
+                            <div class='col-sm-3'>
+                                <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='48' maxlength='128'
                                        onchange="tsRptGroupingChange(<?php echo $i;?>)"
                                 />
                             </div>
