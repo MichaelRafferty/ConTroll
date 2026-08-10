@@ -444,7 +444,7 @@ class consetup {
             }
         ];
 
-        if (config.finance == 1) {
+        if (config.useGL == 1) {
             columns.push({
                 title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
                 editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
@@ -1058,7 +1058,7 @@ class consetup {
             'badgeLabel',
             'rptGrouping'
         ];
-        if (config.finance == 1) {
+        if (config.useGL == 1) {
             fieldList.push('glNum', 'glLabel');
         }
         fieldList.push('sort_order');
@@ -1290,7 +1290,7 @@ class consetup {
                 this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
-                if (config.finance == 1) {
+                if (config.useGL == 1) {
                     document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
                     document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
                 }
@@ -1380,7 +1380,7 @@ class consetup {
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
                 this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping').value;
-                if (config.finance == 1) {
+                if (config.useGL == 1) {
                     this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
                     this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
                 }
@@ -1474,7 +1474,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
             document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
-            if (config.finance == 1) {
+            if (config.useGL == 1) {
                 document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
                 document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
             }
@@ -1491,7 +1491,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
             document.getElementById('EMLTS' + index + '_Online').value = 'N';
             document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
-            if (config.finance == 1) {
+            if (config.useGL == 1) {
                 document.getElementById('EMLTS' + index + '_glNum').value = '';
                 document.getElementById('EMLTS' + index + '_glLabel').value = '';
             }

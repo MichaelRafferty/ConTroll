@@ -861,6 +861,17 @@ clubname='Club Name'
 ;; D:i6
 ;; B:O
 viewPriorLimit=
+;; N:useGLCodes
+;; R:H,reg_admin
+;; H:Enable GL Code entry/Usage in the system. Default is 1 (enabled).
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 1 to enable
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;glNum and GLLabel are used in reporting financial transactions.  If your convention does not use GL Codes,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;you can disable them appearing in the configuration screens.
+;; H+Note: GL Code are still defined, but all blank (or prior value) if this is disabled
+;; D:l:0,1
+;; B:O
+useGlCodes=1
 ;; N:artEditYear
 ;; R:H,finance
 ;; P:Min Edit Conid

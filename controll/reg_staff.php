@@ -16,6 +16,11 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
 $finance = $authToken->checkAuth('finance');
 $regAdmin = $authToken->checkAuth('reg_admin');
 $admin = $authToken->checkAuth('admin');
+if ($finance) {
+    $useGL = getConfValue('controll', 'useGlCodes', 1);
+} else {
+    $useGL = 0;
+}
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -69,6 +74,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $authToken->getPerid();
 $config_vars['finance'] = $finance ? 1 : 0;
+$config_vars['useGL'] = $useGL;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 $config_vars['locale'] = $locale;
@@ -299,7 +305,7 @@ draw_fileManagerModals($authToken);
                         <div class="col-sm-2">End Date</div>
                         <div class="col-sm-1">At-Con ONL</div>
 
-                        <?php if ($config_vars['finance']) { ?>
+                        <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>O/Ride Label</div>
                         <div class='col-sm-1'>Rpt Grp</div>
                         <div class="col-sm-1">GL Num</div>
@@ -345,7 +351,7 @@ draw_fileManagerModals($authToken);
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
-                        <?php if ($config_vars['finance']) { ?>
+                        <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>
                             <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
                                    onchange="tsBadgeLabelChange(<?php echo $i;?>)"
