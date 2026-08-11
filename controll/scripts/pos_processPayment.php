@@ -269,14 +269,21 @@ if ($amt > 0) {
         else
             $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
+        if ($taxAmt > 0) {
+            $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
+            $taxes = $oRtn['taxes'];
+        }
+        $paymentAmt = round($amt - ($couponDiscount + $discountAmt), 2);
+
         $ccParam = array (
             'transid' => $master_tid,
             'counts' => 0,
             'price' => null,
             'badges' => null,
             'taxAmt' => $taxAmt,
+            'taxes' => $taxes,
             'preTaxAmt' => $preTaxAmt,
-            'total' => $amt,
+            'total' => $paymentAmt,
             'orderId' => $orderId,
             'nonce' => $nonce,
             'coupon' => $coupon,
