@@ -117,7 +117,7 @@ function findDuplicates(data) {
         let extKey = exhNum + '_' + key;
         if(extendedKey[extKey]) {
             extendedKey[extKey]++;
-            errorString += exhNum + " has " + extendedKey[extKey] + " items with item # " + key;
+            errorString += "Artist " + exhNum + " has " + extendedKey[extKey] + " art items (rows) with item # " + key + "\nSeek Assistance\n";
 
         } else {
             extendedKey[extKey] = 1;
