@@ -6,7 +6,7 @@
 ALTER TABLE payments MODIFY COLUMN description varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
 
 /*
- * exhibitor attenance reminder custom text items
+ * exhibitor attendance reminder custom text items
  */
 
 INSERT INTO `controllAppSections` VALUES
