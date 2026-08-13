@@ -102,14 +102,13 @@ WITH compRegs AS (
     LEFT OUTER JOIN perinfo p ON r.perid = p.id
     JOIN memList m ON r.memId = m.id
     JOIN ageList a ON a.conid = r.conid AND a.ageType = m.memAge
-    WHERE (r.conid = ? AND m.memCategory != 'yearahead' OR (r.conid = ? AND m.memCategory = 'yearahead')) 
-        AND IFNULL(p.deceased, 'N') != 'Y'
+    WHERE r.conid = ? AND IFNULL(p.deceased, 'N') != 'Y'
 )
 SELECT * FROM compRegs WHERE month BETWEEN ? AND ?
 ORDER BY complete_date
 EOS;
 
-    $rR = dbSafeQuery($rQ, 'iiss', array($conid, $conid + 1, $whereStartStr, $endStr));
+    $rR = dbSafeQuery($rQ, 'iss', array($conid, $whereStartStr, $endStr));
 
     // get the months (horizontal columns for the table while looping the actual data into the reg array
     $regs = [];
