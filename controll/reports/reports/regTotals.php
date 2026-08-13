@@ -145,8 +145,6 @@ EOS;
 
     // build the tabulator specs, for the columns across a row, col1 = the title of the row
     $columns = [];
-
-
     $labelRowCols = ['rowTitle' => 'label'];
     // if doing it by month, loop over the months adding each column
     if ($groupBy == 'm') {
