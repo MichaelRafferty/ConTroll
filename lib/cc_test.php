@@ -670,7 +670,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
-    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
+    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor';
 
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {

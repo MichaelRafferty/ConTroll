@@ -66,6 +66,12 @@ if (array_key_exists('total', $_POST)) {
     $totalDue = $webtotal;
 }
 
+if (array_key_exists('cancelOrder', $_POST)) {
+    $cancelOrderId = $_POST['cancelOrder'];
+} else {
+    $cancelOrderId = null;
+}
+
 if (count($badges) == 0) {
     ajaxSuccess(array('status' => 'error', 'error' => 'Error: No Badges Entered'));
     exit();
@@ -76,7 +82,6 @@ if (!filter_var($purchaseform['cc_email'], FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
-$ccauth = get_conf('cc');
 load_cc_procs();
 load_email_procs();
 
@@ -320,6 +325,9 @@ if ($total > 0) {
     labeled_logWrite('o/makePurchase-pre-buldOrder',
         array ('con' => $condata['name'], 'trans' => $transId, 'results' => $results, 'request' => $badges));
 
+    if ($cancelOrderId) // cancel the old order if it exists
+        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
+
     $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
@@ -360,6 +368,7 @@ if ($total > 0) {
         'taxes' => $taxes,
         'badges' => $badgeResults,
         'buyer' => $buyer,
+        'totalDiscount' => $totalDiscount,
     );
     $response['results'] = $results;
 

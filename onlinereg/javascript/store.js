@@ -46,6 +46,10 @@ var currentElementsId = null;
 var currentOrder = null;
 var currentCurrency = 'usd';
 var currencyMultiplier = 100;
+var currentOrderId = null;
+var ccInProcess = false;
+var currentToken = null
+var currentNonce = null;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
@@ -219,14 +223,17 @@ function bo_ajax_success(data, textStatus, jqXHR) {
         $('#' + $purchase_label).removeAttr("disabled");
         return;
     }
-        // ok the order now succeeded, process to process the payment
+    // ok the order now succeeded, process to process the payment
     if (data.hasOwnProperty('nextStep')) {
         let nextStep = data.nextStep;
         if (nextStep == 'receipt') {
             window.location.href = "receipt.php?trans=" + data.trans;
+            currentOrderId = null;
             return;
         }
         if (nextStep == 'payment') {
+            currentOrderId = data.results.orderId;
+            ccInProcess = false;
             return payOrder(data);
         }
         alert("Purchase failed: Unknown next step: "  + nextStep);
@@ -235,6 +242,11 @@ function bo_ajax_success(data, textStatus, jqXHR) {
 }
 
 function mp_ajax_success(data, textStatus, jqXHR) {
+    if (data.status == 'next') {
+        //console.log('need actions');
+        let status = stripe_nextActions(data);
+        return;
+    }
     if (data.status == 'error') {
         if (data.error)
             alert("Purchase Failed: " + data.error);
@@ -251,6 +263,23 @@ function mp_ajax_success(data, textStatus, jqXHR) {
 }
     
 function makePurchase(token, label) {
+    // if in the middle of a payment, like cc failed, retry, this needs to go to payorder to continue the order
+    if (currentOrderId && ccInProcess == true) {
+        return payOrder();
+    }
+
+    // if square or test, nonce is a string, if strip, its an object
+    let nonce = null;
+    if (label == 'stripe-confirm')
+        nonce = JSON.stringify(token);
+    else if (token == 'test_ccnum')
+        nonce = document.getElementById(token).value;
+    else
+        nonce = token;
+
+    currentToken = token;
+    currentNonce = nonce;
+
     if (label != '') {
         $purchase_label = label;
     }
@@ -285,7 +314,7 @@ function makePurchase(token, label) {
         couponSerial: coupon.getCouponSerial(),
         couponSubtotal: couponSubtotal,
         couponDiscount: couponDiscount,
-        total: totalDue,
+        cancelOrderId: currentOrderId,
         action: 'buildOrder',
     }
     if (config.debug > 0) {
@@ -304,7 +333,17 @@ function makePurchase(token, label) {
 function payOrder(data) {
     console.log('pay order called');
     console.log(data);
-    $('#' + $purchase_label).removeAttr("disabled");
+    console.log('ccInProcess: ' + ccInProcess);
+    console.log('currentOrderId: ' + currentOrderId);
+    data.action = 'payOrder';
+    data.nonce = currentNonce;
+    $.ajax({
+        url: "scripts/makePurchase.php",
+        data: data,
+        method: 'POST',
+        success: mp_ajax_success,
+        error: ol_ajax_error,
+    });
 }
 
 // pay action receipt - a callback from stripe to complete an authorization required transaction
@@ -469,7 +508,8 @@ function repriceCart() {
     chargeCart.hidden = primaryMemberships == 0 || badges.total == 0;
     totalDue = total;
     if (totalDue > 0)
-        startCCPay(totalDue * currencyMultiplier)
+        startCCPay(totalDue * currencyMultiplier);
+    ccInProcess = false;
 }
 
 function togglePopup() {

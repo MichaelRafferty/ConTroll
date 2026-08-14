@@ -10,64 +10,84 @@ require_once("../../lib/coupon.php");
 require_once("../../lib/email__load_methods.php");
 require_once "../lib/email.php";
 
-if (!isset($_POST) || !isset($_POST['badges'])) {
-    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Info Passed")); exit();
+if (!isset($_POST) || !isset($_POST['action'])) {
+    ajaxSuccess(array('status'=>'error', 'error'=>"Error: No Info Passed"));
+    exit();
 }
 
+$action = $_POST['action'];
+if ($action != 'payOrder' && $action != 'paymentComplete') {
+    ajaxSuccess(array('status'=>'error', 'error'=>"Error: Invalid Action"));
+    exit();
+}
 
-/*
-    $results = array(
-        'source' => $source,
-        'nonce' => $nonce,
-        'totalAmt' => $withTax,
-        'orderId' => $rtn['orderId'],
-        'custid' => $custId,
-        'locationId' => $ccLocation,
-        'referenceId' => $referenceId,
-        'transid' => $transId,
-        'preTaxAmt' => $preTaxAmt,
-        'taxAmt' => $taxAmt,
-        'total' => $withTax,
-        'taxList' => $taxList,
-        'taxes' => $taxes,
-        'badges' => $badgeResults,
-        );
-*/
+$orderResults = $_POST['results'];
+$rtn = $_POST['orderRtn'];
+load_cc_procs();
+load_email_procs();
+
+$condata = get_con();
+$log = get_conf('log');
+$cc = get_conf('cc');
+
+// Build the required parameters for cc_payOrder
+
+$buyer = $orderResults['buyer'];
+$transId = $orderResults['transid'];
+if (array_key_exists('taxes', $orderResults))
+    $taxes = $orderResults['taxes'];
+else
+    $taxes = array();
+$withTax = $orderResults['totalAmt'];
+$totalDiscount = $orderResults['totalDiscount'];
+if (array_key_exists('coupon', $orderResults))
+    $coupon = $orderResults['coupon'];
+else
+    $coupon = null;
+$results = array(
+    'source' => $orderResults['source'],
+    'nonce' => $orderResults['nonce'],
+    'totalAmt' => $orderResults['totalAmt'],
+    'orderId' => $orderResults['orderId'],
+    'custid' => $orderResults['custid'],
+    'locationId' => $orderResults['locationId'],
+    'referenceId' => $orderResults['referenceId'],
+    'transid' => $transId,
+    'preTaxAmt' => $orderResults['preTaxAmt'],
+    'taxAmt' => $orderResults['taxAmt'],
+    'total' => $orderResults['totalAmt'],
+    'taxList' => $orderResults['taxList'],
+    'taxes' => $taxes,
+    'badges' => $orderResults['badges'],
+    );
 
 // call the credit card processor to make the payment
-    if ($action != 'paymentComplete')
-        $ccrtn = cc_payOrder($results, $buyer, true);
-    else
-        $ccrtn = cc_payComplete($_POST['payParams'], $_POST['paymentIntent'], true);
+if ($action != 'paymentComplete')
+    $ccrtn = cc_payOrder($results, $buyer, true);
+else
+    $ccrtn = cc_payComplete($_POST['payParams'], $_POST['paymentIntent'], true);
 
-    if ($ccrtn === null) {
-        // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        labeled_logWrite('o/makePurchase-cc_payOrder returned null',
-            array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
-        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
-        exit();
-    }
-
-    labeled_logWrite('o/makePurchase-pay succeeded', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
-    $num_fields = sizeof($ccrtn['txnfields']);
-    $val = array();
-    for ($i = 0; $i < $num_fields; $i++) {
-        $val[$i] = '?';
-    }
-    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-    if ($taxFields != '')
-        $taxFields = ", $taxFields";
-    if ($taxSql != '')
-        $taxSql = ", $taxSql";
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . $taxFields . ")\n" .
-        'VALUES(current_time(),' . implode(',', $val) . $taxSql . ');';
-    $txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
-    $txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));
-    $approved_amt = $ccrtn['amount'];
-} else {
-    $approved_amt = 0;
-    $ccrtn = array('url' => '');
+if ($ccrtn === null) {
+    // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+    labeled_logWrite('o/makePurchase-cc_payOrder returned null',
+        array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
+    ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
+    exit();
 }
+
+labeled_logWrite('o/makePurchase-pay succeeded', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+$num_fields = sizeof($ccrtn['txnfields']);
+$val = array_fill(0, $num_fields, '?');
+[$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+if ($taxFields != '')
+    $taxFields = ", $taxFields";
+if ($taxSql != '')
+    $taxSql = ", $taxSql";
+$txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . $taxFields . ")\n" .
+    'VALUES(current_time(),' . implode(',', $val) . $taxSql . ');';
+$txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
+$txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));
+$approved_amt = $ccrtn['amount'];
 
 if ($totalDiscount > 0) {
     // Insert the payment record for the coupon
@@ -104,15 +124,11 @@ if ($coupon !== null && $coupon['keyId'] !== null) {
     dbSafeCmd($cupQ, 'ii', array($transId, $coupon['keyId']));
 }
 
-if ($total > 0) {
-    $body = getEmailBody($transId, $totalDiscount);
-}
-else {
-    $body = getNoChargeEmailBody($results, $totalDiscount);
-}
+$body = getEmailBody($transId, $totalDiscount);
+
 
 $return_arr = send_email(getConfValue('con', 'regadminemail'),
-    trim($purchaseform['cc_email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
+    trim($buyer['email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
     /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
@@ -126,7 +142,6 @@ if (array_key_exists('email_error', $return_arr)) {
 } else {
     $error_msg = null;
 }
-
 $response = array(
   "status"=>$return_arr['status'],
   "url"=>$ccrtn['url'],
