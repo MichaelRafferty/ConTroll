@@ -444,11 +444,11 @@ foreach ($cart_perinfo as $perinfo) {
                     $cart_row['couponDiscount'] += $amt_disc;
                     if ($amt_disc == $unpaid) {
                         // row is now completely paid
-                        $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                        $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                         $cart_row['status'] = 'paid';
                         $cart_row['tid2'] = $master_tid;
                     } else {
-                        $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                        $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                     }
                     $allocateDiscount -= $amt_disc;
                 }
@@ -462,11 +462,11 @@ foreach ($cart_perinfo as $perinfo) {
             $cart_row['paid'] += $amt_paid;
             if ($amt_paid == $unpaid) {
                 // row is now completely paid
-                $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid'], $user_id);
+                $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                 $cart_row['status'] = 'paid';
                 $cart_row['tid2'] = $master_tid;
             } else {
-                $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid'], );
+                $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
             }
             $allocateAmt -= $amt_paid;
         }
