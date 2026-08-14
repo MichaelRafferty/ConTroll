@@ -118,7 +118,7 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-$offset = $amt - ($preTaxAmt + $taxAmt ($couponDiscount + $discountAmt));
+$offset = $amt - ($preTaxAmt + $taxAmt - ($couponDiscount + $discountAmt));
 if (abs($offset) > 0.008) {
     error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     ajaxSucess(array('error' => "Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
