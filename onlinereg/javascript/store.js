@@ -50,6 +50,8 @@ var currentOrderId = null;
 var ccInProcess = false;
 var currentToken = null
 var currentNonce = null;
+var currentOrderBadges = null;
+var currentTransId = null;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
@@ -227,12 +229,18 @@ function bo_ajax_success(data, textStatus, jqXHR) {
     if (data.hasOwnProperty('nextStep')) {
         let nextStep = data.nextStep;
         if (nextStep == 'receipt') {
-            window.location.href = "receipt.php?trans=" + data.trans;
+            ccInProcess = false;
+            currentOrder = null;
+            currentNonce = null;
+            currentToken = null;
             currentOrderId = null;
+            window.location.href = "receipt.php?trans=" + data.trans;
             return;
         }
         if (nextStep == 'payment') {
             currentOrderId = data.results.orderId;
+            currentOrderBadges = data.results.badges;
+            currentTransId = data.results.transid;
             ccInProcess = false;
             return payOrder(data);
         }
@@ -331,15 +339,18 @@ function makePurchase(token, label) {
 }
 
 function payOrder(data) {
-    console.log('pay order called');
-    console.log(data);
-    console.log('ccInProcess: ' + ccInProcess);
-    console.log('currentOrderId: ' + currentOrderId);
-    data.action = 'payOrder';
-    data.nonce = currentNonce;
+    //console.log('pay order called');
+    //console.log(data);
+    //console.log('ccInProcess: ' + ccInProcess);
+    //console.log('currentOrderId: ' + currentOrderId);
+    args = {
+        data: JSON.stringify(data),
+        action: 'payOrder',
+        nonce: currentNonce,
+    };
     $.ajax({
         url: "scripts/makePurchase.php",
-        data: data,
+        data: args,
         method: 'POST',
         success: mp_ajax_success,
         error: ol_ajax_error,
@@ -538,6 +549,32 @@ function updateInterestSelect(id) {
     }
 }
 
+// on exit, check to see if an order is in progress and delete those items if so
+function onExit(event) {
+    if (ccInProcess == false || currentOrderId == null)
+        return null;
+
+    //console.log("cancelling prior order and removing items inserted by this run of onlinereg")
+    let data = {
+        action: 'cancelitems',
+        orderId: currentOrderId,
+        transid: currentTransId,
+        badges: JSON.stringify(currentOrderBadges),
+    };
+    $.ajax({
+        url: "scripts/buildOrder.php",
+        data: data,
+        method: 'POST',
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                alert(data.error);
+            }
+        },
+        error: ol_ajax_error,
+    });
+    return null;
+}
+
 window.onload = function () {
 // formatting items
     currentCurrency = config.ccCurrency;
@@ -597,4 +634,8 @@ window.onload = function () {
             }
         }
     }
+
+    window.addEventListener('beforeunload', event => {
+        onExit(event);
+    });
 }

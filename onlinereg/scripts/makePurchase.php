@@ -21,8 +21,19 @@ if ($action != 'payOrder' && $action != 'paymentComplete') {
     exit();
 }
 
-$orderResults = $_POST['results'];
-$rtn = $_POST['orderRtn'];
+// input parameters
+try {
+    $data = json_decode($_POST['data'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
+$orderResults = $data['results'];
+$rtn = $data['orderRtn'];
 load_cc_procs();
 load_email_procs();
 

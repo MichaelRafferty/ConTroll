@@ -29,6 +29,30 @@ try {
 }
 
 $action = $_POST['action'];
+load_cc_procs();
+$condata = get_con();
+$log = get_conf('log');
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
+$conid = $condata['id'];
+logInit($log['reg']);
+$source = 'onlinereg';
+if ($action == 'cancelitems') {
+    // clean up a previous built order on exit
+    $orderId = $_POST['orderId'];
+    $transid = $_POST['transid'];
+    error_log("Cancel Items called order id $orderId via tid $transid");
+    cc_cancelOrder($source, $orderId, true, $ccLocation);
+    cleanRegs($badgestruct, $transid);
+    ajaxSuccess(array('status' => 'cleanup Complete'));
+    exit();
+}
 
 if (array_key_exists('couponCode', $_POST)) {
     $couponCode = $_POST['couponCode'];
@@ -82,22 +106,7 @@ if (!filter_var($purchaseform['cc_email'], FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
-load_cc_procs();
 load_email_procs();
-
-$condata = get_con();
-$log = get_conf('log');
-$cc = get_conf('cc');
-if (array_key_exists('location_portal', $cc)) {
-    $ccLocation = $cc['location_portal'];
-} else if (array_key_exists('location', $cc)) {
-    $ccLocation = $cc['location'];
-} else {
-    $ccLocation = 'Unknown';
-}
-$conid = $condata['id'];
-logInit($log['reg']);
-$source = 'onlinereg';
 //labeled_error_log("makePurchase-badgestruct", $badgestruct);
 //labeled_error_log("makePurchase-couponCode", $couponCode);
 //labeled_error_log("makePurchase-nonce", $nonce);
