@@ -171,6 +171,7 @@ $payor_email = $new_payment['payor']['email'];
 $payor_phone = $new_payment['payor']['phone'];
 $payor_perid = $new_payment['payor']['perid'];
 $payor_country = $new_payment['payor']['country'];
+$taxes = array();
 
 $pay_tid_amt = -1;
 if (array_key_exists('pay_tid_amt', $_POST) && $_POST['pay_tid_amt'] != '') {
@@ -272,6 +273,8 @@ if ($amt > 0) {
         if ($taxAmt > 0) {
             $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
             $taxes = $oRtn['taxes'];
+        } else {
+            $taxes = array();
         }
         $paymentAmt = round($amt, 2);
 

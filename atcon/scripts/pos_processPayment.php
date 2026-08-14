@@ -338,6 +338,7 @@ if ($amt > 0) {
                 $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
                 $taxes = $oRtn['taxes'];
             }
+
             $paymentAmt = round($amt, 2);
             $ccParam = array (
                 'transid' => $master_tid,
