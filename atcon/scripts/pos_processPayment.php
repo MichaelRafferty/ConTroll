@@ -118,7 +118,7 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-$offset = $amt - ($preTaxAmt + $taxAmt);
+$offset = $amt - ($preTaxAmt + $taxAmt ($couponDiscount + $discountAmt));
 if (abs($offset) > 0.008) {
     error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     ajaxSucess(array('error' => "Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
@@ -338,7 +338,7 @@ if ($amt > 0) {
                 $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
                 $taxes = $oRtn['taxes'];
             }
-            $paymentAmt = round($amt - ($couponDiscount + $discountAmt), 2);
+            $paymentAmt = round($amt, 2);
             $ccParam = array (
                 'transid' => $master_tid,
                 'counts' => 0,

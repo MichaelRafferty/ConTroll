@@ -2351,7 +2351,7 @@ class Pos {
         let ptype = null;
         let crow = null;
         let cprow = null;
-        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt);
+        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
 
