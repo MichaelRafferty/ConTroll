@@ -147,7 +147,7 @@ EOS;
       });
 EOS;
     }
-    if ($type == 'all' || $type == 'js' || $type == 'portal' || $type == 'vendor') {
+    if ($type == 'all' || $type == 'js' || $type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
         $html .= "</script>\n";
     }
 
@@ -160,7 +160,7 @@ EOS;
 EOS;
         }
 
-    if ($type == 'portal' || $type == 'vendor') {
+    if ($type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
         $html .= <<<EOS
 <div class="row">
     <div class="col-12">

@@ -198,9 +198,40 @@ function updateAddr() {
     $('#cc_email').val(optData.email1);
 }
 
-function mp_ajax_error(JqXHR, textStatus, errorThrown) {
+function ol_ajax_error(JqXHR, textStatus, errorThrown) {
     alert("ERROR! " + textStatus + ' ' + errorThrown);
     $('#' + $purchase_label).removeAttr("disabled");
+}
+
+function bo_ajax_success(data, textStatus, jqXHR) {
+    if (data.status == 'error') {
+        if (data.error)
+            alert("Purchase Failed: " + data.error);
+        else if (data.data)
+            alert("Purchase Failed: " + data.data);
+        else
+            alert("Purchase Failed: Unknown error");
+        $('#' + $purchase_label).removeAttr("disabled");
+        return;
+    }
+    if (data.status == 'echo') {
+        console.log(data);
+        $('#' + $purchase_label).removeAttr("disabled");
+        return;
+    }
+        // ok the order now succeeded, process to process the payment
+    if (data.hasOwnProperty('nextStep')) {
+        let nextStep = data.nextStep;
+        if (nextStep == 'receipt') {
+            window.location.href = "receipt.php?trans=" + data.trans;
+            return;
+        }
+        if (nextStep == 'payment') {
+            return payOrder(data);
+        }
+        alert("Purchase failed: Unknown next step: "  + nextStep);
+        $('#' + $purchase_label).removeAttr("disabled");
+    }
 }
 
 function mp_ajax_success(data, textStatus, jqXHR) {
@@ -255,18 +286,25 @@ function makePurchase(token, label) {
         couponSubtotal: couponSubtotal,
         couponDiscount: couponDiscount,
         total: totalDue,
+        action: 'buildOrder',
     }
     if (config.debug > 0) {
         console.log("MP Data");
         console.log(data);
     }
     $.ajax({
-        url: "scripts/makePurchase.php",
+        url: "scripts/buildOrder.php",
         data: data,
         method: 'POST',
-        success: mp_ajax_success,
-        error: mp_ajax_error,
+        success: bo_ajax_success,
+        error: ol_ajax_error,
     });
+}
+
+function payOrder(data) {
+    console.log('pay order called');
+    console.log(data);
+    $('#' + $purchase_label).removeAttr("disabled");
 }
 
 // pay action receipt - a callback from stripe to complete an authorization required transaction
@@ -286,7 +324,7 @@ function payActionComplete(paymentIntent, post, payParams) {
         data: data,
         method: 'POST',
         success: mp_ajax_success,
-        error: mp_ajax_error,
+        error: ol_ajax_error,
     });
 }
 

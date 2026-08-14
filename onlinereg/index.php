@@ -359,7 +359,7 @@ $cardsAcceptedAlt = getConfValue('global', 'cardsAcceptedAltText', 'Visa, Master
                      </div>
                      <div class="row" id='chargeCart' hidden>
                          <div class="col-sm-12">
-                               <?php echo draw_cc_html(); ?>
+                               <?php echo draw_cc_html('--', 'onlinereg'); ?>
                          </div>
                      </div>
                      <div class="row">

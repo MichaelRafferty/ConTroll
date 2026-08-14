@@ -32,9 +32,9 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
 </div>
 EOS;
     }
-    if ($type == 'portal' || $type == 'vendor') {
+    if ($type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
         $html .= <<<EOS
-<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="makePurchase('test_ccnum', 'card-button')" value="Pay">
+<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" value="Pay">
 EOS;
     }
     $html .= <<<EOS
@@ -47,6 +47,9 @@ const currencyFmtCC = new Intl.NumberFormat(config.locale, {
       currency: config.currency,
         });
 
+    function startCCPay(amount) {
+        return startCC(amount);
+    }
 
     function startCC(amount) {
         console.log("startCC called from cc_test, amount=" + amount);
