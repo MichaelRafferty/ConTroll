@@ -255,18 +255,32 @@ function mp_ajax_success(data, textStatus, jqXHR) {
         let status = stripe_nextActions(data);
         return;
     }
+    let id = document.getElementById("card-button");
     if (data.status == 'error') {
-        if (data.error)
-            alert("Purchase Failed: " + data.error);
-        if (data.data)
-            alert("Purchase Failed: " + data.data);
-        $('#' + $purchase_label).removeAttr("disabled");
+        if (id)
+            id.disabled = false;
+        if (data.restoreBtn)
+            ccRestoreBtnTxt();
+        if (data.error) {
+            show_message(data.error, 'error', 'ccPayMessageDiv');
+            return;
+        }
+        if (data.message) {
+            show_message(data.message, 'error', 'ccPayMessageDiv');
+            return;
+        }
+        if (data.data) {
+            show_message(data.data, 'error', 'ccPayMessageDiv');
+            return;
+        }
     } else if (data.status == 'echo') {
         console.log(data);
-        $('#' + $purchase_label).removeAttr("disabled");
+        if (id)
+            id.disabled = false;
     } else {
+        if (id)
+            id.disabled = false;
         window.location.href = "receipt.php?trans=" + data.trans;
-        $('#' + $purchase_label).removeAttr("disabled");
     }
 }
     

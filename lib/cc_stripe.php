@@ -1046,10 +1046,17 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
 
-    // nonce = source (non online credit card) or confirm ressponse (online credit card)
-    if (str_starts_with($sourceIdStr, '{')) {
-        // online credit card from a payment confirm.
+    if (is_array($sourceIdStr)) {
+        $confirmToken = $sourceIdStr;
+    } else if (str_starts_with($sourceIdStr, '{')) {
         $confirmToken = json_decode($sourceIdStr, true);
+    } else {
+        $confirmToken = null;
+    }
+
+    // nonce = source (non online credit card) or confirm ressponse structure (online credit card)
+    if ($confirmToken != null) {
+        // online credit card from a payment confirm.
         $card = $confirmToken['payment_method_preview']['card'];
         $sourceId = $card['brand'];
         $expire = $card['exp_month'] . '/' . $card['exp_year'];
@@ -1397,9 +1404,15 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
     }
     $buyerSuppliedMoney = $ccParams['total'] + $change;
 
-    // nonce = source or confirm ressponse
-    if (str_starts_with($sourceIdStr, '{')) {
+    if (is_array($sourceIdStr)) {
+        $confirmToken = $sourceIdStr;
+    } else if (str_starts_with($sourceIdStr, '{')) {
         $confirmToken = json_decode($sourceIdStr, true);
+    } else {
+        $confirmToken = null;
+    }
+    // nonce = source or confirm ressponse
+    if ($confirmToken != null) {
         $card = $confirmToken['payment_method_preview']['card'];
         $sourceId = $card['brand'];
         $expire = $card['exp_month'] . '/' . $card['exp_year'];
