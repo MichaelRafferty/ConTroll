@@ -2342,6 +2342,7 @@ class Pos {
         if (nomodal == 'checkCCType') {
             if (pt_online != null && pt_online.checked)
                 return; // this is the direct click call, let draw_cc_html handle calling pay from makePurchase()
+            nomodal = '';
         }
 
         let checked = false;
