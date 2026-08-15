@@ -34,7 +34,14 @@ EOS;
     }
     if ($type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
         $html .= <<<EOS
-<button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" value="Pay">
+<div class="row">
+    <div class="col-sm-12">
+        <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" value="Pay">
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 mt-1 p-1" id="ccPayMessageDiv"></div>
+</div>
 EOS;
     }
     $html .= <<<EOS
