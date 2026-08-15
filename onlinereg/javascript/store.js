@@ -5,7 +5,6 @@
 var badges = { count: 0, total: 0, memTypeCount: {}, badges: [] };
 // prices = array by memId of prices for badges
 var prices = {};
-var $purchase_label = 'card-button';
 // shortnames are the memLabel short names for the memAge
 var shortnames = {};
 // anotherbadge = bootstrap 5 modal for the add another modal popup
@@ -205,24 +204,40 @@ function updateAddr() {
 }
 
 function ol_ajax_error(JqXHR, textStatus, errorThrown) {
-    alert("ERROR! " + textStatus + ' ' + errorThrown);
-    $('#' + $purchase_label).removeAttr("disabled");
+    show_message("ERROR! " + textStatus + ' ' + errorThrown + "<br/>Seek assistance.", 'error', 'ccPayMessageDiv');
+    let id = document.getElementById("card-button");
+    if (id)
+        id.disabled = false;
 }
 
 function bo_ajax_success(data, textStatus, jqXHR) {
+    let id = document.getElementById("card-button");
     if (data.status == 'error') {
-        if (data.error)
-            alert("Purchase Failed: " + data.error);
-        else if (data.data)
-            alert("Purchase Failed: " + data.data);
-        else
-            alert("Purchase Failed: Unknown error");
-        $('#' + $purchase_label).removeAttr("disabled");
-        return;
+        if (data.status == 'error') {
+            if (id)
+                id.disabled = false;
+            if (data.restoreBtn)
+                ccRestoreBtnTxt();
+            if (data.error) {
+                show_message(data.error, 'error', 'ccPayMessageDiv');
+                return;
+            }
+            if (data.message) {
+                show_message(data.message, 'error', 'ccPayMessageDiv');
+                return;
+            }
+            if (data.data) {
+                show_message(data.data, 'error', 'ccPayMessageDiv');
+                return;
+            }
+            show_message('Unknown error occured building your order, seek assistance.', 'error', 'ccPayMessageDiv');
+            return;
+        }
     }
     if (data.status == 'echo') {
         console.log(data);
-        $('#' + $purchase_label).removeAttr("disabled");
+        if (id)
+            id.disabled = false;
         return;
     }
     // ok the order now succeeded, process to process the payment
@@ -244,8 +259,9 @@ function bo_ajax_success(data, textStatus, jqXHR) {
             ccInProcess = false;
             return payOrder(data);
         }
-        alert("Purchase failed: Unknown next step: "  + nextStep);
-        $('#' + $purchase_label).removeAttr("disabled");
+        show_message("Purchase failed: Unknown next step: "  + nextStep, 'error', 'ccPayMessageDiv');
+        if (id)
+            id.disabled = false;
     }
 }
 
@@ -302,9 +318,6 @@ function makePurchase(token, label) {
     currentToken = token;
     currentNonce = nonce;
 
-    if (label != '') {
-        $purchase_label = label;
-    }
     if (token == 'test_ccnum') {  // this is the test form
         token = document.getElementById(token).value;
     }
@@ -312,15 +325,19 @@ function makePurchase(token, label) {
     // validate CC email address for receipt
     let cc_email = document.getElementById('cc_email').value;
     if (!validateAddress(cc_email)) {
-        alert("The 'who's paying for the order' email address is not valid, please use the Edit button to put in a valid email address for the receipt");
+        show_message("The 'who's paying for the order' email address is not valid, " +
+            "please use the Edit button to put in a valid email address for the receipt", 'error', 'ccPayMessageDiv');
         $('#cc_email').addClass('need');
         return false;
     }
     $('#cc_email').removeClass('need');
 
-    $('#' + $purchase_label).attr("disabled", "disabled");
+    let id = document.getElementById("card-button");
+    if (id)
+        id.disabled = true;
     let postdata = badges.badges;
     if (postdata.length == 0) {
+        // we shpi;dmever get here because the pay button is removed when the length is 0
         alert("You don't have any memberships to buy, please add some memberships");
         if (newBadge != null) {
             newBadge.show();
