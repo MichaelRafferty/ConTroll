@@ -85,7 +85,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.managedBy, NP.managedByNew) ELSE IFNULL(P.managedBy, P.managedByNew) END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
-    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount
+    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
@@ -146,7 +146,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.manager ELSE P.manager END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
-    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount
+    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN pfields P ON (P.perid=R.perid AND (P.fullname LIKE ? OR P.badge_name LIKE ? OR P.badgeNameL2 LIKE ?
