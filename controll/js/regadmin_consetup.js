@@ -217,8 +217,14 @@ class consetup {
     <button id="` + this.#setup_type + `conlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoConlist(); return false;" disabled>Redo</button>
     <button id="` + this.#setup_type + `conlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveConlist(); return false;" disabled>Save Changes</button>
 </div>
-<div>&nbsp;</div>
-<h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+<div class="row mt-3">
+    <div class="col-sm-6">
+        <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+    </div>
+   <div class="col-sm-6 text-end">
+       <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_new">How to filter on Start or End Date</a></strong>
+   </div>
+</div>
 `;
         if (!this.#ageListSame) {
             html += `
