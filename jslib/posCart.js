@@ -698,7 +698,7 @@ class PosCart {
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRemove(' + row + ')">Remove</button>';
-            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManager())) {
+            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManagerActive())) {
                 col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
             html += `
@@ -780,17 +780,17 @@ class PosCart {
         }
 
         let mbr = this.#memberships[row];
-        if (mbr.status != 'unpaid' && !pos.getManager()) {
+        if (mbr.status != 'unpaid' && !pos.getManagerActive()) {
             show_message("Cannot remove that registration item, only unpaid items can be deleted.", "warn", 'aeMessageDiv');
             return
         }
 
-        if (mbr.price == 0 && !pos.getManager()) {
+        if (mbr.price == 0 && !pos.getManagerActive()) {
             show_message("Please contact registration at " + config.regadminemail + "  to delete free items.", "warn", 'aeMessageDiv');
             return;
         }
 
-        if (mbr.paid > 0 && !pos.getManager()) {
+        if (mbr.paid > 0 && !pos.getManagerActive()) {
             show_message("Please contact registration at " + config.regadminemail + " to resolve this partially paid item.", "warn", 'aeMessageDiv');
             return;
         }
@@ -1168,7 +1168,9 @@ class PosCart {
         }
         rowhtml += `</div>
         <div class="col-sm-2 text-center">`;
-        if (pos.getManager() && !this.#freezeCart) {
+        let opennoteMode = pos.getOpennoteMode();
+        if (opennoteMode == 'any' || (opennoteMode == 'manager' && pos.getManager()) ||
+            (pos.getManagerActive() && opennoteMode == 'active')) {
             btncolor = 'btn-secondary';
             if (row.open_notes_pending !== undefined && row.open_notes_pending === 1)
                 btncolor = 'btn-warning';

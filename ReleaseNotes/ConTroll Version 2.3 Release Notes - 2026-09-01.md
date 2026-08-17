@@ -17,7 +17,10 @@
     * [atcon]
       * badges=absolute path to hold printouts from printer 0
         * this path needs pdf and txt subdirectories
-
+      * opennnote=who can create/edit a person open note
+        * Used to be only a manager
+        * This option will allow a choice of any, active, manager or none similar to the discount payment method has the same choice.
+        * The default value will be manager if this line is not entered.
   * reg_secret.ini:  None
   
   * reg_conf.ini:

@@ -28,7 +28,8 @@ class Pos {
     #pay_button_rcpt = null;
     #pay_tid = null;
     #pay_tid_amt = 0;
-    #discount_mode = 'none';
+    #discountMode = 'none';
+    #opennoteMode = 'none';
     #num_coupons = 0;
     #couponList = null;
     #couponSelect = null;
@@ -275,6 +276,14 @@ class Pos {
         return this.#conid;
     }
 
+    getOpennoteMode() {
+        return this.#opennoteMode;
+    }
+
+    getDiscountMode() {
+        return this.#discountMode;
+    }
+
     setPrinterData(data) {
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
@@ -294,7 +303,11 @@ class Pos {
     }
 
     getManager() {
-        return this.#manager == 1 && baseManagerEnabled;
+        return this.#manager == 1;
+    }
+
+    getManagerActive() {
+        return baseManagerEnabled;
     }
 
     isMultiOneDay() {
@@ -415,7 +428,8 @@ class Pos {
         this.#typeList = data.memTypes;
         this.#cc_html = data.cc_html;
         this.#memRules = data.memRules;
-        this.#discount_mode = data.discount;
+        this.#discountMode = data.discount;
+        this.#opennoteMode = data.opennote;
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
             this.#badgePrinterAvailable = data.badgePrinter === true;
@@ -439,8 +453,8 @@ class Pos {
         memListIdx = data.gmemListIdx;
         memRules = data.gmemRules;
 
-        if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
-            this.#discount_mode = 'none';
+        if (this.#discountMode === undefined || this.#discountMode === null || this.#discountMode == '')
+            this.#discountMode = 'none';
 
         // build memListMap from memList
         this.#memListMap = new map();
@@ -1325,7 +1339,8 @@ class Pos {
         }
         html += `</div>
         <div class="col-sm-2">`;
-        if (baseManagerEnabled && this.#manager) {
+        if (this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active')) {
             html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
         }
 
@@ -1461,7 +1476,8 @@ class Pos {
         if (open_notes != null && open_notes.length > 0 && !(baseManagerEnabled && this.#manager)) {
             html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams.t + '\')">O</button>';
         }
-        if (baseManagerEnabled && this.#manager) {
+        if (this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active')) {
             let btnclass = "btn-secondary";
             if (open_notes != null && open_notes.length > 0)
                 btnclass = "btn-info";
@@ -1502,6 +1518,9 @@ class Pos {
         this.#notes.show();
         document.getElementById('NotesTitle').innerHTML = "Notes for " + fullName;
         document.getElementById('NotesBody').innerHTML = note.replace(/\n/g, '<br/>');
+        let notewarn = document.getElementById('notesEditWarning');
+        if (notewarn)
+            notewarn.innerHTML = '';
         let notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Close";
         notes_btn.disabled = false;
@@ -1547,6 +1566,10 @@ class Pos {
             '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
             this.#notesPriorValue +
             "</textarea>";
+        let notewarn = document.getElementById('notesEditWarning');
+        if (notewarn)
+            notewarn.innerHTML = "<br/><b>Warning:</b> Only add new issues to this note. " +
+                "Only document how issues are resolved, or remove resolved issues from this note as appropriate.";
         let notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Save and Close";
         notes_btn.disabled = false;
@@ -3199,8 +3222,8 @@ class Pos {
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
             <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
-            if (this.#discount_mode != "none" && !coupon.isCouponActive() && this.#drow == null) {
-                if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') &&
+            if (this.#discountMode != "none" && !coupon.isCouponActive() && this.#drow == null) {
+                if (this.#discountMode == 'any' || ((this.#discountMode == 'manager' || this.#discountMode == 'active') &&
                     this.#manager && baseManagerEnabled)) {
                     pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>

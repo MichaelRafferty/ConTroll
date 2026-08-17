@@ -281,7 +281,11 @@ if ($config_vars['creditonline'] == 1) {
                     </div>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid' id='NotesBody'>
+                    <div class='container-fluid' id='NotesBody'></div>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm-12' id="notesEditWarning"></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>

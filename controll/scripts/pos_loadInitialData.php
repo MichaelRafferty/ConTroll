@@ -26,8 +26,6 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
 }
 
 $con = get_conf('con');
-$atcon = get_conf('atcon');
-$controll = get_conf('controll');
 $usps = get_conf('usps');
 $conid = $con['id'];
 
@@ -50,7 +48,8 @@ load_cc_procs();
 
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
-$response['discount'] = $atcon['discount'];
+$response['discount'] = getConfValue('controll', 'discount', 'manager');
+$response['opennote'] = getConfValue('controll', 'opennote', 'manager');
 $response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
 $response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
 $response['user_id'] = $authToken->getPerid();
