@@ -172,6 +172,7 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 var nowDate = null;
 var nowToday = false;
 var nowDateString = '';
+var optionDateChars = "<>=senafx";
 // date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
 function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     if (rowValue == null || rowValue == '')
@@ -179,7 +180,7 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 
     let option = headerValue.substring(0,1);
     let value = headerValue;
-    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e' || option == 'n') {
+    if (optionDateChars.includes(option)) {
         let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
@@ -204,6 +205,9 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
         case 'e':
             return rowValue.endsWith(value);
         case 'n':
+        case 'a':
+        case 'f':
+        case 'x':
             if (filterParams.field == '')
                 return rowValue.includes(value);
 
@@ -257,6 +261,12 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
                         ':' + newDate.getMinutes().toString().padStart(2, '0') + ':' + newDate.getSeconds().toString().padStart(2, '0');
                 }
             }
+
+            if (option == 'f')
+                return rowData.startdate >= nowDateString;
+
+            if (option == 'x')
+                return rowData.enddate <= nowDateString;
 
             if (filterParams.field == 'startdate')
                 return rowValue <= nowDateString && rowData.enddate > nowDateString;

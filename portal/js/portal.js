@@ -904,7 +904,7 @@ class Portal {
             html += `
     <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
-            onClick="portal.makeOrder(null, 2);" disabled>
+            onclick="portal.makeOrder(null, 2);" disabled>
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
@@ -914,7 +914,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-2" id="paySelectedPlanRow" hidden>
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTNPlan"
-            onClick="portal.buildPlan(2);">
+            onclick="portal.buildPlan(2);">
             Make Plan for Selected
         </button></div>
         <div class="col-sm-auto">
@@ -927,7 +927,7 @@ class Portal {
         html += `
     <div class="row mt-1 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.makeOrder(null);">Pay All</button></div>
+            onclick="portal.makeOrder(null);">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total` + this.#preTaxLabel + ` amount due for all memberships is ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
@@ -935,7 +935,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-3" id="payAllPlanRow">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.buildPlan(1);">Make Plan for All</button></div>
+            onclick="portal.buildPlan(1);">Make Plan for All</button></div>
         <div class="col-sm-auto">
             <b>Create a payment plan for the total` + this.#preTaxLabel + ` amount due for all memberships of ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
@@ -1033,7 +1033,7 @@ class Portal {
         this.#payDueSubmitButton.innerHTML = buttonName;
         html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null , ` +
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onclick='portal.makeOrder(null , ` +
             makeOrderOther + `);'>` +
                 buttonName + `</button></div>
         <div class="col-sm-auto">
@@ -1248,7 +1248,7 @@ class Portal {
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
-        startCCPay(this.#paymentAmount * 100);
+        startCCPay(this.#paymentAmount * currencyMultiplier);
     }
 
     // makePlanPayment - make a payment on a plan
@@ -1298,6 +1298,8 @@ class Portal {
         let nonce = null;
         if (label == 'stripe-confirm')
             nonce = JSON.stringify(token);
+        else if (token == 'test_ccnum')
+            nonce = document.getElementById(token).value;
         else
             nonce = token;
 
@@ -1333,6 +1335,9 @@ class Portal {
             badges: JSON.stringify(badges),
         };
         this.#payPostData = data;
+        clear_message('');
+        clear_message('inv_result_message');
+
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,
@@ -1345,8 +1350,8 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-                if (data.restoreBtn)
-                    stripeRestoreBtnTxt();
+
+                ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1367,7 +1372,7 @@ class Portal {
                 id.disabled = false;
 
             if (data.restoreBtn)
-                stripeRestoreBtnTxt();
+                ccRestoreBtnTxt();
             if (data.error) {
                 show_message(data.error, 'error', 'makePayMessageDiv');
                 return;
@@ -1394,8 +1399,8 @@ class Portal {
         }
     }
 
-    // pay action receipt - a callback from stripe to complete an authorization required transaction
-    payActionComplete(paymentIntent) {
+    // pay action complete - a callback from stripe to complete an authorization required transaction
+    payActionComplete(paymentIntent, post, payParams) {
         //console.log("completed action");
         //console.log(paymentIntent);
         let id = document.getElementById("card-button");
@@ -1409,6 +1414,9 @@ class Portal {
         let data = this.#payPostData;
         data.action = 'paymentComplete';
         data.paymentIntent = paymentIntent;
+        clear_message('');
+        clear_message('inv_result_message');
+
         $.ajax({
             url: "scripts/portalPayment.php",
             data: data,
@@ -1421,7 +1429,7 @@ class Portal {
             error: function (jqXHR, textStatus, errorThrown) {
                 if (id)
                     id.disabled = false;
-
+                ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
                 return false;
             },
@@ -1767,6 +1775,6 @@ function redoAddress() {
     portal.editPersonSubmit();
 }
 
-function payActionComplete(paymentIntent) {
-    portal.payActionComplete(paymentIntent);
+function payActionComplete(paymentIntent, post, payParams) {
+    portal.payActionComplete(paymentIntent, post, payParams);
 }

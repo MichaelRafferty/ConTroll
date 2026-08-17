@@ -21,7 +21,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'processPayment') {
+if ($ajax_request_action != 'processPayment' && $ajax_request_action != 'paymentComplete') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -315,7 +315,11 @@ if ($amt > 0) {
         labeled_logWrite('artpos_processPayment-request',
             array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
         load_cc_procs();
-        $rtn = cc_payOrder($ccParam, $buyer, true);
+        if ($ajax_request_action == 'processPayment')
+            $rtn = cc_payOrder($ccParam, $buyer, true);
+        else
+            $rtn = cc_payComplete($ccParam, $_POST['paymentIntent'], true);
+
         if ($rtn === null) {
             ajaxSuccess(array ('error' => 'Credit card not approved'));
             exit();

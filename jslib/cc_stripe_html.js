@@ -2,8 +2,9 @@
  */
 var elements = null;
 var stripe = null;
-var stripeSubmitBtn = null;
-var stripePaystripePayPriorText = '';
+var paySubmitButton = null;
+var paymentElement = null;
+var stripePaypaySubmitButtonPayPriorText = '';
 const currencyFmtCC = new Intl.NumberFormat(config.locale, {
     style: 'currency',
     currency: config.currency,
@@ -17,19 +18,19 @@ async function stripeCardFormSubmit(e = null){
     if (e)
         e.preventDefault();
     // prevent double click
-    if (stripeSubmitBtn.disabled)
+    if (paySubmitButton.disabled)
         return;
 
-    stripePayPriorText = stripeSubmitBtn.textContent;
-    stripeSubmitBtn.disabled = true;
-    stripeSubmitBtn.textContent = 'Processing...';
+    paySubmitButtonPayPriorText = paySubmitButton.textContent;
+    paySubmitButton.disabled = true;
+    paySubmitButton.textContent = 'Processing...';
 
     // Trigger form validation and wallet collection
     const {error: submitError} = await elements.submit();
     if (submitError) {
         show_message(submitError.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
@@ -44,8 +45,8 @@ async function stripeCardFormSubmit(e = null){
 
     if (error) {
         show_message(error.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
@@ -53,8 +54,8 @@ async function stripeCardFormSubmit(e = null){
         let brand = confirmationToken.payment_method_preview.card.brand;
         if (!config.allowedCCBrands.includes(brand)) {
             show_message("We cannot accept " + brand + " cards at this time, please try another card.", 'error', 'ccPayMessageDiv');
-            stripeSubmitBtn.disabled = false;
-            stripeSubmitBtn.textContent = stripePayPriorText;
+            paySubmitButton.disabled = false;
+            paySubmitButton.textContent = paySubmitButtonPayPriorText;
             return;
         }
     }
@@ -63,20 +64,30 @@ async function stripeCardFormSubmit(e = null){
     makePurchase(confirmationToken, "stripe-confirm");
 }
 
-function stripeRestoreBtnTxt() {
-    stripeSubmitBtn.textContent = stripePayPriorText;
+function ccRestoreBtnTxt() {
+    if (paySubmitButtonPayPriorText != '')
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
 }
 
-function startCCPay(amount = 0) {
-    stripeSubmitBtn = document.getElementById('card-button');
-    stripe = Stripe(pkkey);
+function startCCPay(amount = 0, formName = 'payment-form') {
+    paySubmitButton = document.getElementById('card-button');
+    if (!stripe)
+        stripe = Stripe(pkkey);
+    if (paymentElement) {
+        paymentElement.unmount();
+        paymentElement.destroy();
+        paymentElement = null;
+    }
     // set listener
-    document.getElementById('payment-form').addEventListener('submit', stripeCardFormSubmit);
+    if (paySubmitButton)
+        paySubmitButton.addEventListener('click', stripeCardFormSubmit);
+    else
+        show_message("Internal Credit Card Processing error -seek assistance", 'error', 'ccPayMessageDiv');
 
     if (amount > 0) {
-        stripeSubmitBtn.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+        paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
     } else {
-        stripeSubmitBtn.textContent = "Purchase";
+        paySubmitButton.textContent = "Purchase";
     }
     const options = {
         mode: 'payment',
@@ -87,7 +98,7 @@ function startCCPay(amount = 0) {
     elements = stripe.elements(options);
 
     const paymentElementsOptions = { layout: 'accordion' };
-    const paymentElement = elements.create('payment', paymentElementsOptions);
+    paymentElement = elements.create('payment', paymentElementsOptions);
     paymentElement.mount('#payment-element');
 }
 
@@ -97,11 +108,30 @@ async function stripe_nextActions(data) {
     });
     if (error) {
         show_message(error.message, 'error', 'ccPayMessageDiv');
-        stripeSubmitBtn.disabled = false;
-        stripeSubmitBtn.textContent = stripePayPriorText;
+        paySubmitButton.disabled = false;
+        paySubmitButton.textContent = paySubmitButtonPayPriorText;
         return;
     }
 
     clear_message('ccPayMessageDiv');
-    payActionComplete(paymentIntent);
+    payActionComplete(paymentIntent, data.post, data.payParams);
+}
+
+function resetCCPay(div) {
+    // set clear element from screen
+    if (paymentElement) {
+        paymentElement.unmount();
+        paymentElement.destroy();
+        paymentElement = null;
+    }
+    // set listener
+    if (paySubmitButton) {
+        paySubmitButton.removeEventListener('click', stripeCardFormSubmit);
+    }
+    // clear the HTML area
+    if (div)
+        div.innerHTML = '';
+
+    // clear the message field
+    clear_message('ccPayMessageDiv');
 }

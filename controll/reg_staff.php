@@ -16,6 +16,11 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
 $finance = $authToken->checkAuth('finance');
 $regAdmin = $authToken->checkAuth('reg_admin');
 $admin = $authToken->checkAuth('admin');
+if ($finance) {
+    $useGL = getConfValue('controll', 'useGLCodes', 1);
+} else {
+    $useGL = 0;
+}
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -69,6 +74,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $authToken->getPerid();
 $config_vars['finance'] = $finance ? 1 : 0;
+$config_vars['useGL'] = $useGL;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 $config_vars['locale'] = $locale;
@@ -128,6 +134,13 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-10'>
                                         <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
                                                onchange='memListModalDirty = true;' size="64" maxlength="64" />
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Rpt Grouping:</div>
+                                    <div class='col-sm-10'>
+                                        <input type='text' name='editMemListRptGrouping' id='editMemListRptGrouping' placeholder='Report Grouping'
+                                               onchange='rptGroupingChange(editListMasterRow);' size='64' maxlength='128'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -212,14 +225,12 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-auto'>Category Badge Label:</div>
                                     <div class='col-sm-auto' id='catBadgeLabel'></div>
                                     <div class='col-sm-auto'>Override Badge Label:</div>
-                                    <div class='col-sm-auto'>
+                                    <div class='col-sm-2'>
                                         <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
-                                               size='20'
-                                               maxlength='16'
-                                               onchange='badgeLabelChange(editListMasterRow);'
-                                        />
+                                               size='20' maxlength='16' onchange='badgeLabelChange(editListMasterRow);'/>
                                     </div>
                                 </div>
+                                <?php if ($config_vars['useGL'] == 1) { ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Gen. Ledger</div>
                                     <div class='col-sm-auto me-0'>Num:</div>
@@ -235,6 +246,10 @@ draw_fileManagerModals($authToken);
                                         />
                                     </div>
                                 </div>
+                                <?php } else { ?>
+                                    <input type='hidden' name='editMemListGLNum' id='editMemListGLNum'/>
+                                    <input type='hidden' name='editMemListGLLabel' id='editMemListGLLabel'/>
+                                <?php } ?>
                             </div>
                         </div>
                         <div class="col-sm-5">
@@ -291,9 +306,16 @@ draw_fileManagerModals($authToken);
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
                         <div class="col-sm-1">At-Con ONL</div>
+
+                        <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>O/Ride Label</div>
+                        <div class='col-sm-1'>Rpt Grp</div>
                         <div class="col-sm-1">GL Num</div>
-                        <div class="col-sm-2">GL Label</div>
+                        <div class="col-sm-1">GL Label</div>
+                        <?php } else { ?>
+                        <div class='col-sm-2'>O/Ride Label</div>
+                        <div class='col-sm-2'>Rpt Grp</div>
+                        <?php } ?>
                     </div>
 <?php
     for ($i = 0; $i < 10; $i++) {
@@ -331,9 +353,15 @@ draw_fileManagerModals($authToken);
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
+                        <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>
                             <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
                                    onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='12' maxlength='128'
+                                   onchange="tsRptGroupingChange(<?php echo $i;?>)"
                             />
                         </div>
                         <div class='col-sm-1'>
@@ -341,11 +369,23 @@ draw_fileManagerModals($authToken);
                                    onchange="tsGlNumChange(<?php echo $i;?>)"
                             />
                         </div>
-                        <div class='col-sm-2'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='40' maxlength='64'
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='12' maxlength='64'
                                    onchange="tsGlLabelChange(<?php echo $i;?>)"
                             />
                         </div>
+                        <?php } else { ?>
+                            <div class='col-sm-1'>
+                                <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
+                                       onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                                />
+                            </div>
+                            <div class='col-sm-3'>
+                                <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='48' maxlength='128'
+                                       onchange="tsRptGroupingChange(<?php echo $i;?>)"
+                                />
+                            </div>
+                        <?php } ?>
                     </div>
 <?php
         if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
@@ -370,7 +410,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' onclick='editMemListCancel();'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onclick='editMemListSave()'>Save Changes</button>
             </div>
             <div id='result_message_editMemList' class='mt-4 p-2'></div>
         </div>
@@ -387,7 +427,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
-                    <form id='merge-search' action='javascript:void(0)'>
+                    <form id='merge-search' onsubmit='return false;'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
                                 <label for='merge_name_search' id='mergeLookupName'>Merge Name:</label>
@@ -411,7 +451,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+                <button class='btn btn-sm btn-primary' id='mergeSearch' onclick='merge_find()'>Find Person</button>
             </div>
             <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
@@ -436,7 +476,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='mergeExecute' onClick='merge.performMerge()'>Perform Merge</button>
+                <button class='btn btn-sm btn-primary' id='mergeExecute' onclick='merge.performMerge()'>Perform Merge</button>
             </div>
             <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
@@ -490,7 +530,7 @@ draw_fileManagerModals($authToken);
                                     <span class='warn' id='l_required'>&bigstar;</span><span id='l_preview'>Preview Prompt</span>
                                 </label>
                                 <span class='small' id='previewDescIcon'>
-                                    <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                                    <a href='#' onclick='$("#previewTip").toggle(); return false;'>
                                         <img src='/lib/infoicon.png'
                                             alt='click this info icon for more information' style='max-height: 25px;'>
                                     </a>
@@ -498,7 +538,7 @@ draw_fileManagerModals($authToken);
                                 <div id='previewTip' class='padded highlight' style="display:none">
                                     <p class='text-body'><span id="previewDescriptionText">Preview Text</span>
                                         <span class='small'>
-                                            <a href='javascript:void(0)' onClick='$("#previewTip").toggle()'>
+                                            <a href='#' onclick='$("#previewTip").toggle(); return false;'>
                                                 <img src='/lib/closeicon.png'
                                                      alt='click this close icon to close the more information window' style='max-height: 25px;'>
                                             </a>
@@ -512,7 +552,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onClick='policy.editPreviewSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editPreviewSaveBtn' onclick='policy.editPreviewSave()'>Save Changes</button>
             </div>
             <div id='result_message_editPreview' class='mt-4 p-2'></div>
         </div>
@@ -583,7 +623,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editInterestSaveBtn' onClick='interests.editInterestSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editInterestSaveBtn' onclick='interests.editInterestSave()'>Save Changes</button>
             </div>
             <div id='result_message_editInterest' class='mt-4 p-2'></div>
         </div>
@@ -634,7 +674,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editConroleSaveBtn' onClick='conroles.editConroleSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editConroleSaveBtn' onclick='conroles.editConroleSave()'>Save Changes</button>
             </div>
             <div id='result_message_editConrole' class='mt-4 p-2'></div>
         </div>
@@ -752,7 +792,7 @@ draw_fileManagerModals($authToken);
                         </div>
                         <div class='col-sm-4 text-end' id='steps-buttons'>
                             <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                            <button class='btn btn-sm btn-primary' id='editRuleSaveBtnTop' onClick='rules.editRuleSave()'>Save Changes</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleSaveBtnTop' onclick='rules.editRuleSave()'>Save Changes</button>
                         </div>
                     </div>
                     <div class='row mt-2'>
@@ -772,7 +812,7 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtnBottom' onClick='rules.editRuleSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editRuleSaveBtnBottom' onclick='rules.editRuleSave()'>Save Changes</button>
             </div>
         </div>
     </div>
@@ -906,8 +946,8 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-12 text-end'>
-                            <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
-                            <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnTop' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                            <button class='btn btn-sm btn-secondary' onclick='rules.editRuleStepSave(false);'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnTop' onclick='rules.editRuleStepSave(true);'>Save Changes</button>
                         </div>
                     </div>
                     <div class='row mt-2'>
@@ -920,8 +960,8 @@ draw_fileManagerModals($authToken);
                 <div id='result_message_editRuleStep' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnBottom' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                <button class='btn btn-sm btn-secondary' onclick='rules.editRuleStepSave(false);'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnBottom' onclick='rules.editRuleStepSave(true);'>Save Changes</button>
             </div>
         </div>
     </div>
@@ -962,7 +1002,7 @@ draw_fileManagerModals($authToken);
                 <div class='row mt-3'>
                     <div class='col-sm-2 p-0'></div>
                     <div class='col-sm-10 p-0'>
-                        <button class='btn btn-sm btn-primary' id='transferSearch' onClick='changeTransferFind()'>Find Person</button>
+                        <button class='btn btn-sm btn-primary' id='transferSearch' onclick='changeTransferFind()'>Find Person</button>
                     </div>
                 </div>
                 <div class='row mt-3'>
@@ -987,7 +1027,7 @@ draw_fileManagerModals($authToken);
                 <div class='row mt-3 mb-2'>
                     <div class='col-sm-1 p-0'></div>
                     <div class='col-sm-10 p-0'>
-                        <button class='btn btn-sm btn-primary' id='rollover-execute' onClick='changeRolloverExecute()'>Execute Rollover</button>
+                        <button class='btn btn-sm btn-primary' id='rollover-execute' onclick='changeRolloverExecute()'>Execute Rollover</button>
                     </div>
                 </div>
             </div>
@@ -1057,9 +1097,9 @@ draw_fileManagerModals($authToken);
                 <div class='row mt-3 mb-2'>
                     <div class='col-sm-1 p-0'></div>
                     <div class='col-sm-10 p-0'>
-                        <button class='btn btn-sm btn-secondary' id='edit_discard' onClick='changeEditClose()'>Discard Changes</button>
-                        <button class='btn btn-sm btn-primary' id='edit_save' onClick='changeEditSave(0)'>Save Changes</button>
-                        <button class='btn btn-sm btn-warning' id='edit_saveOverride' onClick='changeEditSave(1)' hidden>
+                        <button class='btn btn-sm btn-secondary' id='edit_discard' onclick='changeEditClose()'>Discard Changes</button>
+                        <button class='btn btn-sm btn-primary' id='edit_save' onclick='changeEditSave(0)'>Save Changes</button>
+                        <button class='btn btn-sm btn-warning' id='edit_saveOverride' onclick='changeEditSave(1)' hidden>
                             Save Changes Overriding Warnings
                         </button>
                     </div>
@@ -1094,8 +1134,8 @@ draw_fileManagerModals($authToken);
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
-                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php
+                <button class='btn btn-sm btn-primary' id='emailReceipt' onclick='receipt_email("payor")'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onclick='receipt_email("reg")'>Email Receipt to regadmin at <?php
                         echo getConfValue('con', 'regadminemail');
                 ?></button>
             </div>

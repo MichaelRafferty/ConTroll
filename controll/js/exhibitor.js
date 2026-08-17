@@ -544,20 +544,22 @@ class exhibitorsAdm {
             "       <div class='col-sm-auto p-1 ms-4'>\n";
         if (config.exhibitorConid == config.conid)
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
-            "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
-            "               Add New Exhibitor</button>\n";
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='addExhibitorSpaceBtn' onclick=" +
+            '"exhibitors.addNewSpace();">Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n' +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='addExhibitorBtn2' onclick=" +
+            '"exhibitors.addNew();">Add New Exhibitor</button>\n';
         if (data.usesInventory == 'Y' && config.exhibitorConid == config.conid) {
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
-            "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='sendInvReminder' onclick=" +
+            '"exhibitors.sendInvReminder();">Send Inventory Reminder Email For Those Missing Inventory</button>\n';
         }
         html +=
-            "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
-            "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
-            "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm'" +
-            "               onclick='exhibitors.spacesDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='sendAttReminder' onclick=" +
+            '"exhibitors.sendAttReminder();">Send Attendance Reminder Email</button>\n' +
+            "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm mb-2'" +
+            " onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
+            "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm mb-2'" +
+            " onclick='exhibitors.spacesDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
             "       </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -606,8 +608,8 @@ class exhibitorsAdm {
             "    <div class='row mt-2'>\n" +
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'></div>\n" +
             "        <div class='col-sm-auto'>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onclick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onclick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
             "            <button id='" + groupid + "-exh-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.exhDownload(\"csv\"); return false;'>Download CSV</button>\n" +
         "           <button id='" + groupid + "-exh-xlsx' type='button' class='btn btn-info btn-sm'" +
@@ -2199,6 +2201,36 @@ class exhibitorsAdm {
         }
 
         let data = { action: action, email: email, type: 'invReminder', regionName: this.#regionName, exhibitsRegionYearId: this.#exhibitsRegionYearId };
+        emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
+    }
+
+    sendAttReminder() {
+        emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
+        let email = prompt("Would you like to send a test attendance reminder email?\n" +
+            "If so please enter the address to send the test to in the box below and click ok.\n" +
+            "If you don't provide a test address, you will be sending emails to a lot of people.\n" +
+            "You will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+            "Clicking cancel will cancel the sending of these emails.\n");
+        let action = "none";
+
+        if (email == null)
+            return false;
+
+        if (email == '') {
+            action = 'full';
+        } else {
+            action = 'test';
+        }
+
+        let data = {
+            action: action,
+            email: email,
+            type: 'exhAttReminder',
+            regionName: this.#regionName,
+            portalType: this.#portalType,
+            exhibitsRegionYearId: this.#exhibitsRegionYearId,
+        };
         emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
     }
 };

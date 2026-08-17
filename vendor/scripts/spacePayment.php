@@ -40,10 +40,13 @@ $eyID = getSessionVar('eyID');
 $data = json_decode($_POST['orderData'], true);
 if (array_key_exists('nonce', $_POST) && $_POST['nonce'] == 'c') {
     $results = $data['results'];
+    cc_cancelOrder($results['source'], $data['orderId']);
     cleanRegs($results['badges'], $results['transid']);
     ajaxSuccess(array('status'=>'success', 'message'=>'Payment canceled'));
     exit;
 }
+
+$action = $_POST['action'];
 
 if (array_key_exists('portalType', $_POST))
     $portalType = $_POST['portalType'];
@@ -61,17 +64,6 @@ if (array_key_exists('location_' . $portalType, $cc)) {
 $portalName = $_POST['portalName'];
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
-
-// get the buyer info
-$buyer['fname'] = $_POST['cc_fname'];
-$buyer['lname'] = $_POST['cc_lname'];
-$buyer['addr'] = $_POST['cc_addr'];
-$buyer['city'] = $_POST['cc_city'];
-$buyer['state'] = $_POST['cc_state'];
-$buyer['zip'] = $_POST['cc_zip'];
-$buyer['country'] = $_POST['cc_country'];
-$buyer['email'] = $_POST['cc_email'];
-$buyer['phone'] = $_POST['cc_phone'];
 
 $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0,
     'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1, 'country' => 1,
@@ -98,50 +90,6 @@ $allrequired = true;
 $error_msg = '';
 $status_msg = '';
 $notfound = array();
-// validate credit card fields
-foreach($membership_fields as $field => $required) {
-    if ($field = 'email1')
-        $field = 'email'; // cc uses email, profile uses email1.
-    $postfield = 'cc_' . $field;
-    if (array_key_exists($postfield, $_POST)) {
-        $val = trim($_POST[$postfield]);
-    } else {
-        $val = '';
-    }
-    if ($val == '') {
-        if ($required) {
-            $notfound[] = $membership_names[$field];
-            $allrequired = false;
-        }
-    }
-}
-if ($allrequired == false) {
-    $missing_msg .= 'Some credit card payment information is missing: ' . implode(',', $notfound) . "<br/>\n";
-    $valid = false;
-}
-
-$email_addresses = [ 'cc_email' => 'Payment Information Email'];
-
-
-// check email addresses
-$invalidEmail_msg = '';
-foreach ($email_addresses AS $email => $where) {
-    if (array_key_exists($email, $_POST)) {
-        $val = trim($_POST[$email]);
-        if ($val != '') {
-            if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
-                $invalidEmail_msg .= $where . " is not in the format of a valid email address<br/>\n";
-                $valid = false;
-            }
-        }
-    }
-}
-
-if (!$valid) {
-    $response['error'] = "There were some issues with the data on the form.<br/>Please correct and re-submit.<br/><br/>$missing_msg\n$invalidEmail_msg\n";
-    ajaxSuccess($response);
-    return;
-}
 
 $results = $data['results'];
 $orderResults = $data['orderResults'];
@@ -156,6 +104,16 @@ $region = $orderResults['region'];
 $eryID = $orderResults['eryID'];
 $specialRequests = $results['specialrequests'];
 $results['nonce'] = $_POST['nonce'];
+
+if (array_key_exists('artistName', $exhibitor) && $exhibitor['artistName'] != '')
+    $cust_name = $exhibitor['artistName'];
+else
+    $cust_name = $exhibitor['exhibitorName'];
+$buyer['email'] =  $exhibitor['exhibitorEmail'];
+$buyer['name'] = $cust_name;
+$buyer['fname'] = $cust_name;
+$buyer['lname'] = '';
+$buyer['phone'] = $exhibitor['exhibitorPhone'];
 $results['buyer'] = $buyer;
 $results['total'] = $results['totalAmt'];
 
@@ -163,7 +121,11 @@ if ($totprice > 0) {
 // call the credit card processor to make the payment
     $rtn = $data['rtn'];
     $order = $rtn['order'];
-    $ccrtn = cc_payOrder($results, $buyer, true);
+    if ($action == 'paymentComplete')
+        $ccrtn = cc_payComplete($results, $_POST['paymentIntent'], true);
+    else
+        $ccrtn = cc_payOrder($results, $buyer, true);
+
     if ($ccrtn === null) {
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanRegs($badgeResults, $transId);
@@ -250,7 +212,7 @@ $typeStr = 'dss' . $taxStr . 'i';
     $taxes = array();
 }
 
-labeled_logwrite('spacePayment-post cc_pay_order-rtn', $ccrtn));
+labeled_logwrite('spacePayment-post cc_pay_order-rtn', $ccrtn);
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information

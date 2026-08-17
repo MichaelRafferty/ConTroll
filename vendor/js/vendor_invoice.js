@@ -19,9 +19,11 @@ class VendorInvoice {
     #formValid = false;
     #validateMessage = '';
     #token = null;
-    #purchaseLabel = null;
     #paymentForDiv = null;
     #orderData = null;
+    #payPostData = null;
+    #currentPaymentIntentId = null;
+    #totalAmountDue = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
@@ -31,6 +33,9 @@ class VendorInvoice {
         id = document.getElementById('vendor_payment');
         if (id != null) {
             this.#vendorPayment = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            id.addEventListener('hidden.bs.modal', function (event) {
+                orderCancel(false);
+            });
         }
         this.#membershipCostDiv = document.getElementById("membershipCost");
         this.#paymentForDiv = document.getElementById("paymentForDiv");
@@ -105,8 +110,15 @@ class VendorInvoice {
 
     // submit the invoice for payment processing
     makePurchase(token, label) {
-        this.#token = token;
-        this.#purchaseLabel = label;
+        // if square or test, nonce is a string, if strip, its an object
+        let nonce = null;
+        if (label == 'stripe-confirm')
+            nonce = JSON.stringify(token);
+        else if (token == 'test_ccnum')
+            nonce = document.getElementById(token).value;
+        else
+            nonce = token;
+        this.#token = nonce;
         this.processPay();
     }
 
@@ -227,7 +239,6 @@ class VendorInvoice {
         submitId.disabled = true;
         let formData = $('#vendor_invoice_form').serialize()
         clear_message('inv_result_message');
-        let _this = this;
         $.ajax({
             url: 'scripts/spaceOrder.php',
             method: 'POST',
@@ -242,7 +253,7 @@ class VendorInvoice {
                     show_message(data['data'], 'error', 'inv_result_message');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    _this.getPaymentInfo(data);
+                    vendorInvoice.getPaymentInfo(data);
                     return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
@@ -306,8 +317,8 @@ class VendorInvoice {
                 </div>
             </div>
 `;
-            if (taxHtml != '') {
-                html += `
+        if (taxHtml != '') {
+            html += `
             <div class='row'>
                 <div class='col-sm-auto'>
                     Total Pre Tax Order: <span id='vendor_pay_cost'></span>
@@ -328,8 +339,8 @@ class VendorInvoice {
                 </div>
             </div>
 `;
-            } else {
-                html += `
+        } else {
+            html += `
             <div class='row'>
                 <div class='col-sm-auto'>
                     &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
@@ -341,8 +352,8 @@ class VendorInvoice {
                 </div>
             </div> 
 `;
-            }
-            html += `
+        }
+        html += `
             <div class='row'>
                 <div class='col-sm-12'><hr/></div> 
             </div>          
@@ -355,15 +366,26 @@ class VendorInvoice {
         let membershipCost = data.results.preTaxAmt - totalSpacePrice;
         document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
         let totalPreOrder = data.results.preTaxAmt;
-        document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
+        let pretaxhtml = document.getElementById('vendor_pay_cost');
+        if (pretaxhtml)
+            pretaxhtml.innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
         let totalWithTax = data.rtn.totalAmt;
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
-        let id = document.getElementById(this.#purchaseLabel);
+        this.#totalAmountDue = data.rtn.totalAmt;
+        if (data.rtn.ccType) {
+            ccType = data.rtn.ccType;
+        }
+
+        if (ccType == 'stripe') {
+            this.#currentPaymentIntentId = data.rtn.orderId;
+        }
+
+        let id = document.getElementById('card-button');
         if (id)
             id.disabled = false;
         this.#vendorPayment.show();
-
+        startCCPay(totalWithTax * currencyMultiplier, 'vendor_pay_form');
     }
 
     processPay() {
@@ -371,36 +393,6 @@ class VendorInvoice {
         clear_message('pay_result_message');
 
         let data = this.#orderData;
-        this.#validateMessage = '';
-
-        let cc_fields = {
-            cc_fname: 'First Name',
-            cc_lname: 'Last Name',
-            cc_street: 'Street Address',
-            cc_city: 'City',
-            cc_state: 'State/Province',
-            cc_zip: 'Zip Code / Postal Code',
-            cc_phone: 'Phone Number',
-        };
-        let ccKeys = Object.keys(cc_fields);
-
-        for (let index = 0; index < ccKeys.length; index++) {
-            let field = document.getElementById(ccKeys[index]);
-            let value = field.value;
-            if (value == undefined || value == '') {
-                let name = cc_fields[ccKeys[index]];
-                this.#validateMessage += '<br/>The credit cart payment information field ' + name + ' is required and cannot be empty';
-                this.#formValid = false;
-                field.classList.add('need');
-            } else {
-                field.classList.remove('need');
-            }
-        }
-
-        if (this.#validateMessage != '') {
-            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'pay_result_message')
-            return;
-        }
 
         if (!this.#token)
             this.#token = 'test';
@@ -414,44 +406,110 @@ class VendorInvoice {
         postData['orderData'] = JSON.stringify(data);
         postData['portalType'] = config.portalType;
         postData['portalName'] = config.portalName;
-        let submitId = document.getElementById(this.#purchaseLabel);
+        postData['action'] = 'spacePayment';
+        let submitId = document.getElementById('card-button');
         submitId.disabled = true;
+        clear_message('');
         clear_message('inv_result_message');
-        let purchaseLabel = this.#purchaseLabel;
+        clear_message('ccPayMessageDiv');
+
         let hideElement = this.#vendorPayment;
+        this.#payPostData = postData;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
             data: postData,
-            success: function (data, textStatus, jqXhr) {
-                if (config['debug'] & 1)
-                    console.log(data);
-                if (data['error']) {
-                    show_message(data['error'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+            success: processPayComplete,
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (submitId)
                     submitId.disabled = false;
-                } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
-                    submitId.disabled = false;
-                } else if (data['status'] == 'success') {
-                    hideElement.hide();
-                    let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
-                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
-                    window.location.href = '/index.php?msg=' + encodeURIComponent(message);
-                    return;
-                } else {
-                    hideElement.hide();
-                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
-                    return;
-                }
-            }
-        });
 
+                ccRestoreBtnTxt();
+
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
     }
 
-    orderCancel() {
+// pay action complete - a callback from stripe to complete an authorization required transaction
+    payActionComplete(paymentIntent, post, payParams) {
+        //console.log("completed action");
+        //console.log(paymentIntent);
+        let id = document.getElementById("card-button");
+        if (id)
+            id.disabled = true;
+
+        let data = this.#payPostData;
+        data.action = 'paymentComplete';
+        data.paymentIntent = paymentIntent;
+        clear_message('');
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
+        $.ajax({
+            url: 'scripts/spacePayment.php',
+            data: data,
+            method: 'POST',
+            success: processPayComplete,
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (id)
+                    id.disabled = false;
+                ccRestoreBtnTxt();
+
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
+    }
+
+    processPayComplete(data) {
+        if (config['debug'] & 1)
+            console.log(data);
+        if (data.status == 'next') {
+            //console.log('need actions');
+            let status = stripe_nextActions(data);
+            return;
+        }
+        if (data['error']) {
+            show_message(data['error'], 'error', 'pay_result_message');
+            let submitId = document.getElementById('card-button');
+            submitId.disabled = false;
+            if (data.restoreBtn)
+                ccRestoreBtnTxt();
+        } else if (data['status'] == 'error') {
+            show_message(data['data'], 'error', 'pay_result_message');
+            let submitId = document.getElementById('card-button');
+            submitId.disabled = false;
+            if (data.restoreBtn)
+                ccRestoreBtnTxt();
+        } else if (data['status'] == 'success') {
+            this.#orderData = null;
+            this.#vendorPayment.hide();
+            let message = (data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
+                " with any questions.  One of our coordinators will be in touch to help you get setup.</p>").replace(/\n/g, "<br/>");
+            window.location.href = '/index.php?msg=' + encodeURIComponent(message);
+            return;
+        } else {
+            this.#vendorPayment.hide();
+            show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error');
+            return;
+        }
+    }
+
+    orderCancel(doHide = true) {
         let hideElement = this.#vendorPayment;
+        clear_message('');
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
+        if (this.#orderData == null) {
+            if (doHide)
+                hideElement.hide();
+            return;
+        }
+
+        let _this = this;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
@@ -461,19 +519,22 @@ class VendorInvoice {
                     console.log(data);
                 if (data['error']) {
                     show_message(data['error'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
                     show_message(data['data'], 'error', 'pay_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    hideElement.hide();
+                    _this.#orderData = null;
+                    if (doHide)
+                        hideElement.hide();
+                    resetCCPay(null);
                     show_message(data['message'], 'success');
                     return;
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                    let submitId = document.getElementById(purchaseLabel);
+                    let submitId = document.getElementById('card-button');
                     submitId.disabled = false;
                 }
             }
@@ -545,11 +606,11 @@ function incrPayValidate() {
     vendorInvoice.incrPayValidate();
 }
 
-function orderCancel() {
+function orderCancel(doHide) {
     if (vendorInvoice == null)
         return;
 
-    vendorInvoice.orderCancel();
+    vendorInvoice.orderCancel(doHide);
 }
 
 function updatePaidStatusBlock() {
@@ -557,4 +618,10 @@ function updatePaidStatusBlock() {
         return;
 
     vendorInvoice.updatePaidStatusBlock();
+}
+
+function processPayComplete(data, textStatus, jqXhr) {
+    if (vendorInvoice == null)
+        return;
+    vendorInvoice.processPayComplete(data);
 }

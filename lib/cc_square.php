@@ -31,17 +31,21 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
  <script type="text/javascript">
       ;
       var payments = null;
+      var paySubmitButton = null;
+      var paySubmitButtonPayPriorText = '';
+      var squarePayments = null;
+      var squareCard = null;
       
       const currencyFmtCC = new Intl.NumberFormat(config.locale, {
           style: 'currency',
           currency: config.currency,
       });
-    
+          
       async function startCCPay(amount = 0) {
           const appId = '$appid';
           const locationId = '$location';
-          const payments = Square.payments(appId, locationId);
-          const card = await payments.card({
+          squarePayments = Square.payments(appId, locationId);
+          squareCard = await squarePayments.card({
               $postalCode        
               "style": {
                   ".input-container": {
@@ -60,52 +64,73 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
                   }
               }
           });
-          document.getElementById("card-button").removeAttribute("hidden");
-          await card.attach('#card-container');
+          paySubmitButton = document.getElementById("card-button");
+          if (paySubmitButton)
+              paySubmitButton.removeAttribute("hidden");
+          await squareCard.attach('#card-container');
+          if (amount > 0) {
+              paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+          } else {
+              paySubmitButton.textContent = "Purchase";
+          }
 
           async function eventHandler(event) {
               event.preventDefault();
               
               const submitBtn =  document.getElementById("card-button");
-              let priorText = submitBtn.textContent;
+              paySubmitButtonPayPriorText = submitBtn.textContent;
               submitBtn.disabled = true;
               submitBtn.textContent = 'Processing...';
 
               try {
-                  const result = await card.tokenize();
+                  const result = await squareCard.tokenize();
                   if (result.status === 'OK') {
                       //console.log(`Payment token is ' + result.token);
                       makePurchase(result.token, "card-button");
                   } else {
-                      submitBtn.textContent = priorText;
+                      submitBtn.textContent = paySubmitButtonPayPriorText;
                       submitBtn.disabled = false;
                   }
               } catch (e) {
                   console.error(e);
-                  submitBtn.textContent = priorText;
+                  submitBtn.textContent = paySubmitButtonPayPriorText;
                   submitBtn.disabled = false;
               }
           };
-          const cardButton = document.getElementById('card-button');
-          cardButton.addEventListener('click', eventHandler);
+          
+          paySubmitButton.addEventListener('click', eventHandler);
           if (amount > 0) {
-              cardButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+              paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
           } else {
-              cardButton.textContent = "Purchase";
+              paySubmitButton.textContent = "Purchase";
           }
-          cardButton.disabled = false;
+          paySubmitButton.disabled = false;
     }
+    
+    function resetCCPay(div) {
+          if (squareCard) {
+              squareCard.detach('#card-container')
+          }
+          squareCard = null;
+          squarePayments = null;
+          return;
+      }
+      
+      function ccRestoreBtnTxt() {
+          if (paySubmitButtonPayPriorText != '')
+              paySubmitButton.textContent = paySubmitButtonPayPriorText;
+      }
 EOS;
     }
     if ($type == 'js') {
         $html .= <<<EOS
     
-    function startCC() {
+    function startCC(amount = 0) {
         if (!window.Square) {
             throw new Error('Square.js failed to load properly');
         }    
           
-      startCCPay();
+      startCCPay(amount);
       } 
             
 EOS;
@@ -118,11 +143,11 @@ EOS;
             throw new Error('Square.js failed to load properly');
           }    
           
-          startCCPay();
+          startCCPay(999999);
       });
 EOS;
     }
-    if ($type == 'all' || $type == 'js' || $type == 'portal') {
+    if ($type == 'all' || $type == 'js' || $type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
         $html .= "</script>\n";
     }
 
@@ -130,10 +155,22 @@ EOS;
         $html .= <<<EOS
 <form id="payment-form">
     <div class="container-fluid overflow-hidden" id="card-container"></div>
-    <button class="btn btn-primary btn-sm mt-2" id="card-button" type="button">Purchase</button>
+    <div class="mt-1 p-1" id="ccPayMessageDiv"></div>
 </form>
 EOS;
         }
+
+    if ($type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
+        $html .= <<<EOS
+<div class="row">
+    <div class="col-12">
+        <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button">Pay</button>
+    </div>
+</div>
+
+
+EOS;
+    }
     return $html;
 };
 
@@ -172,9 +209,9 @@ $unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 
 function get_currencyMultiplier($currency) {
     global $unitCurrencies;
     if (in_array(strtolower($currency), $unitCurrencies)) {
-        return 1;
+        return 1.0;
     }
-    return 100;
+    return 100.0;
 }
 
 // build the order, pass it to square and get the order id
@@ -407,9 +444,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     // if not built, it's spaces + memberships
+    $couponDiscount = false;
+    $managerDiscount = false;
     if (!$itemsBuilt) {
-        $couponDiscount = false;
-        $managerDiscount = false;
         // create the coupon or discount amount, if it exists
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
@@ -726,6 +763,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order create-body', $body, $useLogWrite);
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
+        $phpOrder = json_decode(json_encode($order), true);
         if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $order, $useLogWrite);
     }
     catch (SquareApiException $e) {
@@ -738,12 +776,57 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
-
+    
+    // now actually compute the discounts
+    if ($couponDiscount) {
+        $items = $phpOrder['line_items'];
+        foreach ($items as $item) {
+            if (array_key_exists('applied_discounts', $item)) {
+                for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                    $discount = $item['applied_discounts'][$discountNo];
+                    if (str_starts_with($discount['uid'], 'couponDiscount')) {
+                        if (array_key_exists('applied_amount', $discount))
+                            $thisItemDiscount = $discount['applied_amount'];
+                        else
+                            $thisItemDiscount = $discount['applied_money']['amount'];
+                        // now find the reg entry to match this item
+                        $rowno = $item['metadata']['rowno'];
+                        $results['badges'][$rowno]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
+                        $results['badges'][$rowno]['coupon'] = $coupon['id'];
+                    }
+                }
+            }
+        }
+    }
+    
+    if ($managerDiscount) {
+        $items = $phpOrder['line_items'];
+        foreach ($items as $item) {
+            if (array_key_exists('applied_discounts', $item)) {
+                for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                    $discount = $item['applied_discounts'][$discountNo];
+                    if (str_starts_with($discount['uid'], 'managerDiscount')) {
+                        if (array_key_exists('applied_amount', $discount))
+                            $thisItemDiscount = $discount['applied_amount'];
+                        else
+                            $thisItemDiscount = $discount['applied_money']['amount'];
+                        // now find the reg entry to match this item
+                        $rowno = $item['metadata']['rowno'];
+                        if (!array_key_exists('paid', $results['badges'][$rowno]))
+                            $results['badges'][$rowno]['paid'] = 0;
+                        if (!array_key_exists('couponDiscount', $results['badges'][$rowno]))
+                            $results['badges'][$rowno]['couponDiscount'] = 0;
+                        $results['badges'][$rowno]['couponDiscount'] += $thisItemDiscount / $currencyMultiplier;
+                    }
+                }
+            }
+        }        
+    }
+    
     $rtn = array();
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
-    $phpOrder = json_decode(json_encode($order), true);
     $rtn['items'] = $phpOrder['line_items'];
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
@@ -891,7 +974,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
-    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
+    $cleanUpRegs = $source == 'onlinereg';
 
     // 1. create payment for order
     //  a. create payment object with order id and payment amount plus credit card nonce
@@ -988,7 +1071,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
     }
     catch (SquareApiException $e) {
-        web_error_log('Order Square API Exception: ' . $e->getMessage());
+        web_error_log('Payment Square API Exception: ' . $e->getMessage());
         $ebody = json_decode($e->getBody(),true);
         $errors = $ebody['errors'];
         if ($errors) {
@@ -1025,7 +1108,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
+                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg", 'restoreBtn' => 1,));
                 exit();
             }
         }

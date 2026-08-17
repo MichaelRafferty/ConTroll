@@ -30,7 +30,25 @@ page_init($page,
 
 // create instance of markdown conversion
 $parsedown = new Parsedown();
-echo "<div class='container-fluid'>\n";
+echo <<<EOS
+<style>
+ table {
+       border: 2px solid black;
+       border-collapse: collapse;
+ }
+ th, td {
+       border: 1px solid black;
+       border-collapse: collapse;
+       padding: 10px;
+ }
+
+
+
+
+</style>
+<div class='container-fluid'>
+
+EOS;
 if (array_key_exists('releaseNoteId', $_REQUEST)) {
     $links = releaseNotesHeaderLinks($_REQUEST['releaseNoteId']);
     if ($links != '') {

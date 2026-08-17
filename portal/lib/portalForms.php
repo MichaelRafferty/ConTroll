@@ -38,7 +38,7 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $country
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <form id='editPerson' class='form-floating' action='javascript:void(0);'>
+                        <form id='editPerson' class='form-floating' onsubmit='return false;'>
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
@@ -64,9 +64,9 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $country
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' onclick='<?php echo $closeClick; ?>;' tabindex='10001'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit(false)" tabindex='10002'>Update
+                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onclick="portal.editPersonSubmit(false)" tabindex='10002'>Update
                         Person</button>
-                    <button class='btn btn-sm btn-warning' id='editPersonOverrideBtn' onClick="portal.editPersonSubmit(true)" tabindex='10003' hidden>
+                    <button class='btn btn-sm btn-warning' id='editPersonOverrideBtn' onclick="portal.editPersonSubmit(true)" tabindex='10003' hidden>
                         Override Warnings and Update Person
                     </button>
                 </div>
@@ -78,7 +78,7 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $country
 // drawVerifyInterestsBlock - non modal version of validate interests
 function drawVerifyInterestsBlock($interests) : void {
 ?>
-    <form id='editInterests' class='form-floating' action='javascript:void(0);'>
+    <form id='editInterests' class='form-floating' onsubmit='return false;'>
         <?php
         drawInterestList($interests);
         ?>
@@ -125,7 +125,7 @@ function drawChangeEmailModal() : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='changeEmailSubmitBtn' onClick='portal.checkNewEmail(0)' tabindex='10102' disabled>Change Email
+                    <button class='btn btn-sm btn-primary' id='changeEmailSubmitBtn' onclick='portal.checkNewEmail(0)' tabindex='10102' disabled>Change Email
                     Address</button>
                 </div>
             </div>
@@ -589,7 +589,7 @@ function draw_editInterestsModal($interests) : void {
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <form id='editInterests' class='form-floating' action='javascript:void(0);'>
+                        <form id='editInterests' class='form-floating' onsubmit='return false;'>
                             <input type='hidden' name='id' id='eiPersonId'/>
                             <input type='hidden' name='type' id='eiPersonType'/>
                             <div class="row">
@@ -608,7 +608,7 @@ function draw_editInterestsModal($interests) : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' onclick='portal.checkEditInterestsClose();' tabindex='10301'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='editInterestSubmitBtn' onClick="portal.editInterestSubmit()" tabindex='10302'>Update Interests</button>
+                    <button class='btn btn-sm btn-primary' id='editInterestSubmitBtn' onclick="portal.editInterestSubmit()" tabindex='10302'>Update Interests</button>
                 </div>
             </div>
         </div>
@@ -641,7 +641,7 @@ function draw_PaymentDueModal() : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makeOrder(null,-1)' tabindex='10402'>Pay total amount
+                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onclick='portal.makeOrder(null,-1)' tabindex='10402'>Pay total amount
                         due</button>
                 </div>
             </div>
@@ -815,7 +815,7 @@ function draw_recieptModal() : void {
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='portalEmailReceipt' onClick='portal.emailReceipt("payor")'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='portalEmailReceipt' onclick='portal.emailReceipt("payor")'>Email Receipt</button>
             </div>
         </div>
     </div>
@@ -842,8 +842,8 @@ function draw_addMembershipsConfirmModal() : void {
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
-                    <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
+                    <button class='btn btn-sm btn-secondary' onclick="addConfirmResponse(false)">Not Now</button>
+                    <button class='btn btn-sm btn-primary' id='addConfirmBtn' onclick='addConfirmResponse(true)'>Purchase Memberships</button>
                 </div>
             </div>
         </div>

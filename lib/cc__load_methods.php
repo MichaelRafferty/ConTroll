@@ -213,8 +213,3 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
     );
     return $art;
 }
-
-// compute taxes from the tax arrays
-function cc_computeTax($type, $amount) {
-    return 0; //TODO: write this
-}

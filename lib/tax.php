@@ -304,12 +304,12 @@ function computeTotalTax(&$items) {
         }
     }
 
-    // now recompute the total tax and fudge the
+    // now recompute the total tax and fudge the largest item in the list
     foreach ($taxes as $taxField => $tax) {
-        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100;
-        if ($totalTax != $tax['tax']) { // fudge last item in list to make the pennies add up
+        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100.0;
+        if ($totalTax != $tax['tax']) { // fudge largest item in the list so the decimal part adds up
             $item = $maxItem[$taxField];
-            $item['taxes'][$taxField] += $totalTax - $tax['tax'];
+             $item['taxAmounts'][$taxField] += $totalTax - $tax['tax'];
         }
     }
 

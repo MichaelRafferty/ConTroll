@@ -15,8 +15,6 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $con = get_conf('con');
-$atcon = get_conf('atcon');
-$controll = get_conf('controll');
 $usps = get_conf('usps');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -41,10 +39,10 @@ load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
 
-
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
-$response['discount'] = $atcon['discount'];
+$response['discount'] = getConfValue('atcon', 'discount', 'manager');
+$response['opennote'] = getConfValue('atcon', 'opennote', 'manager');
 $response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
 $response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
 if (isSessionVar('terminal'))

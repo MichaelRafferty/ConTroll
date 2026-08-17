@@ -21,7 +21,13 @@ When appropriate classes should be used to isolate javascript sections.
 
 Javascript should use modals and forms for data entry and tabulator tables for large data displays.
 
-The jquery Ajax method is used for calling functions in the scripts/ directory.
+Javascript forms in ConTroll do not submit back to the webpage itself, but to a script in the scripts directory.  Thus the action= cannotbe used.
+    Instead: use onsubmit="return false;" (or if you need mutiple actions in the onsubmit: onsubmit="other js statements or function calls; return false;"
+    Note: action="javascript:void(0)" is obsolete and actually tries to do a POST to a page called "javascript".
+
+Javascript based tages in HTML code (like onsubmit, onclick, ...): JS is case sensitive, HTML is not: as a coding standard use all lower case for those names.
+
+The jquery Ajax method is used for calling functions in the scripts directory.
 A sample ajax calling sequence:
     $.ajax({
         method: "POST",

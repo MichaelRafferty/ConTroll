@@ -370,7 +370,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
     if ($policies != null && count($policies) > 0) {
     ?>
     </form>
-    <form id='<?php echo $idPrefix;?>editPolicies' class='form-floating' action='javascript:void(0);'>
+    <form id='<?php echo $idPrefix;?>editPolicies' class='form-floating' onsubmit='return false;'>
     <?php
         drawPoliciesBlock($policies, $tabIndexStart + 500, $idPrefix);
     }
@@ -440,7 +440,7 @@ function drawVariablePriceModal($class) : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onclick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
                 </div>
             </div>
         </div>

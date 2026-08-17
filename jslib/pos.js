@@ -28,7 +28,8 @@ class Pos {
     #pay_button_rcpt = null;
     #pay_tid = null;
     #pay_tid_amt = 0;
-    #discount_mode = 'none';
+    #discountMode = 'none';
+    #opennoteMode = 'none';
     #num_coupons = 0;
     #couponList = null;
     #couponSelect = null;
@@ -36,7 +37,6 @@ class Pos {
     #managerDiscount = 0;
     #drow = null;
     #cc_html = '';
-    #purchase_label = 'card-button';
     #pay_currentOrderId = null;
     #preTaxAmt = null;
     #taxAmt = null;
@@ -50,7 +50,8 @@ class Pos {
     #ccNonce = null;
     #totalAmountDue = 0;
     #payPostData = null;
-
+    #paymentElementDiv = null;
+    #payOldText = 'Confirm Pay';
     // Data Items
     #unpaid_table = [];
     #result_perinfo = [];
@@ -192,6 +193,7 @@ class Pos {
         // pay items
         this.#pay_div = document.getElementById('pay-div');
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
+        this.#paymentElementDiv = document.getElementById("payment-element");
 
         // print items
         this.#printDiv = document.getElementById("print-div");
@@ -274,6 +276,14 @@ class Pos {
         return this.#conid;
     }
 
+    getOpennoteMode() {
+        return this.#opennoteMode;
+    }
+
+    getDiscountMode() {
+        return this.#discountMode;
+    }
+
     setPrinterData(data) {
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
@@ -293,7 +303,11 @@ class Pos {
     }
 
     getManager() {
-        return this.#manager == 1 && baseManagerEnabled;
+        return this.#manager == 1;
+    }
+
+    getManagerActive() {
+        return baseManagerEnabled;
     }
 
     isMultiOneDay() {
@@ -414,7 +428,8 @@ class Pos {
         this.#typeList = data.memTypes;
         this.#cc_html = data.cc_html;
         this.#memRules = data.memRules;
-        this.#discount_mode = data.discount;
+        this.#discountMode = data.discount;
+        this.#opennoteMode = data.opennote;
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
             this.#badgePrinterAvailable = data.badgePrinter === true;
@@ -438,8 +453,8 @@ class Pos {
         memListIdx = data.gmemListIdx;
         memRules = data.gmemRules;
 
-        if (this.#discount_mode === undefined || this.#discount_mode === null || this.#discount_mode == '')
-            this.#discount_mode = 'none';
+        if (this.#discountMode === undefined || this.#discountMode === null || this.#discountMode == '')
+            this.#discountMode = 'none';
 
         // build memListMap from memList
         this.#memListMap = new map();
@@ -576,6 +591,8 @@ class Pos {
             };
             let _this = this;
             clear_message();
+            clear_message('ccPayMessageDiv');
+
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_cancelPayment.php",
@@ -715,6 +732,28 @@ class Pos {
         bootstrap.Tab.getOrCreateInstance(this.#find_tab).show();
         this.#pattern_field.focus();
         this.#review_dirty = false;
+        // clear the payment form
+        let id = document.getElementById('pt-online');
+        if (id) {
+            resetCCPay(this.#paymentElementDiv);
+            id.checked = false;
+        }
+        id = document.getElementById('pt-credit');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-cash');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pt-check');
+        if (id) {
+            id.checked = false;
+        }
+        id = document.getElementById('pay-desc');
+        if (id) {
+            id.value = '';
+        }
     }
 
     // add search person/transaction from result_perinfo record to the cart
@@ -1300,8 +1339,9 @@ class Pos {
         }
         html += `</div>
         <div class="col-sm-2">`;
-        if (baseManagerEnabled && this.#manager) {
-            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onClick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
+        if (this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active')) {
+            html += '<button type="button" class="btn btn-sm btn-secondary p-0" onclick="pos.editPerinfoNotes(0, \'result\')">Edit Notes</button>';
         }
 
         html += `
@@ -1436,7 +1476,8 @@ class Pos {
         if (open_notes != null && open_notes.length > 0 && !(baseManagerEnabled && this.#manager)) {
             html += '<button type="button" class="btn btn-sm btn-info p-0" style="--bs-btn-font-size: 75%;"  onclick="pos.showPerinfoNotes(' + index + ', \'' + formatterParams.t + '\')">O</button>';
         }
-        if (baseManagerEnabled && this.#manager) {
+        if (this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active')) {
             let btnclass = "btn-secondary";
             if (open_notes != null && open_notes.length > 0)
                 btnclass = "btn-info";
@@ -1477,6 +1518,9 @@ class Pos {
         this.#notes.show();
         document.getElementById('NotesTitle').innerHTML = "Notes for " + fullName;
         document.getElementById('NotesBody').innerHTML = note.replace(/\n/g, '<br/>');
+        let notewarn = document.getElementById('notesEditWarning');
+        if (notewarn)
+            notewarn.innerHTML = '';
         let notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Close";
         notes_btn.disabled = false;
@@ -1522,6 +1566,10 @@ class Pos {
             '<textarea name="perinfoNote" class="form-control" id="perinfoNote" cols=60 wrap="soft" style="height:400px;">' +
             this.#notesPriorValue +
             "</textarea>";
+        let notewarn = document.getElementById('notesEditWarning');
+        if (notewarn)
+            notewarn.innerHTML = "<br/><b>Warning:</b> Only add new issues to this note. " +
+                "Only document how issues are resolved, or remove resolved issues from this note as appropriate.";
         let notes_btn = document.getElementById('close_note_button');
         notes_btn.innerHTML = "Save and Close";
         notes_btn.disabled = false;
@@ -1711,7 +1759,9 @@ class Pos {
             });
             if (trantbl.length == 1) { // only 1 row, add it to the cart and go to pay tab
                 tid = trantbl[0];
-                for (row in this.#result_perinfo) {
+                for (let prow in this.#result_perinfo) {
+                    let result_membership = this.#result_perinfo[prow].memberships;
+                    for (let row in result_membership)
                     if (result_membership[row].tid == tid) {
                         index = result_membership[row].pindex;
                         pos.addToCart(index, 'result');
@@ -2188,9 +2238,8 @@ class Pos {
         if (couponRow && eldiscount)
             couponRow.hidden = document.getElementById('pt-discount').checked;
 
-        this.#pay_button_pay.innerHTML = 'Confirm Pay';
+        this.#pay_button_pay.textContent = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
-
 
         if (ptype != 'check') {
             document.getElementById('pay-checkno').value = null;
@@ -2206,24 +2255,22 @@ class Pos {
         }
         if (ptype == 'online') {
             if (this.#ccOnlineStarted == false) {
-                let button = document.getElementById('card-button');
-                if (button) {
-                    button.innerHTML = 'Validate Credit Card';
-                    button.disabled = false;
-                }
+                this.#pay_button_pay.innerHTML = 'Pay Credit Card';
+                this.#pay_button_pay.disabled = false;
                 startCC(this.#totalAmountDue * currencyMultiplier);
                 this.#ccOnlineStarted = true;
             }
+        } else {
+            resetCCPay(this.#paymentElementDiv);
+            this.#ccOnlineStarted = false;
+        }
+        if (ptype == 'terminal') {
+            this.#pay_button_pay.innerHTML = 'Send to Terminal';
+            this.#pay_button_pay.disabled = false;
         }
     }
 
-    onlineCCEntered(token, label) {
-        if (label != '') {
-            this.#purchase_label = label;
-        }
-        if (token == 'test_ccnum') {  // this is the test form
-            token = document.getElementById(token).value;
-        }
+    onlineCCEntered(token) {
         this.#ccNonce = token;
         this.#pay_button_pay.disabled = false;
         this.pay('');
@@ -2251,6 +2298,8 @@ class Pos {
         };
         let _this = this;
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/pos_cancelPayment.php",
@@ -2312,6 +2361,13 @@ class Pos {
 
 // Process a payment against the transaction
     pay(nomodal, prow = null, nonce = null) {
+        let pt_online = document.getElementById('pt-online');
+        if (nomodal == 'checkCCType') {
+            if (pt_online != null && pt_online.checked)
+                return; // this is the direct click call, let draw_cc_html handle calling pay from makePurchase()
+            nomodal = '';
+        }
+
         let checked = false;
         let ccauth = null;
         let checkno = null;
@@ -2322,15 +2378,14 @@ class Pos {
         this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
-        let pt_online = document.getElementById('pt-online');
+
         let pt_credit = document.getElementById('pt-credit');
         let pt_terminal = document.getElementById('pt-terminal');
         let pt_discount = document.getElementById('pt-discount');
 
         document.getElementById('overrideRow').hidden = true;
         clear_message();
-        if (config.creditProcessor == 'stripe')
-            clear_message('ccPayMessageDiv');
+        clear_message('ccPayMessageDiv');
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
@@ -2375,6 +2430,7 @@ class Pos {
                 let eltenderedamt = document.getElementById('pay-tendered');
                 tendered_amt = Number(eltenderedamt.value);
                 if (tendered_amt + 0.004 < this.#totalAmountDue) {
+                    show_message("Cannot pay less than the amount due.",'warn');
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
@@ -2403,6 +2459,7 @@ class Pos {
                 ptype = 'discount';
                 desc = eldesc.value;
                 if (desc == null || desc == '') {
+                    show_message("Discount requires an explanation in the Description field",'warn');
                     eldesc.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 } else {
@@ -2424,6 +2481,7 @@ class Pos {
                 checkno = elcheckno.value;
                 if (checkno == null || checkno == '') {
                     elcheckno.style.backgroundColor = 'var(--bs-warning)';
+                    show_message("Check number required",'warn');
                     return;
                 } else {
                     elcheckno.style.backgroundColor = '';
@@ -2436,6 +2494,7 @@ class Pos {
                 let elccauth = document.getElementById('pay-ccauth');
                 ccauth = elccauth.value;
                 if (ccauth == null || ccauth == '') {
+                    show_message("CC Auth Code required",'warn');
                     elccauth.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 } else {
@@ -2452,7 +2511,7 @@ class Pos {
                         return;
                     }
                     alert("Credit Card Processing Error: Unable to obtain nonce token");
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                    this.#pay_button_pay.disabled = false;
                     return;
                 }
                 nonce = this.#ccNonce;
@@ -2465,9 +2524,10 @@ class Pos {
             }
 
             if (!checked) {
+                show_message("Select a payment type",'warn');
                 elptdiv.style.backgroundColor = 'var(--bs-warning)';
                 if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                    this.#pay_button_pay.disabled = false;
                 return;
             }
 
@@ -2476,6 +2536,7 @@ class Pos {
                 discount_amt = Number(eltenderedamt.value);
                 if (discount_amt <= 0 || discount_amt > this.#totalAmountDue) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                    show_message("Discount amount cannot be less than or equal to 0 or exceed the amount due",'warn');
                     return;
                 }
                 this.#drow = {
@@ -2556,10 +2617,18 @@ class Pos {
         this.#pay_button_pay.disabled = true;
         let _this = this;
         clear_message();
-        if (config.creditProcessor == 'stripe')
-            clear_message('ccPayMessageDiv');
+        clear_message('ccPayMessageDiv');
 
         this.#payPostData = postData;
+        let button = null;
+        if (!pt_online)
+            button = this.#pay_button_pay;
+        this.#payOldText = 'Confirm Pay';
+        let priorText = this.#payOldText;
+        if (button) {
+            this.#payOldText = button.textContent;
+            button.textContent = 'Processing...';
+        }
         $.ajax({
             method: "POST",
             url: "scripts/pos_processPayment.php",
@@ -2570,19 +2639,25 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                $('#' + _this.#purchase_label).removeAttr("disabled");
+                if (button)
+                    button.textContent = priorText;
+                else
+                    ccRestoreBtnTxt();
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
     }
 
     // pay action complete - a callback from stripe to complete an authorization required transaction
-    payActionComplete(paymentIntent) {
+    payActionComplete(paymentIntent, post, payParams) {
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = this.#payPostData;
         data.ajax_request_action =  'paymentComplete';
         data.paymentIntent = paymentIntent;
         let _this = this;
+        clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: "scripts/pos_processPayment.php",
             data: data,
@@ -2593,7 +2668,7 @@ class Pos {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                $('#' + _this.#purchase_label).removeAttr("disabled");
+                _this.#pay_button_pay.textContent = _this.#payOldText;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
@@ -2606,7 +2681,7 @@ class Pos {
             let status = stripe_nextActions(data);
             return;
         }
-        $('#' + this.#purchase_label).removeAttr("disabled");
+        this.#pay_button_pay.disabled = false;
 
         // things that stop us cold....
         if (typeof data == 'string') {
@@ -2614,11 +2689,14 @@ class Pos {
             if (data.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
-            } else if (this.#payPoll == 1)
+                return;
+            }
+            if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
                 document.getElementById('pollRow').hidden = false;
-            else
-                this.#pay_button_pay.disabled = false;
+            } else {
+                this.#pay_button_pay.textContent = this.#payOldText;
+            }
             return;
         }
 
@@ -2628,15 +2706,16 @@ class Pos {
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
-            } else if (this.#payPoll == 1)
+            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
+                this.#pay_button_pay.disabled = true;
                 document.getElementById('pollRow').hidden = false;
-            else {
-                this.#pay_button_pay.disabled = false;
+            } else {
+                this.#pay_button_pay.textContent = this.#payOldText;
                 this.#ccNonce = null;
             }
             if (data.restoreBtn)
-                stripeRestoreBtnTxt()
+                ccRestoreBtnTxt()
             return;
         }
 
@@ -2645,15 +2724,16 @@ class Pos {
             if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-                this.#pay_button_pay.disabled = false;
-            } else if (this.#payPoll == 1)
+            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.textContent = 'Poll Required...';
+                this.#pay_button_pay.disabled = true;
                 document.getElementById('pollRow').hidden = false;
-            else {
-                this.#pay_button_pay.disabled = false;
+            }  else {
                 this.#ccNonce = null;
+                this.#pay_button_pay.textContent = this.#payOldText;
             }
             if (data.restoreBtn)
-                stripeRestoreBtnTxt()
+                ccRestoreBtnTxt()
             return;
         }
 
@@ -2662,13 +2742,11 @@ class Pos {
             // warn means we could not get the terminal, ask if we want to override it
             if (data.status != 'OFFLINE') {
                 document.getElementById('overrideRow').hidden = false;
-                this.#pay_button_pay.disabled = false;
                 return;
             }
         }
 
         this.#payPoll = 0;
-        this.#pay_button_pay.disabled = false;
         // and things that continue
         if (data.message !== undefined) {
             show_message(data.message, 'success');
@@ -3015,7 +3093,6 @@ class Pos {
             let pay_html = `
 <div id='payBody' class="container-fluid">
  <div id="payFormDiv" class="container-fluid form-floating">
- <!--<form id='payForm' action='javascript: return false; ' class="form-floating">-->
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
@@ -3066,7 +3143,7 @@ class Pos {
                 pay_html += `
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` +
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">` +
                     this.#currencyFmt.format(Number(this.#managerDiscount).toFixed(2)) + `</div>
     </div>
 `;
@@ -3113,9 +3190,9 @@ class Pos {
             }
             pay_html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">` +
-                this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + `</div>
+        <div class="col-sm-2 ms-0 me-2 p-0"><b>Amount Due:</b></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due"><b>` +
+                this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + `</b></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
@@ -3145,8 +3222,8 @@ class Pos {
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
             <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
-            if (this.#discount_mode != "none" && !coupon.isCouponActive() && this.#drow == null) {
-                if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') &&
+            if (this.#discountMode != "none" && !coupon.isCouponActive() && this.#drow == null) {
+                if (this.#discountMode == 'any' || ((this.#discountMode == 'manager' || this.#discountMode == 'active') &&
                     this.#manager && baseManagerEnabled)) {
                     pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>
@@ -3214,7 +3291,7 @@ class Pos {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pos.pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="pos.pay('checkCCType');">Confirm Pay</button>
         </div>
     </div>
     <div class="row mt-3" id="overrideRow" hidden>
@@ -3234,7 +3311,6 @@ class Pos {
             <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="pos.payPoll(0);">Cancel Payment</button>
         </div>
     </div>
-  <!--</form>-->
 </div>
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
     <div class="row mt-3">
@@ -3534,6 +3610,8 @@ class Pos {
                 user_id: this.#user_id,
             };
             clear_message();
+            clear_message('ccPayMessageDiv');
+
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_cancelPayment.php",

@@ -39,12 +39,12 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                     <div class='modal-title' id="vendor_invoice_title">
                         <strong><?php echo $portalName; ?> Invoice</strong>
                     </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close' onclick='orderCancel();'></button>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class="container-fluid form-floating">
                         <?php outputCustomText('invoice/top'); outputCustomText('invoice/top' . $portalName); ?>
-                        <form id='vendor_invoice_form' class='form-floating' action='javascript:void(0);'  onsubmit='return false;'>
+                        <form id='vendor_invoice_form' class='form-floating' onsubmit='return false;'  onsubmit='return false;'>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="vendor_inv_approved_for"></div>
                         </div>
@@ -210,91 +210,11 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                         <div class="container-fluid form-floating">
                             <div class='container-fluid' id='paymentForDiv'></div>
                         <div class='container-fluid' id='paymentDiv'>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    Payment Information:
-                                </div>
-                            </div>
 <?php
                             $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
-                             <form id='vendor_pay_form' class='form-floating' action='javascript:void(0);' onsubmit='return false;'>
-                             <div class='row'>
-                                 <div class='col-sm-2'>
-                                     <label for='cc_fname'>
-                                         <span class='text-danger'>&bigstar;</span>Name:
-                                     </label>
-                                 </div>
-                                 <div class='col-sm-auto pe-0'>
-                                     <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                             </div>
-                             <div class='row'>
-                                 <div class='col-sm-2'>
-                                     <label for='cc_street'>
-                                         Street:
-                                     </label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                             </div>
-                             <div class='row'>
-                                 <div class='col-sm-2'>
-                                     <label for='cc_city'>City:</label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                                 <div class='col-sm-auto ps-0 pe-0'>
-                                     <label for='cc_state'>State/Prov:</label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                                 <div class='col-sm-auto ps-0 pe-0'>
-                                     <label for='cc_zip'>Zip/PC:</label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"
-                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                             </div>
-                             <div class='row'>
-                                 <div class='col-sm-2'>
-                                     <label for='cc_country'>Country:</label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                      <select id='cc_country' required='required' name='cc_country' size=1 tabindex="<?php echo $tabindex; $tabindex += 2;?>">
-                                          <?php echo $countryOptions; ?>
-                                      </select>
-                                 </div>
-                             </div>
-                             <div class="row">
-                                 <div class="col-sm-2">
-                                     <label for="cc_email">Email:</label>
-                                 </div>
-                                 <div class="col-sm-auto">
-                                      <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"
-                                             tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                 </div>
-                                 <div class='col-sm-auto ps-0 pe-0'>
-                                     <label for='cc_phone'>Phone:</label>
-                                 </div>
-                                 <div class='col-sm-auto'>
-                                     <input type='text' id='cc_phone' size='16' maxlength='24' name='cc_phone'
-                                            tabindex="<?php echo $tabindex; $tabindex += 2; ?>"/>
-                                 </div>
-                             </div>
+                             <form id='vendor_pay_form' class='form-floating' onsubmit='return false;' onsubmit='return false;'>
                              <div class='row'>
                                 <div class='col-sm-12'>
                                     <?php if ($testsite) {
@@ -317,8 +237,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             </div>
                             <div class='row'>
                                 <div class='col-sm-12'>
-                                    <?php echo draw_cc_html('--', 'all'); ?>
-                                    <input type='reset'/>
+                                    <?php echo draw_cc_html('--', 'vendor'); ?>
                                 </div>
                             </div>
                             </form>
@@ -367,8 +286,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             <div class='row mt-3 pb-2'>
                                 <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
-                                    <button class='btn btn-primary btn-sm' type='button' id='card-button' disabled
-                                            onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                                    <button class='btn btn-primary btn-sm mt-2' type='button' id='card-button' disabled
+                                            onclick="exhibitorInvoice.pay('nomodal');" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
                                     <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled

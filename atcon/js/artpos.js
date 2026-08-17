@@ -56,8 +56,11 @@ var payOverride = 0;
 var payPoll = 0;
 var cc_html = '';
 var ccOnlineStarted = false;
-var purchase_label = 'card-button';
 var ccNonce = '';
+var currentCurrency = 'usd';
+var currencyMultiplier = 100;
+var payPostData = null;
+var paymentElementDiv = null;
 
 // release items
 var releaseModal = null;
@@ -109,6 +112,8 @@ const statusCodes = {
 // load mapping tables
 window.onload = function initpage() {
     // current items
+    currentCurrency = config.ccCurrency;
+    currencyMultiplier = config.currencyMultiplier;
     locale = config.locale;
     currencyFmt = new Intl.NumberFormat(locale, {
         style: 'currency',
@@ -149,6 +154,7 @@ window.onload = function initpage() {
     add_found_div = document.getElementById('add-found-div');
     // pay items
     pay_div = document.getElementById('pay-div');
+    paymentElementDiv = document.getElementById("payment-element");
 
     // add events
     find_tab.addEventListener('shown.bs.tab', findShown)
@@ -233,6 +239,8 @@ function startOver(reset_all) {
             user_id: user_id,
         };
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/artpos_cancelPayment.php",
@@ -289,6 +297,12 @@ function startOver(reset_all) {
     // empty cart
     cart.startOver();
     cart.hideRelease();
+    // clear the payment form
+    let id = document.getElementById('pt-online');
+    if (id) {
+        resetCCPay(paymentElementDiv);
+        id.checked = false;
+    }
     // empty search strings and results
     currentPerson = null;
     pickupPerids = null;
@@ -357,6 +371,9 @@ function buildOrder() {
         ajax_request_action: 'buildOrder',
         cart_art: JSON.stringify(cart.getCartArt()),
         perid: currentPerson.id,
+        name: currentPerson.fullName,
+        phone: currentPerson.phone,
+        email: currentPerson.email_addr,
         pay_tid: pay_tid,
     };
     if (pay_currentOrderId) {
@@ -1490,27 +1507,33 @@ function setPayType(ptype) {
     }
     if (ptype == 'online') {
         if (ccOnlineStarted == false) {
-            let button = document.getElementById('card-button');
-            button.innerHTML = 'Validate Credit Card';
-            console.log('calling startCC');
-            startCC();
-            console.log('startCC returned');
+            //console.log('calling startCC');
+            startCC(display_amount_due * currencyMultiplier);
+            //console.log('startCC returned');
             ccOnlineStarted = true;
+            pay_button_pay.disabled = false;
         }
+    } else {
+        resetCCPay(paymentElementDiv);
+        ccOnlineStarted = false;
     }
 }
 
 function makePurchase(token, label) {
-    console.log(token);
-    console.log(label);
-    if (label != '') {
-        purchase_label = label;
-    }
-    if (token == 'test_ccnum') {  // this is the test form
-        token = document.getElementById(token).value;
-    }
-    ccNonce = token;
+    //console.log(token);
+    //console.log(label);
+    // if square or test, nonce is a string, if strip, its an object
+    let nonce = null;
+    if (label == 'stripe-confirm')
+        nonce = JSON.stringify(token);
+    else if (token == 'test_ccnum')
+        nonce = document.getElementById(token).value;
+    else
+        nonce = token;
+
+    ccNonce = nonce;
     pay_button_pay.disabled = false;
+    this.pay('');
 }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
@@ -1534,6 +1557,8 @@ function payPollfcn(action) {
         user_id: user_id,
     };
     clear_message();
+    clear_message('ccPayMessageDiv');
+
     $.ajax({
         method: "POST",
         url: "scripts/artpos_cancelPayment.php",
@@ -1600,6 +1625,12 @@ function pay(nomodal, prow = null, nonce = null) {
     let desc = null;
     let ptype = null;
     let crow = null;
+
+    let onlineRadio = document.getElementById('pt-online');
+    if (nomodal == 'checkCCType') {
+        if (onlineRadio != null && onlineRadio.checked)
+            return; // this is the direct click call, let draw_cc_html handle calling pay from makePurchase()
+    }
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -1685,12 +1716,11 @@ function pay(nomodal, prow = null, nonce = null) {
             checked = true;
         }
 
-        let onlineRadio = document.getElementById('pt-online');
         if (onlineRadio != null && onlineRadio.checked) {
             ptype = 'online';
             if (ccNonce == null) {
                 alert("Credit Card Processing Error: Unable to obtain nonce token");
-                $('#' + purchase_label).removeAttr("disabled");
+                pay_button_pay.disabled = false;
                 return;
             }
             nonce = ccNonce;
@@ -1749,7 +1779,10 @@ function pay(nomodal, prow = null, nonce = null) {
         totalAmtDue: total_amount_due,
     };
     pay_button_pay.disabled = true;
+    payPostData = postData;
     clear_message();
+    clear_message('ccPayMessageDiv');
+
     $.ajax({
         method: "POST",
         url: "scripts/artpos_processPayment.php",
@@ -1764,15 +1797,45 @@ function pay(nomodal, prow = null, nonce = null) {
     });
 }
 
+// pay action complete - a callback from stripe to complete an authorization required transaction
+function payActionComplete(paymentIntent, post, payParams) {
+    // transaction comes from session, person paying come from session, we will compute what was paid
+    let data = payPostData;
+    data.ajax_request_action =  'paymentComplete';
+    data.paymentIntent = paymentIntent;
+    let _this = this;
+    clear_message('');
+    clear_message('ccPayMessageDiv');
+
+    $.ajax({
+        url: "scripts/artpos_processPayment.php",
+        data: data,
+        method: 'POST',
+        success: function (data, textstatus, jqxhr) {
+            paySuccess(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            pay_button_pay.disabled = false;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
+}
+
 // process payment return success
 function paySuccess(data) {
+    // reset the disabled items
+    if (data.status == 'next') {
+        //console.log('need actions');
+        let status = stripe_nextActions(data);
+        return;
+    }
+    pay_button_pay.disabled = false;
     // things that stop us cold....
     if (typeof data == 'string') {
         show_message(data, 'error');
         if (data.includes("cancelled")) {
             payPoll = 0;
             payCurrentRequest = null;
-            pay_button_pay.disabled = false;
         } else if (payPoll == 1)
             document.getElementById('pollRow').hidden = false;
         return;
@@ -1783,7 +1846,6 @@ function paySuccess(data) {
         if (data.error.includes("cancelled")) {
             payPoll = 0;
             payCurrentRequest = null;
-            pay_button_pay.disabled = false;
         }  else if (payPoll == 1)
             document.getElementById('pollRow').hidden = false;
         return;
@@ -1794,7 +1856,6 @@ function paySuccess(data) {
         if (data.data.includes("cancelled")) {
             payPoll = 0;
             payCurrentRequest = null;
-            pay_button_pay.disabled = false;
         } else if (payPoll == 1)
             document.getElementById('pollRow').hidden = false;
         return;
@@ -1810,7 +1871,6 @@ function paySuccess(data) {
     }
 
     payPoll = 0;
-    pay_button_pay.disabled = false;
     // and things that continue
     if (data.message !== undefined) {
         show_message(data.message, 'success');
@@ -1989,10 +2049,10 @@ function showStats(which) {
         ],
     });
 
-    statsTable.on("cellClick", personClicked);
+    statsTable.on("cellClick", personclicked);
 }
 
-function personClicked(e, cell) {
+function personclicked(e, cell) {
     badgeid_field.value = cell.getData().perid;
     findPerson('search');
 }
@@ -2024,7 +2084,7 @@ function drawPay(readWrite = true) {
 // draw the pay amount area first
     let payHtml = `
 <div id='payBody' class="container-fluid form-floating">
-  <form id='payForm' action='javascript: return false; ' class="form-floating">
+  <form id='payForm' onsubmit='return false;' class="form-floating">
     <div class="row pb-2">
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + pay_tid + `</div>
     </div>
@@ -2082,7 +2142,7 @@ function drawPay(readWrite = true) {
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="card-button" onclick="pay('');">Confirm Pay</button>
+            <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" onclick="pay('checkCCType');">Confirm Pay</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
@@ -2425,6 +2485,8 @@ function onExit() {
         };
         let _this = this;
         clear_message();
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             method: "POST",
             url: "scripts/artpos_cancelPayment.php",

@@ -90,12 +90,12 @@ class PaymentPlans {
                     }
 
                     if (plan.memList != null && plan.memList.length > 0) {
-                        if (plan.memListArray.indexOf(mem.id.toString()) == -1)
+                        if (plan.memListArray.indexOf(mem.memId.toString()) == -1)
                             eligible = true;
                     }
 
                     if (plan.excludeList != null && plan.excludeList.length > 0) {
-                        if (plan.excludeListArray.indexOf(mem.id.toString()) != -1)
+                        if (plan.excludeListArray.indexOf(mem.memId.toString()) != -1)
                             eligible = false;
                     }
 
@@ -371,7 +371,7 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
         <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
-    <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
+    <form id="customizePlanForm" class='form-floating' onsubmit='return false;'>
     <div class="row">
         <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.nonPlanAmt.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.planAmt.toFixed(2)) + `</div>

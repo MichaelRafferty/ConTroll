@@ -98,10 +98,10 @@ EOS;
 $updPDt = 'ssssssssssssssssssiii';
 
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status, complete_trans)
-VALUES (?,?,?,?,?,?,?,?,?,now(),?,?);
+INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,updatedBy,create_trans,memId,coupon,create_date,status, complete_trans)
+VALUES (?,?,?,?,?,?,?,?,?,?,now(),?,?);
 EOS;
-$insRDt = 'iidddiiiisi';
+$insRDt = 'iidddiiiiisi';
 
     $updRegSQL = <<<EOS
 UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
@@ -364,7 +364,7 @@ EOS;
                 $mbr['perid'] = $cartrow['perid'];
             }
             $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
-                                 $mbr['paid'], $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
+                                 $mbr['paid'], $user_perid, $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
                                  $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
                                  $mbr['price'] > $mbr['paid'] ? null : $master_transid);
             $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);

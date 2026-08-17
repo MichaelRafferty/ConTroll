@@ -369,7 +369,7 @@ function apply_overall_discount($coupon, $total) {
                         <div class="container-fluid">
                             <div class="row mt-4">
                                 <div class="col-sm-3">Type Coupon Code Here:</div>
-                                <div class="col-sm-auto"><input typye="text" size=16 maxlength-16 id="couponCode" name="couponCode"
+                                <div class="col-sm-auto"><input type="text" size=16 maxlength-16 id="couponCode" name="couponCode"
                                     placeholder="type code here"/></div>
                             </div>
                             <div class='row mt-2 mb-2'>
@@ -378,7 +378,7 @@ function apply_overall_discount($coupon, $total) {
                             </div>
                             <div class='row'>
                                 <div class='col-sm-3'>Paste Coupon Link Here:</div>
-                                <div class='col-sm-auto'><input typye='text' size=64 maxlength="512" id='couponLink' name='couponLink'
+                                <div class='col-sm-auto'><input type='text' size=64 maxlength="512" id='couponLink' name='couponLink'
                                     placeholder='paste link here'/></div>
                             </div>
                             <div class='row'>
@@ -389,7 +389,7 @@ function apply_overall_discount($coupon, $total) {
                     <div class='modal-footer'>
                         <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
                         <button class='btn btn-sm btn-warning' type='button' onclick='coupon.RemoveCouponCode();' id='removeCouponBTN' hidden>Remove Coupon</button>
-                        <button class='btn btn-sm btn-primary' id='acSubmitButton' onClick='coupon.addCouponCode()' tabindex='10102'>Add Coupon</button>
+                        <button class='btn btn-sm btn-primary' id='acSubmitButton' onclick='coupon.addCouponCode()' tabindex='10102'>Add Coupon</button>
                     </div>
                 </div>
             </div>

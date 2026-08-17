@@ -95,7 +95,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
-                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
+                    <form id='f_editPerson' class='form-floating' onsubmit='return false;'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
@@ -109,7 +109,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick="saveEdit('update')">Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onclick="saveEdit('update')">Update Existing Person</button>
                 <button class='btn btn-sm btn-warning' type='button' id='updatePersonOverrideBTN' onclick='saveEdit2()' disabled=''>
                     Overrride Validation Checks and Update Existing Person
                 </button>
@@ -129,7 +129,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
-                    <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
+                    <form id='a_editPerson' class='form-floating' onsubmit='return false;'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
@@ -149,7 +149,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' onclick='addCheckExists();'>Check If Already Exists</button>
                 <button class='btn btn-sm btn-secondary' type='button' id='addPersonBTN' onclick='saveAdd();' disabled>Add New Person
-                <button class='btn btn-sm btn-warning' type='button' id='addPersonOverrideBTN' onClick='saveAdd2()'>
+                <button class='btn btn-sm btn-warning' type='button' id='addPersonOverrideBTN' onclick='saveAdd2()'>
                     Overrride Validation Checks and Add New Person
                 </button>
             </div>
@@ -159,11 +159,11 @@ $config_vars['defaultCountry'] = $defaultCountry;
 <div class='container-fluid'>
     <div class='row mt-2'>
         <div class="col-sm-auto">
-            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Prior Member</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="findExisting();">Find Prior Member</button>
             <input type="text" id="findName" name="findName" size="80" placeholder="Name/Perid/Email/Address"/>
         </div>
         <div class='col-sm-auto'>
-            <button class='btn btn-primary btn-sm' type='button' onClick='addNew();'>Add New Person</button>
+            <button class='btn btn-primary btn-sm' type='button' onclick='addNew();'>Add New Person</button>
         </div>
     </div>
     <div class="row mt-4">

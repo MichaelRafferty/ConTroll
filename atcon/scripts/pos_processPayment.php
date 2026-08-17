@@ -89,8 +89,8 @@ else
 $new_payment = $_POST['new_payment'];
 // if pure discount, newpayment can be null or empty string
 if (is_array($new_payment)) {
-    if (!array_key_exists('amt', $new_payment) || ($discountAmt == 0 && $new_payment['amt'] <= 0) || ($discountAmt > 0 && $new_payment['amt'] < 0)) {
-        ajaxError('invalid payment amount passed: payment <= 0');
+    if (!array_key_exists('amt', $new_payment) && $new_payment['amt'] <= 0) {
+        ajaxSuccess(array('error' => 'invalid payment amount passed: payment <= 0'));
         return;
     }
     $amt = (float) $new_payment['amt'];
@@ -118,13 +118,11 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-$preTaxAmt -= $couponDiscount + $discountAmt;
-
-$offset = $amt - ($preTaxAmt + $taxAmt);
+$offset = $amt - ($preTaxAmt + $taxAmt - ($couponDiscount + $discountAmt));
 if (abs($offset) > 0.008) {
     error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    return;
+    ajaxSucess(array('error' => "Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
+    exit();
 }
 
 try {
@@ -138,8 +136,8 @@ catch (Exception $e) {
     exit();
 }
 if (sizeof($cart_perinfo) <= 0) {
-    ajaxError('The cart is empty');
-    return;
+    ajaxSucess(array('error' => 'The cart is empty'));
+    exit();
 }
 
 if (array_key_exists('drow', $_POST))
@@ -213,7 +211,7 @@ EOS;
     }
 }
 
-if (array_key_exists('coupon', $_POST)) {
+if (array_key_exists('coupon', $_POST) && $_POST['coupon'] != '') {
     $coupon = $_POST['coupon'];
 }
 else {
@@ -221,13 +219,13 @@ else {
 }
 
 $crow = null;
-if (array_key_exists('change', $_POST)) {
+if (array_key_exists('change', $_POST) && $_POST['change'] != '') {
     $crow = $_POST['change'];
     $response['crow'] = $crow;
 }
 
 $couponPayment = null;
-if (array_key_exists('couponPayment', $_POST)) {
+if (array_key_exists('couponPayment', $_POST) && $_POST['couponPayment'] != '') {
     $couponPayment = $_POST['couponPayment'];
     $response['couponPayment'] = $couponPayment;
 }
@@ -238,7 +236,7 @@ $payor_perid = $new_payment['payor']['perid'];
 $payor_country = $new_payment['payor']['country'];
 
 $pay_tid_amt = -1;
-if (array_key_exists('pay_tid_amt', $_POST)) {
+if (array_key_exists('pay_tid_amt', $_POST) && $_POST['pay_tid_amt'] != '') {
     $pay_tid_amt = $_POST['pay_tid_amt'];
 }
 
@@ -259,7 +257,7 @@ EOS;
 }
 
 $change = 0;
-if ($amt > 0 || $discountAmt > 0) {
+if ($amt > 0) {
     if ($new_payment['type'] != 'terminal') {
         // cash, online credit card (square), cash, external: (check, discount, coupon)
         //      everything now goes to square
@@ -340,6 +338,8 @@ if ($amt > 0 || $discountAmt > 0) {
                 $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
                 $taxes = $oRtn['taxes'];
             }
+
+            $paymentAmt = round($amt, 2);
             $ccParam = array (
                 'transid' => $master_tid,
                 'counts' => 0,
@@ -348,7 +348,7 @@ if ($amt > 0 || $discountAmt > 0) {
                 'taxAmt' => $taxAmt,
                 'taxes' => $taxes,
                 'preTaxAmt' => $preTaxAmt,
-                'total' => $amt,
+                'total' => $paymentAmt,
                 'orderId' => $orderId,
                 'nonce' => $nonce,
                 'coupon' => $coupon,
@@ -362,7 +362,6 @@ if ($amt > 0 || $discountAmt > 0) {
             //log requested badges
             labeled_logWrite('pos_processPayment-request',
                 array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
-            load_cc_procs();
             if ($action == 'processPayment')
                 $rtn = cc_payOrder($ccParam, $buyer, true);
             else
@@ -569,7 +568,7 @@ EOS;
     $status = $rtn['status'];
     $transId = $rtn['transId'];
     $category = $rtn['category'];
-    $description = substr($rtn['description'], 0, 64);
+    $description = substr($rtn['description'], 0, 120);
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
     if ($nonce == 'EXTERNAL')
@@ -651,10 +650,10 @@ $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updRegSql = <<<EOS
 UPDATE reg
-SET paid = ?, complete_trans = ?, status = ?, couponDiscount = ?, coupon = ?
+SET paid = ?, complete_trans = ?, status = ?, couponDiscount = ?, coupon = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$ptypestr = 'disdii';
+$ptypestr = 'disdiii';
 $index = 0;
 // allocate pre-tax amount to regs
 $allocateAmt = $preTaxAmt;
@@ -687,11 +686,11 @@ foreach ($cart_perinfo as $perinfo) {
                     $cart_row['couponDiscount'] += $amt_disc;
                     if ($amt_disc == $unpaid) {
                         // row is now completely paid
-                        $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                        $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                         $cart_row['status'] = 'paid';
                         $cart_row['tid2'] = $master_tid;
                     } else {
-                        $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                        $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                     }
                     $allocateDiscount -= $amt_disc;
                 }
@@ -705,11 +704,11 @@ foreach ($cart_perinfo as $perinfo) {
             $cart_row['paid'] += $amt_paid;
             if ($amt_paid == $unpaid) {
                 // row is now completely paid
-                $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
                 $cart_row['status'] = 'paid';
                 $cart_row['tid2'] = $master_tid;
             } else {
-                $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $user_id, $cart_row['regid']);
             }
             $allocateAmt -= $amt_paid;
         }

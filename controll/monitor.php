@@ -46,7 +46,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                     }
                 ?>    
                 </select>
-            <button onClick='getBreakdown()'>Get Con</button>
+            <button onclick='getBreakdown()'>Get Con</button>
 		    </div>
 	    </div>
     </div>

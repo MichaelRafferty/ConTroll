@@ -144,7 +144,7 @@ draw_addMembershipsConfirmModal();
     // enter/verify the information for this persom
 ?>
     <div id='verifyPersonDiv'  class="p-3" style="background-color: lightcyan;">
-        <form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
+        <form id='addUpgradeForm' class='form-floating' onsubmit='return false;'>
 <?php
 outputCustomText('main/step2');
 drawVerifyPersonInfo($policies, $condata['startdate'], $ageList, $countryOptions);

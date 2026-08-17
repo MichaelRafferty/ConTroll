@@ -37,12 +37,14 @@ class Terminals {
         }
         
         // load initial data
-        this.loadTerminals(terminals);
-        // refresh the table
-        for (var i = 0; i < terminals.length; i++) {
-            this.refreshStatus(terminals[i].name,true);
+        if (id) {
+            this.loadTerminals(terminals);
+            // refresh the table
+            for (var i = 0; i < terminals.length; i++) {
+                this.refreshStatus(terminals[i].name, true);
+            }
+            this.dirty = false;
         }
-        this.dirty = false;
     }
 
     loadTerminals(terminals) {

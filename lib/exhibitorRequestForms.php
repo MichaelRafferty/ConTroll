@@ -34,7 +34,7 @@ function draw_exhibitorRequestModal($portalType = '')
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <form id='exhibitor_req_form' action='javascript:void(0)'>
+                        <form id='exhibitor_req_form' onsubmit='return false;'>
                             <?php if ($portalName == 'Vendor') { ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-12 p-2'>
@@ -93,7 +93,7 @@ EOS;
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='exhibitor_req_btn' onClick="spaceReq(0, 0)">Request <?php echo $portalName;?> Space</button>
+                    <button class='btn btn-sm btn-primary' id='exhibitor_req_btn' onclick="spaceReq(0, 0)">Request <?php echo $portalName;?> Space</button>
                 </div>
             </div>
         </div>
