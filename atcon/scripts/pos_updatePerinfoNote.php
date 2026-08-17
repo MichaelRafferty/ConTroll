@@ -27,7 +27,7 @@ if ($user_id != getSessionVar('user')) {
     ajaxError('Invalid credentials passed');
 }
 
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$response = array('post' => $_POST, 'get' => $_GET);
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -46,11 +46,10 @@ if ($user_id == null || $user_id == '') {
 }
 
 // at present ony a manager can update a perinfo note
-    if (!check_atcon('manager', $conid)) {
-        $message_error = 'No permission.';
-        RenderErrorAjax($message_error);
-        exit();
-    }
+if (!check_atcon('manager', $conid)) {
+    $message_error = 'No permission.';
+    RenderErrorAjax($message_error);
+    exit();
 }
 
 // updatePerinfoNote:

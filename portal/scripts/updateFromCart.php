@@ -69,7 +69,8 @@ logInit($log['reg']);
 try {
     $person = json_decode($_POST['person'], true, 512, JSON_THROW_ON_ERROR);
     if ($person == null || (!(array_key_exists('fname', $person) || array_key_exists('first_name', $person) ))) {
-        logWrite(array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => getAllSessionVars()));
+        labeled_logWrite('p/updateFromCard-json_decode failure',
+            array('title'> 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => getAllSessionVars()));
         $response['status'] = 'error';
         $response['message'] = 'Error: fname and first_name fields are missing from person, please seek assistance';
         ajaxSuccess($response);
@@ -333,7 +334,8 @@ EOS;
         dbSafeCmd($uQ, 'ii', array($transId, $transId));
     }
     $response['logmessage'] .= "$num_del Memberships Deleted, $num_ins Memberships Inserted" . PHP_EOL;
-    logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'cart updated', 'cart' => $cart, 'updatedBy' => $loginId));
+    labeled_logWrite('p/updateFromCart',
+        array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'cart updated', 'cart' => $cart, 'updatedBy' => $loginId));
 }
 
 if ($voidTransId) {
@@ -371,6 +373,6 @@ if ($response['message'] == '') {
 }
 
 logInit($log['reg']);
-logWrite($response);
+labeled_logWrite('p/updateFromCard-response', $response);
 
 ajaxSuccess($response);

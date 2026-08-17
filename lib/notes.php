@@ -35,8 +35,7 @@ function drawNotesModal($width = '80%') {
                     <div class='modal-title' id='NotesTitle'>Member Notes</div>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid' id='NotesBody'>
-                    </div>
+                    <div class='container-fluid' id='NotesBody'></div>
                 </div>
                 <div class='modal-footer border-5 border-black'>
                     <button type='button' id='cancel_note_button' class='btn btn-secondary' data-bs-dismiss='modal' hidden>Cancel Add Note</button>

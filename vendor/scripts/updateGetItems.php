@@ -106,13 +106,13 @@ foreach ($data as $index => $row) {
 
 $log = get_conf('log');
 logInit($log['artshow']);
-logWrite("Start of changes made by exhibitor $vendor for year $vendor_year");
+labeled_logWrite('updateGetItems', "Start of changes made by exhibitor $vendor for year $vendor_year");
 $deleted = 0;
 if ($delete_keys != '') {
     $delsql = "DELETE FROM artItems WHERE id in ( $delete_keys );";
     web_error_log("Delete sql = /$delsql/");
     $deleted += dbCmd($delsql);
-    logWrite("Deleted $deleted art items: $delete_keys");
+    labeled_logWrite('updateGetItems', "Deleted $deleted art items: $delete_keys");
 }
 
 $inssql = <<<EOS
@@ -265,13 +265,13 @@ foreach ($data as $index => $row) {
         $vararray = array ($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']);
         $numrows = dbSafeCmd($updsql, $typestr, $vararray);
         $updated += $numrows;
-        logWrite(array ($updsql, $typestr, $vararray, $numrows));
+        labeled_logWrite('updateGetItems-update command', array ($updsql, $typestr, $vararray, $numrows));
     } else { // new!
         $typestr = 'isssiiddii';
         $paramarray = array ($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $conid, $exhibitorRegionYearId);
 
         $numrows = dbSafeCmd($inssql, $typestr, $paramarray);
-        logWrite(array ($inssql, $typestr, $paramarray, $numrows));
+        labeled_logWrite('updateGetItems-insert command', array ($inssql, $typestr, $paramarray, $numrows));
         if ($numrows !== false) {
             $inserted++;
         }
@@ -280,8 +280,8 @@ foreach ($data as $index => $row) {
 
 $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 
-logWrite($response);
-logWrite("End of changes made by exhibitor $vendor for year $vendor_year");
+logWrite('updateGetItems-response: '. $response);
+logWrite("updateGetItems: End of changes made by exhibitor $vendor for year $vendor_year");
 
 $itemQ = <<<EOS
 SELECT i.id, item_key, title, material, type, original_qty, min_price, sale_price, status, 0 as uses

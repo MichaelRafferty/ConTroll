@@ -77,15 +77,16 @@ $mQ = <<<EOS
 UPDATE perinfo
 SET first_name = ?, middle_name = ?, last_name = ?, suffix = ?, legalName = ?, pronouns = ?, badge_name = ?, badgeNameL2 = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, email_addr = ?, currentAgeType = ?, phone = ?,
-    active = ?, banned = ?, deceased = ?, formerGoH = ?
+    active = ?, banned = ?, deceased = ?, formerGoH = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
+$updatedBy = $authToken->getPerid();
 $valArr = array($values['first_name'], $values['middle_name'], $values['last_name'], $values['suffix'], $values['legalName'],
     $values['pronouns'], $values['badge_name'], $values['badgeNameL2'],
     $values['address'], $values['addr_2'], $values['city'], $values['state'], $values['zip'], $values['country'],
     $values['email_addr'], $values['currentAgeType'], $values['phone'], $values['active'], $values['banned'],
-    $values['deceased'], $values['formerGoH'], $remain);
-$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssssi', $valArr);
+    $values['deceased'], $values['formerGoH'], $updatedBy, $remain);
+$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssssii', $valArr);
 if ($numUpd === false) {
     ajaxSuccess(array('status'=>'error', 'error'=>'Cannot update remaining person with the new values'));
     exit();
@@ -132,7 +133,8 @@ $rollback = $row['rollback'];
 
 $log = get_conf('log');
 logInit($log['db']);
-logWrite(array('type' => 'merge', 'merge' => $merge, 'remain' => $remain, 'status' => $status, 'rollback' => $rollback));
+labeled_logWrite('c/mergeExecuteMerge-merge complete',
+    array('type' => 'merge', 'merge' => $merge, 'remain' => $remain, 'status' => $status, 'rollback' => $rollback));
 
 if ($priorDeceased != $values['deceased'] && $values['deceased'] == 'Y') {
     $status .= '<br/>' . cleanDeceasedUser($remain);

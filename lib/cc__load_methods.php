@@ -9,6 +9,10 @@ function load_cc_procs() : void {
             require_once (__DIR__ . "/../Composer/vendor/autoload.php");
             require_once("cc_square.php");
             break;
+        case 'stripe':
+            require_once(__DIR__ . '/../Composer/vendor/autoload.php');
+            require_once('cc_stripe.php');
+            break;
         case 'test':
             if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
                 if (($cc['env'] != 'sandbox') || getConfValue('reg','test') != 1) {
@@ -18,14 +22,6 @@ function load_cc_procs() : void {
             }
             require_once("cc_test.php");
             break;
-        case 'bypass':
-            if (isDirectAllowed()) {
-                require_once("cc_bypass.php");
-                break;
-            } else {
-                echo "Bypass is not a valid credit card processor for this configuration\n";
-                exit();
-            }
         default:
             echo "No valid credit card processor defined\n";
             exit();

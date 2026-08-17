@@ -209,7 +209,7 @@ function drawCreatePane($tabIndex=100)
                 </div>
                 <div class="modal-footer">
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Done</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="createNewItem()">
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onclick="createNewItem()">
                         Create Art Item
                     </button>
                 </div>

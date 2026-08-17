@@ -210,15 +210,17 @@ EOS;
             $values = array ($name_search, $name_search);
         } else {
             $overlapQ = <<<EOS
-SELECT 'p' AS which, id
+SELECT DISTINCT 'p' AS which, p.id
 FROM perinfo p
+JOIN reg r ON r.perid = p.id
 WHERE p.id = ?
 EOS;
             if ($searchTid > 0) {
                 $overlapQ .= <<<EOS
 
-UNION SELECT 't' AS which, id
-FROM transaction t 
+UNION SELECT DISTINCT 't' AS which, t.id
+FROM transaction t
+JOIN reg r ON t.id = r.create_trans
 WHERE t.id = ? AND t.conid IN (?, ?);
 EOS;
                 $typestr = 'iiii';

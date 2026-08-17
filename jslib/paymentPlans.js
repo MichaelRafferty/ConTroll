@@ -371,7 +371,7 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
         <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
-    <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
+    <form id="customizePlanForm" class='form-floating' onsubmit='return false;'>
     <div class="row">
         <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.nonPlanAmt.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.planAmt.toFixed(2)) + `</div>

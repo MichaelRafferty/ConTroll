@@ -11,37 +11,118 @@
 require_once("global.php");
 
 // draw_cc_html - exposed function to draw the credit card HTML window
-//      $cc = array of [cc] section of ini file
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
+function draw_cc_html($postal_code = "--", $type='all') : string {
     $html = '';
     if ($type != 'js') {
         $html .= <<<EOS
-<p>This is a test site, it doesn't really take credit cards</p>
-Scenario: <select name='ccnum' id="test_ccnum">
-	<option value=1>1 - Success</option>
-	<option value=2>2 - Failure</option>
-</select>
-<input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
+<div class="row">
+    <div class="col-sm-12 warn">This is a test site, it doesn't really take credit cards</div>
+</div>
+<div class="row mt-2 mb-2">
+    <div class="col-sm-auto">Test Pay Result:</div>
+    <div class="col-sm-auto">
+         <select name='ccnum' id="test_ccnum">
+            <option value=1>1 - Success</option>
+            <option value=2>2 - Failure</option>
+        </select>
+    </div>
+</div>
+EOS;
+    }
+    if ($type == 'portal' || $type == 'vendor' || $type == 'onlinereg') {
+        $html .= <<<EOS
+<div class="row">
+    <div class="col-sm-12">
+        <button class="btn btn-primary btn-sm mt-2" type="button" id="card-button" value="Pay">
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 mt-1 p-1" id="ccPayMessageDiv"></div>
+</div>
 EOS;
     }
     $html .= <<<EOS
 <script type="text/javascript">
-    function startCC() {
-        console.log("startCC called from cc_test");
+var paySubmitButton = null;
+var paySubmitButtonPayPriorText = '';
+
+const currencyFmtCC = new Intl.NumberFormat(config.locale, {
+      style: 'currency',
+      currency: config.currency,
+        });
+
+    function startCCPay(amount) {
+        return startCC(amount);
+    }
+
+    function startCC(amount) {
+        console.log("startCC called from cc_test, amount=" + amount);
+        paySubmitButton = document.getElementById('card-button');
+        if (paySubmitButton)
+            paySubmitButton.removeAttribute('hidden');
+        
+        paySubmitButtonPayPriorText = paySubmitButton.textContent;
+        if (amount > 0) {
+            paySubmitButton.textContent = "Pay " + currencyFmtCC.format(Number(amount / currencyMultiplier).toFixed(2));
+        } else {
+            paySubmitButton.textContent = "Purchase";
+        }
+        
+        function eventHandler(event) {
+              event.preventDefault();
+              
+              const submitBtn =  document.getElementById("card-button");
+              paySubmitButtonPayPriorText = submitBtn.textContent;
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Processing...';
+
+              makePurchase('test_ccnum', "card-button");
+          };
+          
+          paySubmitButton.addEventListener('click', eventHandler);
+    }
+    
+    function resetCCPay(div) {
+        return;
+    }
+    
+    function ccRestoreBtnTxt() {
+        if (paySubmitButtonPayPriorText != '')
+            paySubmitButton.textContent = paySubmitButtonPayPriorText;
     }
 </script>
 EOS;
     return $html;
 }
 
+
+// get the db currency
+function cc_getCurrency() : string {
+    return strtoupper(getConfValue('con', 'currency', 'USD'));
+}
+
+//  from the stripe docs, useful for others, too.
+global $unitCurrencies;
+$unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
+
+// stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
+function get_currencyMultiplier($currency) {
+    global $unitCurrencies;
+    if (in_array(strtolower($currency), $unitCurrencies)) {
+        return 1.0;
+    }
+    return 100.0;
+}
+
 // build the order structure (fake in this case) to mirror the flow of cc_square
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
-    $cc = get_conf('cc');
     $con = get_conf('con');
     $id = null;
+    $currency = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $currencyMultiplier = get_currencyMultiplier($currency);
 
     $loginPerid = getSessionVar('user_perid');
     $loginNewperid = null;
@@ -152,7 +233,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         } else {
             if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.', 'restoreBtn' => 1,));
             exit();
         }
 
@@ -163,7 +244,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'quantity' => 1,
             'note' => $notesData['note'],
             'metadata' => $notesData['metadata'],
-            'basePriceMoney' => round($results['total'] * 100),
+            'basePriceMoney' => round($results['total'] * $currencyMultiplier),
         ];
         $orderLineItems[] = $item;
         $orderValue = $results['total'];
@@ -172,7 +253,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // Art Sales
     if ($artSales == 1) {
-        $needTaxes = $hasTax;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
             foreach ($results['art'] as $artItem) {
                 if (!array_key_exists('paid', $artItem)) {
@@ -195,12 +275,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => $quantity,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($amount * 100),
+                    'basePriceMoney' => round($amount * $currencyMultiplier),
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item['taxes'] = buildTestAppliedTaxArray('artSales', $lineid);
-                    $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
+                    $taxArray = buildCCAppliedTaxArray('artSales', $lineid);
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
                 }
                 $orderLineItems[] = $item;
                 $orderValue += $artItem['amount'];
@@ -214,10 +297,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $itemsBuilt = true;
     }
 
+    $couponDiscount = false;
+    $managerDiscount = false;
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
-        $couponDiscount = false;
-        $managerDiscount = false;
         // create the coupon or discount amount, if it exists
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
@@ -234,7 +317,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'uid' => 'discount',
                 'name' => mb_substr($couponName, 0, 128),
                 'type' => 'FixedAmount',
-                'amountMoney' => round($results['discount'] * 100),
+                'amountMoney' => round($results['discount'] * $currencyMultiplier),
             ];
             $discountAmt += $item['amountMoney'];
             $orderDiscounts[] = $item;
@@ -293,7 +376,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $notesData['note'],
-                    'basePriceMoney' => round($amount * 100),
+                    'basePriceMoney' => round($amount * $currencyMultiplier),
                     'metadata' => $notesData['metadata'],
                 ];
                 if ($hasTax)  {
@@ -304,7 +387,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     }
 
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $taxArray = buildTestAppliedTaxArray($badgeTaxable, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -343,8 +426,16 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
             if (array_key_exists('discount', $results) && $results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
-                $totalDiscount = $results['discount'] * 100;
+                $totalDiscount = $results['discount'] * $currencyMultiplier;
+                if ($totalDiscount > $totalDiscountable) {
+                    $totalDiscount /= $currencyMultiplier;
+                    $totalDiscountable /= $currencyMultiplier;
+                    ajaxSuccess(array('error' =>
+                        "The total discount of $totalDiscount cannot exceed the total amount discountable of $totalDiscountable"));
+                    exit();
+                }
                 $discountRemaining = $totalDiscount;
+                $orderValue -= $totalDiscount;
                 $lastItemNo = -1;
                 $maxAmt = -1;
                 for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
@@ -357,8 +448,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                                 if ($thisItemDiscount > $discountRemaining)
                                     $thisItemDiscount = $discountRemaining;
                                 $discountRemaining -= $thisItemDiscount;
-                                if ($item['basePriceMoney'] > $maxAmt)
+                                if ($item['basePriceMoney'] > $maxAmt) {
                                     $lastItemNo = $itemNo;
+                                    $maxAmt = $item['basePriceMoney'];
+                                }
                                 $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
                             }
                         }
@@ -383,7 +476,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $spaceType = 'artSpace';
                 } else {
                     $itemName .= $space['exhibitorName'];
-                    $spaceType = 'exhibitSpace';
+                    $spaceType = 'vendorSpace';
                 }
                 $incCount = 0;
                 $addCount = 0;
@@ -401,14 +494,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($space['approved_price'] * 100),
+                    'basePriceMoney' => round($space['approved_price'] * $currencyMultiplier),
                 ];
 
                 // apply taxes to spaces based on the space taxable flag
                 if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildTestAppliedTaxArray($spaceType, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -436,14 +529,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($itemPrice * 100),
+                    'basePriceMoney' => round($itemPrice * $currencyMultiplier),
                 ];
 
                 // apply taxes to mail in fees based on the artShipping flag
                 if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildTestAppliedTaxArray('artShipping', $lineid);
+                    $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -457,6 +550,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
         }
 
+        // TODO: if an item is in plan, set the plan discount to apply only to those line items
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
@@ -468,7 +562,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
                 'metadata' => $notesData['metadata'],
                 'type' => 'FixedAmount',
-                'amountMoney' => round($deferment * 100),
+                'amountMoney' => round($deferment * $currencyMultiplier),
             ];
             $discountAmt += $item['amountMoney'];
             $orderDiscounts[] = $item;
@@ -476,7 +570,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     if ($locationId == null) {
-        $locationId = $cc['location'];
+        $locationId = getConfValue('cc', 'location', null);
     }
 
     $order = [
@@ -510,19 +604,19 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['order'] = $order;
     $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
-    $rtn['discountAmt'] = $discountAmt / 100;
+    $rtn['discountAmt'] = $discountAmt / $currencyMultiplier;
 
     $rtnTaxes = [];
     foreach ($taxAmounts as $taxField => $tax) {
-        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / 100;
+        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / $currencyMultiplier;
         $rtnTaxes[$taxField]['name'] = $tax['name'];
         $taxAmount += $tax['tax'];
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxAmount'] = $taxAmount / 100;
-    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / 100);
-    $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
+    $rtn['taxAmt'] = $taxAmount / $currencyMultiplier;
+    $rtn['taxAmount'] = $taxAmount / $currencyMultiplier;
+    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
+    $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
     $rtn['source'] = $source;
@@ -541,7 +635,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     return $rtn;
 }
 
-// fetch an order to get its details (stub, bypass and test don't keep orders)
+// fetch an order to get its details (test doesn't keep orders)
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null {
     return $_SESSION['ccTestOrder'];
 }
@@ -557,12 +651,9 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
-    $cc = get_conf('cc');
-    $reg = get_conf('reg');
-
-    if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
-        if ($cc['env'] != 'sandbox' || getConfValue('reg','test') != 1) {
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method'));
+    if (getConfValue('cc', 'demo', 0) != 1) { // allow demo override on test for cc
+        if (getConfValue('cc', 'env', '') != 'sandbox' || getConfValue('reg','test') != 1) {
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method', 'restoreBtn' => 1,));
             exit();
         }
     }
@@ -586,7 +677,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
-    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
+    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor';
 
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {
@@ -606,7 +697,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($pNonce[0] != '1') {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number', 'restoreBtn' => 1,));
                 exit();
             }
         } else {
@@ -615,7 +706,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             else if ($pNonce != '1' && $pNonce != 'admin') {
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
-                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number', 'restoreBtn' => 1,));
                 exit();
             }
         }
@@ -685,6 +776,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
 // fetch an order to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $currency = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $currencyMultiplier = get_currencyMultiplier($currency);
     $ccTestResults = $_SESSION['ccTestPayment'];
 
     $payment = [
@@ -717,7 +810,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         'location_id' => $ccTestResults['locationId'],
         'order_id' => $ccTestResults['orderId'],
         'total_money' => [
-            'amount' => $ccTestResults['totalAmt'] * 100,
+            'amount' => $ccTestResults['totalAmt'] * $currencyMultiplier,
             'currency' => 'USD',
         ],
         'approved_money' => [

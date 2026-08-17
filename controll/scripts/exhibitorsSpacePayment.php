@@ -223,7 +223,8 @@ if ($totprice > 0) {
         );
 
         //log requested badges
-        logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $transid, 'results' => $ccParam));
+        labeled_logWrite('exhibitorsSpacePayment-pre cc_payOrder',
+            array ('type' => 'online', 'con' => $con['conname'], 'trans' => $transid, 'results' => $ccParam));
         $rtn = cc_payOrder($ccParam, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array ('error' => 'Credit card not approved'));

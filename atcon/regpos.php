@@ -89,6 +89,8 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['posType'] = 'a';
 $config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
 $config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
+$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
@@ -97,6 +99,9 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+load_cc_procs();
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
@@ -130,9 +135,7 @@ page_init($page, $tab,
     );
 
 if ($config_vars['creditonline'] == 1) {
-    $cc = get_conf('cc');
-    load_cc_procs();
-    echo draw_cc_html($cc, '--', 'js');
+    echo draw_cc_html('--', 'js');
 }
 
 [$ageList, $ageListIdx] = getAgeList($conid);
@@ -278,7 +281,11 @@ if ($config_vars['creditonline'] == 1) {
                     </div>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid' id='NotesBody'>
+                    <div class='container-fluid' id='NotesBody'></div>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm-12' id="notesEditWarning"></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>

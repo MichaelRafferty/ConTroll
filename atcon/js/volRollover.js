@@ -257,7 +257,7 @@ function draw_record() {
             <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(` + data.perid + `);">Rollover</button>`;
         } else {
             html += `
-            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data.memCategory + `</button>`;
+            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="return false;)">Not Eliglble: ` + data.memCategory + `</button>`;
         }
     } else {
         html += `
@@ -336,7 +336,7 @@ function addListIcon(cell, formatterParams, onRendered) { //plain text value
         return '<button type="button" class="btn btn-sm btn-danger p-0 click="rollover_member(' +
             row.perinfo + ')">B</button>';
     } else if (row.memCategory != 'eligible') {
-        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="javascript:void(0)">Not Eligible<br/>(' +
+        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="return false;">Not Eligible<br/>(' +
             row.memCategory + ')</button>';
     } else if (row.shortname === undefined || row.shortname === null) {
         let html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +

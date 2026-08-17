@@ -68,7 +68,7 @@ if ($email == null || $email == '') {
 
 $response['test'] = $test;
 $macroSubstitution = false;
-if ($email_type == 'invReminder')
+if ($email_type == 'invReminder' || $email_type == 'exhAttReminder')
     loadCustomText('exhibitor', 'emails', 'production');
 else
     loadCustomText('controll', 'emails', 'production');
@@ -82,7 +82,7 @@ case 'expire':
     FROM reg r
     JOIN perinfo p ON p.id = r.perid
     JOIN memLabel m ON m.id = r.memId
-    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60 AND p.deceased != 'Y'
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(m.enddate, now()) < 35 AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
@@ -293,13 +293,66 @@ EOQ;
     $email_subject = "Thank you for being in the $regionName. Don't forget to fill out your item registration data";
     break;
 
+case 'exhAttReminder':
+    if (array_key_exists('regionName', $_POST)) {
+        $regionName = $_POST['regionName'];
+    } else {
+        $regionName = 'Art Show';
+    }
+    if (array_key_exists('portalType', $_POST)) {
+        $portalType = $_POST['portalType'];
+    } else {
+        $portalType = 'artist';
+    }
+    if (array_key_exists('exhibitsRegionYearId', $_POST)) {
+        $exhibitsRegionYearId = $_POST['exhibitsRegionYearId'];
+    } else {
+        $response['error'] = 'Invalid parameter for which region year is relevant, seek assistance.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $emailQ = <<<EOQ
+WITH soldCount AS (
+    SELECT ry.id, COUNT(s.item_purchased) AS numPurchased
+    FROM exhibitorSpaces s
+    JOIN exhibitorRegionYears ry ON ry.exhibitsRegionYearId = ? AND s.exhibitorRegionYear = ry.id
+    GROUP BY ry.id
+)
+SELECT 
+      CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email,
+      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName
+FROM exhibitors e
+JOIN exhibitorYears y ON e.id = y.exhibitorId
+JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
+JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
+JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
+JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+WHERE r.conid = ?;
+EOQ;
+    $typestr = 'iii';
+    $paramarray = array ($exhibitsRegionYearId, $exhibitsRegionYearId, $conid);
+    $email_text = returnCustomText($portalType . 'AttReminder/text', null, false);
+    $email_html = returnCustomText($portalType . 'AttReminder/html');
+    $macroSubstitution = true;
+    $email_subject = "Thank you for being in the $regionName. $label starts soon!";
+    break;
+
 default:
     $response['error'] = "invalid email type";
     ajaxSuccess($response);
     exit();
 }
 
-if (str_contains($email_text, 'Controll-Default: This is ') || str_contains($email_html, 'Controll-Default: This is ')) {
+if ($email_text == '' || $email_html == '') {
+    $response['error'] = "The custom text of the text or html version of the $email_type has not been entered yet.<br/>" .
+        'It needs to be edited before sending emails of this type.';
+    ajaxSuccess($response);
+    exit();
+}
+
+if (str_contains($email_text, 'Controll-Default: This is ') ||
+    str_contains($email_html, 'Controll-Default: This is ')) {
     $response['error'] = "The custom text of the text or html version of the $email_type is still the default message.<br/>" .
         "It needs to be edited before sending emails of this type.";
     ajaxSuccess($response);
@@ -332,6 +385,12 @@ if ($test) {
     $email_test = [];
     //$email_array[0]['email'] = $email;
     $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
+    // add macrosubstitution items to email_test
+    if (count($email_array) > 0) {
+        foreach ($email_array[0] as $field =>$value) {
+            $email_test[0][$field] = "test value for $field";
+        }
+    }
     $response['emailTest'] = $email_test;
 }
 

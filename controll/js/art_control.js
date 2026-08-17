@@ -18,6 +18,7 @@ var historyDiv = null;
 var artists = null;
 var editable = false;
 var currencyFmt = null;
+var currentConYear = null;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
 var testdiv = null;
@@ -74,6 +75,13 @@ function setRegion(name, id) {
 function getData() {
     let script = "scripts/artcontrol_getArtItems.php";
     let conYear = document.getElementById('conYear').value;
+    if (currentConYear != conYear) {
+        if (itemTable != null) {
+            itemTable.destroy();
+            itemTable = null;
+        }
+        currentConYear = conYear;
+    }
     let data = {
         region: region,
         conYear: conYear,
@@ -91,6 +99,8 @@ function getData() {
             checkRefresh(data);
             artists=data.artists;
             let artistList = document.getElementById('artItemCreateExhibitor')
+            while (artistList.options.length > 0)
+                artistList.remove(0);
 
             for(artist in artists) {
                 let opt = document.createElement('option')
@@ -117,7 +127,7 @@ function findDuplicates(data) {
         let extKey = exhNum + '_' + key;
         if(extendedKey[extKey]) {
             extendedKey[extKey]++;
-            errorString += exhNum + " has " + extendedKey[extKey] + " items with item # " + key;
+            errorString += "Artist " + exhNum + " has " + extendedKey[extKey] + " art items (rows) with item # " + key + "\nSeek Assistance\n";
 
         } else {
             extendedKey[extKey] = 1;
@@ -139,6 +149,7 @@ function draw(data, textStatus, jqXHR) {
     document.getElementById('artControlPaginationDiv').hidden = data.art.length <= 50;
     if(itemTable != null) {
         itemTable.replaceData(data.art);
+        itemTable.setPagination(data.art.length > 50);
     } else {
         itemTable = new Tabulator('#artItems_table', {
             mxHeight: "800px",

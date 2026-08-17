@@ -36,7 +36,7 @@ $con = get_conf('con');
 $conid=$con['id'];
 $nextconid=$conid + 1;
 
-//var_error_log($_POST);
+//labeled_error_log('exhibitsUpdateCustomTest-_POST", $_POST);
 
 $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];

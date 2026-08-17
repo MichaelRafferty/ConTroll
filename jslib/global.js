@@ -47,6 +47,7 @@ function show_message(message, type = 'success', div='result_message') {
         message_div.classList.add('bg-warning');
     }
     message_div.innerHTML = message;
+    console.log(message);
 
     setTimeout(function() {
         message_div.scrollIntoView({block: 'nearest', inline: 'start'})

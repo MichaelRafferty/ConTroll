@@ -12,6 +12,7 @@ require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
+require_once("../lib/log.php");
 require_once("../lib/tax.php");
 require_once('../lib/cc__load_methods.php');
 
@@ -23,6 +24,7 @@ $portal_conf = get_conf('portal');
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
+logInit(getConfValue('log', 'reg'));
 load_cc_procs();
 $now = date_format(date_create('now'), 'Y-m-d H:i:s');
 
@@ -92,6 +94,11 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
+$config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
+
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;

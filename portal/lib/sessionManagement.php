@@ -102,17 +102,42 @@ EOS;
     $string = encryptCipher($string, true);
     $token = $portal_conf['portalsite'] . "/index.php?vid=$string";     // convert to link for emailing
     load_email_procs();
+    $confLabel = $conf['label'];
+    $adminEmail = $conf['regadminemail'];
     if ($refresh) {
-        $body = 'Here is the session refresh link for the ' . $conf['label'] . ' Membership Portal.' . PHP_EOL . PHP_EOL . $token . PHP_EOL .
-            PHP_EOL .
-            'Click the link to re-verify your email address' . PHP_EOL;
-        $htmlbody = '<p>Here is the refresh link for the ' . $conf['label'] . ' Membership Portal.</p><p><a href="' . $token . '">' .
-            'Click this link to re-verify your email address' . '</a></p>' . PHP_EOL;
+        $body = <<<EOS
+Here is the session refresh link for the $confLabel Membership Portal.
+ 
+$token 
+
+Click the link to re-verify your email address
+
+You are receiving this email because you needed to refresh your session for the $confLabel Membership Portal.
+If you feel this is in error or you need any assistance, please contact us at $adminEmail.
+EOS;
+        $htmlbody = <<<EOS
+<p>Here is the refresh link for the $confLabel Membership Portal.</p>
+<p><a href="$token">Click this link to re-verify your email address</a></p>
+<p>You are receiving this email because you needed to refresh your session for the $confLabel Membership Portal.
+If you feel this is in error or you need any assistance, please contact us at <a href="mailto:$adminEmail">$adminEmail</a>.</p>
+EOS;
     } else {
-        $body = 'Here is the login link you requested for the ' . $conf['label'] . ' Membership Portal.' . PHP_EOL . PHP_EOL . $token . PHP_EOL . PHP_EOL .
-            'Click the link to verify your email address' . PHP_EOL;
-        $htmlbody = '<p>Here is the login link you requested for the ' . $conf['label'] . ' Membership Portal.</p><p><a href="' . $token . '">' .
-            'Click this link to verify your email address' . '</a></p>' . PHP_EOL;
+        $body = <<<EOS
+Here is the login link you requested for the $confLabel Membership Portal.
+
+$token
+
+Click the link to verify your email address
+
+You are receiving this email because you entered this email address to login to the $confLabel Membership Portal with email authentication.
+If you feel this is in error or you need any assistance, please contact us at $adminEmail.
+EOS;
+        $htmlbody = <<<EOS
+<p>Here is the login link you requested for the $confLabel Membership Portal.</p>
+<p><a href="$token">Click this link to verify your email address</a></p>
+<p>You are receiving this email because you entered this email address to login to the $confLabel Membership Portal with email authentication.
+If you feel this is in error or you need any assistance, please contact us at <a href="mailto:$adminEmail">$adminEmail</a>.</p>
+EOS;
     }
 
     $return_arr = send_email($conf['regadminemail'], trim($email), /* cc */ null, $conf['label'] . ' Membership Portal Login Link', $body, $htmlbody);

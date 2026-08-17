@@ -461,6 +461,23 @@ noNewDays=
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
+;;; allow open perinfo note edit/create?
+;; N:opennote
+;; R:V,reg_admin
+;; H:Allow creating / editing open notes in atcon
+;; H+values:
+;; H+  manager - requires manager logged in
+;; H+  active - manager override enabled
+;; H+  any - any POS user can create/edit an open perinfo note
+;; H+  none - disable the creation/edit of an open note
+;; D:l:active,manager,any,none
+;; B:O
+; valid types are
+; 	manager - requires manager logged in
+;	active - manager override enabled
+;	any - any POS user can create/edit an open note
+;	none - disable the creation/edit of an open note
+opennote=active
 ;; N:inlineinventory
 ;; R:H,art_control
 ;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier
@@ -861,6 +878,17 @@ clubname='Club Name'
 ;; D:i6
 ;; B:O
 viewPriorLimit=
+;; N:useGLCodes
+;; R:H,reg_admin
+;; H:Enable GL Code entry/Usage in the system. Default is 1 (enabled).
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 1 to enable
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;glNum and GLLabel are used in reporting financial transactions.  If your convention does not use GL Codes,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;you can disable them appearing in the configuration screens.
+;; H+Note: GL Code are still defined, but all blank (or prior value) if this is disabled
+;; D:l:0,1
+;; B:O
+useGLCodes=1
 ;; N:artEditYear
 ;; R:H,finance
 ;; P:Min Edit Conid
@@ -869,6 +897,40 @@ viewPriorLimit=
 ;; D:i6
 ;; B:O
 artEditYear=
+;;; registration discount allow discounts?
+;; N:discount
+;; R:V,reg_admin
+;; H:Allow disount as a payment type in mail in registration
+;; H+values:
+;; H+  manager - requires reg_admin privs
+;; H+  active - unlike in atcon, this is the same as manager
+;; H+  any - anyone who uses mail in registration can offer a discount
+;; H+  none - disable the discount type of payment
+;; D:l:active,manager,any,none
+;; B:O
+; valid types are
+; 	manager - requires reg_admin privs
+;	active - unlike in atcon, this is the same as manager
+;	any - anyone who uses mail in registration can offer a discount
+;	none - disable the discount type of payment
+discount=active
+;;; allow open perinfo note edit/create?
+;; N:opennote
+;; R:V,reg_admin
+;; H:Allow creating / editing open notes in mail in registration
+;; H+values:
+;; H+  manager - requires reg_admin privs
+;; H+  active - also requires reg_admin privs
+;; H+  any - anyone who uses mail in registration can create/edit an open perinfo note
+;; H+  none - disable the creation/edit of an open note
+;; D:l:active,manager,any,none
+;; B:O
+; valid types are
+; 	manager - requires reg_admin privs
+;	active - also requires reg_admin privs
+;	any - anyone who uses mail in registration can create/edit an open perinfo note
+;	none - disable the creation/edit of an open note
+opennote=active
 ;;;;; ConTroll/Registration: Search for Person ID or Transaction ID
 ;; N:regSearchTransactionId
 ;; R:H,reg_admin

@@ -25,7 +25,6 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
 }
 
 $con = get_conf('con');
-$cc = get_conf('cc');
 $conid = $con['id'];
 $response['conid'] = $conid;
 $ajax_request_action = '';
@@ -52,7 +51,7 @@ load_cc_procs();
  if ($locationId) {
      $locationId = $locationId['locationId'];
  } else {
-     $locationId = $cc['location'];
+     $locationId = getConfValue('cc', 'location', null);
  }
 
  cc_cancelOrder('atcon', $orderId, true, $locationId);

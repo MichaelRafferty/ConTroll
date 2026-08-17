@@ -22,7 +22,8 @@ $conid=$con['id'];
 $nextconid=$conid + 1;
 $year = $conid;
 
-//var_error_log($_POST);
+//labeled_error_log("c/regadmin_updateMemberSetupData-_POST", $_POST);
+
 //ajax_request_action: which save button pushed (memtype, category, curage, nextage
 //tabledata: array of table data
 //tablename: database table

@@ -217,8 +217,14 @@ class consetup {
     <button id="` + this.#setup_type + `conlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoConlist(); return false;" disabled>Redo</button>
     <button id="` + this.#setup_type + `conlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveConlist(); return false;" disabled>Save Changes</button>
 </div>
-<div>&nbsp;</div>
-<h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+<div class="row mt-3">
+    <div class="col-sm-6">
+        <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+    </div>
+   <div class="col-sm-6 text-end">
+       <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_new">How to filter on Start or End Date</a></strong>
+   </div>
+</div>
 `;
         if (!this.#ageListSame) {
             html += `
@@ -368,6 +374,97 @@ class consetup {
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
         this.#memTablePagination = data['memlist'].length > 25;
+        let columns = [
+            {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+            {
+                title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                cellClick: function (e, cell) {
+                    deleterow(e, cell.getRow());
+                }
+            },
+            {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+            {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
+            {
+                title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
+                headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+            },
+            {field: "memlistkey", visible: false,},
+            {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
+            {
+                title: "Category", field: "memCategory",
+                editor: "list", editorParams: {values: data['memCats'],},
+                headerFilter: true, headerFilterParams: {values: data['memCats']}
+            },
+            {
+                title: "Type", field: "memType",
+                editor: "list",  editorParams: {values: data['memTypes'],},
+                headerFilter: true,
+                headerFilterParams: {values: data['memTypes'],}
+            },
+            {
+                title: "Age", field: "memAge",
+                editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
+            },
+            {
+                title: "Label", field: "shortname", width: 200,
+                tooltip: function (e, cell, onRendered) {
+                    return cell.getRow().getCell("label").getValue();
+                },
+                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                formatter: "textarea", headerFilter: true
+            },
+            {title: "Label", field: "label", visible: false},
+            {
+                title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+            },
+            {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
+                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
+            {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
+                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
+            {
+                title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
+                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+            },
+            {
+                title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
+                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+            },
+            {
+                title: "Notes", field: "notes", width: 200,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                headerFilter: true, formatter: "textarea",
+            },
+            {
+                title: "Cart Desc", field: "cartDesc", width: 300,
+                headerFilter: true, formatter: "html",
+            },
+            {
+                title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
+            },
+            {
+                title: "Report Grouping", field: "rptGrouping", width: 200, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, headerFilter: true,
+            }
+        ];
+
+        if (config.useGL == 1) {
+            columns.push({
+                title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
+            },
+            {
+                title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                headerFilter: true, formatter: "textarea",
+            });
+        } else {
+            columns.push({ field: "glNum", visible: false,}, { field: "glLabel", visible: false,});
+        }
+        columns.push({ field: "to_delete", visible: false,},{ field: "catBadgeLabel", visible: false,});
+
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,
@@ -381,89 +478,7 @@ class consetup {
             initialSort:[
                 {column:"sort_order", dir:"asc"}, //sort by this first
             ],
-            columns: [
-                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-                {
-                    title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
-                {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
-                {
-                    title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
-                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-                },
-                {field: "memlistkey", visible: false,},
-                {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
-                {
-                    title: "Category", field: "memCategory",
-                    editor: "list", editorParams: {values: data['memCats'],},
-                    headerFilter: true, headerFilterParams: {values: data['memCats']}
-                },
-                {
-                    title: "Type", field: "memType",
-                    editor: "list",  editorParams: {values: data['memTypes'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['memTypes'],}
-                },
-                {
-                    title: "Age", field: "memAge",
-                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
-                    headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
-                },
-                {
-                    title: "Label", field: "shortname", width: 200,
-                    tooltip: function (e, cell, onRendered) {
-                        return cell.getRow().getCell("label").getValue();
-                    },
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    formatter: "textarea", headerFilter: true
-                },
-                {title: "Label", field: "label", visible: false},
-                {
-                    title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-                },
-                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
-                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
-                {
-                    title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-                },
-                {
-                    title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-                },
-                {
-                    title: "Notes", field: "notes", width: 200,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
-                    headerFilter: true, formatter: "textarea",
-                },
-                {
-                    title: "Cart Desc", field: "cartDesc", width: 300,
-                    headerFilter: true, formatter: "html",
-                },
-                {
-                    title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
-                },
-                {
-                    title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
-                },
-                {
-                    title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true, formatter: "textarea",
-                },
-                {field: "to_delete", visible: false,},
-                {field: "catBadgeLabel", visible: false,},
-            ],
-
+            columns: columns,
         });
 
         this.#memtable.on("dataChanged", function (data) {
@@ -595,6 +610,7 @@ class consetup {
         document.getElementById('editMemListNotes').value = notes;
         let cartDesc = rowData.cartDesc == null ? '' : rowData.cartDesc;
         document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
+        document.getElementById('editMemListRptGrouping').value = rowData.rptGrouping;
         document.getElementById('editMemListGLNum').value = rowData.glNum;
         document.getElementById('editMemListGLLabel').value = rowData.glLabel;
         document.getElementById('catBadgeLabel').innerHTML = rowData.catBadgeLabel;
@@ -932,6 +948,10 @@ class consetup {
             for (let row of tabledata) {
                 let label =  row.shortname;
                 let notes = row.notes;
+                if (label.length > 64) {
+                    valid = false;
+                    message += "Label (shortname) of row " + row.memId + " is too long at " + label.length + ", it cannot exceed 64 characters.<br/>";
+                }
                 if (label.substring(0, 8) == 'Bundle: ') {
                     let indexMark = notes.indexOf('/');
                     if (indexMark < 0) {
@@ -1040,10 +1060,14 @@ class consetup {
             'atcon',
             'online',
             'notes',
-            'glNum',
-            'glLabel',
-            'sort_order',
+            'cartDesc',
+            'badgeLabel',
+            'rptGrouping'
         ];
+        if (config.useGL == 1) {
+            fieldList.push('glNum', 'glLabel');
+        }
+        fieldList.push('sort_order');
         downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
@@ -1269,10 +1293,13 @@ class consetup {
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
-                document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
-                document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                if (config.useGL == 1) {
+                    document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
+                    document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                }
                 document.getElementById('EMLTS' + index + '_badgeLabel').value = this.#editData[index].badgeLabel;
                 document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
                 document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
@@ -1330,6 +1357,7 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.defaultNewRowValues(row, '');
                     this.#editData[index].shortname = shortname;
+                    this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                     this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
@@ -1357,8 +1385,11 @@ class consetup {
                 this.#editData[index].notes = notes;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
-                this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
-                this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping').value;
+                if (config.useGL == 1) {
+                    this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
+                    this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                }
                 index++;
             }
         }
@@ -1371,6 +1402,7 @@ class consetup {
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+        this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
         this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
@@ -1447,8 +1479,11 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
             document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
-            document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
-            document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
+            if (config.useGL == 1) {
+                document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
+                document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            }
             document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
         }
 
@@ -1461,8 +1496,11 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = '';
             document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
             document.getElementById('EMLTS' + index + '_Online').value = 'N';
-            document.getElementById('EMLTS' + index + '_glNum').value = '';
-            document.getElementById('EMLTS' + index + '_glLabel').value = '';
+            document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
+            if (config.useGL == 1) {
+                document.getElementById('EMLTS' + index + '_glNum').value = '';
+                document.getElementById('EMLTS' + index + '_glLabel').value = '';
+            }
             if (bundle) {
                 document.getElementById('EMLTS' + index + '_contains').value = '';
             }
@@ -1737,6 +1775,12 @@ function onlineChange(masterRow) {
     memListModalDirty = true;
 }
 
+// top section edited rptGrouping, set bottom screen
+function rptGroupingChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_rptGrouping').value = document.getElementById('editMemListRptGrouping').value;
+    memListModalDirty = true;
+}
+
 // top section edited glNum, set bottom screen
 function glNumChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_glNum').value = document.getElementById('editMemListGLNum').value;
@@ -1819,6 +1863,14 @@ function tsAtconChange(row) {
 function tsOnlineChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited rpt Grouping, set top screen
+function tsRptGroupingChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListRptGrouping').value = document.getElementById('EMLTS' + row + '_rptGrouping').value;
         memListModalDirty = true;
     }
 }

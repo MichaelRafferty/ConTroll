@@ -45,8 +45,7 @@ $upd_rows = 0;
 $perm_rows = 0;
 
 $data = $_POST['data'];
-//web_error_log("updateUsers:");
-//var_error_log($data);
+//labeled_error_log("c/admin_updateUsers-updateUsers", $data);
 
 // first find all the  rows to delete (those not in the data array or this user)
 $savelist = [];
@@ -81,7 +80,7 @@ while ($user = $res->fetch_assoc()) {
 }
 $res->free();
 
-var_error_log($idmap);
+labeled_error_log("c/admin_UpdateUsers-idmap", $idmap);
 
 $insSQL = <<<EOS
 INSERT INTO atcon_user(perid, conid )
@@ -149,8 +148,7 @@ if ($id != 0) {
 }
 $res->free();
 
-//web_error_log("Current Auth Dump");
-//var_error_log($users);
+//labeled_error_log("c/admin_updateUsers/Current Auth Dump-users", $users);
 
 $delAuthSQL = <<<EOS
 DELETE FROM atcon_auth

@@ -12,12 +12,16 @@ var memListIdx = null;
 var memRules = null;
 var baseManagerEnabled = true;
 var inConTroll = true;
+var currentCurrency = 'usd';
+var currencyMultiplier = 100;
 
 // initialization
 // lookup all DOM elements
 // load mapping tables
 window.onload = function initpage() {
     // set up the constants for objects on the screen
+    currentCurrency = config.ccCurrency;
+    currencyMultiplier = config.currencyMultiplier;
 
     pos = new Pos('r');
     profile = new Profile('', 'registration', 'warncolor');
@@ -63,10 +67,25 @@ function findMembership(id) {
 }
 
 function makePurchase(token, label) {
-    console.log(token);
-    console.log(label);
-    pos.onlineCCEntered(token, label);
+    //console.log(token);
+    //console.log(label);
+
+// if square or test, nonce is a string, if strip, its an object
+    let nonce = null;
+    if (label == 'stripe-confirm')
+        nonce = JSON.stringify(token);
+    else if (token == 'test_ccnum')
+        nonce = document.getElementById(token).value;
+    else
+        nonce = token;
+
+    pos.onlineCCEntered(nonce);
 }
+
+function payActionComplete(paymentIntent, post, payParams) {
+    pos.payActionComplete(paymentIntent, post, payParams);
+}
+
 
 function countryChange() {
     console.log("TODO: add country Change/USPS check");

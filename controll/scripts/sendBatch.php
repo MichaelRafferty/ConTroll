@@ -118,6 +118,18 @@ foreach ($email_array as $email) {
             $sendtext = str_replace('[[enddate]]', $email['enddate'], $sendtext);
             $sendhtml = str_replace('[[enddate]]', $email['enddate'], $sendhtml);
         }
+        if (array_key_exists('ownerName', $email)) {
+            $sendtext = str_replace('[[ownerName]]', $email['ownerName'], $sendtext);
+            $sendhtml = str_replace('[[ownerName]]', $email['ownerName'], $sendhtml);
+        }
+        if (array_key_exists('ownerEmail', $email)) {
+            $sendtext = str_replace('[[ownerEmail]]', $email['ownerEmail'], $sendtext);
+            $sendhtml = str_replace('[[ownerEmail]]', $email['ownerEmail'], $sendhtml);
+        }
+        if (array_key_exists('regionName', $email)) {
+            $sendtext = str_replace('[[regionName]]', $email['regionName'], $sendtext);
+            $sendhtml = str_replace('[[regionName]]', $email['regionName'], $sendhtml);
+        }
         if (array_key_exists('guid', $email)) {
             $cc = 'offer=' . base64_encode_url($code . '~!~' . $email['guid']);
             $sendtext = str_replace('[[CouponCode]]', $cc, $sendtext);

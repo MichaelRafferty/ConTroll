@@ -47,7 +47,7 @@ $(function() {
 });
 </script>
 <div id='editDialog'>
-    <form id='editForm' action='javascript:void(0)'>
+    <form id='editForm' onsubmit='return false;'>
       <input type='hidden' name='id'/>
       <table class='formalign'>
         <thead id='editPersonFormId'>
@@ -123,7 +123,7 @@ $(function() {
         <tfoot id="editPersonFormButtons">
             <tr>
                 <td colspan=5>
-                    <input type="submit" value="Update Person" onClick='submitUpdateForm("#editForm", "scripts/editPerson.php", getUpdated, null)'/>
+                    <input type="submit" value="Update Person" onclick='submitUpdateForm("#editForm", "scripts/editPerson.php", getUpdated, null)'/>
                     <input type="reset"/>
                 </td>
             </tr>
@@ -132,7 +132,7 @@ $(function() {
     </form>
 </div>
 <div id='newPerson' class='popup'>
-  <form id='newPersonForm' action='javascript:void(0)'>
+  <form id='newPersonForm' onsubmit='return false;'>
   <input type='hidden' id='newID' name='newID' value=''/>
   <input type='hidden' id='oldID' name='conflictOldIDfield' value=''/>
   <table>
@@ -245,11 +245,11 @@ $(function() {
       <tr>
         <td colspan=6>
           <button tabindex=14 type='submit' id='checkConflict'
-            onClick='testValid("#newPersonForm") && checkForReg("#newPersonForm"); return false'
+            onclick='testValid("#newPersonForm") && checkForReg("#newPersonForm"); return false'
           >Check Person</button>
           <button type='submit' id='updatePerson'
-            onClick='testValid("#newPersonForm") && submitForm("#newPersonForm", "scripts/oldEditPersonFromConflict.php", updatePersonCatch, null); return false'>Update</button>
-          <button type='reset' id='newPersonClose' onClick='$("#newPerson").hide(); return true;'>Close</button>
+            onclick='testValid("#newPersonForm") && submitForm("#newPersonForm", "scripts/oldEditPersonFromConflict.php", updatePersonCatch, null); return false'>Update</button>
+          <button type='reset' id='newPersonClose' onclick='$("#newPerson").hide(); return true;'>Close</button>
       </tr>
     </tfoot>
     </table>
@@ -265,21 +265,21 @@ $(function() {
     </div>
 <div class='half'>
   <div id="searchPerson"><span class="blocktitle">Search Person</span>
-    <a class='showlink' id='searchPersonShowLink' href='javascript:void(0)'
-      onclick='showBlock("#searchPerson")'>(show)</a>
-    <a class='hidelink' id='searchPersonHideLink' href='javascript:void(0)'
-      onclick='hideBlock("#searchPerson")'>(hide)</a>
-    <form class='inline' id="findPerson" method="GET" action="javascript:void(0)">
+    <a class='showlink' id='searchPersonShowLink' href='#'
+      onclick='showBlock("#searchPerson"); return false;'>(show)</a>
+    <a class='hidelink' id='searchPersonHideLink' href='#'
+      onclick='hideBlock("#searchPerson"); return false;'>(hide)</a>
+    <form class='inline' id="findPerson" method="GET" onsubmit="return false;">
       Name: <input type="text" name="full_name" id="findPersonFullName"/>
-      <input type="submit" value="Find" onClick='findPerson("#findPerson")'/>
+      <input type="submit" value="Find" onclick='findPerson("#findPerson")'/>
     </form>
-    <button id='newPersonShow' onClick='$("#newPerson").show()'>New Person</button>
+    <button id='newPersonShow' onclick='$("#newPerson").show()'>New Person</button>
   </div>
   <div id='clubList'><span class="blocktitle">Club List</span>
-    <a class='showlink' id='clubListShowLink' href='javascript:void(0)'
-      onclick='showBlock("#clubList")'>(show)</a>
-    <a class='hidelink' id='clubListHideLink' href='javascript:void(0)'
-      onclick='hideBlock("#clubList")'>(hide)</a>
+    <a class='showlink' id='clubListShowLink' href='#'
+      onclick='showBlock("#clubList"); return false;'>(show)</a>
+    <a class='hidelink' id='clubListHideLink' href='#'
+      onclick='hideBlock("#clubList"); return false;'>(hide)</a>
     <table id='clubListForm'>
       <thead>
         <tr>

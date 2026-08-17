@@ -60,7 +60,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
     <div class='row mt-3'>
         <div class='col-sm-1'></div>
         <div class='col-sm-auto'>
-            <button class='btn btn-primary btn-sm' type='button' onClick='findRegs();' tabindex='20'>Find Registrations</button>
+            <button class='btn btn-primary btn-sm' type='button' onclick='findRegs();' tabindex='20'>Find Registrations</button>
         </div>
     </div>
     <div class='row mt-2'>

@@ -278,7 +278,7 @@ function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : a
     $con = get_conf('con');
     $squareDebug = getConfValue('debug', 'square', 0);
 
-    $currency = cc_getCurrency($con);
+    $currency = cc_getCurrency();
 
     // get the device name
     $terminal = getTerminal($name);
@@ -451,7 +451,7 @@ function sqterm_logObject($squareDebug, $objArray, $useLogWrite = false) : void 
         // stretched out for debugging breaksteps to see it in the debugger
         $response = json_encode($objArray[1]);
         $response = json_decode($response, true);
-        var_error_log($response, true);
+        labeled_error_log("term_square/sqterm_logobject-response", $response, true);
     }
 }
 

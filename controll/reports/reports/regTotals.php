@@ -92,7 +92,7 @@ WITH compRegs AS (
        WHEN r.price = 0 THEN r.create_date
        ELSE IFNULL(t.complete_date, r.create_date)
     END, '%Y-%m-%d') AS complete_date, 
-    r.id, m.memType, m.memCategory, m.memAge, r.paid, r.price, r.status, m.label, m.glLabel, 
+    r.id, m.memType, m.memCategory, m.memAge, r.paid, r.price, r.status, m.label, m.rptGrouping, 
     DATE_FORMAT(CASE 
        WHEN r.price = 0 THEN r.create_date
        ELSE IFNULL(t.complete_date, r.create_date)
@@ -102,14 +102,13 @@ WITH compRegs AS (
     LEFT OUTER JOIN perinfo p ON r.perid = p.id
     JOIN memList m ON r.memId = m.id
     JOIN ageList a ON a.conid = r.conid AND a.ageType = m.memAge
-    WHERE (r.conid = ? AND m.memCategory != 'yearahead' OR (r.conid = ? AND m.memCategory = 'yearahead')) 
-        AND IFNULL(p.deceased, 'N') != 'Y'
+    WHERE r.conid = ? AND IFNULL(p.deceased, 'N') != 'Y'
 )
 SELECT * FROM compRegs WHERE month BETWEEN ? AND ?
 ORDER BY complete_date
 EOS;
 
-    $rR = dbSafeQuery($rQ, 'iiss', array($conid, $conid + 1, $whereStartStr, $endStr));
+    $rR = dbSafeQuery($rQ, 'iss', array($conid, $whereStartStr, $endStr));
 
     // get the months (horizontal columns for the table while looping the actual data into the reg array
     $regs = [];
@@ -146,8 +145,6 @@ EOS;
 
     // build the tabulator specs, for the columns across a row, col1 = the title of the row
     $columns = [];
-
-
     $labelRowCols = ['rowTitle' => 'label'];
     // if doing it by month, loop over the months adding each column
     if ($groupBy == 'm') {
@@ -200,14 +197,14 @@ EOS;
         'columns' => $columns,
     ];
     
-    $attGL = [];
-    $compGL = [];
-    $onlGL = [];
-    $wsfsGL = [];
-    $preGL = [];
-    $otherGL = [];
+    $attGRP = [];
+    $compGRP = [];
+    $onlGRP = [];
+    $wsfsGRP = [];
+    $preGRP = [];
+    $otherGRP = [];
     for ($i = 0; $i < count($regs); $i++) {
-        //attending memberships by gl label
+        //attending memberships by report grouping
         $reg = $regs[$i];
         $status = $reg['status'];
         $type = $reg['memType'];
@@ -219,91 +216,91 @@ EOS;
         if ($groupBy == 'm' && $month < $startStr) {
             $month = "Before $startStr";
         }
-        $glLabel = $reg['glLabel'];
+        $rptGrouping = $reg['rptGrouping'];
         $label = $reg['label'];
-        if ($glLabel != '') { // Sections 1-5
+        if ($rptGrouping != '') { // Sections 1-5
             if (($type == 'full' || $type == 'oneday') && ($status == 'paid' || $status == 'plan') &&
                 ($price > 0.0 || $age == 'child' || $age == 'kit' || str_contains(strtolower($label), 'upgrade'))) {
                 // Section 1: attending section rules
                 //      status is paid or plan, type = full or one day, price > 0 or label contains 'upgrade', or any age child
-                if (!array_key_exists($glLabel, $attGL)) {
-                    $attGL[$glLabel] = [];
-                    $attGL[$glLabel]['rowTitle'] = $glLabel;
+                if (!array_key_exists($rptGrouping, $attGRP)) {
+                    $attGRP[$rptGrouping] = [];
+                    $attGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $attGL[$glLabel][$columns[$c]['field']] = 0;
+                        $attGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $attGL[$glLabel][$month]++;
+                    $attGRP[$rptGrouping][$month]++;
                 }
-                $attGL[$glLabel]['total']++;
+                $attGRP[$rptGrouping]['total']++;
             } else if ($price == 0 && ($type == 'full' || $type == 'oneday')  && ($status == 'paid' || $status == 'plan')) {
                 // Section 2: Comp Attending
-                if (!array_key_exists($glLabel, $compGL)) {
-                    $compGL[$glLabel] = [];
-                    $compGL[$glLabel]['rowTitle'] = $glLabel;
+                if (!array_key_exists($rptGrouping, $compGRP)) {
+                    $compGRP[$rptGrouping] = [];
+                    $compGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $compGL[$glLabel][$columns[$c]['field']] = 0;
+                        $compGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $compGL[$glLabel][$month]++;
+                    $compGRP[$rptGrouping][$month]++;
                 }
-                $compGL[$glLabel]['total']++;
+                $compGRP[$rptGrouping]['total']++;
             } else if ($type == 'virtual' && ($status == 'paid' || $status == 'plan')) {
                 // Section 3: Online
-                if (!array_key_exists($glLabel, $onlGL)) {
-                    $onlGL[$glLabel] = [];
-                    $onlGL[$glLabel]['rowTitle'] = $glLabel;
+                if (!array_key_exists($rptGrouping, $onlGRP)) {
+                    $onlGRP[$rptGrouping] = [];
+                    $onlGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $onlGL[$glLabel][$columns[$c]['field']] = 0;
+                        $onlGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $onlGL[$glLabel][$month]++;
+                    $onlGRP[$rptGrouping][$month]++;
                 }
-                $onlGL[$glLabel]['total']++;
+                $onlGRP[$rptGrouping]['total']++;
             } else if ($type == 'wsfs'  && $status == 'paid') {
                 // Section 4: WSFS
-                if (!array_key_exists($glLabel, $wsfsGL)) {
-                    $wsfsGL[$glLabel] = [];
-                    $wsfsGL[$glLabel]['rowTitle'] = $glLabel;
+                if (!array_key_exists($rptGrouping, $wsfsGRP)) {
+                    $wsfsGRP[$rptGrouping] = [];
+                    $wsfsGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $wsfsGL[$glLabel][$columns[$c]['field']] = 0;
+                        $wsfsGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $wsfsGL[$glLabel][$month]++;
+                    $wsfsGRP[$rptGrouping][$month]++;
                 }
-                $wsfsGL[$glLabel]['total']++;
+                $wsfsGRP[$rptGrouping]['total']++;
             } else if (strtolower($type) == 'presupport' && $status == 'paid') {
                 // Section 5: Presupport
-                if (!array_key_exists($glLabel, $preGL)) {
-                    $preGL[$glLabel] = [];
-                    $preGL[$glLabel]['rowTitle'] = $glLabel;
+                if (!array_key_exists($rptGrouping, $preGRP)) {
+                    $preGRP[$rptGrouping] = [];
+                    $preGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $preGL[$glLabel][$columns[$c]['field']] = 0;
+                        $preGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $preGL[$glLabel][$month]++;
+                    $preGRP[$rptGrouping][$month]++;
                 }
-                $preGL[$glLabel]['total']++;
+                $preGRP[$rptGrouping]['total']++;
             } else if ($type != 'donation' && ($status == 'paid' || $status == 'plan')) {
                 // Section 6: Other, not donation
-                if ($glLabel == '')
-                    $glLabel = 'Label: ' . $reg['label'];
-                if (!array_key_exists($glLabel, $otherGL)) {
-                    $otherGL[$glLabel] = [];
-                    $otherGL[$glLabel]['rowTitle'] = $glLabel;
+                if ($rptGrouping == '')
+                    $rptGrouping = 'Label: ' . $reg['label'];
+                if (!array_key_exists($rptGrouping, $otherGRP)) {
+                    $otherGRP[$rptGrouping] = [];
+                    $otherGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
                     for ($c = 1; $c < count($columns); $c++) {
-                        $otherGL[$glLabel][$columns[$c]['field']] = 0;
+                        $otherGRP[$rptGrouping][$columns[$c]['field']] = 0;
                     }
                 }
                 if ($groupBy == 'm') {
-                    $otherGL[$glLabel][$month]++;
+                    $otherGRP[$rptGrouping][$month]++;
                 }
-                $otherGL[$glLabel]['total']++;
+                $otherGRP[$rptGrouping]['total']++;
             }
         }
         
@@ -315,23 +312,23 @@ EOS;
     // Section 1 Attending
     $labelRowCols['rowTitle'] = '<b>Attending Memberships</b>';
     $tableData[] = $labelRowCols;
-    $GLs = array_keys($attGL);
-    sort($GLs, SORT_STRING);
+    $GRPs = array_keys($attGRP);
+    sort($GRPs, SORT_STRING);
     $first = true;
     $totals = [];
     $totals['rowTitle'] = '<b>Total Attending</b>';
-    foreach ($GLs AS $gl) {
+    foreach ($GRPs AS $grp) {
         if ($first) {
-            $totals = $attGL[$gl];
+            $totals = $attGRP[$grp];
             $totals['rowTitle'] = '<b>Total Attending</b>';
             $first = false;
         } else {
-            foreach ($attGL[$gl] as $name => $value) {
+            foreach ($attGRP[$grp] as $name => $value) {
                 if ($name != 'rowTitle')
                     $totals[$name] += $value;
             }
         }
-        $tableData[] = $attGL[$gl];
+        $tableData[] = $attGRP[$grp];
     }
     $tableData[] = $totals;
     $tableData[] = [];
@@ -339,126 +336,126 @@ EOS;
     // Section 2 Comps
     $labelRowCols['rowTitle'] = '<b>Comp Memberships</b>';
     $tableData[] = $labelRowCols;
-    $GLs = array_keys($compGL);
-    sort($GLs, SORT_STRING);
+    $GRPs = array_keys($compGRP);
+    sort($GRPs, SORT_STRING);
     $first = true;
     $totals = [];
     $totals['rowTitle'] = '<b>Total Comps</b>';
-    foreach ($GLs AS $gl) {
+    foreach ($GRPs AS $grp) {
         if ($first) {
-            $totals = $compGL[$gl];
+            $totals = $compGRP[$grp];
             $totals['rowTitle'] = '<b>Total Comps</b>';
             $first = false;
         } else {
-            foreach ($compGL[$gl] as $name => $value) {
+            foreach ($compGRP[$grp] as $name => $value) {
                 if ($name != 'rowTitle')
                     $totals[$name] += $value;
             }
         }
-        $tableData[] = $compGL[$gl];
+        $tableData[] = $compGRP[$grp];
     }
     $tableData[] = $totals;
     $tableData[] = [];
 
     // Section 3 Online
-    if (count($onlGL) > 0) {
+    if (count($onlGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Online Memberships</b>';
         $tableData[] = $labelRowCols;
-        $GLs = array_keys($onlGL);
-        sort($GLs, SORT_STRING);
+        $GRPs = array_keys($onlGRP);
+        sort($GRPs, SORT_STRING);
         $first = true;
         $totals = [];
         $totals['rowTitle'] = '<b>Total Online</b>';
-        foreach ($GLs as $gl) {
+        foreach ($GRPs as $grp) {
             if ($first) {
-                $totals = $onlGL[$gl];
+                $totals = $onlGRP[$grp];
                 $totals['rowTitle'] = '<b>Total Online</b>';
                 $first = false;
             } else {
-                foreach ($onlGL[$gl] as $name => $value) {
+                foreach ($onlGRP[$grp] as $name => $value) {
                     if ($name != 'rowTitle')
                         $totals[$name] += $value;
                 }
             }
-            $tableData[] = $onlGL[$gl];
+            $tableData[] = $onlGRP[$grp];
         }
         $tableData[] = $totals;
         $tableData[] = [];
     }
     
     // Section 4 WSFS
-    if (count($wsfsGL) > 0) {
+    if (count($wsfsGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>WSFS Memberships</b>';
         $tableData[] = $labelRowCols;
-        $GLs = array_keys($wsfsGL);
-        sort($GLs, SORT_STRING);
+        $GRPs = array_keys($wsfsGRP);
+        sort($GRPs, SORT_STRING);
         $first = true;
         $totals = [];
         $totals['rowTitle'] = '<b>Total WSFS</b>';
-        foreach ($GLs as $gl) {
+        foreach ($GRPs as $grp) {
             if ($first) {
-                $totals = $wsfsGL[$gl];
+                $totals = $wsfsGRP[$grp];
                 $totals['rowTitle'] = '<b>Total WSFS</b>';
                 $first = false;
             } else {
-                foreach ($wsfsGL[$gl] as $name => $value) {
+                foreach ($wsfsGRP[$grp] as $name => $value) {
                     if ($name != 'rowTitle')
                         $totals[$name] += $value;
                 }
             }
-            $tableData[] = $wsfsGL[$gl];
+            $tableData[] = $wsfsGRP[$grp];
         }
         $tableData[] = $totals;
         $tableData[] = [];
     }
     
     // Section 5 PreSupport
-    if (count($preGL) > 0) {
+    if (count($preGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Presupport Memberships</b>';
         $tableData[] = $labelRowCols;
-        $GLs = array_keys($preGL);
-        sort($GLs, SORT_STRING);
+        $GRPs = array_keys($preGRP);
+        sort($GRPs, SORT_STRING);
         $first = true;
         $totals = [];
         $totals['rowTitle'] = '<b>Total Presupport</b>';
-        foreach ($GLs as $gl) {
+        foreach ($GRPs as $grp) {
             if ($first) {
-                $totals = $preGL[$gl];
+                $totals = $preGRP[$grp];
                 $totals['rowTitle'] = '<b>Total Presupport</b>';
                 $first = false;
             } else {
-                foreach ($preGL[$gl] as $name => $value) {
+                foreach ($preGRP[$grp] as $name => $value) {
                     if ($name != 'rowTitle')
                         $totals[$name] += $value;
                 }
             }
-            $tableData[] = $preGL[$gl];
+            $tableData[] = $preGRP[$grp];
         }
         $tableData[] = $totals;
         $tableData[] = [];
     }
     
     // Section 6 Other
-    if (count($otherGL) > 0) {
+    if (count($otherGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Other Memberships</b>';
         $tableData[] = $labelRowCols;
-        $GLs = array_keys($otherGL);
-        sort($GLs, SORT_STRING);
+        $GRPs = array_keys($otherGRP);
+        sort($GRPs, SORT_STRING);
         $first = true;
         $totals = [];
         $totals['rowTitle'] = '<b>Total Other</b>';
-        foreach ($GLs as $gl) {
+        foreach ($GRPs as $grp) {
             if ($first) {
-                $totals = $otherGL[$gl];
+                $totals = $otherGRP[$grp];
                 $totals['rowTitle'] = '<b>Total Other</b>';
                 $first = false;
             } else {
-                foreach ($otherGL[$gl] as $name => $value) {
+                foreach ($otherGRP[$grp] as $name => $value) {
                     if ($name != 'rowTitle')
                         $totals[$name] += $value;
                 }
             }
-            $tableData[] = $otherGL[$gl];
+            $tableData[] = $otherGRP[$grp];
         }
         $tableData[] = $totals;
     }

@@ -41,7 +41,7 @@ EOS;
     $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password', 3);
     $html .= <<<EOH
     <div class='container-fluid'>
-        <form id='changepw' action='javascript:void(0)'>
+        <form id='changepw' onsubmit='return false;'>
         $o
         <div class='row mt-1'>
             <div class='col-sm-$width'>
@@ -66,7 +66,7 @@ EOH;
         <div class='row mt-2'>
             <div class='col-sm-$width'></div>
             <div class='col-sm-8'>
-                <button class='btn btn-sm btn-primary' onClick='changePassword()' tabindex = 5>Change Password</button>
+                <button class='btn btn-sm btn-primary' onclick='changePassword()' tabindex = 5>Change Password</button>
             </div>
         </div>
         </form>
@@ -120,7 +120,7 @@ function draw_passwordModal() {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' tabindex=5 data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' tabindex=6, onClick='changePassword()'>Change Password</button>
+                    <button class='btn btn-sm btn-primary' tabindex=6, onclick='changePassword()'>Change Password</button>
                 </div>
             </div>
         </div>

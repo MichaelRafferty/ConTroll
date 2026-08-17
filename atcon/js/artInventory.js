@@ -431,18 +431,21 @@ function draw_cart_row(rownum) {
             html += item.id + '<span class="right">'+item.action+'</span></div>'
                 + item.exhibitorName + ': ' + item.title + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
-                + 'Art Item @ ' + item.status + '<br/>';
+                + 'Art Item status @ ' + item.status + '<br/>';
             action_html += '<br/>';
             if (show_location) {
               if (item.need_location) {
-                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id +
+                    `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               } else {
-                action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id +
+                    `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
             if (item.status == 'BID') {
-                action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id +
+                    `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
@@ -464,18 +467,18 @@ function draw_cart_row(rownum) {
             }
 
             if (item.status == 'Quicksale/Sold') {
-                html += `Purchased by ` + item.bidder + ` @ $` + item.final_price;
+                html += `Purchased by ` + item.bidder + ` @ ` + currencyFmt.format(Number(item.final_price).toFixed(2));
             } else if((item.status == 'To Auction')) {
-                html += 'Bid ';
+                html += 'Bidder ';
                 html += `<input type='number' min=0 id='bidder_` + item.id
-                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ bid `
                     + `<input type='number' min=`+min_price+` id='bid_` + item.id
                     + `' value="` + final_price + `" style="width: 7em"></input><br/>`;
                 action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
-                html += 'Bid ';
+                html += 'Bidder ';
                 html += `<input type='number' min=0 id='bidder_` + item.id
-                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ bid `
                     + `<input type='number' min=`+min_price+` id='bid_` + item.id
                     + `' value="` + final_price + `" style="width: 7em"></input><br/>`
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;

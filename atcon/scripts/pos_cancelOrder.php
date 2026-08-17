@@ -14,7 +14,6 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $con = get_conf('con');
-$cc = get_conf('cc');
 $conid = $con['id'];
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
@@ -53,7 +52,7 @@ $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
 } else {
-    $locationId = $cc['location'];
+    $locationId = getConfValue('cc', 'location', null);
 }
 cc_cancelOrder('atcon', $orderId, true, $locationId);
 

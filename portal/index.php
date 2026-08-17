@@ -285,8 +285,7 @@ if (isSessionVar('id')) {
                 if (array_key_exists('id', $match)) {
                     $id = $match['id'];
                     if (!array_key_exists('tablename', $match)) {
-                        error_log('Missing table name, match:');
-                        var_error_log($match);
+                        labeled_error_log('portalOrder-Missing table name-match', $match);
                     } else
                     $tablename = $match['tablename'];
                 }

@@ -864,7 +864,7 @@ function changeRegsData(data, rowdata) {
         </div>      
     </div>
     <div class="row">
-        <div class="col-sm-1" style="text-align: right;">Selected</div>
+        <div class="col-sm-2" style="text-align: right;">Selected</div>
         <div class="col-sm-1" style="text-align: right;">Reg ID</div>
         <div class="col-sm-1" style="text-align: right;">Trans ID</div>
         <div class="col-sm-1" style="text-align: right;">Mem ID</div>
@@ -873,9 +873,12 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">Paid</div>
         <div class="col-sm-1" style="text-align: right;">Disc.</div>
         <div class="col-sm-1">Status</div>
+        <div class="col-sm-1">Upd By</div>
     </div>    
     <div class="row">
-        <div class="col-sm-1 text-primary" style="text-align: right;">
+        <div class="col-sm-2 text-primary" style="text-align: right;">
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + ');"' + disableChanges + `>Edit</button>
+            <button class="btn btn-sm btn-secondary me-5" onclick="showRegNotes(` + rowdata.badgeId + `, false);">Add Note</button>
             <input type="checkbox" id="m-` + rowdata.badgeId + `" value="Y" checked>
         </div>
         <div class="col-sm-1 text-primary" style="text-align: right;">
@@ -887,10 +890,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.paid + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
-        <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + ');"' + disableChanges + `>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false);">Add Note</button>
-        </div>
+         <div class="col-sm-1 text-primary">` + rowdata.updatedBy + `</div>
     </div>
 `;
 
@@ -925,12 +925,13 @@ function changeRegsData(data, rowdata) {
             changeMemberships[i].refundEligible = true;
         } else {
             changeMemberships[i].refundEligible = false;
-
         }
 
         html += `
     <div class="row mt-1">
-        <div class="col-sm-1" style="text-align: right;">
+        <div class="col-sm-2" style="text-align: right;">
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + ');"' + disableChanges + `>Edit</button>
+            <button class="btn btn-sm btn-secondary me-5" onclick="addNote(` + membership.id + `);">Add Note</button>
             <input type="checkbox" id="m-` + membership.id + `" value="Y">
         </div>
         <div class="col-sm-1" style="text-align: right;">
@@ -942,10 +943,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + ');"' + disableChanges +`>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `);">Add Note</button>
-        </div>
+        <div class="col-sm-1">` + membership.updatedBy + `</div>
     </div>
 `;
     }
@@ -1862,6 +1860,8 @@ function draw_registrations(data) {
             {field: 'first_name', visible: false,},
             {field: 'middle_name', visible: false,},
             {field: 'last_name', visible: false,},
+            {field: 'create_user', visible: false,},
+            {field: 'updatedBy', visible: false,},
         ],
         initialSort: [
             {column: "display_trans", dir: "desc" },

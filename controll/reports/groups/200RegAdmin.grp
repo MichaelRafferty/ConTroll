@@ -15,6 +15,7 @@
     template=reg_expire.rpt
     auth=reg_admin
     type=rpt
+    P001="prompt/~/days/~/Days before expire: /~/Limit to days before expire date/~/30"
 [150RegistrationCounts]
     name="Registration Counts"
     description="List of registrations by month broken into predefined categories by GL Label"
