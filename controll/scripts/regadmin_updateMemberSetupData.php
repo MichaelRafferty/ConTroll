@@ -11,7 +11,7 @@ $perm = 'reg_admin';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
 $response['tokenStatus'] = $authToken->checkToken();
-if (!$authToken->isLoggedIn() || (!$authToken->checkAuth($perm) && !$authToken->checkAuth('atcon'))) {
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
