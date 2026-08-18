@@ -307,6 +307,13 @@ creditoffline=0
 creditonline=0
 ;;; number of prior years to allow rollover
 priorRolloverYears=2
+;;; auto create of accounts
+;   allow login with con domain to auto create an account with minimal permissions
+;   1 = allowed, 0 = disabled, default = 0
+autoCreate=0
+;   permission sets allowed for auto created accounts, csv list of permission sets as per the column headings on the Users tab of the admin page.
+;   default = "gen-reports", possible alternate value = 'gen-reports,stats' (allows membership and attendance screens)
+autoSets="gen-reports"
 
 ;;; The local parameters [local] section sets options used by the local scripts for this convention
 [local]
