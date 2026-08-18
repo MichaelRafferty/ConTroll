@@ -11,7 +11,7 @@ function get_admin_sets(): array
         'registration' => array('people', 'registration', 'badge', 'search', 'reports', 'gen_rpts'),
         'lookup' => array('lookup', 'search'),
         'comp_entry' => array('badge', 'search'),
-        'stats' => array('overview', 'monitor','atcon'),
+        'stats' => array('overview', 'monitor'),
         'artshow_admin' => array('people', 'art_control', 'search', 'reports', 'gen_rpts', 'exhibitor'),
         'finance' => array('finance', 'search',  'reports', 'gen_rpts', 'coupon'),
         'exhibits' => array('people', 'search', 'reports', 'gen_rpts', 'exhibitor'),
