@@ -24,6 +24,14 @@
   * reg_secret.ini:  None
   
   * reg_conf.ini:
+    * [con]
+      * cashRoundingUnit=units to round cash transactions, default 1
+        * Will round to the nearest unit currency
+        * Possible values are 1, 5, 10, 25, 50
+        * The values are automatically divided by the curency multiplier (USD = 100) 
+      * cashRoundingGLNum=   (default empty string)
+        * All cash transaction rounding amounts will be documented as to be assigned to this GL account
+        ;; N:cashRoundingGLNum
     * [controll] 
       * useGLcodes=0,1 (default 1) to enable the use of GL num/Label throught the system
 
@@ -32,6 +40,9 @@
 # Major changes by application: 
  * All applications have bug fixes incorporated and will not be listed for each application.
  * Support for Stripe as a payment processor in addition to Square
+ * Preparation for upcoming support for currencies that require rounding cash transactions. 
+  Support is for rounding to 1, 5, 10, 25, 50.  Whether that is cents or whole units is 
+   automatically determined by the currency's currency multiplier. For example, USD = 100. 
 
 ## ConTroll: (Administrative Back End to the system)
 * Support for accessing badges and printouts set to printers starting with 0 as their queue name.

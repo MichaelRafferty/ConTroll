@@ -341,6 +341,22 @@ showConRoles=0 ;
 ;; D:s3
 ;; B:O
 defaultCountry="USA"
+;; N:cashRoundingUnit
+;; R:H,finance
+;; P:Round to nearest
+;; H:For cash transactions round the total with tax and the change to the nearest "unit" of currency
+;; H+Posssible values are: 1, 5, 10, 25, 50
+;; H+The values are divided by the currency multipler for the current conventions currenct, e.g. USD = 100
+;; D:l:1,5,10,25,50
+;; B:O
+cashRountingUnit="1"
+;; N:cashRoundingGLNum
+;; R:H,finance
+;; P:Assign rounding offset to this GL Account Number
+;; H:For cash transactions the rounding amount is documented as assigned to this GL account number.
+;; D:s16
+;; B:O
+cashRountingGLNum=""
 
 ;;;;; On Line Registration (non Portal)
 [reg]
