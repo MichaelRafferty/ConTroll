@@ -390,7 +390,7 @@ EOS;
                         // now load the auths in the set
                         if (array_key_exists($auth, $sets)) {
                             foreach ($sets[$auth] AS $perm) {
-                                error_log("Insert auth $perm for $userId, $user");
+                                error_log("Insert auth $perm for $userId, $userName");
                                 dbSafeInsert($authInsertQ, 'is', array ($userId, $perm));
                             }
                         }
