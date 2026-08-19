@@ -24,7 +24,7 @@ class Login {
         if (this.#loginWithPasskeyBtn)
             this.#loginWithPasskeyBtn.disabled = true;
 
-        passkeyRequest('scripts/passkeyActions.php', 'index.php', 'controll', this.#loginWithPasskeyBtn, email);
+        ('scripts/passkeyActions.php', 'index.php', 'controll', this.#loginWithPasskeyBtn, email);
     }
 
     // loginWithToken: show email for token

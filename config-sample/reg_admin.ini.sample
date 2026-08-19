@@ -311,9 +311,11 @@ priorRolloverYears=2
 ;   allow login with con domain to auto create an account with minimal permissions
 ;   1 = allowed, 0 = disabled, default = 0
 autoCreate=0
+;   allowed domains to perform autocreate from email address, default = "", cannot contain gmail.com, csv
+autoDomains=""
 ;   permission sets allowed for auto created accounts, csv list of permission sets as per the column headings on the Users tab of the admin page.
-;   default = "gen-reports", possible alternate value = 'gen-reports,stats' (allows membership and attendance screens)
-autoSets="gen-reports"
+;   default = "gen_reports", possible alternate value = 'gen_reports,stats' (allows membership and attendance screens)
+autoSets="gen_reports"
 
 ;;; The local parameters [local] section sets options used by the local scripts for this convention
 [local]

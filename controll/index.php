@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once "lib/sets.php";
 require_once "lib/releaseNotes.php";
 require_once('../lib/googleOauth2.php');
 
@@ -48,7 +49,7 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
             && array_key_exists('id', $_REQUEST)) {
         $id = $_REQUEST['id'];
         // we are internal, force a login for sub $id
-        $authToken->buildToken('internal', $id, 'noemail');
+        $authToken->buildToken('internal', $id, $id);
         $tokenState = $authToken->checkToken();
     } else {
         // this is a real login with google... start / continue the process
