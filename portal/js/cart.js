@@ -108,6 +108,10 @@ class Cart {
     </div>
 </div>
     `;
+        } else {
+            html += `
+<div class="row mt-1">
+`;
         }
         let rowColor = false;
         for (let row in memList) {
@@ -159,6 +163,11 @@ class Cart {
                     (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }
+        if (!hasDesc) {
+            html += `
+</div>
+`;
+            }
         this.#membershipButtonsDiv.innerHTML = html;
     }
 
