@@ -738,7 +738,7 @@ class PosCart {
     // membership buttons
     buildRegItemButtons() {
         // loop over memList and build each button
-        let html = '';
+        let html = '<div class="row mt-1">\n';
         let rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         let atcon = false;
         if (config.hasOwnProperty('posType')) {
@@ -768,6 +768,7 @@ class PosCart {
                 ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
                 (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
         }
+        html += '</div>\n';
         this.#membershipButtonsDiv.innerHTML = html;
     }
 
