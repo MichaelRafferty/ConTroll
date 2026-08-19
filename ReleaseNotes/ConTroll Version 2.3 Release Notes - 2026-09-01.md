@@ -34,6 +34,28 @@
         ;; N:cashRoundingGLNum
     * [controll] 
       * useGLcodes=0,1 (default 1) to enable the use of GL num/Label throught the system
+      * opennote=manager,active,any,none
+        * who can edit the perinfo open note field
+          * manager - requires reg_admin privs
+          *	active - also requires reg_admin privs
+          *	any - anyone who uses mail in registration can create/edit an open perinfo note
+          *	none - disable the creation/edit of an open note
+      * showCartDescription=0,1
+        * If the memList has cart descriptions, show them in the add membership modal if enabled
+        * 0=suppress, 1=enable
+      * showCartDate=0,1
+        * Show the active date range for the membership in the membership button or row
+        * 0=hide, 1=show
+    * [atcon]
+      * opennote=manager,active,any,none
+        * who can edit the perinfo open note field
+          * manager - requires reg_admin privs
+          *	active - also requires reg_admin privs
+          *	any - anyone who uses mail in registration can create/edit an open perinfo note
+          *	none - disable the creation/edit of an open note
+      * showCartDescription=0,1
+        * If the memList has cart descriptions, show them in the add membership modal if enabled
+        * 0=suppress, 1=enable 
 
 * New Scripts: None
 
@@ -49,13 +71,16 @@
 * Update of registration totals report to use the rptGrouping column (Report Grouping) instead of GL Label
 * Added number of days option to the expiration report
 * Sending test emails now processes test values for the macro substitution variables.
+* Support for editing the open note under configuration control
+* Support the cart description and start/date ranges in membership add/edit under configuration control
 
 ## Portal:
 * 
 
 ## Atcon:
 * Improvements in flow and button prompting when paying for an order, including how much is going to be paid, and send to terminal wording
-* 
+* Support for editing the open note under configuration control
+* Support the cart description in add/edit under configuration control
 
 ## Exhibitor (Vendor Portals)
 * Attendance Reminder Email with custom text contents to remind artist/vendor/fan/exhibitor of the upcoming convention and what to do on arrival
