@@ -33,7 +33,6 @@ class Cart {
 
     // flow items
     #auHeader = null;
-    #getNewMembershipDiv = null;
     #leaveBeforeChanges = true;
     #debug = 0;
 
@@ -63,7 +62,6 @@ class Cart {
         this.#auHeader = document.getElementById("auHeader");
         // set up div elements
         this.#membershipButtonsDiv = document.getElementById("membershipButtons");
-        this.#getNewMembershipDiv = document.getElementById("getNewMembershipDiv");
         this.#cartDiv = document.getElementById("cartDiv");
         this.#cartContentsDiv = document.getElementById("cartContentsDiv");
 
