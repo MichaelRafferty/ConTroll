@@ -105,7 +105,8 @@ $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
-
+$config_vars['showCartDescription'] = getConfValue('atcon', 'showCartDescription', 0);
+$config_vars['showCartDate'] = 0;
 $useUSPS = false;
 // compute the placeholder value
 $searchTransactionId = getConfValue('atcon', 'searchTransactionId', 2);

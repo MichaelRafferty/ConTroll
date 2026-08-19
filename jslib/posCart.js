@@ -745,6 +745,21 @@ class PosCart {
             atcon = config.posType == 'a';
         }
 
+        let rowColor = false;
+        if (pos.getUseCartDesc()) {
+            html += `
+<div class="row">
+    <div class="col-sm-1" style="font-size: 130%; font-weight: bold; background-color: lightgray;"></div>
+    <div class="col-sm-1 text-center" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Price
+    </div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Item Name/Description
+    </div>
+</div>
+    `;
+        }
+
         for (let row in memList) {
             let mem = memList[row];
 
@@ -764,9 +779,36 @@ class PosCart {
             if (memCategories[mem.memCategory].variablePrice != 'Y') {
                 memLabel += ' (' + mem.price + ')';
             }
-            html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
-                ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
-                (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            if (pos.getUseCartDesc()) {
+                rowColor = !rowColor
+                html += `<div class="row pt-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
+    <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
+        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` + ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + `)">
+            Add
+        </button>
+    </div>
+    <div class="col-sm-1 text-end" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` + mem.price +
+    `</div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` +  (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel  +
+    `</div>
+</div>
+`;
+                if (mem.cartDesc != null && mem.cartDesc != '') {
+                    html += `
+<div class="row">
+    <div class="col-sm-2" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;"></div>
+    <div class="col-sm-10 border-top border-2 border-dark" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">` +
+                        mem.cartDesc + `</div>
+</div>
+`;
+                }
+            } else {
+                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
+                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            }
         }
         html += '</div>\n';
         this.#membershipButtonsDiv.innerHTML = html;
