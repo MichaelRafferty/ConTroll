@@ -779,7 +779,11 @@ class PosCart {
             if (memCategories[mem.memCategory].variablePrice != 'Y') {
                 memLabel += ' (' + mem.price + ')';
             }
-            if (pos.getUseCartDesc()) {
+             if (pos.getUseCartDesc()) {
+                 if (config.showCartDate == 1) {
+                     memLabel += '&emsp;(Start: ' + mem.startdate.slice(0, mem.startdate.indexOf(' ')) +
+                         ', End: ' + mem.enddate.slice(0, mem.enddate.indexOf(' ')) + ')';
+                 }
                 rowColor = !rowColor
                 html += `<div class="row pt-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
     <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
@@ -805,6 +809,10 @@ class PosCart {
 `;
                 }
             } else {
+                 if (config.showCartDate == 1) {
+                     memLabel += '<br/>' + mem.startdate.slice(0, mem.startdate.indexOf(' ')) +
+                         '&mdash;' + mem.enddate.slice(0, mem.enddate.indexOf(' '));
+                 }
                 html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
                     ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
