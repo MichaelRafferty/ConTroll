@@ -392,6 +392,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                             onclick='exhibitorProfile.copyBusToContactName()'>
                                         Copy <?php echo $portalName; ?> Name/Info to Contact Name/Info
                                     </button>
+                                </div>
                             </div>
                             <?php outputCustomText('profile/contact'); ?>
                             <div class='row mt-1'>
