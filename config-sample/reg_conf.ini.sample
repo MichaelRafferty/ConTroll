@@ -966,7 +966,7 @@ showCartDescription=0
 ;;; show active dates in the membership button choice in registation
 ;; N:showCartDate
 ;; R:H,reg_admin
-;; H:Show start/end date for the item in the add to card modal either in the button or the description as appropriate.
+;; H:Show start/end date for the item in the add to cart modal either in the button or the description as appropriate.
 ;; H+This is because registration ignores the date range and shows all possible items regardless of active date range.
 ;; H+values: 0=hide dates, 1=show dates
 ;; D:l:0,1
