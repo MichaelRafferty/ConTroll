@@ -105,7 +105,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
     ?>
-    <!-- Registgration/Edit Registration Modal Popup -->
+    <!-- Registration/Edit Registration Modal Popup -->
     <div id='profile' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
