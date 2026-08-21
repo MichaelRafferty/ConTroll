@@ -1549,8 +1549,10 @@ class Pos {
         let note = null;
         let fullName = null;
 
-        if (!this.#manager || !baseManagerEnabled)
+        if (!(this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active'))) {
             return;
+        }
 
         this.#notesType = null;
         if (where == 'cart') {
@@ -3240,8 +3242,8 @@ class Pos {
             <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
             if (this.#discountMode != "none" && !coupon.isCouponActive() && this.#drow == null) {
-                if (this.#discountMode == 'any' || ((this.#discountMode == 'manager' || this.#discountMode == 'active') &&
-                    this.#manager && baseManagerEnabled)) {
+                if (this.#discountMode == 'any' || (this.#discountMode == 'manager' && this.getManager()) ||
+                    (this.getManagerActive() && this.#discountMode == 'active')) {
                     pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>
             <label for="pt-discount">Discount</label>
