@@ -220,6 +220,7 @@ EOS;
         if (array_key_exists($interestName, $existingInterests)) {
             // this is an update, there is a record already in the memberInterests table for this interest.
             $existing = $existingInterests[$interestName];
+            $intId = $existing['id'];
             if (array_key_exists('interested', $existing)) {
                 $oldVal = $existing['interested'] == null ? 'N' : $existing['interested'];
                 if (array_key_exists('notes', $existing) && $existing['notes'] != null)
@@ -228,22 +229,19 @@ EOS;
                     $oldNotes = '';
             }
             else {
+                $intId = null;
                 $oldVal = 'N';
                 $oldNotes = '';
             }
             // only update if changed
-            if ($newVal != $oldVal || $newNotes != $oldNotes) {
+            if ($newVal != $oldVal || $newNotes != $oldNotes || $intId == null) {
                 $upd = 0;
-                if ($existing['id'] != null) {
-                    $upd = dbSafeCmd($updInterest, 'ssii', array ($newVal, $newNotes, $loginId, $existing['id']));
-                }
-                if ($upd === false || $upd === 0) {
+                if ($intId != null) {
+                    $rows_upd += dbSafeCmd($updInterest, 'ssii', array ($newVal, $newNotes, $loginId, $intId));
+                } else {
                     $newkey = dbSafeInsert($insInterest, 'iisssi', array ($personId, $conid, $interestName, $newVal, $newNotes, $loginId));
                     if ($newkey !== false && $newkey > 0)
                         $rows_upd++;
-                }
-                else {
-                    $rows_upd++;
                 }
             }
         }
