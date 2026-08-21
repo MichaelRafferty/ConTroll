@@ -3,12 +3,14 @@
 require_once("lib/base.php");
 require_once("lib/changePassword.php");
 require_once("../lib/exhibitorRegistrationForms.php");
+require_once('../lib/cc__load_methods.php');
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 
 $condata = get_con();
+load_cc_procs();
 
 $in_session = false;
 $regserver = getConfValue('reg', 'server');
@@ -31,6 +33,7 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
 $testsite = getConfValue('vendor', 'test') == 1;
 
 $locale = getLocale();
+$currency = getConfValue('con', 'currency', 'USD');
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = getConfValue('vendor', $portalType, getConfValue('regadminemail', 'con'));
@@ -40,6 +43,10 @@ $config_vars['artistsite'] = getConfValue('vendor', 'artistsite');
 $config_vars['vendorsite'] = getConfValue('vendor', 'vendorsite');
 $config_vars['debug'] = getConfValue('debug', 'vendors', 0);
 $config_vars['regserver'] = getConfValue('reg','server');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 
 exhibitor_page_init($condata['label'] . " $portalName Registration", true);
 ?>
