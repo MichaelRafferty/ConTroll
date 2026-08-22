@@ -3,10 +3,12 @@
 
 // Psssword reset
 function vendorReset($token, $email, $portalName, $reply) {
-    $conName = getConfValue('con', 'conName');
-    $body = "You have requested a password reset for $conName's $portalName\n\n" .
+    $conName = getConfValue('con', 'label');
+    $body = "You are receiving this email because you have requested a password reset link for $conName's $portalName Portal.\n\n" .
         "Please use this link to reset all passwords for $email.\n\n$token\n\n" .
-        "If you continue to have problems please contact " . $reply . ".\n\nThank you for your interest in $conName.\n";
+        "This link will automatically expire in one hour.\n\n" .
+        "If you continue to have problems please contact " . $reply . ".\n\nThank you for your interest in $conName.\n\n" .
+        "This email was sent by ConTroll™, the registration system for $conName.";
 return $body;
 }
 
