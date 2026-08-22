@@ -99,6 +99,17 @@ foreach ($email_array as $email) {
     $sendtext = $emailText;
     $sendhtml = $emailHTML;
     if ($macroSubstitution) {
+        // these are where the [] and the field name do not match
+        if (array_key_exists('first_name', $email)) {
+            $sendtext = str_replace('[[FirstName]]', $email['first_name'], $sendtext);
+            $sendhtml = str_replace('[[FirstName]]', $email['first_name'], $sendhtml);
+        }
+        if (array_key_exists('last_name', $email)) {
+            $sendtext = str_replace('[[LastName]]', $email['last_name'], $sendtext);
+            $sendhtml = str_replace('[[LastName]]', $email['last_name'], $sendhtml);
+        }
+
+        // now for the ones that match
         foreach ($email as $key => $value) {
             $sendtext = str_replace("[[$key]]", $value, $sendtext);
             $sendhtml = str_replace("[[$key]]", $value, $sendhtml);
