@@ -487,6 +487,38 @@ class PlansSetup {
             });
         }
     }
+
+    // download list
+    downloadPlans(format) {
+        if (this.#plansTable == null)
+            return;
+
+        let filename = this.#conid + '_plans';
+        let tabledata = JSON.stringify(this.#plansTable.getData("active"));
+        let fieldList = [
+            'id',
+            'name',
+            'description',
+            {key: 'catList', label: 'Category List'},
+            {key: 'memList', label: 'Include List'},
+            {key: 'excludeList', label: 'Exclude List'},
+            {key: 'portalList', label: 'portals'},
+            'downPercent',
+            'downAmt',
+            'minPayment',
+            'numPaymentMax',
+            'payByDate',
+            'payType',
+            'modify',
+            'reminders',
+            'downIncludeNonPlan',
+            'lastPaymentPartial',
+            'active',
+            'sortorder',
+        ];
+        downloadFilePost(format, filename, tabledata, null, fieldList);
+    }
+
 };
 
 function SetInitialSel() {

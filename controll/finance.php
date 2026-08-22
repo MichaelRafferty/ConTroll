@@ -766,12 +766,20 @@ EOS;
             <div class="row mt-2">
                 <div class="col-sm-12" id="paymentPlanTable"></div>
             </div>
-            <div class='row mt-2'>
+            <div class='row mt-2 mb-2'>
                  <div class="col-sm-auto">
                      <button class="btn btn-sm btn-secondary" onclick="plans.addNew();">Add New</button>
                  </div>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="planSaveBtn" onclick='plans.save();' disabled>Save Changes</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-csv' type='button' class='btn btn-info btn-sm'
+                        onclick=plans.downloadPlans('csv'); return false;">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=plans.downloadPlans('xlsx'); return false;">Download Excel</button>
                 </div>
             </div>
         </div>
@@ -783,6 +791,18 @@ EOS;
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-12' id='payorPlansTable'></div>
+            </div>
+            <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto'>
+                    <button id='plan-csv' type='button' class='btn btn-info btn-sm'
+                            onclick=payors.downloadPayors('csv'); return false;
+                    ">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=payors.downloadPayors('xlsx'); return false;
+                    ">Download Excel</button>
+                </div>
             </div>
         </div>
     </div>

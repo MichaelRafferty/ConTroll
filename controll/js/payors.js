@@ -263,4 +263,36 @@ class Payors {
         this.#planAddEditModal.hide();
     }
     */
+
+    // download list
+    downloadPayors(format) {
+        if (this.#payorsTable == null)
+            return;
+
+        let filename = this.#conid + '_payors';
+        let tabledata = JSON.stringify(this.#payorsTable.getData("active"));
+        let fieldList = [
+            'id',
+            'perid',
+            'fullName',
+            'planId',
+            {key: 'name', label: 'Plan Names'},
+            'initialAmt',
+            'nonPlanAmt',
+            'downPayment',
+            'openingBalance',
+            'minPayment',
+            'finalPayment',
+            'numPayments',
+            'daysBetween',
+            'payByDate',
+            'payType',
+            'status',
+            'createDate',
+            'paymentsMade',
+            'lastPaymentDate',
+            'lastPaymentAmt',
+        ];
+        downloadFilePost(format, filename, tabledata, null, fieldList);
+    }
 };
