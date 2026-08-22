@@ -102,7 +102,16 @@ function showPrompts(reportName, prefix, fileName, type, template) {
     html += '<div class="row mt-2">\n<div class="col-sm-auto">\n' +
         '<button class="btn btn-sm btn-primary" type="button" onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName +
             '\', \'' + type + '\', \'' + template + '\');">\n' +
-            'Run Report\n</button>\n</div>\n</div>\n';
+            'Run Report\n</button>\n</div>\n';
+    if (type == 'rpt') {
+        html += '<div class="col-sm-auto">\n<button class="btn btn-sm btn-info" type="button" ' +
+            'onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName +
+            '\', \'' + type + '\', \'' + template + '\', \'csv\');">Only Download CSV</button>\n</div>\n';
+        html += '<div class="col-sm-auto">\n<button class="btn btn-sm btn-info" type="button" ' +
+            'onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName +
+            '\', \'' + type + '\', \'' + template + '\', \'xlsx\');">Only Download Excel</button>\n</div>\n';
+    }
+    html += '</div>\n';
     reportPromptDiv.innerHTML = html;
 }
 
@@ -173,8 +182,8 @@ function runReport(name) {
     getRpt(config.reportName, config.pageName, config.groupName);
 }
 
-function getRpt(reportName, prefix, fileName, type, template) {
-    console.log(reportName, prefix,  fileName, type,  template);
+function getRpt(reportName, prefix, fileName, type, template, format='') {
+    console.log(reportName, prefix,  fileName, type,  template, format);
     // now open the relevant one, and create the class if needed
     var script = type == 'php' ? 'reports/' + prefix + '/' + template : 'scripts/loadReport.php';
     var postdata = {
@@ -196,28 +205,32 @@ function getRpt(reportName, prefix, fileName, type, template) {
     }
 
     reportContentDiv.innerHTML = '';
-    $.ajax({
-        url: script,
-        method: 'POST',
-        data: postdata,
-        success: function (data, textStatus, jhXHR) {
-            checkRefresh(data);
-            if (data.error) {
-                show_message(data.error, 'error');
-                return;
+    if (format == '') {
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
+                if (data.error) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.status && data.status == 'error') {
+                    show_message(data.message, 'error');
+                    return;
+                }
+                drawReport(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+                return false;
             }
-            if (data.status && data.status == 'error') {
-                show_message(data.message, 'error');
-                return;
-            }
-            drawReport(data);
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in " + script + ": " + textStatus, jqXHR);
-            show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
-            return false;
-        }
-    });
+        });
+    } else {
+        downloadRptPost(format, script, postdata);
+    }
 }
 
 function drawReport(data) {

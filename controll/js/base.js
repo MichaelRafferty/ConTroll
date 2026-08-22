@@ -490,3 +490,34 @@ function downloadFilePost(format, fileName, tableData, excludeList = null, field
     form.submit();
     document.body.removeChild(form);
 }
+
+// pass object to a window.open via a post with json data
+function downloadRptPost(format, url, postdata) {
+    // create the form
+    let postjson = JSON.stringify(postdata);
+    let form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    // append it to the body
+    document.body.appendChild(form);
+    // create the file name to suggest to save it to....
+    let field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'format';
+    field.value = format;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'postjson';
+    field.value = postjson;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'action';
+    field.value = 'download';
+    form.appendChild(field);
+
+    // now open the window
+    form.submit();
+    document.body.removeChild(form);
+}

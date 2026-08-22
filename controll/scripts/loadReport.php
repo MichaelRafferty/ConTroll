@@ -3,6 +3,7 @@
 require_once "../lib/base.php";
 require_once "../../lib/pivotArray.php";
 require_once "../../lib/log.php";
+require_once "../../lib/outputFile.php";
 require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
@@ -20,16 +21,29 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     exit();
 }
 
-if ((!array_key_exists('action', $_POST)) || (!array_key_exists('report', $_POST)) || (!array_key_exists('group', $_POST))
-    || (!array_key_exists('prefix', $_POST))|| $_POST['action'] != "fetch") {
+if (array_key_exists('action', $_POST)) {
+    if ($_POST['action'] == 'download') {
+        $format = $_POST['format'];
+        $postjson = $_POST['postjson'];
+        $postdata = json_decode($postjson, true);
+    } else if (array_key_exists('report', $_POST) && array_key_exists('group', $_POST)
+        && array_key_exists('prefix', $_POST) && $_POST['action'] == "fetch") {
+        $postdata = $_POST;
+    } else {
+        $response['error'] = 'Invalid Arguments';
+        ajaxSuccess($response);
+        exit();
+    }
+} else {
     $response['error'] = 'Invalid Arguments';
     ajaxSuccess($response);
     exit();
 }
 
-$reportName = $_POST['report'];
-$group = $_POST['group'];
-$prefix = $_POST['prefix'];
+$reportName = $postdata['report'];
+$group = $postdata['group'];
+$prefix = $postdata['prefix'];
+$action = $_POST['action'];
 // load the .grp file
 $groupParams = parse_ini_file(__DIR__ . "/../reports/$group", true);
 $hdrAuth = $groupParams['group']['auth'];
@@ -81,8 +95,8 @@ if (array_key_exists('subtotals', $reportHdr))
 $fieldArr = [];
 $pivotArr = [];
 $postVars = [];
-if (array_key_exists('postVars', $_POST)) {
-    $postVars = $_POST['postVars'];
+if (array_key_exists('postVars', $postdata)) {
+    $postVars = $postdata['postVars'];
 }
 
 $sections = array_keys($reportParams);
@@ -263,4 +277,14 @@ if (array_key_exists('pivotFields', $reportHdr)) {
 
 $response['success'] = count($data) . " rows returned";
 
-ajaxSuccess($response);
+if ($action == 'fetch') {
+    ajaxSuccess($response);
+    exit();
+}
+// now we are a direct download....
+
+$sheetname = $response['csvfile'];
+$filename = $sheetname . '-' . date('Y-m-d_H-i-s');
+$tableData = $response['data'];
+
+outputFile($_POST['format'], $sheetname, $filename, $tableData);
