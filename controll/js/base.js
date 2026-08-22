@@ -449,6 +449,12 @@ function blankIfNull(value) {
 
 // pass object to a window.open via a post with json data
 function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
+    // if the data is too big, deny using this download method for now
+    if (tableData.length > 900  * 1024) { // 1MB upload limit, so limit to 900KB to leave room for
+        show_message("Data is too big to download via this method, you will need to do Only Download CSV or Only Download Excel to download the entire" +
+            " report dataset instead of the filtered version these buttons will access.", 'error');
+        return;
+    }
     // create the form
     let form = document.createElement('form');
     form.method = 'POST';
