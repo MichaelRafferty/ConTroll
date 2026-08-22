@@ -53,16 +53,18 @@ if ($personR->num_rows == 0) {
     // now find any art for which is final and they are the high bidder
     $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
-       s.id AS artSalesId, s.transid, s.amount, s.paid, s.unit, s.quantity AS purQuantity,
+       s.id AS artSalesId, s.transid, s.amount, s.paid, s.unit, s.quantity AS purQuantity, s.perid AS purchaser, p.fullName AS purchaserFullName,
        exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, false AS released
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors ex ON exY.exhibitorId = ex.id
-JOIN artSales s ON a.id = s.artid                
-WHERE s.perid = ? AND a.conid = ? AND s.amount = s.paid AND s.status != 'Purchased/Released'
+JOIN artSales s ON a.id = s.artid      
+JOIN perinfo p ON s.perid = p.id
+LEFT OUTER JOIN artshowAltPickupAuth auth ON s.perid = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ? AND auth.active = 'Y'
+WHERE (s.perid = ? OR auth.pickupPerid = ?) AND a.conid = ? AND s.amount = s.paid AND s.status != 'Purchased/Released'
 EOS;
-    $findArtR = dbSafeQuery($findArtQ, 'ii', array($perid, $conid));
+    $findArtR = dbSafeQuery($findArtQ, 'iiiii', array($perid, $conid, $perid, $perid, $conid));
     $art = [];
     while ($findArtL = $findArtR->fetch_assoc()) {
         // limit items to add

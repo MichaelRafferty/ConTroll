@@ -42,8 +42,7 @@ GROUP BY n.id
     WHERE newperid = ? and conid = ?
     GROUP BY newperid
 )
-SELECT n.*, IFNULL(r.paid, 0.00) AS paid, IFNULL(m.manages, 0) AS manages,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' ')) AS fullName
+SELECT n.*, IFNULL(r.paid, 0.00) AS paid, IFNULL(m.manages, 0) AS manages, n.fullName
 FROM newperson n
 LEFT OUTER JOIN regs r ON n.id = r.newperid
 LEFT OUTER JOIN mby m ON n.id = m.id

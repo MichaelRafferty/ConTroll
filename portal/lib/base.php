@@ -319,11 +319,10 @@ function getPersonInfo($conid, $personType = null, $personId = null, $minimal = 
         $pfield = 'perid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.formerGoH, p.deceased,
     IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
+    p.fullName, pm.fullName AS managedByName
 FROM perinfo p
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE p.id = ?;
@@ -332,15 +331,12 @@ EOS;
         $pfield = 'newperid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
+    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, 'N' AS formerGoH, 'N' AS deceased,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType, p.fullName,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
-        WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmp.first_name, pmp.middle_name, pmp.last_name, pmp.suffix), ' +', ' '))
-        WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmn.first_name, pmn.middle_name, pmn.last_name, pmn.suffix), ' +', ' ')) 
+        WHEN pmp.id IS NOT NULL THEN pmp.fullName
+        WHEN pmn.id IS NOT NULL THEN pmn.fullName
         ELSE NULL
        END AS managedByName
     FROM newperson p
@@ -375,19 +371,41 @@ EOS;
 
         // get the interests
     $pQ = <<<EOS
-SELECT interest, interested
-FROM memberInterests
+SELECT m.id, m.interest, m.interested, m.notes, i.endDate, i.notesPrompt,
+    CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
+FROM memberInterests m
+JOIN conlist c ON c.id = ?
+JOIN interests i ON i.interest = m.interest
 WHERE conid = ? AND $pfield = ?;
 EOS;
-    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pR = dbSafeQuery($pQ,'iii', array($conid, $conid, $personId));
     $pResp = [];
     if ($pR !== false) {
         while ($pL = $pR->fetch_assoc()) {
-            $pResp[$pL['interest']] = $pL['interested'];
+            $pResp[$pL['interest']] = $pL;
         }
         $pR->free();
     }
     $info['interests'] =  $pResp;
+
+    // get the convention roles
+    if (getConfValue('con', 'conRoles', 0) == 1) {
+        $cQ = <<<EOS
+    SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+    FROM conRoles c
+    LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+    WHERE c.active = 'Y'
+    EOS;
+        $conRoles = [];
+        $cR = dbSafeQuery($cQ, 'ii', array ($personId, $conid));
+        if ($cR !== false) {
+            while ($row = $cR->fetch_assoc()) {
+                $conRoles[$row['conRole']] = $row;
+            }
+            $cR->free();
+        }
+        $info['conroles'] = $conRoles;
+    }
 
     if (!$minimal) {
     // now get the count of the number required policies answered no by this person

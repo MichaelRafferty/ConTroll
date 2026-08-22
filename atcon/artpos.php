@@ -110,7 +110,10 @@ $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
+                $cdn['tabjs'],
+                'jslib/barcodes.js',
+                'js/artpos_cart.js',
+                'js/artpos.js'),
     $config_vars
     );
 if ($config_vars['creditonline'] == 1) {
@@ -333,6 +336,7 @@ if (count($regionList) > 1) {
                 <div class='modal-footer'>
                     <button type='button' id='invNoChange_button' class='btn btn-primary' onclick='invUpdate(false);'>No Inventory Changes</button>
                     <button type='button' id='invChange_button' class='btn btn-primary' onclick='invUpdate(true);'>Update Inventory Record</button>
+                    <button type='button' id='invOveride_button' class='btn btn-warning' onclick='invUpdate(false);' hidden>Override Inventory Record</button>
                     <button type='button' id='discardInv_button' class='btn btn-secondary' onclick='inventoryModal.hide();'>Cancel Update</button>
                 </div>
             </div>

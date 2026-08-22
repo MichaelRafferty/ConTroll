@@ -68,7 +68,7 @@ class ExhibitorReceipt {
         this.#receiptContent.innerHTML = html;
         if (data['emails']) {
             var btns = '';
-            var id = document.getElementById('repeciotEmailBtns');
+            var id = document.getElementById('receiptEmailBtns');
             if (id) {
                 this.#receiptData = data;
                 for (var idx in data['emails']) {

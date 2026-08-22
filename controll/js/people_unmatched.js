@@ -28,6 +28,7 @@ class Unmatched {
     #editMatchTitle = null;
     #updateExisting = null;
     #createNew = null;
+    #createNewTop = null;
     #deleteNew = null;
     #newpersonPolicies = null;
     #matchpeoplePolicies = null;
@@ -48,6 +49,7 @@ class Unmatched {
     #matchPolicies = null;
     #matchFlags = null;
     #matchManager = null;
+    #priorDeceased = '';
     // candidate (new) person display fields
     #newId = null;
     #newName = null;
@@ -83,6 +85,8 @@ class Unmatched {
     #managerDiv = null;
     #active = null;
     #banned = null;
+    #deceased = null;
+    #formerGoH = null;
     #matchType = null;
     #matchRowData = null;
 
@@ -98,7 +102,7 @@ class Unmatched {
         this.#unmatchedCountSpan = document.getElementById('unmatchedCount');
         this.#unmatchedSpecificDiv = document.getElementById('unmatchedSpecific');
 
-        var id = document.getElementById('match-candidates');
+        let id = document.getElementById('match-candidates');
         if (id) {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
@@ -107,6 +111,7 @@ class Unmatched {
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
             this.#createNew = document.getElementById('createNew');
+            this.#createNewTop = document.getElementById('createNewTop');
             this.#deleteNew = document.getElementById('deleteNew');
             // matched person display fields
             this.#matchId = document.getElementById('matchID');
@@ -156,6 +161,8 @@ class Unmatched {
             this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
             this.#banned = document.getElementById('banned');
+            this.#deceased = document.getElementById('deceased');
+            this.#formerGoH = document.getElementById('formerGoH');
 
             // set up to close the modal and delete the items
             $('#match-candidates').on('hide.bs.modal', function () {
@@ -163,6 +170,23 @@ class Unmatched {
             });
         }
     };
+
+    // get functions
+    getCandTable() {
+        return this.#candidateTable;
+    }
+
+    getAdditionalTable() {
+        return this.#additionalTable;
+    }
+
+    getNewpersonTable() {
+        return this.#newpersonTable;
+    }
+
+    getEditMatchTitle() {
+        return this.#editMatchTitle;
+    }
 
     // called on find person to match
     findSpecific() {
@@ -175,9 +199,9 @@ class Unmatched {
 
     // called on open of the unmatched window
     open(msg = null) {
-        var _this = this;
-        var script = "scripts/people_getUnmatched.php";
-        var postdata = {
+        let _this = this;
+        let script = "scripts/people_getUnmatched.php";
+        let postdata = {
             ajax_request_action: 'unmatched',
         };
         let search = document.getElementById('unmatched_pattern');
@@ -205,7 +229,7 @@ class Unmatched {
 
     // draw the unmatched people screen
     draw(data, msg= null) {
-        var _this = this;
+        let _this = this;
 
         if (this.#unmatchedTable != null) {
             this.#unmatchedTable.destroy();
@@ -238,7 +262,7 @@ class Unmatched {
 `;
         else
             this.#unmatchedSpecificDiv.innerHTML = '';
-        var pagination = false;
+        let pagination = false;
         if (this.#unmatched)
             pagination = this.#unmatched.length > 100;
         this.#unmatchedTable = new Tabulator('#unmatchedTable', {
@@ -286,17 +310,17 @@ class Unmatched {
     // table related functions
     // display match button and delete button for unmatched new people
     actionButtons(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex();
-        var rowData = row.getData();
-        var managerType = rowData.managerType;
+        let row = cell.getRow();
+        let index = row.getIndex();
+        let rowData = row.getData();
+        let managerType = rowData.managerType;
 
-        var html = '';
+        let html = '';
         if (managerType != 'n') {
             html =  '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="unmatchedPeople.matchPerson(' + index + ');">Match</button>';
         } else {
-            var mgrId = row.getData().managerId
+            let mgrId = row.getData().managerId
             html = "Need " + mgrId + ' ';
         }
 
@@ -304,11 +328,15 @@ class Unmatched {
     }
     // display select button for candidate people
     selectButton(cell, formatterParams, onRendered) {
-        var row = cell.getRow();
-        var index = row.getIndex()
-        var personType = formatterParams.table;
+        let row = cell.getRow();
+        let index = row.getIndex()
+        let personType = formatterParams.table;
+        let deceased = row.getData().deceased;
+        let color = deceased == 'Y' ? 'btn-warning': 'btn-primary';
+        if (color == 'btn-warning' && config.ra != true)
+            return '<span class="bg-warning">D</span>';
 
-        return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        return '<button class="btn ' + color + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="unmatchedPeople.selectPerson(\'' + personType + '\', ' + index + ');">Select</button>';
     }
 
@@ -325,9 +353,9 @@ class Unmatched {
     //
     // matchPerson - get the candidates to match against a new person
     matchPerson(id) {
-        var _this = this;
-        var script = "scripts/people_getMatchCandidates.php";
-        var postdata = {
+        let _this = this;
+        let script = "scripts/people_getMatchCandidates.php";
+        let postdata = {
             ajax_request_action: 'match',
             newperid: id,
         };
@@ -355,9 +383,9 @@ class Unmatched {
     // this check is done by the get unmatched as the delete button only appears if they are eligible.
     // deletePerson - this unpaid new person (not a manager) should not be created, just deleted from the system
     deletePerson() {
-        var _this = this;
-        var script = "scripts/people_deleteUnmatched.php";
-        var postdata = {
+        let _this = this;
+        let script = "scripts/people_deleteUnmatched.php";
+        let postdata = {
             ajax_request_action: 'delete',
             newperid: this.#matchRowData.id,
         };
@@ -404,7 +432,7 @@ class Unmatched {
         this.#matchpeoplePolicies = data['matchPolicies'];
         this.#newperson = data['newperson']
         this.#newpersonPolicies = data['npolicies'];
-        var newpeople = [];
+        let newpeople = [];
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
         this.#candidatesNameH1.innerHTML = '<b>Potential Matches for: ' + this.#newperson.fullName + '</b>';
@@ -451,7 +479,7 @@ class Unmatched {
             ],
         });
 
-        pagination = false;
+        let pagination = false;
         if (this.#candidates)
             pagination = this.#candidates.length > 25;
         this.#candidateTable = new Tabulator('#candidateTable', {
@@ -463,8 +491,9 @@ class Unmatched {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'p'}, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Select", width: 80, hozAlign: "center", headerHozAlign: "center",
+                    formatter: this.selectButton, formatterParams: {table: 'p'}, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.cidStatus, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
@@ -486,11 +515,13 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
                 {field: 'managerId', visible: false,},
             ],
         });
 
-        var pagination = false;
+        pagination = false;
         if (this.#additional)
             pagination = this.#additional.length > 25;
 
@@ -503,8 +534,9 @@ class Unmatched {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'a'}, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "Select", width: 80, hozAlign: "center", headerHozAlign: "center",
+                    formatter: this.selectButton, formatterParams: {table: 'a'}, headerSort: false },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.aidStatus,},
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
@@ -526,13 +558,18 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
                 {field: 'managerId', visible: false,},
             ],
         });
 
         $('#editMatch').hide();
+        this.#deceased.value = 'N';
+        this.#formerGoH.value = 'N';
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
+        this.#createNewTop.disabled = true;
         // set the delete item disable flag based on paid mand manages from parent screen
         //console.log("this.#matchRowData");
         //console.log(this.#matchRowData);
@@ -547,17 +584,38 @@ class Unmatched {
         show_message(data['success'], 'success', 'result_message_candidate');
     }
 
+    // tabulator formatter for the id field in candidates table
+    cidStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  unmatchedPeople.getCandTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
+    }
+
+    // tabulator formatter for the id field in additional matches table
+    aidStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  unmatchedPeople.getAdditionalTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
+    }
+
     // selectPerson - move a person to the edit area and prepare to edit/save it
     selectPerson(type, id) {
-        var html = '';
-        var policy = '';
-        var disableUpdateExisting = true;
+        let html = '';
+        let policy = '';
+        let disableUpdateExisting = true;
         this.#matchType = type;
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
             this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName;
             this.#matchPerson = null;
+            this.#priorDeceased = '';
         } else {
             // set the candidate section of the edit block to the values from the table
             disableUpdateExisting = false;
@@ -566,6 +624,7 @@ class Unmatched {
             } else {
                 this.#matchPerson = this.#additionalTable.getRow(id).getData();
             }
+            this.#priorDeceased = this.#matchPerson.deceased;
             this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName + ' <b>with</b> ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
@@ -576,14 +635,15 @@ class Unmatched {
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchAge.innerHTML = this.#matchPerson.currentAgeType;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
-            this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ', Banned: ' + this.#matchPerson.banned;
+            this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ',&emsp;Banned: ' + this.#matchPerson.banned +
+                '<br/>Deceased: ' + this.#matchPerson.deceased + ',&emsp;Former GoH: ' + this.#matchPerson.formerGoH;
             if (this.#matchPerson.managerId) {
                 this.#matchManager.innerHTML = this.#matchPerson.manager + ' (' + this.#matchPerson.managerId + ')';
             } else {
                 this.#matchManager.innerHTML = '<i>Not Managed</i>';
             }
             html = '';
-            var mpol = null;
+            let mpol = null;
             if (this.#matchType == 'p')
                 mpol = this.#matchpeoplePolicies[id];
             else
@@ -604,7 +664,7 @@ class Unmatched {
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newAge.innerHTML = this.#newperson.currentAgeType;
         this.#newPhone.innerHTML = this.#newperson.phone;
-        this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ', Banned: ' + this.#newperson.banned;
+        this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ',&emsp;Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
             this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
         } else {
@@ -643,7 +703,7 @@ class Unmatched {
         this.#managerDiv.innerHTML = this.drawManager(type, this.#newperson.manager, this.#newperson.managerId);
 
         // now set the colors of what's different
-        var diffcolor = 'yellow';
+        let diffcolor = 'yellow';
         if (type != 'n') {
             this.#matchName.style.backgroundColor = this.#newperson.fullName != this.#matchPerson.fullName ? diffcolor : '';
             this.#matchLegal.style.backgroundColor = this.#newperson.legalName != this.#matchPerson.legalName ? diffcolor : '';
@@ -660,11 +720,20 @@ class Unmatched {
 
         this.#updateExisting.disabled = disableUpdateExisting;
         this.#createNew.disabled = false;
+        this.#createNewTop.disabled = false;
         $('#editMatch').show();
     }
 
     // update the database with the new match
     saveMatch(type) {
+        if (type == 'e' && this.#priorDeceased != 'Y' && this.#deceased.value == 'Y') {
+            if (!confirm("You are changing this existing person from deceased(No) to (Yes).\n" +
+                "This will delete many records associated with this person.\n\nAre you sure?")) {
+                this.#deceased.value = 'N';
+                return;
+            }
+        }
+
         // get all of the edited values, the existing id and the new id
         let postdata = {
             type: type,
@@ -689,15 +758,17 @@ class Unmatched {
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
+            deceased: this.#deceased.value,
+            formerGoH: this.#formerGoH.value,
             managerAction: document.getElementById('managerSelect').value,
             managerId: document.getElementById('managerId').value,
         };
         // now add the policies to the list
-        for (var policy in this.#newpersonPolicies) {
+        for (let policy in this.#newpersonPolicies) {
             postdata['p_' + policy] = document.getElementById('p_' + policy).checked ? 'Y' : 'N';
         }
 
-        var script = 'scripts/people_updateMatch.php'
+        let script = 'scripts/people_updateMatch.php'
         clear_message('result_message_candidate');
         clear_message();
         clearError();
@@ -755,10 +826,10 @@ class Unmatched {
 
     // draw the manager central editblock from the match and new person
     drawManager(type, manager, managerId) {
-        var manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
+        manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
 
-        var nManagerId = null;
-        var pManagerId = null;
+        let nManagerId = null;
+        let pManagerId = null;
         if (this.#newperson) {
             if (this.#newperson.managerId) {
                 if (this.#newperson.managerId != undefined && this.#newperson.managerId != null && this.#newperson.managerId != '')
@@ -773,7 +844,7 @@ class Unmatched {
             }
         }
         // now build the manager div
-        var html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
+        let html = "Manager: <span id='manager' name='manager'>" + manager + "<br/>\n" +
             "<select name='managerSelect' id='managerSelect'>\n";
 
         if (type == 'n') {
@@ -852,8 +923,8 @@ class Unmatched {
 
     // copy a value from the match or new to the edit section
     copy(source) {
-        var policy = ''
-        var mpol = null;
+        let policy = ''
+        let mpol = null;
         clear_message('result_message_candidate');
 
         if (source.startsWith('match')) {
@@ -974,11 +1045,15 @@ class Unmatched {
             case 'newFlags':
                 this.#active.value = this.#newperson.active;
                 this.#banned.value = this.#newperson.banned;
+                this.#deceased.value = 'N';
+                this.#formerGoH.value = 'N';
                 break;
 
             case 'matchFlags':
                 this.#active.value = this.#matchPerson.active;
                 this.#banned.value = this.#matchPerson.banned;
+                this.#deceased.value = this.#matchPerson.deceased;
+                this.#formerGoH.value = this.#matchPerson.formerGoH;
                 break;
 
             case 'matchAll':
@@ -1010,6 +1085,8 @@ class Unmatched {
                 this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId);
                 this.#active.value = this.#matchPerson.active;
                 this.#banned.value = this.#matchPerson.banned;
+                this.#deceased.value = this.#matchPerson.deceased;
+                this.#formerGoH.value = this.#matchPerson.formerGoH;
                 break;
 
             case 'newAll':
@@ -1036,8 +1113,9 @@ class Unmatched {
                 this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId);
                 this.#active.value = this.#newperson.active;
                 this.#banned.value = this.#newperson.banned;
+                this.#deceased.value = 'N';
+                this.#formerGoH.value = 'N';
                 break;
-
 
             default:
                 show_message("Invalid source " + source, 'warn', 'result_message_candidate');
@@ -1047,7 +1125,7 @@ class Unmatched {
 
     // search for additional people
     additionalQuery() {
-        var qs = this.#additionalSearchStr.value;
+        let qs = this.#additionalSearchStr.value;
         if (qs == null || qs.length == 0) {
             show_message("Additional Query string is empty", 'error', 'result_message_candidate');
             return;
@@ -1057,9 +1135,9 @@ class Unmatched {
             return;
         }
 
-        var _this = this;
-        var script = "scripts/people_getUnmatchedAddl.php";
-        var postdata = {
+        let _this = this;
+        let script = "scripts/people_getUnmatchedAddl.php";
+        let postdata = {
             ajax_request_action: 'additional',
             additionalStr: qs
         };

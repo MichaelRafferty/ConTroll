@@ -7,6 +7,7 @@ require_once('lib/portalForms.php');
 require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
 require_once("../lib/interests.php");
+require_once("../lib/conroles.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
@@ -671,6 +672,7 @@ EOS;
 // get the information for the interest  and policies blocks
     $interests = getInterests();
     $policies = getPolicies();
+    $conroles = getConRoles();
     [$ageList, $ageListIdx] = getAgeList($conid);
 // Does this person have interests, if none in the system force them to go to the interests modal
     $config_vars['needInterests'] = 0;
@@ -870,7 +872,13 @@ if (count($paymentPlans) > 0) {
 //      purchases "buttons"
 //      profile section
 //      interests
-
+$hr = <<<EOS
+<div class="row mt-2">
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+EOS;
 // draw the top of page banner
 // Block 1: Virtual, Name/mem number, worldcon buttons
 $fullName = $info['fullName'];
@@ -1022,13 +1030,7 @@ if (count($payorPlan) > 0) {
 }
 
 // HR - then line 4 - People you manage (if you are not managed by someone else)
-echo <<<EOS
-    <div class='row mt-2 mb-2'>
-        <div class='col-sm-12 p-0 m-0 align-center'>
-            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
-        </div>
-    </div>
-EOS;
+echo $hr;
 
 // if we are not managed, we can be a manager, so use the tab structure
 // first - do the add another person line
@@ -1102,12 +1104,7 @@ EOS;
         var tabs=[$tabs];
         var hid = "$tab";
 </script>
-
-    <div class='row mt-2 mb-2'>
-        <div class='col-sm-12 p-0 m-0 align-center'>
-            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:var(--bs-primary);background-color:var(--bs-primary);'/>
-        </div>
-    </div>
+$hr
 <div class='tab-content ms-2' id='portal-content'>
 <!---- Start of holder: $fullName -->
     <div class='tab-pane fade show active' id='$hid-pane' role='tabpanel' aria-labelledby='$hid-tab' tabindex='0'>
@@ -1122,7 +1119,7 @@ EOS;
 EOS;
 }
 $totalMemberships = count($holderMembership);
-drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate,null);
+drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $conroles, $hr, $now, $ageByDate);
 
 if ($info['managedByName'] == null) {
     // ending of the holder part
@@ -1144,7 +1141,8 @@ EOS;
     <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $now, $ageByDate, $info);
+        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $conroles, $hr,
+                $now, $ageByDate);
         // ending that managee
         echo <<<EOS
         </div>

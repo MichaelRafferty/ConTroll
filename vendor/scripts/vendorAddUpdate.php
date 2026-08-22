@@ -215,7 +215,7 @@ JOIN exhibitsSpaces es ON exS.spaceId = es.id
 JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes ert ON er.regionType = ert.regionType
-WHERE ert.mailinAllowed = 'N' AND exY.id=? AND
+WHERE ert.mailinAllowed = 'N' AND ert.portalType = 'artist' AND exY.id=? AND
       (exS.item_requested IS NOT NULL OR exS.item_approved IS NOT NULL OR exS.item_purchased IS NOT NULL)
 EOS;
             $checkR = dbSafeQuery($checkQ, 'i', array($exyID));

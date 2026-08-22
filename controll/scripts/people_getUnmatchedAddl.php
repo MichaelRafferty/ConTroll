@@ -40,21 +40,12 @@ if (is_numeric($findPattern)) {
     // this is a perid match
     $mQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNamel2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType,
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
-    CASE
-        WHEN mp.id IS NOT NULL THEN 
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' '))
-        ELSE ''
-    END AS manager,
-    CASE
-        WHEN mp.id IS NOT NULL THEN mp.id
-        ELSE NULL
-    END AS managerId,
+    CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
+    CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
     GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS regs
 FROM perinfo p
 LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
@@ -64,7 +55,7 @@ LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE p.id = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
-    p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
+    p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId;
 EOS;
     $mR = dbSafeQuery($mQ, 'iiiiii', array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern));
@@ -77,19 +68,11 @@ EOS;
 WITH per AS (
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType,
+    p.creation_date, p.update_date,  p.active, p.banned, p.deceased, p.formerGoH, p.open_notes, p.admin_notes,
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
-    CASE
-        WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' '))
-        ELSE ''
-    END AS manager,
-    CASE
-        WHEN mp.id IS NOT NULL THEN mp.id
-        ELSE NULL
-    END AS managerId,
+    CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
+    CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
     GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
 FROM perinfo p
 LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
@@ -98,7 +81,7 @@ LEFT OUTER JOIN reg r ON (r.perid = p.id)
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE $notMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 )

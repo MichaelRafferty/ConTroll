@@ -10,6 +10,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
     $auctionTitle = getConfValue('vendor', 'artistItemAuctionTitle', 'Art Auction Items');
     $salesTitle = getConfValue('vendor', 'artistItemSalesTitle', 'Art Sales / Print Shop Items');
     $nfsTitle = getConfValue('vendor', 'artistItemNFSTitle', 'Display Only / Not For Sale Items');
+    $id = getConfValue('con', 'id', '');
+    $conname = getConfValue('con', 'conname', '');
 ?>
     <div id='item_registration' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -42,7 +44,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="art-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoArt(); return false;" disabled>Undo</button>
                                 <button id="art-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoArt(); return false;" disabled>Redo</button>
                                 <button id="art-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowArt(); return false;">Add New</button>
-                                <button id="art-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveArt(); return false;" disabled>Save Changes</button>
+                                <button id="art-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;"
+                                        disabled>Save Changes</button>
                             </div>
                         </div>
                         <div class='row'> <?php /* print items */ ?>
@@ -60,7 +63,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="print-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoPrint(); return false;" disabled>Undo</button>
                                 <button id="print-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoPrint(); return false;" disabled>Redo</button>
                                 <button id="print-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowPrint(); return false;">Add New</button>
-                                <button id="print-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.savePrint(); return false;" disabled>Save Changes</button>
+                                <button id="print-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;
+" disabled>Save Changes</button>
                             </div>
                         </div>
                         <div class='row'> <?php /* nfs items */ ?>
@@ -78,23 +82,34 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNfs(); return false;" disabled>Undo</button>
                                 <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
                                 <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
-                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveNfs(); return false;" disabled>Save Changes</button>
+                                <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;
+" disabled>Save Changes</button>
                             </div>
                         </div>
                         <?php outputCustomText('items/bottom');?>
                         <hr/>
-                        <div class='row'>
-                            <div class='col-sm-12'>
-                            <h4>Buttons to print out bidsheets and control sheets.</h4>
+                        <div class='row mb-3'>
+                            <div class='col-sm-12 ms-2' style="background-color: #FFE0E0;">
+                            Items shaded with this color have the same title and material as another item in that group
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-10' id='print_buttons'>
-                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
-                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
-                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                            <div class='col-sm-auto' id='print_buttons'>
+                                <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
+                                <button id='print_printshop' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
+                                <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                                <button id='email_controlsheet' type='button' class='btn btn-primary btn-sm'
+                                        onclick="auctionItemRegistration.emailSheets('control'); return false;">Email Control Sheet</button>
                             </div>
-                            <div class='col-sm-2 justify-content-end' id='close_buttons'>
+                            <div class='col-sm-auto ms-4' id='import_buttons'>
+                                <button id='inventoryImportPriorBtn' class='btn btn-primary btn-sm' onclick='auctionItemRegistration.import(null);'>
+                                    <?php echo "Import Unsold Prior Art Items into $conname $id"; ?>
+                                </button>
+                            </div>
+                            <div class='col-sm justify-content-end text-end' id='close_buttons'>
                                 <button type="button" class='btn btn-primary btn-sm' onclick="auctionItemRegistration.closeModal(); return false;">
                                     Close Item Registration
                                 </button>
@@ -194,6 +209,9 @@ function draw_itemImportModal($portalType = '') {
                     <div class="row">
                         <div class="col-sm-12" id="importTable">
                         </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-auto ms-2' style="background-color: #FFE0E0;">Item already exists in this years inventory</div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-12'>

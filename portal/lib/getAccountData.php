@@ -86,10 +86,8 @@ WITH trans AS (
             ELSE NULL
         END AS badgeNameL2,
         CASE 
-            WHEN pn.id IS NOT NULL THEN
-                TRIM(REGEXP_REPLACE(CONCAT(pn.first_name, ' ', pn.middle_name, ' ', pn.last_name, ' ', pn.suffix), ' +', ' '))
-            WHEN nn.id IS NOT NULL THEN
-                TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' '))
+            WHEN pn.id IS NOT NULL THEN pn.fullName
+            WHEN nn.id IS NOT NULL THEN nn.fullName
             ELSE ''
         END AS fullName,
         CASE 
@@ -139,9 +137,7 @@ WITH trans AS (
         END AS purchaserName,
         nn.id AS personId, 'n' AS personType,
         nn.first_name AS fname, nn.last_name AS lname, nn.first_name, nn.last_name,
-        nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
-        TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' ')) AS fullName, 
-        nn.id as memberId, nn.email_addr, nn.phone,
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2, nn.fullName, nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid 
     FROM trans t
@@ -172,9 +168,7 @@ WITH mems AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         p.badge_name, p.badgeNameL2,  p.first_name, p.last_name,
-        p.id AS memberId, p.email_addr, p.phone,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        IFNULL(tp.perid, t.perid) AS transPerid
+        p.id AS memberId, p.email_addr, p.phone, p.fullName, IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans

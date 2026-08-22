@@ -182,7 +182,7 @@ if ($new_payment['type'] == 'terminal') {
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
                     $operatorNameSQL = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+SELECT fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -614,18 +614,11 @@ EOS;
 
     // now the main payment
     if ($amt > 0) {
-        if ($taxAmt > 0) {
-            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-            if ($taxFields != '')
-                $taxFields = ", $taxFields";
-            if ($taxSql != '')
-                $taxSql = ", $taxSql";
-        } else {
-            $taxFields = '';
-            $taxSql = '';
-            $taxStr = '';
-            $taxValues = [];
-        }
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,

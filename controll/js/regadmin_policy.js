@@ -12,6 +12,7 @@ class policySetup {
     #policyRedoBtn = null;
     #policyAddRowBtn = null;
     #dirty = false;
+    #policyPagination = false;
 
     // edit & Preview items
     #editPreviewModal = null;
@@ -32,6 +33,9 @@ class policySetup {
 
     #debug = 0;
     #debugVisible = false;
+
+    // constants
+    #enumYN = ['Y', 'N'];
 
     // globals before open
     constructor(debug) {
@@ -149,6 +153,7 @@ class policySetup {
             indexcol: "policy"
         };
         clear_message();
+        clearError();
         $.ajax({
             url: script,
             method: 'POST',
@@ -181,33 +186,36 @@ class policySetup {
         }
         this.#policies = data['policies'];
         this.#policyDirty = false;
+        this.#policyPagination = this.#policies.length > 25;
         this.#policyTable = new Tabulator('#policyTableDiv', {
             history: true,
             movableRows: true,
             data: this.#policies,
             layout: "fitDataTable",
             index: "policy",
-            pagination: this.#policies.length > 25,
+            pagination: this.#policyPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false, },
-                {title: "Policy", field: "policy", editor: "input", width: 200, headerSort: true, validator: "required", },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'policies' }, hozAlign:"left", headerSort: false },
+                {title: "Policy", field: "policy", editor: "input", width: 200, headerSort: true, validator: "required", },
                 {title: "Prompt", field: "prompt", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
                 {title: "Description", field: "description", headerSort: false, headerFilter: true, width: 600, validator: "required", formatter: this.toHTML },
                 {
-                    title: "Req", field: "required", headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    title: "Req", field: "required", headerSort: true, headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {
                     title: "Default Value", field: "defaultValue", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {
                     title: "Active", field: "active", headerWordWrap: true, headerSort: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                    headerFilter: true, headerFilterParams: { values: this.#enumYN, },
+                    editor: "list", editorParams: { values: this.#enumYN, }, width: 70, validator: "required"
                 },
                 {title: "Sort Order", field: "sortOrder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "policyKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -257,7 +265,17 @@ class policySetup {
         this.#policyTable.clearFilter(true);
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function() {
+            if (_this.#policyPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("policy"));
+                    setCellChanged(row.getCell("prompt"));
+                    setCellChanged(row.getCell("description"));
+                    setCellChanged(row.getCell("required"));
+                    setCellChanged(row.getCell("active"));
+                    setCellChanged(row.getCell("defaultValue"));
+                    _this.checkUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("policy"));
                 setCellChanged(row.getCell("prompt"));
                 setCellChanged(row.getCell("description"));
@@ -265,7 +283,7 @@ class policySetup {
                 setCellChanged(row.getCell("active"));
                 setCellChanged(row.getCell("defaultValue"));
                 _this.checkUndoRedo();
-            });
+            }
         });
     }
 
@@ -368,6 +386,7 @@ class policySetup {
                 indexcol: "policy"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({
@@ -413,9 +432,9 @@ class policySetup {
         this.#previewPolicyName.innerHTML = policyName;
         this.#editPolicyNameDiv.innerHTML = policyName;
         this.#policyPrompt.value = policyPrompt;
-        this.#policyDescription.value = policyDescription;
+        this.#policyDescription.value = replaceConfigTokens(policyDescription);
         this.#p_preview.checked = false;
-        this.#l_preview.innerHTML = policyPrompt;
+        this.#l_preview.innerHTML = replaceConfigTokens(policyPrompt);
         this.#l_required.hidden = polictRequired != 'Y';
         this.#previewDescIcon.hidden = policyDescription == '';
         this.#previewDescriptionText.innerHTML = policyDescription;
@@ -453,9 +472,9 @@ class policySetup {
         policyPrompt = policyPrompt.trim();
         policyDesc = policyDesc.trim();
         this.#p_preview.checked = false;
-        this.#l_preview.innerHTML = policyPrompt;
+        this.#l_preview.innerHTML = replaceConfigTokens(policyPrompt);
         this.#previewDescIcon.hidden = policyDesc == '';
-        this.#previewDescriptionText.innerHTML = policyDesc;
+        this.#previewDescriptionText.innerHTML = replaceConfigTokens(policyDesc);
         $("#previewTip").hide();
     }
 

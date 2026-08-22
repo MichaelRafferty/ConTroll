@@ -17,6 +17,7 @@ CREATE TABLE `memberInterests` (
   `newperid` int DEFAULT NULL,
   `interest` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
   `interested` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `notes` varchar(512) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'Notes entered by member for this interest',
   `notifyDate` datetime DEFAULT NULL,
   `csvDate` datetime DEFAULT NULL,
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

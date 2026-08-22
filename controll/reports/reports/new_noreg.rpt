@@ -17,7 +17,7 @@
 	calc=count
 [F005]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    sql="p.fullName"
     title="Full Name"
     minWidth=300
 [F006]
@@ -68,6 +68,6 @@
 	item=startDate
 	datatype=s
 [where]
-	001="r.conid IS NULL AND p.id > 9 AND p.first_name != 'Merged' AND p.middle_name != 'into' AND p.creation_date > ?"
+	001="r.conid IS NULL AND p.id > 9 AND p.first_name != 'Merged' AND p.middle_name != 'into' AND p.creation_date > ? AND p.deceased != 'Y'"
 [sort]
 	001="p.creation_date,p.last_name,p.first_name"

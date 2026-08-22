@@ -79,9 +79,8 @@ WITH numregs AS (
     GROUP BY perid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    address, addr_2, city, state, zip, country, fullName,
+    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM perinfo p
 LEFT OUTER JOIN numregs n ON (n.perid = p.id)
 WHERE id = ?
@@ -97,9 +96,8 @@ WITH numregs AS (
     GROUP BY newperid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
+    address, addr_2, city, state, zip, country, fullName,
+    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM newperson p
 LEFT OUTER JOIN numregs n ON (n.newperid = p.id)
 WHERE id = ?;
@@ -155,13 +153,15 @@ if ($interestReq == 'Y') {
     $interests = [];
 
     $iQ = <<<EOS
-SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
+SELECT i.interest, i.description, i.sortOrder, i.endDate, i.notesPrompt, m.interested, m.notes, m.id,
+    CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
 FROM interests i
+JOIN conlist c ON c.id = ?
 LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ? AND ? = 0
 WHERE i.active = 'Y'
 ORDER BY i.sortOrder
 EOS;
-    $iR = dbSafeQuery($iQ, 'iii', array($person['id'], $conid, $newFlag));
+    $iR = dbSafeQuery($iQ, 'iiii', array ($conid, $person['id'], $conid, $newFlag));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
             $interests[$row['interest']] = $row;
@@ -169,6 +169,25 @@ EOS;
         $iR->free();
     }
     $response['interests'] = $interests;
+
+    // get the convention roles
+    if (getConfValue('con', 'conRoles', 0) == 1) {
+        $cQ = <<<EOS
+    SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+    FROM conRoles c
+    LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+    WHERE c.active = 'Y'
+    EOS;
+        $conRoles = [];
+        $cR = dbSafeQuery($cQ, 'ii', array ($person['id'], $conid));
+        if ($cR !== false) {
+            while ($row = $cR->fetch_assoc()) {
+                $conRoles[$row['conRole']] = $row;
+            }
+            $cR->free();
+        }
+        $response['conroles'] = $conRoles;
+    }
 }
 
 // memberships of both Y and A types

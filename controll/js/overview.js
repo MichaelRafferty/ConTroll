@@ -41,6 +41,7 @@ function getOverTime() {
     });
 }
 function getBreakdown() {
+    clearError();
     var script= "scripts/getStats.php";
     $.ajax({
         url: script,

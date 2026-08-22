@@ -158,7 +158,7 @@ function isPrimary(memConid, memType, memCategory, memPrice, usage = 'all') {
     }
 
     if (usage == 'print') {
-        if (memCategory == 'virtual')
+        if (memCategory == 'virtual' || memType == 'virtual')
             return false; // virtual cannot be printed
     }
 

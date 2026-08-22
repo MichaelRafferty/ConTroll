@@ -185,7 +185,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if (array_key_exists('source', $results)) {
         $source = $results['source'];
     }
-    $cleanupRegs = $source == 'onlinereg';
+    $cleanUpRegs = $source == 'onlinereg';
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -252,7 +252,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $nonPlanAmt = '';
     $balanceDue = '';
     $itemsBuilt = false;
-    $taxRate = 0;
     // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
     $hasTax = hasTaxRates();
     $needTaxes = false;
@@ -301,7 +300,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $id = 'n' . $ep['newperid'];
             }
         } else {
-            if ($cleanupRegs)
+            if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
             exit();
@@ -320,7 +319,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 'currency' => $currency,
             ]),
         ]);
-        $orderLineitems[$lineid] = $item;
+        $orderLineitems[] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
@@ -358,14 +357,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ]);
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('art', $lineid));
+                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('artSales', $lineid));
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 $orderValue += $art['amount'];
                 $lineid++;
             }
         } else {
-            if ($cleanupRegs)
+            if ($cleanUpRegs)
                 cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Data not passed, get assistance.'));
             exit();
@@ -468,11 +467,22 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                     ]),
                 ]);
-                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+
+                // apply taxes to badge memberships based on the taxable override flags for taxable vs. non taxable
+                if ($hasTax)  {
+                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                        $badgeTaxable = 'taxableMem';
+                    } else {
+                        $badgeTaxable = 'nontaxMem';
+                    }
+
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = $hasTax;
-                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('badge', $lineid));
+                    $taxArray = buildSquareAppliedTaxArray($badgeTaxable, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
                 }
+
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
                     if ($badge['inPlan'])
                         $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
@@ -498,7 +508,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'discountUid' => 'discount' ,
                     ])));
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineitems[] = $item;
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
@@ -514,10 +524,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
                     ' for ';
-                if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
-                    $itemName .= $space['artistName'];
+                if ($results['exhibits'] == 'artist') {
+                    if ($space['artistName'] != '')
+                        $itemName .= $space['artistName'];
+                    else
+                        $itemName .= $space['exhibitorName'];
+                    $spaceType = 'artSpace';
                 } else {
                     $itemName .= $space['exhibitorName'];
+                    $spaceType = 'exhibitSpace';
                 }
                 $incCount = 0;
                 $addCount = 0;
@@ -541,7 +556,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                     ]),
                 ]);
-                $orderLineitems[$lineid] = $item;
+
+                // apply taxes to spaces based on the space taxable flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildSquareAppliedTaxArray($spaceType, $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
+                }
+
+                $orderLineitems[] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -555,6 +581,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
+
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'region-' . str_replace(' ', '-', $fee['name']),
@@ -567,7 +594,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                         ]),
                 ]);
-                $orderLineitems[$lineid] = $item;
+
+                // apply taxes to mail in fees based on the artShipping flag
+                if ($hasTax)  {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildSquareAppliedTaxArray('artShipping', $lineid);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item->setAppliedTaxes($taxArray);
+                }
+
+                $orderLineitems[] = $item;
                 $orderValue += $itemPrice;
                 $lineid++;
             }
@@ -659,12 +697,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if ($squareDebug & 14) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
-        if ($cleanupRegs)
+        if ($cleanUpRegs)
             cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
     }
     catch (Exception $e) {
-        if ($cleanupRegs)
+        if ($cleanUpRegs)
             cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
@@ -818,7 +856,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
-    $cleanupRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
+    $cleanUpRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
 
     // 1. create payment for order
     //  a. create payment object with order id and payment amount plus credit card nonce
@@ -944,19 +982,19 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 }
                 web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
 
-                if ($cleanupRegs)
+                if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
                 exit();
             }
         }
-        if ($cleanupRegs)
+        if ($cleanUpRegs)
             cleanRegs($ccParams['badges'], $ccParams['transid']);
         ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
         exit();
     }
     catch (Exception $e) {
-        if ($cleanupRegs)
+        if ($cleanUpRegs)
             cleanRegs($ccParams['badges'], $ccParams['transid']);
         sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }

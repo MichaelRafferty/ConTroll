@@ -1,8 +1,11 @@
 <?php
 
 //  match edit: handle l/r editing of a match for both people unmatched and merge
-function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $className, $countryOptions, $policiesCell, $ageList ) : string {
+function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $className, $countryOptions, $policiesCell, $ageList,
+    $regStaff = false, $regAdmin = false) : string {
     $ageOptions = '';
+    $deceasedDisabled = $regAdmin == false ? 'disabled' : '';
+    $formerGoHDisabled = $regStaff == false && $regAdmin == false ? 'disabled' : '';
     foreach ($ageList as $age) {
         $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' [' . $age['label'] . "]</option>\n";
     }
@@ -379,8 +382,18 @@ function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $class
                                 <option value="Y">Y</option>
                                 <option value="N">N</option>
                             </select>
-                            <label for='banned'>Banned: </label>
-                            <select name='banned' id='banned'>
+                            <label for='banned'>&emsp; Banned: </label>
+                            <select name='banned' id='banned' $deceasedDisabled>
+                                <option value='Y'>Y</option>
+                                <option value='N'>N</option>
+                            </select>
+                            <label for='deceased'>&emsp; Deceased: </label>
+                            <select name='deceased' id='deceased' $deceasedDisabled>
+                                <option value='Y'>Y</option>
+                                <option value='N'>N</option>
+                            </select>
+                            <label for='formerGoH'>&emsp; Former GoH: </label>
+                            <select name='formerGoH' id='formerGoH' $formerGoHDisabled>
                                 <option value='Y'>Y</option>
                                 <option value='N'>N</option>
                             </select>

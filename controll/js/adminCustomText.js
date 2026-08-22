@@ -72,6 +72,7 @@ class customTextSetup {
             page: config['page'],
         };
         clear_message();
+        clearError();
         this.#dirty = false;
         $.ajax({
             url: script,
@@ -123,7 +124,7 @@ class customTextSetup {
                 {title: "Page", field: "appPage", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Section", field: "appSection", width:150, headerSort: true, headerFilter: true, },
                 {title: "Item", field: "txtItem", width: 150, headerSort: true, headerFilter: true, },
-                {title: "Description", field: "txtItemDescription", width: 300, headerSort: true, headerFilter: true, formatter: "textarea" },
+                {title: "Description", field: "txtItemDescription", width: 250, headerSort: true, headerFilter: true, formatter: "textarea" },
                 {title: "Custom Text", field: "contents", headerSort: false, width: 950, headerFilter: true, validator: "required", formatter: this.toHTML },
             ],
         });
@@ -149,6 +150,7 @@ class customTextSetup {
         var item = cell.getData().txtItem;
         if (item == 'text')
             text = text.replaceAll("\n", '<br/>');
+        cell.getElement().style.whiteSpace = "normal";
         return text;
     }
 
@@ -239,6 +241,7 @@ class customTextSetup {
                 indexcol: "customText"
             };
             clear_message();
+            clearError();
             this.#dirty = false;
             //console.log(postdata);
             $.ajax({
