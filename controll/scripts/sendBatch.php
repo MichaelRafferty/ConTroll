@@ -43,6 +43,7 @@ $data = json_decode($json, true);
 // now that we have the data block, validate the permission
 switch ($data['emailType']) {
     case 'invReminder':
+    case 'exhAttReminder':
         $perm = 'exhibitor';
         break;
     default:

@@ -17,6 +17,7 @@ $email_type = $_POST['type'];
 
 switch ($email_type) {
     case 'invReminder':
+    case 'exhAttReminder':
         $perm = 'exhibitor';
         break;
     default:
