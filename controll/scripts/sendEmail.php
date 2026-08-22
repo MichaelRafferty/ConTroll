@@ -275,16 +275,20 @@ WITH soldCount AS (
 )
 SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
-      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems, r.ownerName, r.ownerEmail, er.name AS regionName
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems, r.ownerName, r.ownerEmail, er.name AS regionName,
+      e.exhibitorName AS EXHIBITOR_NAME, e.artistName AS ARTIST_NAME, y.contactName AS CONTACT_NAME,
+      y.contactEmail AS CONTACT_EMAIL, er.name AS REGION_NAME, r.ownerName AS OWNER_NAME, r.ownerEmail AS OWNER_EMAIL,
+      ry.exhibitorNumber AS ARTIST_NUMBER, c.label AS CON_NAME
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+JOIN conlist c ON r.conid = c.id
 LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
 WHERE r.conid = ?
-GROUP BY first_name, email, ownerName, ownerEmail, regionName
+GROUP BY first_name, email, ownerName, ownerEmail, er.name, exhibitorName, artistName, y.contactName, y.contactEmail, ry.exhibitorNumber, c.label
 HAVING numItems = 0;
 EOQ;
     $typestr = 'iii';
@@ -323,13 +327,17 @@ WITH soldCount AS (
 SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
       ELSE e.artistName END AS first_name, e.exhibitorEmail AS email,
-      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName
+      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName,
+      e.exhibitorName AS EXHIBITOR_NAME, e.artistName AS ARTIST_NAME, y.contactName AS CONTACT_NAME,
+      y.contactEmail AS CONTACT_EMAIL, er.name AS REGION_NAME, r.ownerName AS OWNER_NAME, r.ownerEmail AS OWNER_EMAIL,
+      ry.exhibitorNumber AS ARTIST_NUMBER, c.label AS CON_NAME
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+JOIN conlist c ON r.conid = c.id
 WHERE r.conid = ?;
 EOQ;
     $typestr = 'iii';
