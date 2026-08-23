@@ -20,6 +20,7 @@ CREATE TABLE `memList` (
   `label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `cartDesc` text COLLATE utf8mb4_general_ci,
   `notes` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rptGrouping` varchar(128) COLLATE utf8mb4_general_ci DEFAULT '',
   `glNum` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `glLabel` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `price` decimal(8,2) NOT NULL,
