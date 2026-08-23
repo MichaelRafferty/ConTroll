@@ -1,2 +1,2 @@
-Current=58
-Text=This schema is current as of Patch 57 (p57_2.1.sql)
+Current=59
+Text=This schema is current as of Patch 59 (p59_2.3.sql)

@@ -8,7 +8,6 @@
 -- Dumping data for table `controllAppItems`
 --
 
-SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
 INSERT INTO `controllAppItems` VALUES
@@ -24,8 +23,16 @@ INSERT INTO `controllAppItems` VALUES
 ('controll','emails','reminder','text','Custom Text for the plain text attendence reminder email'),
 ('controll','emails','survey','html','Custom Text for the html post con survey email'),
 ('controll','emails','survey','text','Custom Text for the plain text post con survey email'),
-('exhibitor','emails','invReminder','html','Custom Text for the html post con enter your item registration reminder email'),
+('exhibitor','emails','artistAttReminder','html','Custom Text for the html artist attendance reminder email'),
+('exhibitor','emails','artistAttReminder','text','Custom Text for the text artist attendance reminder email'),
+('exhibitor','emails','exhibitorAttReminder','html','Custom Text for the html exhibitor attendance reminder email'),
+('exhibitor','emails','exhibitorAttReminder','text','Custom Text for text html exhibitor attendance reminder email'),
+('exhibitor','emails','fanAttReminder','html','Custom Text for the html fan table attendance reminder email'),
+('exhibitor','emails','fanAttReminder','text','Custom Text for the text fan table attendance reminder email'),
+('exhibitor','emails','invReminder','html','Custom Text for the html enter your item registration reminder email'),
 ('exhibitor','emails','invReminder','text','Custom Text for the plain text enter your item registration reminder email'),
+('exhibitor','emails','vendorAttReminder','html','Custom Text for the html vendor (dealer) attendance reminder email'),
+('exhibitor','emails','vendorAttReminder','text','Custom Text for the text vendor (dealer) attendance reminder email'),
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
 ('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email'),
 ('exhibitor','index','email','onsiteInvHTML','On Site Artist Inventory HTML Email'),
@@ -187,4 +194,3 @@ INSERT INTO `controllAppItems` VALUES
 ('profile','all','policies','header','header before policies in edit profile');
 ALTER TABLE `controllAppItems` ENABLE KEYS;
 UNLOCK TABLES;
-SET FOREIGN_KEY_CHECKS = 1;

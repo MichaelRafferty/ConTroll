@@ -10,7 +10,7 @@
 
 LOCK TABLES `perinfo` WRITE;
 ALTER TABLE `perinfo` DISABLE KEYS;
-INSERT INTO `perinfo` VALUES
+INSERT INTO `perinfo` (`id`, `currentAgeConId`, `currentAgeType`, `last_name`, `first_name`, `middle_name`, `suffix`, `email_addr`, `phone`, `badge_name`, `badgeNameL2`, `legalName`, `pronouns`, `address`, `addr_2`, `city`, `state`, `zip`, `country`, `banned`, `deceased`, `formerGoH`, `creation_date`, `update_date`, `change_notes`, `active`, `open_notes`, `admin_notes`, `old_perid`, `contact_ok`, `share_reg_ok`, `managedBy`, `managedByNew`, `updatedBy`, `lastVerified`, `managedReason`) VALUES
 (2,NULL,NULL,'Registration','At Con','','','','','','','','','','','','','','','N','N','N','2023-04-19 16:23:41','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
 (3,NULL,NULL,'Internal','Exhibitor','','','','','','','','','','','','','','','N','N','N','2024-04-26 11:49:14','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
 (4,NULL,NULL,'Internal','Portal','','','','','','','','','','','','','','','N','N','N','2024-06-18 15:40:47','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
