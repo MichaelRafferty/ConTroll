@@ -69,4 +69,4 @@ CREATE ALGORITHM=UNDEFINED
      JOIN memCategories c ON m.memCategory = c.memCategory;
 
 
-INSERT INTO patchLog(id, name) VALUES(59x, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
+INSERT INTO patchLog(id, name) VALUES(59, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
