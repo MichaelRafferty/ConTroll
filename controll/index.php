@@ -122,7 +122,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
             exit();
         }
     }
-    web_error_log("failed login, no match");
+    web_error_log("failed login, no match for '$email'");
     header('location:' . getConfValue('controll', 'controllsite') . '?msg=' . urlencode('Invalid Login'));
     exit();
 }
