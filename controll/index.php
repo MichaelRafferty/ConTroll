@@ -123,6 +123,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         }
     }
     web_error_log("failed login, no match");
+    header('location:' . getConfValue('controll', 'controllsite') . '?msg=' . urlencode('Invalid Login'));
     exit();
 }
 
@@ -259,6 +260,18 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             </div>
         </div>
         <?php
+        if (array_key_exists('msg', $_REQUEST)) {
+            $msg = $_REQUEST['msg'];
+            ?>
+            <div class="container-fluid">
+                <div class="row m-1 mt-4">
+                    <div class="col-sm-12 bg-danger text-white">
+                        <strong> <?php echo $msg; ?></strong>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
         if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
