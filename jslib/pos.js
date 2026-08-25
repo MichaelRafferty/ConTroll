@@ -79,6 +79,7 @@ class Pos {
     #manager = false;
     #upgradable_types = ['one-day', 'oneday', 'virtual'];
     #multiOneDay = 0;
+    #hasCartDesc = false;
 
     // filter criteria
     #startdate = null; // from load init data, start date of convention
@@ -318,6 +319,14 @@ class Pos {
         return this.#review_editable_fields;
     }
 
+    getHasCartDesc() {
+        return this.#hasCartDesc;
+    }
+
+    getUseCartDesc() {
+        return this.#hasCartDesc && config.showCartDescription == 1;
+    }
+
     upgradableTypesIncludes(type) {
         return this.#upgradable_types.includes(type);
     }
@@ -452,6 +461,14 @@ class Pos {
         memList = data.gmemList;
         memListIdx = data.gmemListIdx;
         memRules = data.gmemRules;
+
+        // check to see if there are cart descriptions
+        for (let row in memList) {
+            if (memList[row].cartDescription != '') {
+                this.#hasCartDesc = true;
+                break;
+            }
+        }
 
         if (this.#discountMode === undefined || this.#discountMode === null || this.#discountMode == '')
             this.#discountMode = 'none';
@@ -1532,8 +1549,10 @@ class Pos {
         let note = null;
         let fullName = null;
 
-        if (!this.#manager || !baseManagerEnabled)
+        if (!(this.#opennoteMode == 'any' || (this.#opennoteMode == 'manager' && this.getManager()) ||
+            (this.getManagerActive() && this.#opennoteMode == 'active'))) {
             return;
+        }
 
         this.#notesType = null;
         if (where == 'cart') {
@@ -3223,8 +3242,8 @@ class Pos {
             <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
             if (this.#discountMode != "none" && !coupon.isCouponActive() && this.#drow == null) {
-                if (this.#discountMode == 'any' || ((this.#discountMode == 'manager' || this.#discountMode == 'active') &&
-                    this.#manager && baseManagerEnabled)) {
+                if (this.#discountMode == 'any' || (this.#discountMode == 'manager' && this.getManager()) ||
+                    (this.getManagerActive() && this.#discountMode == 'active')) {
                     pay_html += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onchange='pos.setPayType("discount");'/>
             <label for="pt-discount">Discount</label>

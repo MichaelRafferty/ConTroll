@@ -103,6 +103,8 @@ $config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBran
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
+$config_vars['showCartDescription'] = getConfValue('controll', 'showCartDescription', 0);
+$config_vars['showCartDate'] = getConfValue('controll', 'showCartDate', 0);
 load_cc_procs();
 $config_vars['ccCurrency'] = cc_getCurrency();
 $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);

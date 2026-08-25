@@ -12,7 +12,7 @@ LOCK TABLES `auth` WRITE;
 ALTER TABLE `auth` DISABLE KEYS;
 INSERT INTO `auth` VALUES
 (1,'overview','Y','Membership',100),
-(2,'admin','Y','Admin',200),
+(2,'admin','Y','Admin',20),
 (3,'people','Y','People',500),
 (5,'registration','Y','Registration',400),
 (6,'reg_staff','Y','Registration Admin',300),
@@ -29,6 +29,6 @@ INSERT INTO `auth` VALUES
 (20,'gen_rpts','N','N',1350),
 (21,'reg_admin','N','N',1400),
 (22,'reg_ad_menu','N','N',1450),
-(32,'exhibitor','Y','Exhibitors',90);
+(32,'exhibitor','Y','Exhibitors',900);
 ALTER TABLE `auth` ENABLE KEYS;
 UNLOCK TABLES;

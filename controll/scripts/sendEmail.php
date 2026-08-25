@@ -17,6 +17,7 @@ $email_type = $_POST['type'];
 
 switch ($email_type) {
     case 'invReminder':
+    case 'exhAttReminder':
         $perm = 'exhibitor';
         break;
     default:
@@ -274,15 +275,20 @@ WITH soldCount AS (
 )
 SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
-      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(a.id) AS numItems, r.ownerName, r.ownerEmail, er.name AS regionName,
+      e.exhibitorName AS EXHIBITOR_NAME, e.artistName AS ARTIST_NAME, y.contactName AS CONTACT_NAME,
+      y.contactEmail AS CONTACT_EMAIL, er.name AS REGION_NAME, r.ownerName AS OWNER_NAME, r.ownerEmail AS OWNER_EMAIL,
+      ry.exhibitorNumber AS ARTIST_NUMBER, c.label AS CON_NAME
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
+JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+JOIN conlist c ON r.conid = c.id
 LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
 WHERE r.conid = ?
-GROUP BY first_name, email
+GROUP BY first_name, email, ownerName, ownerEmail, er.name, exhibitorName, artistName, y.contactName, y.contactEmail, ry.exhibitorNumber, c.label
 HAVING numItems = 0;
 EOQ;
     $typestr = 'iii';
@@ -321,13 +327,17 @@ WITH soldCount AS (
 SELECT 
       CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
       ELSE e.artistName END AS first_name, e.exhibitorEmail AS email,
-      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName
+      r.ownerName AS ownerName, r.ownerEmail AS ownerEmail, er.name AS regionName,
+      e.exhibitorName AS EXHIBITOR_NAME, e.artistName AS ARTIST_NAME, y.contactName AS CONTACT_NAME,
+      y.contactEmail AS CONTACT_EMAIL, er.name AS REGION_NAME, r.ownerName AS OWNER_NAME, r.ownerEmail AS OWNER_EMAIL,
+      ry.exhibitorNumber AS ARTIST_NUMBER, c.label AS CON_NAME
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
 JOIN soldCount sc ON ry.id = sc.id AND sc.numPurchased > 0
 JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
 JOIN exhibitsRegions er ON er.id = r.exhibitsRegion
+JOIN conlist c ON r.conid = c.id
 WHERE r.conid = ?;
 EOQ;
     $typestr = 'iii';
@@ -382,13 +392,17 @@ while ($addr =  $emailR->fetch_assoc()) {
 }
 
 if ($test) {
-    $email_test = [];
-    //$email_array[0]['email'] = $email;
-    $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
-    // add macrosubstitution items to email_test
     if (count($email_array) > 0) {
-        foreach ($email_array[0] as $field =>$value) {
-            $email_test[0][$field] = "test value for $field";
+        $email_test = [$email_array[0]];
+        $email_test[0]['email'] = $email;
+    } else {
+        $email_test = [];
+        $email_test[] = ['first_name' => 'Test Email', 'email' => $email, 'numItems' => 0];
+        // add macrosubstitution items to email_test
+        if (count($email_array) > 0) {
+            foreach ($email_array[0] as $field => $value) {
+                $email_test[0][$field] = "test value for $field";
+            }
         }
     }
     $response['emailTest'] = $email_test;

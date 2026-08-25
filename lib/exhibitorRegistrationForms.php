@@ -105,7 +105,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
     ?>
-    <!-- Registgration/Edit Registration Modal Popup -->
+    <!-- Registration/Edit Registration Modal Popup -->
     <div id='profile' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
@@ -385,6 +385,14 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <div class='row mt-2'>
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Primary Contact</h1></div>
+                                <div class='col-sm-auto p-0 ms-4 me-0'>
+                                    <button class='btn btn-sm btn-primary' type='button' id='copyToContact'
+                                            tabindex="<?php echo $tabIndex;
+                                                $tabIndex += 2; ?>"
+                                            onclick='exhibitorProfile.copyBusToContactName()'>
+                                        Copy <?php echo $portalName; ?> Name/Info to Contact Name/Info
+                                    </button>
+                                </div>
                             </div>
                             <?php outputCustomText('profile/contact'); ?>
                             <div class='row mt-1'>

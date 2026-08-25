@@ -149,7 +149,11 @@ class ExhibitorProfile {
     }
 
     copyBusToContactName() {
-        document.getElementById("contactName").value = document.getElementById("exhibitorName").value;
+        let id = document.getElementById("artistName");
+        if (id)
+            document.getElementById("contactName").value = id.value;
+        else
+            document.getElementById("contactName").value = document.getElementById("exhibitorName").value;
         document.getElementById("contactEmail").value = document.getElementById("exhibitorEmail").value;
         document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
         document.getElementById("cpw1").value = document.getElementById("pw1").value;

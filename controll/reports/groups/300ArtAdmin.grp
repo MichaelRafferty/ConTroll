@@ -23,7 +23,7 @@
 	auth=art_control
 	type=rpt
 	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
-	P002="prompt/~/filter/~/Filter by: (S[igned up], R[equested], A[pproved] or P[urchased]/~/P"
+	P002="prompt/~/filter/~/Filter by: (S[igned up], R[equested], A[pproved] or P[urchased]/~/S, R, A or P/~/P"
 [120ArtShowMailInUsage]
     name='Art Show Mail In Usage'
 	description='Art Show Mail In Registration for a convention year and region'

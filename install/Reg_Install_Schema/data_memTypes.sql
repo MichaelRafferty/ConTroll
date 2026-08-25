@@ -11,10 +11,9 @@
 LOCK TABLES `memTypes` WRITE;
 ALTER TABLE `memTypes` DISABLE KEYS;
 INSERT INTO `memTypes` VALUES
+('bundle', 'Req: Grouping for rules of membership bundles', 50,'Y'),
 ('donation','Req: Donation: both variable and fixed price',40,'Y'),
-('event','',60,'Y'),
 ('full','Req: full \'run of convention\' badge-able membership',10,'Y'),
-('lanyard','',70,'Y'),
 ('oneday','Req: single day badge-able membership',30,'Y'),
 ('sitesel','For site selection tokens',80,'Y'),
 ('virtual','Req: virtual non badge-able membership',20,'Y');

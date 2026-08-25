@@ -12,7 +12,7 @@ The execution of these reports is from a common back end AJAX script that will:
  * Optionally prompt for any run time specific parameters
  * Retrieve the data
  * Display the report as a tabulator table
- * Offer to download the contents of the report as a CSV file
+ * Offer to download the contents of the report as a CSV or Excel file
 
 There are four directories under the reports folder:
  * groups: system defined group files and tracked by github as part of the ConTroll distribution.

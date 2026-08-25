@@ -43,6 +43,7 @@ $data = json_decode($json, true);
 // now that we have the data block, validate the permission
 switch ($data['emailType']) {
     case 'invReminder':
+    case 'exhAttReminder':
         $perm = 'exhibitor';
         break;
     default:
@@ -98,6 +99,7 @@ foreach ($email_array as $email) {
     $sendtext = $emailText;
     $sendhtml = $emailHTML;
     if ($macroSubstitution) {
+        // these are where the [] and the field name do not match
         if (array_key_exists('first_name', $email)) {
             $sendtext = str_replace('[[FirstName]]', $email['first_name'], $sendtext);
             $sendhtml = str_replace('[[FirstName]]', $email['first_name'], $sendhtml);
@@ -106,29 +108,11 @@ foreach ($email_array as $email) {
             $sendtext = str_replace('[[LastName]]', $email['last_name'], $sendtext);
             $sendhtml = str_replace('[[LastName]]', $email['last_name'], $sendhtml);
         }
-        if (array_key_exists('label', $email)) {
-            $sendtext = str_replace('[[label]]', $email['label'], $sendtext);
-            $sendhtml = str_replace('[[label]]', $email['label'], $sendhtml);
-        }
-        if (array_key_exists('createdate', $email)) {
-            $sendtext = str_replace('[[createdate]]', $email['createdate'], $sendtext);
-            $sendhtml = str_replace('[[createdate]]', $email['createdate'], $sendhtml);
-        }
-        if (array_key_exists('enddate', $email)) {
-            $sendtext = str_replace('[[enddate]]', $email['enddate'], $sendtext);
-            $sendhtml = str_replace('[[enddate]]', $email['enddate'], $sendhtml);
-        }
-        if (array_key_exists('ownerName', $email)) {
-            $sendtext = str_replace('[[ownerName]]', $email['ownerName'], $sendtext);
-            $sendhtml = str_replace('[[ownerName]]', $email['ownerName'], $sendhtml);
-        }
-        if (array_key_exists('ownerEmail', $email)) {
-            $sendtext = str_replace('[[ownerEmail]]', $email['ownerEmail'], $sendtext);
-            $sendhtml = str_replace('[[ownerEmail]]', $email['ownerEmail'], $sendhtml);
-        }
-        if (array_key_exists('regionName', $email)) {
-            $sendtext = str_replace('[[regionName]]', $email['regionName'], $sendtext);
-            $sendhtml = str_replace('[[regionName]]', $email['regionName'], $sendhtml);
+
+        // now for the ones that match
+        foreach ($email as $key => $value) {
+            $sendtext = str_replace("[[$key]]", $value, $sendtext);
+            $sendhtml = str_replace("[[$key]]", $value, $sendhtml);
         }
         if (array_key_exists('guid', $email)) {
             $cc = 'offer=' . base64_encode_url($code . '~!~' . $email['guid']);

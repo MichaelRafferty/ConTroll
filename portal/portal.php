@@ -1002,6 +1002,7 @@ if ($totalDue > 0) {
     if ($numCoupons > 0) {
         $payHtml .= '<button class="btn btn-primary btn-sm p-1 ps-3 pe-3 ms-2 h-100" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
     }
+    outputCustomText('main/beforePayment');
     echo <<<EOS
     <div class='row mt-4'>
         <div class="col-sm-$cols">$payHtml</div>
@@ -1010,6 +1011,7 @@ if ($totalDue > 0) {
         </div>
     </div>
 EOS;
+    outputCustomText('main/afterPayment');
 }
 
 // create a div and bg color it to separate it logically from the other parts

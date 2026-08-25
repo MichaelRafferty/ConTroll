@@ -17,6 +17,8 @@ INSERT INTO `controllAppSections` VALUES
 
 
 INSERT INTO `controllAppItems` VALUES
+('portal','portal','main','beforePayment','Custom Text just above the make payment button'),
+('portal','portal','main','afterPayment','Custom Text just below the make payment button'),
 ('exhibitor','emails','artistAttReminder','html','Custom Text for the html artist attendance reminder email'),
 ('exhibitor','emails','fanAttReminder','html','Custom Text for the html fan table attendance reminder email'),
 ('exhibitor','emails','exhibitorAttReminder','html','Custom Text for the html exhibitor attendance reminder email'),
@@ -69,4 +71,4 @@ CREATE ALGORITHM=UNDEFINED
      JOIN memCategories c ON m.memCategory = c.memCategory;
 
 
-INSERT INTO patchLog(id, name) VALUES(59x, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
+INSERT INTO patchLog(id, name) VALUES(59, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');

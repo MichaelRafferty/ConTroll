@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once "lib/sets.php";
 require_once "lib/releaseNotes.php";
 require_once('../lib/googleOauth2.php');
 
@@ -48,7 +49,7 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
             && array_key_exists('id', $_REQUEST)) {
         $id = $_REQUEST['id'];
         // we are internal, force a login for sub $id
-        $authToken->buildToken('internal', $id, 'noemail');
+        $authToken->buildToken('internal', $id, $id);
         $tokenState = $authToken->checkToken();
     } else {
         // this is a real login with google... start / continue the process
@@ -121,7 +122,8 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
             exit();
         }
     }
-    web_error_log("failed login, no match");
+    web_error_log("failed login, no match for '$email'");
+    header('location:' . getConfValue('controll', 'controllsite') . '?msg=' . urlencode('Invalid Login'));
     exit();
 }
 
@@ -258,6 +260,18 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             </div>
         </div>
         <?php
+        if (array_key_exists('msg', $_REQUEST)) {
+            $msg = $_REQUEST['msg'];
+            ?>
+            <div class="container-fluid">
+                <div class="row m-1 mt-4">
+                    <div class="col-sm-12 bg-danger text-white">
+                        <strong> <?php echo $msg; ?></strong>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
         if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {

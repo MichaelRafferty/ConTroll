@@ -99,7 +99,8 @@ $textBody = vendorReset($token, $login, $portalName, $reply);
 $email = "no send attempt or a failure";
 load_email_procs();
 $response['status'] = 'success';
-$response['message'] = '<p>A password reset email has been sent to ' . $login . '. This email is only valid for a single use within the next hour.<br/>' .
+$response['message'] = '<p>A password reset email has been sent to ' . $login .
+    '. This password reset email is only valid for a single use within the next hour.<br/>' .
     'Please check your spam folder, but if you did not receive an email, or have any other problems, please contact ' . $reply . ' for assistance.
     </p>';
 

@@ -134,7 +134,7 @@ $typeR->free();
 // get approvals for this region
 $approvalQ = <<<EOS
 SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, 
-       e.exhibitorName, e.artistName, e.artistPayee, e.exhibitorEmail, e.website,
+       e.exhibitorName, e.artistName, e.artistPayee, e.exhibitorEmail, e.website, eY.mailin,
        COUNT(exS.item_approved) + COUNT(exS.item_requested) + COUNT(exS.item_purchased) AS used,
        CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
 FROM exhibitorRegionYears exRY

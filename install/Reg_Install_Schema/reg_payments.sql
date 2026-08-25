@@ -15,7 +15,7 @@ CREATE TABLE `payments` (
   `transid` int DEFAULT NULL,
   `type` enum('credit','cash','check','discount','refund','other','coupon') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `category` enum('reg','atcon','artshow','artsales','artist','fan','vendor','exhibits','other') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pretax` decimal(8,2) DEFAULT NULL,
   `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',

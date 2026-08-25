@@ -642,14 +642,26 @@ class exhibitorsAdm {
         let spaceSUMRequested = '';
         let newExhibitor = -1;
         let space = -1;
-        let idS = ''
+        let idS = '';
+        let mailIn = 'X';
+        let exhibitor = null;
+
         for (idS in spaceKeys) {
             space = spaces[idS];
             //let newRegion = space.exhibitsRegionYearId;
             newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
+                exhibitor = null;
+                mailIn = 'X';
                 if (currentExhibitor > 0) {
+                    for (let i = 0; i < data.exhibitors.length; i++) {
+                        if (data.exhibitors[i].exhibitorId == currentExhibitor) {
+                            exhibitor = data.exhibitors[i];
+                            mailIn = exhibitor.mailin;
+                            break;
+                        }
+                    }
                     if (spaceSUMPurchased != '') {
                         spaceSUM = spaceSUMPurchased;
                     } else if (spaceSUMApproved == spaceSUMRequested) {
@@ -683,6 +695,7 @@ class exhibitorsAdm {
                     region.requested = spaceSUMRequested;
                     region.approved = spaceSUMApproved;
                     region.purchased = spaceSUMPurchased;
+                    region.mailIn = mailIn;
                     regionsLocal.push(make_copy(region));
                     spaceHTML = '';
                     spaceStage = '';
@@ -789,6 +802,14 @@ class exhibitorsAdm {
             }
         }
         if (currentExhibitor > 0) {
+            mailIn = 'X';
+            for (let i = 0; i < data.exhibitors.length; i++) {
+                if (data.exhibitors[i].exhibitorId == currentExhibitor) {
+                    exhibitor = data.exhibitors[i];
+                    mailIn = exhibitor.mailin;
+                    break;
+                }
+            }
             if (spaceSUMPurchased != '') {
                 spaceSUM = spaceSUMPurchased;
             } else if (spaceSUMApproved == spaceSUMRequested) {
@@ -833,6 +854,7 @@ class exhibitorsAdm {
             spaceSUMPurchased = '';
             spaceSUMApproved = '';
             spaceSUMRequested = '';
+            region.mailIn = mailIn;
             regionsLocal.push(make_copy(region));
         }
         return regionsLocal;
@@ -864,6 +886,7 @@ class exhibitorsAdm {
                     {title: "ID", field: "id", visible: true, width: 65, hozAlign:"right" },
                     {title: "RegionId", field: "regionId", visible: false},
                     {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true,  width: 75, hozAlign:"right" },
+                    {title: "Mail In", field: "mailIn", headerWordWrap: true,  width: 75, },
                     {title: "regionYearId", field: "regionYearId", visible: false},
                     {title: "ExhibitorYearId", field: "exhibitorYearId", visible: false},
                     {title: "ExhibitorRegionYearId", field: "exhibitorRegionYearId", visible: false},
@@ -944,6 +967,7 @@ class exhibitorsAdm {
                         {title: "exhibitorName", field: "exhibitorName", visible: false},
                         {title: "artistName", field: "artistName", visible: false},
                         {title: "Name", field: "fullExhName", width: 200, headerSort: true, headerFilter: true,formatter: "html"},
+                        {title: "Mail In", field: "mailin", headerWordWrap: true,  width: 75, },
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},

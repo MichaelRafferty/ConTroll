@@ -33,7 +33,6 @@ class Cart {
 
     // flow items
     #auHeader = null;
-    #getNewMembershipDiv = null;
     #leaveBeforeChanges = true;
     #debug = 0;
 
@@ -63,7 +62,6 @@ class Cart {
         this.#auHeader = document.getElementById("auHeader");
         // set up div elements
         this.#membershipButtonsDiv = document.getElementById("membershipButtons");
-        this.#getNewMembershipDiv = document.getElementById("getNewMembershipDiv");
         this.#cartDiv = document.getElementById("cartDiv");
         this.#cartContentsDiv = document.getElementById("cartContentsDiv");
 
@@ -110,6 +108,10 @@ class Cart {
     </div>
 </div>
     `;
+        } else {
+            html += `
+<div class="row mt-1">
+`;
         }
         let rowColor = false;
         for (let row in memList) {
@@ -161,6 +163,11 @@ class Cart {
                     (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }
+        if (!hasDesc) {
+            html += `
+</div>
+`;
+            }
         this.#membershipButtonsDiv.innerHTML = html;
     }
 

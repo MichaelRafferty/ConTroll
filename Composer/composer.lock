@@ -2346,16 +2346,16 @@
         },
         {
             "name": "square/square",
-            "version": "46.0.1.20260715",
+            "version": "46.1.0.20260819",
             "source": {
                 "type": "git",
                 "url": "https://github.com/square/square-php-sdk.git",
-                "reference": "284fc9157079882903b12db448ca7aec5a23848e"
+                "reference": "fef70265315351c2e0317576dea5d0dd4547d6cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/284fc9157079882903b12db448ca7aec5a23848e",
-                "reference": "284fc9157079882903b12db448ca7aec5a23848e",
+                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/fef70265315351c2e0317576dea5d0dd4547d6cb",
+                "reference": "fef70265315351c2e0317576dea5d0dd4547d6cb",
                 "shasum": ""
             },
             "require": {
@@ -2397,9 +2397,9 @@
             ],
             "support": {
                 "issues": "https://github.com/square/square-php-sdk/issues",
-                "source": "https://github.com/square/square-php-sdk/tree/46.0.1.20260715"
+                "source": "https://github.com/square/square-php-sdk/tree/46.1.0.20260819"
             },
-            "time": "2026-07-14T18:57:38+00:00"
+            "time": "2026-08-18T21:18:29+00:00"
         },
         {
             "name": "stripe/stripe-php",

@@ -5,13 +5,13 @@ function get_admin_sets(): array
 {
     $sets = array(
         'gen_reports' => array('reports', 'gen_rpts'),
-        'admin' => array('admin', 'search'),
+        'admin' => array('admin', 'search', 'gen_rpts'),
         'reg_admin' => array('reg_admin', 'reg_ad_menu', 'reg_staff', 'search', 'reports', 'gen_rpts'),
         'reg_staff' => array('reg_staff', 'reg_ad_menu', 'search', 'reports', 'gen_rpts'),
         'registration' => array('people', 'registration', 'badge', 'search', 'reports', 'gen_rpts'),
         'lookup' => array('lookup', 'search'),
         'comp_entry' => array('badge', 'search'),
-        'stats' => array('overview', 'monitor','atcon'),
+        'stats' => array('overview', 'monitor'),
         'artshow_admin' => array('people', 'art_control', 'search', 'reports', 'gen_rpts', 'exhibitor'),
         'finance' => array('finance', 'search',  'reports', 'gen_rpts', 'coupon'),
         'exhibits' => array('people', 'search', 'reports', 'gen_rpts', 'exhibitor'),

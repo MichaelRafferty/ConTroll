@@ -341,6 +341,22 @@ showConRoles=0 ;
 ;; D:s3
 ;; B:O
 defaultCountry="USA"
+;; N:cashRoundingUnit
+;; R:H,finance
+;; P:Round to nearest
+;; H:For cash transactions round the total with tax and the change to the nearest "unit" of currency
+;; H+Posssible values are: 1, 5, 10, 25, 50
+;; H+The values are divided by the currency multipler for the current conventions currenct, e.g. USD = 100
+;; D:l:1,5,10,25,50
+;; B:O
+cashRountingUnit="1"
+;; N:cashRoundingGLNum
+;; R:H,finance
+;; P:Assign rounding offset to this GL Account Number
+;; H:For cash transactions the rounding amount is documented as assigned to this GL account number.
+;; D:s16
+;; B:O
+cashRountingGLNum=""
 
 ;;;;; On Line Registration (non Portal)
 [reg]
@@ -478,6 +494,14 @@ discount=active
 ;	any - any POS user can create/edit an open note
 ;	none - disable the creation/edit of an open note
 opennote=active
+;;; what to show in the membership button choice in atcon
+;; N:showCartDescription
+;; R:H,reg_admin
+;; H:Show the add to cart modal using the cart descriptions if they exist, else just show the buttons
+;; H+values: 0=buttons only, 1=cart descriptions if available
+;; D:l:0,1
+;; B:O
+showCartDescription=0
 ;; N:inlineinventory
 ;; R:H,art_control
 ;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier
@@ -931,6 +955,23 @@ discount=active
 ;	any - anyone who uses mail in registration can create/edit an open perinfo note
 ;	none - disable the creation/edit of an open note
 opennote=active
+;;; what to show in the membership button choice in registration
+;; N:showCartDescription
+;; R:H,reg_admin
+;; H:Show the add to cart modal using the cart descriptions if they exist, else just show the buttons
+;; H+values: 0=buttons only, 1=cart descriptions if available
+;; D:l:0,1
+;; B:O
+showCartDescription=0
+;;; show active dates in the membership button choice in registation
+;; N:showCartDate
+;; R:H,reg_admin
+;; H:Show start/end date for the item in the add to cart modal either in the button or the description as appropriate.
+;; H+This is because registration ignores the date range and shows all possible items regardless of active date range.
+;; H+values: 0=hide dates, 1=show dates
+;; D:l:0,1
+;; B:O
+showCartDate=0
 ;;;;; ConTroll/Registration: Search for Person ID or Transaction ID
 ;; N:regSearchTransactionId
 ;; R:H,reg_admin

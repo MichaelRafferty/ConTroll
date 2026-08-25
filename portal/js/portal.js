@@ -1248,7 +1248,10 @@ class Portal {
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
-        startCCPay(this.#paymentAmount * currencyMultiplier);
+        resetCCPay();
+        setTimeout(() => {
+            startCCPay(this.#paymentAmount * currencyMultiplier);
+        }, 250);
     }
 
     // makePlanPayment - make a payment on a plan
