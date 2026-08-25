@@ -83,6 +83,7 @@
 * Sending test emails now processes test values for the macro substitution variables.
 * Support for editing the open note under configuration control
 * Support the cart description and start/date ranges in membership add/edit under configuration control
+* Added to System Documentation how to roll a convention to the next year
 
 ## Portal:
 * Improvements to the payment interface as part of the Stripe addition
