@@ -100,6 +100,7 @@
 * Add select # of days before expiring on Expiration report
 * Change Layout in AT Con & Registration display of membership to match Cart
 * Create auto enable for con gmail users with limited rights
+* Display mail in flag not only in details, but in space requests and approval requests
 * Flesh out uncompleted code in change in approval flag after artist created
 * Make Type "Bundle" required
 * POS, add ability to edit/add an open note on a person
