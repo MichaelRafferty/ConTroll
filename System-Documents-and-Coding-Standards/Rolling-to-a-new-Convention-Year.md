@@ -49,8 +49,8 @@ It is a good idea to have a final backup database of the system.
       1. Check Current Convention Setup:
          1. In Current Convention Data: Check the start and end date of the convention were correctly changed. 
          It uses the same week of the month and adjusts the day, your convention could have a new date, or the week may be off by one.
-         2. In Current Membership types: Make sure the start date and end date for each item is correct. It uses a formula to guess the new proper dates, 
-            but they may not be exactly correct.
+         2. In Current Membership types: Make sure the start date, end date, and price for each item is correct for the new year.
+It uses a formula to guess the new proper dates, but they may not be exactly correct.
       2. Repeat this process for "Next Convention Setup"
       3. Check the ages in "Membership Configuration". They should be just fine for both years,
 but if the convention has changed the meanings or age types, update this accordingly.
