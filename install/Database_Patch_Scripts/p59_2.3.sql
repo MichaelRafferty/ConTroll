@@ -17,6 +17,8 @@ INSERT INTO `controllAppSections` VALUES
 
 
 INSERT INTO `controllAppItems` VALUES
+('portal','portal','main','beforePayment','Custom Text just above the make payment button'),
+('portal','portal','main','afterPayment','Custom Text just below the make payment button'),
 ('exhibitor','emails','artistAttReminder','html','Custom Text for the html artist attendance reminder email'),
 ('exhibitor','emails','fanAttReminder','html','Custom Text for the html fan table attendance reminder email'),
 ('exhibitor','emails','exhibitorAttReminder','html','Custom Text for the html exhibitor attendance reminder email'),

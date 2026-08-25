@@ -179,6 +179,8 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','index','profile','top','Create new account profile before profile data'),
 ('portal','membershipHistory','main','bottom','The bottom of the page/section'),
 ('portal','membershipHistory','main','top','The top of the page/section'),
+('portal','portal','main','beforePayment','Custom Text just above the make payment button'),
+('portal','portal','main','afterPayment','Custom Text just below the make payment button'),
 ('portal','portal','main','bottom','The bottom of the page/section'),
 ('portal','portal','main','changeEmail','Bottom of change email address portal'),
 ('portal','portal','main','people','Just after the people managed header'),
