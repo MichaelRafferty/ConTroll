@@ -50,7 +50,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
             </div>
             <?php
-    $oauthProviders = ['google', 'amazon'];
+    $oauthProviders = ['google', 'microsoft', 'amazon'];
     foreach ($oauthProviders as $provider) {
     if (getConfValue($provider, 'client_id', null)) { ?>
             <div class='row mb-2'>

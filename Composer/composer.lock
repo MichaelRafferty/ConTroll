@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f90dc7638b4625fcfe2bf3ddc7bf567c",
+    "content-hash": "d080e10aabd4f9da3f0082cf362ec9b2",
     "packages": [
         {
             "name": "apimatic/core",
@@ -3980,6 +3980,61 @@
                 "source": "https://github.com/tinymce/tinymce-dist/tree/8.8.2"
             },
             "time": "2026-07-27T04:10:15+00:00"
+        },
+        {
+            "name": "untt/oauth2-microsoft",
+            "version": "0.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tunterreitmeier/oauth2-microsoft.git",
+                "reference": "fe3d73e3f1449d6d86b1e7a3fb4fa93f6d0fbef8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tunterreitmeier/oauth2-microsoft/zipball/fe3d73e3f1449d6d86b1e7a3fb4fa93f6d0fbef8",
+                "reference": "fe3d73e3f1449d6d86b1e7a3fb4fa93f6d0fbef8",
+                "shasum": ""
+            },
+            "require": {
+                "league/oauth2-client": "^2.6.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.64",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Unt\\OAuth2\\Client\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Thomas Unterreitmeier",
+                    "email": "untdev@icloud.com"
+                }
+            ],
+            "description": "Microsoft OAuth2 Provider for The PHP League OAuth2 Client",
+            "keywords": [
+                "authorization",
+                "azure",
+                "client",
+                "entra",
+                "microsoft",
+                "oauth",
+                "oauth2"
+            ],
+            "support": {
+                "issues": "https://github.com/tunterreitmeier/oauth2-microsoft/issues",
+                "source": "https://github.com/tunterreitmeier/oauth2-microsoft/tree/0.0.4"
+            },
+            "time": "2026-07-09T13:11:43+00:00"
         }
     ],
     "packages-dev": [],
