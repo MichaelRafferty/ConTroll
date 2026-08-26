@@ -60,7 +60,8 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
             </div>
-<?php }
+<?php     }
+    }
                 // bypass for testing on Development PC
     if (isDirectAllowed()) {
                 ?>
