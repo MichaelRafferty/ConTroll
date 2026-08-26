@@ -282,7 +282,7 @@ if ($personType == 'n') {
             <div class='col-sm-1'></div>
             <div class='col-sm-1'><b>Provider</b></div>
             <div class='col-sm-4'><b>Email Address</b></div>
-            <div class="col-sm-3"><b>Subscriber ID</b></div>
+            <div class="col-sm-3" <style="word-wrap: break-word;"><b>Subscriber ID</b></div>
             <div class="col-sm-1"><b>Created</b></div>
             <div class="col-sm-1"><b>Last Used</b></div>
             <div class="col-sm-1" style='text-align: right;'><b>Use Count</b></div>
