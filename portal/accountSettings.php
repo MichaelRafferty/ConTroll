@@ -282,7 +282,7 @@ if ($personType == 'n') {
             <div class='col-sm-1'></div>
             <div class='col-sm-1'><b>Provider</b></div>
             <div class='col-sm-4'><b>Email Address</b></div>
-            <div class="col-sm-3" <style="word-wrap: break-word;"><b>Subscriber ID</b></div>
+            <div class="col-sm-3"><b>Subscriber ID</b></div>
             <div class="col-sm-1"><b>Created</b></div>
             <div class="col-sm-1"><b>Last Used</b></div>
             <div class="col-sm-1" style='text-align: right;'><b>Use Count</b></div>
@@ -300,7 +300,7 @@ if ($personType == 'n') {
             <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0" onclick="settings.deleteIdentity('<?php echo $key;?>')">Delete</button></div>
             <div class='col-sm-1'><?php echo $identity['provider'];?></div>
             <div class='col-sm-4'><?php echo $identity['email_addr'];?></div>
-            <div class='col-sm-3'><?php echo $identity['subscriberID'];?></div>
+            <div class='col-sm-3' style="word-wrap: break-word;"><?php echo $identity['subscriberID'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
             <div class='col-sm-1'><?php echo $lastUsed;?></div>
             <div class='col-sm-1' style='text-align: right;'><?php echo $identity['useCount'];?></div>
