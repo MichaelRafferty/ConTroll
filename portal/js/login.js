@@ -174,8 +174,8 @@ class Login {
     }
 
     // loginWithToken: show email for token
-    loginWithGoogle() {
-        window.location = '?oauth2=google';
+    loginWithOauth2(client) {
+        window.location = '?oauth2=' + client;
     }
 
     tokenEmailChanged(autoCall) {

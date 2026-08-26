@@ -88,6 +88,7 @@
 ## Portal:
 * Improvements to the payment interface as part of the Stripe addition
 * New custom text areas above and below the payment interface
+* Added Login with Amazon
 
 ## Atcon:
 * Improvements in flow and button prompting when paying for an order, including how much is going to be paid, and send to terminal wording

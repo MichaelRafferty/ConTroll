@@ -300,7 +300,7 @@ if ($personType == 'n') {
             <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0" onclick="settings.deleteIdentity('<?php echo $key;?>')">Delete</button></div>
             <div class='col-sm-1'><?php echo $identity['provider'];?></div>
             <div class='col-sm-4'><?php echo $identity['email_addr'];?></div>
-            <div class='col-sm-3'><?php echo $identity['subscriberID'];?></div>
+            <div class='col-sm-3' style="word-wrap: break-word;"><?php echo $identity['subscriberID'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
             <div class='col-sm-1'><?php echo $lastUsed;?></div>
             <div class='col-sm-1' style='text-align: right;'><?php echo $identity['useCount'];?></div>
@@ -315,7 +315,14 @@ if ($personType == 'n') {
             <div class='col-sm-auto'><label for='provider'> Provider:</label></div>
             <div class='col-sm-auto'><select id='provider' name='provider'>
                     <option value='token'>Email Authentication Token</option>
-                    <option value='google'>Login with Google</option>
+<?php
+    $oauthProviders = ['google', 'amazon'];
+    foreach ($oauthProviders as $provider) {
+        if (getConfValue($provider, 'client_id', null)) {
+            echo "<option value='$provider'>Login with " . ucfirst($provider) . "</option>";
+        }
+    }
+?>
                 </select>
             </div>
             <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
