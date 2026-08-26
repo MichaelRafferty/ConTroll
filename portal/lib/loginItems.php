@@ -50,17 +50,14 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
             </div>
             <?php
-    if (getConfValue('google', 'client_id', null)) { ?>
+    $oauthProviders = ['google', 'amazon'];
+    foreach ($oauthProviders as $provider) {
+    if (getConfValue($provider, 'client_id', null)) { ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('google');">Create Account or Login with Google</button>
-                </div>
-            </div>
-            <?php }
-    if (getConfValue('amazon', 'client_id', null)) { ?>
-            <div class='row mb-2'>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('amazon');">Create Account or Login with Amazon</button>
+                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
+                        Create Account or Login with <?echo ucfirst($provider);?>
+                    </button>
                 </div>
             </div>
 <?php }
