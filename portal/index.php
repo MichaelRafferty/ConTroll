@@ -57,7 +57,7 @@ if (isset($_REQUEST['logout'])) {
 
 /* NOTE: This is a 'future', as the oauth server didn't get written.
 // oauth= indicates an authentication request from the ConTroll Oauth2 server via redirect
-// This is not a login to portal via an oauth2 request (google, facebook, etc.)
+// This is not a login to portal via an oauth2 request (google, amazon, facebook, etc.)
 
 if (isset($_REQUEST['oauth'])) {
     // decrypt the request
@@ -139,6 +139,15 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
             $redirectURI = null;
         $oauthParams = null;
         switch (getSessionVar('oauth2')) {
+            case 'amazon':
+                $oauthParams = amazonAuth($redirectURI);
+                if (isset($oauthParams['error'])) {
+                    web_error_log($oauthParams['error']);
+                    clearSession('oauth2');
+                    draw_indexPageTop($condata, $purpose);
+                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
+                    exit();
+                }
             case 'google':
                 $oauthParams = googleAuth($redirectURI);
                 if (isset($oauthParams['error'])) {
@@ -152,7 +161,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         }
 
         if ($oauthParams == null) {
-            // an error occured with login by google
+            // an error occured with login by league oauth client
             draw_indexPageTop($condata, $purpose);
             draw_login($config_vars,
                        'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white',

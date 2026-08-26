@@ -49,14 +49,22 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </div>
                 </div>
             </div>
+            <?php
+    if (getConfValue('google', 'client_id', null)) { ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Create Account or Login with Google</button>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithOauth2('google');'>Create Account or Login with Google</button>
                 </div>
             </div>
-            <?php
-            // bypass for testing on Development PC
-                // TODO: back out seattle regtest from here.
+            <?php }
+    if (getConfValue('amazon', 'client_id', null)) { ?>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithOauth2('amazon');'>Create Account or Login with Amazon</button>
+                </div>
+            </div>
+<?php }
+                // bypass for testing on Development PC
     if (isDirectAllowed()) {
                 ?>
             <div class="row mt-3"><div class="col-sm-12"><hr></div></div>
