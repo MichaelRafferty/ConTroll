@@ -8,7 +8,7 @@ require_once('lib/portalForms.php');
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/interests.php");
-require_once("../lib/googleOauth2.php");
+require_once("../lib/oauth2Clients.php");
 
 global $config_vars;
 

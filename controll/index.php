@@ -3,7 +3,7 @@ require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
 require_once "lib/sets.php";
 require_once "lib/releaseNotes.php";
-require_once('../lib/googleOauth2.php');
+require_once('../lib/oauth2Clients.php');
 
 $page = "Home";
 $authToken = new authToken('web');

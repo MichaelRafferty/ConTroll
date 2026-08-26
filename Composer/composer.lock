@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b2358deea43bf2137778fa2fbf3dcea",
+    "content-hash": "f90dc7638b4625fcfe2bf3ddc7bf567c",
     "packages": [
         {
             "name": "apimatic/core",
@@ -1520,6 +1520,60 @@
                 "source": "https://github.com/MarkBaker/PHPMatrix/tree/3.0.1"
             },
             "time": "2022-12-02T22:17:43+00:00"
+        },
+        {
+            "name": "michaelkaefer/oauth2-amazon",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/michaelKaefer/oauth2-amazon.git",
+                "reference": "f8f80fa4134392eb23e835ed17ee05cab0cfb589"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/michaelKaefer/oauth2-amazon/zipball/f8f80fa4134392eb23e835ed17ee05cab0cfb589",
+                "reference": "f8f80fa4134392eb23e835ed17ee05cab0cfb589",
+                "shasum": ""
+            },
+            "require": {
+                "league/oauth2-client": "^2.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MichaelKaefer\\OAuth2\\Client\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Käfer",
+                    "email": "michael.kaefer1@gmx.at"
+                }
+            ],
+            "description": "Amazon OAuth 2.0 support for the PHP League's OAuth 2.0 Client",
+            "keywords": [
+                "Authentication",
+                "amazon",
+                "api",
+                "authorization",
+                "client",
+                "oauth",
+                "oauth2",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/michaelKaefer/oauth2-amazon/issues",
+                "source": "https://github.com/michaelKaefer/oauth2-amazon/tree/master"
+            },
+            "time": "2018-04-15T16:04:20+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
