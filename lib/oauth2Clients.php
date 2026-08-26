@@ -175,7 +175,11 @@
 
         if (empty($_GET['code'])) {
 // If we don't have an authorization code then get one
-            $authUrl = $provider->getAuthorizationUrl();
+            $authUrl = $provider->getAuthorizationUrl([
+                'scope' => array_merge(
+                ['openid', 'profile', 'email'],
+                ['User.Read'])
+            ]);
             setSessionVar('oauth2state', $provider->getState());
             setSessionVar('oauth2pass', 'auth');
             header('Location: ' . $authUrl);
