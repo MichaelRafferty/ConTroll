@@ -148,6 +148,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
                     draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
                     exit();
                 }
+                break;
             case 'google':
                 $oauthParams = googleAuth($redirectURI);
                 if (isset($oauthParams['error'])) {
@@ -157,7 +158,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
                     draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
                     exit();
                 }
-
+                break;
         }
 
         if ($oauthParams == null) {
