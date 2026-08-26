@@ -204,9 +204,12 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         clearSession("oauth2timeout");  // reset the timeout
         setSessionVar('email', $email);
         setSessionVar('displayName', $oauthParams['displayName']);
-        setSessionVar('firstName', $oauthParams['firstName']);
-        setSessionVar('lastName', $oauthParams['lastName']);
-        setSessionVar('avatarURL', $oauthParams['avatarURL']);
+        if (array_key_exists('firstName', $oauthParams))
+            setSessionVar('firstName', $oauthParams['firstName']);
+        if (array_key_exists('lastName', $oauthParams))
+            setSessionVar('lastName', $oauthParams['lastName']);
+        if (array_key_exists('avatarURL', $oauthParams))
+            setSessionVar('avatarURL', $oauthParams['avatarURL']);
         setSessionVar('subscriberId', $oauthParams['subscriberId']);
         setSessionVar('tokenType', 'oauth2');
         updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
