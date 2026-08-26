@@ -223,7 +223,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
         setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
-        if ($oldemail != null) {
+        if ($oldemail != null && $oldemail != '') {
             // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
             // don't disturb any other session variables
             validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'), getSessionVar('idSource'), getSessionVar('multiple'));
