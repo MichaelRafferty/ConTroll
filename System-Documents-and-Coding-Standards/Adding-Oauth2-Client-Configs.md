@@ -82,3 +82,30 @@ To use Amazon, you need to be a part of their developer program. There is no cha
  * Fill in the same allowed URLs as the Google Authorized Redirect URIs
  * Click Save.
 7. Update the reg_secret.ini by adding a section [amazon] and the fields app_name, client_id, and client_secret.
+
+### Yahoo
+To use Yahoo, you need to be a member of the Yahoo Developer Network.  To join:
+
+1. Create a Yahoo account with an email which is in the domain of your convention. We recommend using a Google Group so that all the admins can receive 
+   any updates from Yahoo.
+2. Login to Yahoo with that account.
+3. Go to the [Yahoo Developer Network](https://developer.yahoo.com/).
+4. Click "Apps"
+5. Click "Create App"
+6. Fill in the fields:
+   1. Application Name: Name that will be presented to the user, and the app_name in reg_secret.
+   2. Application Description: Longer description that will be shown to the user.
+   3. Homepage URL: Javascript Authorized Site (Note: Yahoo requires an app per authorized site)
+   4. Redirect URI's: You can specify multiple here, just click the + to add more lines.
+   5. Click Confidential Client
+   6. Click OpenID Connect Permissions
+   7. Click both Email and Profile under OpenID Connect pPermissions
+   8. Click Save.
+
+Repeat this for each source URL (production and test for example).
+
+You will not be able to edit this once created, you can delete it and create a new one. (the Update button seems to be disabled)
+
+Copy the values above including the client_id, client_secret, and app_name into the [yahoo] section of the reg_secret.ini file for the environment (test or 
+production).
+
