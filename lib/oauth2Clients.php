@@ -1,12 +1,13 @@
 <?php
     // use league oauth2 clients to get the information about the user
     require_once(__DIR__ . '/../Composer/vendor/autoload.php');
+    require_once('oauth2-yahoo/Provider/Yahoo.php');
+    require_once('oauth2-yahoo/Provider/YahooUser.php');
 
     use League\OAuth2\Client\Provider\Google;
     use MichaelKaefer\OAuth2\Client\Provider\Amazon;
     use Unt\OAuth2\Client\Provider\MicrosoftProvider;
-    require_once("oauth2-yahoo/Provider/Yahoo.php");
-    require_once("oauth2-yahoo/Provider/YahooUser.php");
+    use Hayageek\OAuth2\Client\Provider\Yahoo;
 
     // googleAuth - use Oauth2 to retrieve email and name of user from Google
     //      redirectURI = which program is making the Oauth call, this is the path for it's return information.
