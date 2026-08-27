@@ -13,7 +13,9 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
-            <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+<?php
+    if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS'])
+                    || $_SERVER['HTTPS'] == 'on')) { ?>
             <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
@@ -21,10 +23,27 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
+                    Passkey is the preferred login method. Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
                 </div>
             </div>
-            <?php } ?>
+            <?php
+    }
+    $oauthProviders = ['google', 'microsoft', 'amazon', 'yahoo'];
+    $first = true;
+    foreach ($oauthProviders as $provider) {
+    if (getConfValue($provider, 'client_id', null)) {
+        if ($first)
+            echo "       <div class='row mb-2'>\n";
+?>
+
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
+                        Create Account or Login with <?echo ucfirst($provider);?>
+                    </button>
+                </div>
+<?php    }
+    if (!$first) echo "</div>\n";
+    } ?>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
@@ -49,22 +68,10 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </div>
                 </div>
             </div>
-            <?php
-    $oauthProviders = ['google', 'microsoft', 'amazon', 'yahoo'];
-    foreach ($oauthProviders as $provider) {
-    if (getConfValue($provider, 'client_id', null)) { ?>
-            <div class='row mb-2'>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
-                        Create Account or Login with <?echo ucfirst($provider);?>
-                    </button>
-                </div>
-            </div>
-<?php     }
-    }
+<?php
                 // bypass for testing on Development PC
     if (isDirectAllowed()) {
-                ?>
+?>
             <div class="row mt-3"><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
                 <div class='col-sm-auto'>
@@ -78,8 +85,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
             </div>
             <div class='row mb-2'><div class="col-sm-12" id="matchList"></div></div>
-            <?php
-    } ?>
+<?php } ?>
         </div>
     </div>
 <?php
