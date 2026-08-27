@@ -215,7 +215,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         $interests = getInterests();
         [$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
         draw_addMembershipsConfirmModal();
-        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $countryOptions, $interests);
+        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['conStartDate'], $countryOptions, $interests);
         // ask to create new account
 ?>
         <h3 class="mt-3">The email <?php echo $email;?> does not have an account.</h3>
