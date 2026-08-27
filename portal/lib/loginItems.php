@@ -48,7 +48,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     if (!$first)
         echo "</div>\n";
 ?>
-            <div class="row mb-2">
+            <div class="row mt-2 mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
                         Create Account or Login with Email Authentication
