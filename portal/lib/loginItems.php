@@ -38,7 +38,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
         }
 ?>
 
-                <div class='col-sm-auto m-2'>
+                <div class='col-sm-auto me-2 mt-2'>
                     <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
                         Create Account or Login with <?echo ucfirst($provider);?>
                     </button>
