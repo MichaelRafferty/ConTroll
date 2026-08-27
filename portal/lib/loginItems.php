@@ -23,7 +23,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Passkey is the preferred login method. Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
+                    Passkey is our preferred login method. Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
                 </div>
             </div>
             <?php
