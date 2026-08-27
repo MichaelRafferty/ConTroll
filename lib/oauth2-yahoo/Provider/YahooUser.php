@@ -77,9 +77,7 @@ class YahooUser implements ResourceOwnerInterface
      */
     public function getEmail()
     {
-        if (!empty($this->response['profile']['emails'])) {
-            return $this->response['profile']['emails'][0]['handle'];
-        }
+        return $this->getResponseValue('email');
     }
 
     /**
@@ -109,7 +107,7 @@ class YahooUser implements ResourceOwnerInterface
      */
     public function getPreferredUsername()
     {
-        return $this->getResponseValue('preferred_username');
+        return $this->getResponseValue('nickname');
     }
 
     /**
