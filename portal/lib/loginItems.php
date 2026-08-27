@@ -32,8 +32,10 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     $first = true;
     foreach ($oauthProviders as $provider) {
     if (getConfValue($provider, 'client_id', null)) {
-        if ($first)
+        if ($first) {
             echo "       <div class='row mb-2'>\n";
+            $first = false;
+        }
 ?>
 
                 <div class='col-sm-auto'>
