@@ -5,8 +5,8 @@
     use League\OAuth2\Client\Provider\Google;
     use MichaelKaefer\OAuth2\Client\Provider\Amazon;
     use Unt\OAuth2\Client\Provider\MicrosoftProvider;
-    use Hayageek\OAuth2\Client\Provider\Yahoo;
-
+    require_once("oauth2-yahoo/Provider/Yahoo.php");
+    require_once("oauth2-yahoo/Provider/YahooUser.php");
 
     // googleAuth - use Oauth2 to retrieve email and name of user from Google
     //      redirectURI = which program is making the Oauth call, this is the path for it's return information.
@@ -286,9 +286,9 @@
         if ($ownerDetails != null) {
             $oauthParams['email'] = $ownerDetails->getEmail();
             $oauthParams['displayName'] = $ownerDetails->getName();
-            //$oauthParams['firstName'] = $ownerDetails->getFirstName();
-            //$oauthParams['lastName'] = $ownerDetails->getLastName();
-            //$oauthParams['avatarURL'] = $ownerDetails->getAvatar();
+            $oauthParams['firstName'] = $ownerDetails->getFirstName();
+            $oauthParams['lastName'] = $ownerDetails->getLastName();
+            $oauthParams['avatarURL'] = $ownerDetails->getAvatar();
             $oauthParams['subscriberId'] = $ownerDetails->getId();
         } else {
             $oauthParams['nodetails'] = 'Something went wrong!';
