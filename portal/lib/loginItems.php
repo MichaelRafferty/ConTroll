@@ -33,19 +33,21 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     foreach ($oauthProviders as $provider) {
     if (getConfValue($provider, 'client_id', null)) {
         if ($first) {
-            echo "       <div class='row mb-2'>\n";
+            echo "       <div class='row'>\n";
             $first = false;
         }
 ?>
 
-                <div class='col-sm-auto'>
+                <div class='col-sm-auto m-2'>
                     <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
                         Create Account or Login with <?echo ucfirst($provider);?>
                     </button>
                 </div>
 <?php    }
-    if (!$first) echo "</div>\n";
-    } ?>
+    }
+    if (!$first)
+        echo "</div>\n";
+?>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
