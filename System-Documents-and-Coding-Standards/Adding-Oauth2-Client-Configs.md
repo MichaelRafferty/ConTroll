@@ -47,3 +47,38 @@ revoke same by disabling or removing them from their Google For Non Profits acco
 6. CLick Save.
 
 There is nothing to change in the configuration file in this case, the client id and secret do not change.
+
+## Optional Oauth2 "Login With" Providers Already In ConTroll:
+The following providers are currently supported by ConTroll:
+* google (required, and documented above)
+* amazon
+* yahoo
+
+The following are in progress of being added:
+* facebook
+* microsoft
+
+Note: Apple was considered, but there is a $99/year charge to each convention to be part of their developer program. That is required to use "Login with Apple".
+
+### Amazon
+To use Amazon, you need to be a part of their developer program. There is no charge to be a member.  To join:
+1. Create an amazon account with an email which is in the domain of your convention. We recommend using a Google Group so that all the admins can receive 
+   any updates from Amazon.
+2. Login to Amazon with that account.
+3. Go to the [Amazon Developer Console](https://developer.amazon.com/).
+4. click "Console" in upper right corner.
+5. Under the amzaon section select "Login with Amazon".
+6. Click Create a New Security Profile
+ * Assign the profile a Name, this is the app_name you will use in the secrets file
+ * Choose a description, which is longer than the name, that will be showed to the user
+ * Fill in the privacy notice URL from your conventions website
+ * Upload a relatively small square image for the logo.  Amazon will scale it for you.
+ * Click Save.
+ * A new page will open with your client id and secret.  Copy these into your secrets file.
+ * Click the Manage Gear for this security profile.
+ * Click "Web Settings"
+ * Click "edit" if it does not open in the editor
+ * Fill in the same allowed Origins as the Google Authorized Javascript Origins
+ * Fill in the same allowed URLs as the Google Authorized Redirect URIs
+ * Click Save.
+7. Update the reg_secret.ini by adding a section [amazon] and the fields app_name, client_id, and client_secret.
