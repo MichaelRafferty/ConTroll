@@ -169,6 +169,16 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
                     exit();
                 }
                 break;
+            case 'yahoo':
+                $oauthParams = yahooAuth($redirectURI);
+                if (isset($oauthParams['error'])) {
+                    web_error_log($oauthParams['error']);
+                    clearSession('oauth2');
+                    draw_indexPageTop($condata, $purpose);
+                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
+                    exit();
+                }
+                break;
         }
 
         if ($oauthParams == null) {
