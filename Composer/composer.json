@@ -14,7 +14,8 @@
         "lbuchs/webauthn": "^2.2",
         "stripe/stripe-php": "^20.3",
         "michaelkaefer/oauth2-amazon": "^1.0",
-        "untt/oauth2-microsoft": "^0.0.4"
+        "untt/oauth2-microsoft": "^0.0.4",
+        "hayageek/oauth2-yahoo": "^2.0"
     },
     "config": {
         "allow-plugins": {

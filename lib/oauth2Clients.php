@@ -5,6 +5,7 @@
     use League\OAuth2\Client\Provider\Google;
     use MichaelKaefer\OAuth2\Client\Provider\Amazon;
     use Unt\OAuth2\Client\Provider\MicrosoftProvider;
+    use Hayageek\OAuth2\Client\Provider\Yahoo;
 
 
     // googleAuth - use Oauth2 to retrieve email and name of user from Google
@@ -180,6 +181,78 @@
                 ['openid', 'profile', 'email'],
                 ['User.Read'])
             ]);
+            setSessionVar('oauth2state', $provider->getState());
+            setSessionVar('oauth2pass', 'auth');
+            header('Location: ' . $authUrl);
+            exit;
+        }
+
+        if (empty($_GET['state']) || ($_GET['state'] !== getSessionVar('oauth2state'))) {
+// State is invalid, possible CSRF attack in progress
+            unsetSessionVar('oauth2state');
+            setSessionVar('oauth2pass', 'invalid');
+            return null;
+        } else {
+// Try to get an access token (using the authorization code grant)
+            $token = $provider->getAccessToken('authorization_code', ['code' => $_GET['code']]);
+
+// Optional: Now you have a token you can look up a users profile data
+            try {
+
+// We got an access token, let's now get the owner details
+                setSessionVar('oauth2pass', 'token');
+                $ownerDetails = $provider->getResourceOwner($token);
+            }
+            catch (Exception $e) {
+
+// Failed to get user details
+                $oauthParams['error'] = 'Something went wrong: ' . $e->getMessage();
+                return $oauthParams;
+            }
+        }
+
+        if ($ownerDetails != null) {
+            $oauthParams['email'] = $ownerDetails->getEmail();
+            $oauthParams['displayName'] = $ownerDetails->getName();
+            //$oauthParams['firstName'] = $ownerDetails->getFirstName();
+            //$oauthParams['lastName'] = $ownerDetails->getLastName();
+            //$oauthParams['avatarURL'] = $ownerDetails->getAvatar();
+            $oauthParams['subscriberId'] = $ownerDetails->getId();
+        } else {
+            $oauthParams['nodetails'] = 'Something went wrong!';
+        }
+        $oauthParams['token'] = $token->getToken();
+        $oauthParams['refresh'] = $token->getRefreshToken();
+        $oauthParams['expires'] = $token->getExpires();
+        return $oauthParams;
+    }
+
+
+    // yahooAuth - use Oauth2 to retrieve email and name of user from Yahoo
+    //      redirectURI = which program is making the Oauth call, this is the path for it's return information.
+    function yahooAuth($redirectURI = null) {
+        // first check for an error in the prior pass
+        if (!empty($_GET['error'])) {
+            $oauthParams['error'] = htmlspecialchars($_GET['error'], ENT_QUOTES, 'UTF-8');
+            return $oauthParams;
+        }
+
+        if ($redirectURI == null || $redirectURI == '') {
+            $redirectURI = getConfValue('portal', 'redirect_base', '/');
+        }
+
+        // so we get back to here, mark that we are doing a yahoo authentication session
+        setSessionVar('oauth2', 'yahoo');
+        setSessionVar('oauth2pass', 'startup');
+        $provider = new Yahoo([
+            'clientId' => getConfValue('yahoo', 'client_id'),
+            'clientSecret' => getConfValue('yahoo', 'client_secret'),
+            'redirectUri' => $redirectURI,
+        ]);
+
+        if (empty($_GET['code'])) {
+// If we don't have an authorization code then get one
+            $authUrl = $provider->getAuthorizationUrl();
             setSessionVar('oauth2state', $provider->getState());
             setSessionVar('oauth2pass', 'auth');
             header('Location: ' . $authUrl);

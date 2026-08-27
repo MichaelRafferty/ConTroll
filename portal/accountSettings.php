@@ -316,7 +316,7 @@ if ($personType == 'n') {
             <div class='col-sm-auto'><select id='provider' name='provider'>
                     <option value='token'>Email Authentication Token</option>
 <?php
-    $oauthProviders = ['google', 'microsoft', 'amazon'];
+    $oauthProviders = ['google', 'microsoft', 'amazon', 'yahoo'];
     foreach ($oauthProviders as $provider) {
         if (getConfValue($provider, 'client_id', null)) {
             echo "<option value='$provider'>Login with " . ucfirst($provider) . "</option>";
