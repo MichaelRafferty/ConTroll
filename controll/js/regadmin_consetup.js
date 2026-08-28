@@ -283,8 +283,8 @@ class consetup {
 
         if (data['conlist'] == null) {
             this.#conlist_div.innerHTML = 'Nothing defined yet.' +
-            (this.#setup_type == 'next') ? ' After the current year is set up, ask you admin to run the "Build &lt;id&gt; Setup" ' +
-                'from the home page before continuing the the next year setup.' : '';
+            (this.#setup_type == 'next') ? ' After the current year is set up, ask your admin to run the "Build &lt;id&gt; Setup" ' +
+                'from the home page before continuing to the next year setup.' : '';
 
         } else {
             this.#contable = new Tabulator('#' + this.#setup_type + '-conlist', {
@@ -330,164 +330,163 @@ class consetup {
     draw_memlist(year, data, textStatus, jhXHR) {
         let _this = this;
 
-        // build the select lists
-        this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
-        for (let index = 0; index < this.#catListData.length; index++) {
-            let cat = this.#catListData[index];
-            this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
-        }
-        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
-            this.#ageListOptions + "\n</select>";
-        this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
-            this.#yaAgeListOptions + "\n</select>";
-        this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
-        for (let index = 0; index < this.#typeListData.length; index++) {
-            let type = this.#typeListData[index];
-            this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
-        }
-        this.#typeListSelect += "\n</select>";
-        document.getElementById('editMemListCategory').innerHTML = this.#catListSelect;
-        document.getElementById('editMemListAge').innerHTML = this.#ageListSelect;
-        document.getElementById('editMemListType').innerHTML = this.#typeListSelect;
-
-        let memListData = new Array();
-
-        if (this.#memtable != null) {
-            this.#memtable.off("dataChanged");
-            this.#memtable.off("rowMoved")
-            this.#memtable.off("cellEdited");
-            this.#memtable.destroy();
+        if (this.#memtable == null) {
+            // build the select lists
+            this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
+            for (let index = 0; index < this.#catListData.length; index++) {
+                let cat = this.#catListData[index];
+                this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
+            }
+            this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+                this.#ageListOptions + "\n</select>";
+            this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+                this.#yaAgeListOptions + "\n</select>";
+            this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
+            for (let index = 0; index < this.#typeListData.length; index++) {
+                let type = this.#typeListData[index];
+                this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
+            }
+            this.#typeListSelect += "\n</select>";
+            document.getElementById('editMemListCategory').innerHTML = this.#catListSelect;
+            document.getElementById('editMemListAge').innerHTML = this.#ageListSelect;
+            document.getElementById('editMemListType').innerHTML = this.#typeListSelect;
         }
 
-        this.#memlist_dirty = false;
-
-        this.#memtable = null;
         if (data['memlist'] == null) {
             show_message("Nothing defined yet", 'warn')
-            memListData = [];
             data['memlist'] = [];
         } else {
-            memListData = data['memlist'];
         }
-        this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
-        this.#paginationDiv.innerHTML = '';
-        this.#paginationDiv.hidden = data['memlist'].length <= 25;
-
-        this.#memTablePagination = data['memlist'].length > 25;
-        let columns = [
-            {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-            {
-                title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                cellClick: function (e, cell) {
-                    deleterow(e, cell.getRow());
-                }
-            },
-            {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
-            {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
-            {
-                title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
-                headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-            },
-            {field: "memlistkey", visible: false,},
-            {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
-            {
-                title: "Category", field: "memCategory",
-                editor: "list", editorParams: {values: data['memCats'],},
-                headerFilter: true, headerFilterParams: {values: data['memCats']}
-            },
-            {
-                title: "Type", field: "memType",
-                editor: "list",  editorParams: {values: data['memTypes'],},
-                headerFilter: true,
-                headerFilterParams: {values: data['memTypes'],}
-            },
-            {
-                title: "Age", field: "memAge",
-                editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
-                headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
-            },
-            {
-                title: "Label", field: "shortname", width: 200,
-                tooltip: function (e, cell, onRendered) {
-                    return cell.getRow().getCell("label").getValue();
-                },
-                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                formatter: "textarea", headerFilter: true
-            },
-            {title: "Label", field: "label", visible: false},
-            {
-                title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-            },
-            {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
-                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
-            {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
-                headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
-            {
-                title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN, },
-                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-            },
-            {
-                title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN, },
-                headerFilter: true, headerFilterParams: {values: this.#enumYN,}
-            },
-            {
-                title: "Notes", field: "notes", width: 200,
-                editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
-                headerFilter: true, formatter: "textarea",
-            },
-            {
-                title: "Cart Desc", field: "cartDesc", width: 300,
-                headerFilter: true, formatter: "html",
-            },
-            {
-                title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
-                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
-            },
-            {
-                title: "Report Grouping", field: "rptGrouping", width: 200, headerWordWrap: true,
-                editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, headerFilter: true,
-            }
-        ];
-
-        if (config.useGL == 1) {
-            columns.push({
-                title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
-            },
-            {
-                title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
-                editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                headerFilter: true, formatter: "textarea",
-            });
+        if (this.#memtable != null) {
+            // just replace the data
+            this.#memtable.replaceData(data['memlist']);
+            this.#memlist_dirty = false;
         } else {
-            columns.push({ field: "glNum", visible: false,}, { field: "glLabel", visible: false,});
+            this.#paginationDiv = document.getElementById(this.#setup_type + 'PaginationDiv');
+            this.#paginationDiv.innerHTML = '';
+            this.#paginationDiv.hidden = data['memlist'].length <= 25;
+
+            this.#memTablePagination = data['memlist'].length > 25;
+            let columns = [
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                {
+                    title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+                {title: "Sort", field: "sort_order", headerSort: true, sorter: "number"},
+                {
+                    title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+                },
+                {field: "memlistkey", visible: false,},
+                {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
+                {
+                    title: "Category", field: "memCategory",
+                    editor: "list", editorParams: {values: data['memCats'],},
+                    headerFilter: true, headerFilterParams: {values: data['memCats']}
+                },
+                {
+                    title: "Type", field: "memType",
+                    editor: "list", editorParams: {values: data['memTypes'],},
+                    headerFilter: true,
+                    headerFilterParams: {values: data['memTypes'],}
+                },
+                {
+                    title: "Age", field: "memAge",
+                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                    headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
+                },
+                {
+                    title: "Label", field: "shortname", width: 200,
+                    tooltip: function (e, cell, onRendered) {
+                        return cell.getRow().getCell("label").getValue();
+                    },
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                    formatter: "textarea", headerFilter: true
+                },
+                {title: "Label", field: "label", visible: false},
+                {
+                    title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+                },
+                {
+                    title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},
+                },
+                {
+                    title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},
+                },
+                {
+                    title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN,},
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+                },
+                {
+                    title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN,},
+                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+                },
+                {
+                    title: "Notes", field: "notes", width: 200,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                    headerFilter: true, formatter: "textarea",
+                },
+                {
+                    title: "Cart Desc", field: "cartDesc", width: 300,
+                    headerFilter: true, formatter: "html",
+                },
+                {
+                    title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
+                },
+                {
+                    title: "Report Grouping", field: "rptGrouping", width: 200, headerWordWrap: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, headerFilter: true,
+                }
+            ];
+
+            if (config.useGL == 1) {
+                columns.push({
+                        title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
+                    },
+                    {
+                        title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                        headerFilter: true, formatter: "textarea",
+                    });
+            } else {
+                columns.push({field: "glNum", visible: false,}, {field: "glLabel", visible: false,});
+            }
+            columns.push({field: "to_delete", visible: false,}, {field: "catBadgeLabel", visible: false,});
+
+            this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
+                history: true,
+                movableRows: true,
+                data: data['memlist'],
+                layout: "fitDataTable",
+                pagination: this.#memTablePagination,
+                paginationAddRow: "table",
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                paginationElement: this.#paginationDiv,
+                initialSort: [
+                    {column: "sort_order", dir: "asc"}, //sort by this first
+                ],
+                columns: columns,
+            });
+
+            this.#memtable.on("dataChanged", function (data) {
+                _this.memlist_dataChanged(data);
+            });
+            this.#memtable.on("rowMoved", function (row) {
+                _this.memlist_rowMoved(row)
+            });
+            this.#memtable.on("cellEdited", cellChanged);
+            this.#memlist_dirty = false;
         }
-        columns.push({ field: "to_delete", visible: false,},{ field: "catBadgeLabel", visible: false,});
-
-        this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
-            history: true,
-            movableRows: true,
-            data: data['memlist'],
-            layout: "fitDataTable",
-            pagination: this.#memTablePagination,
-            paginationAddRow: "table",
-            paginationSize: 25,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            paginationElement: this.#paginationDiv,
-            initialSort:[
-                {column:"sort_order", dir:"asc"}, //sort by this first
-            ],
-            columns: columns,
-        });
-
-        this.#memtable.on("dataChanged", function (data) {
-            _this.memlist_dataChanged(data);
-        });
-        this.#memtable.on("rowMoved", function (row) {
-            _this.memlist_rowMoved(row)
-        });
-        this.#memtable.on("cellEdited", cellChanged);
     };
 
     ageListEditor(cell, onRendered, success, cancel, editorParams){
