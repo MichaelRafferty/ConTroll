@@ -107,6 +107,7 @@
 * Flesh out uncompleted code in change in approval flag after artist created
 * Make Type "Bundle" required
 * POS, add ability to edit/add an open note on a person
+* Return to memList with the same selection criteria as before pressing save changes.
 * Sends password reset link for contact that is not valid this year
 * ability to filter the Memlist table by active, expired, or future status
 * add badge preview directory to file manager
