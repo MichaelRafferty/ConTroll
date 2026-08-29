@@ -53,6 +53,7 @@ The following providers are currently supported by ConTroll:
 * google (required, and documented above)
 * amazon
 * discord
+* microsoft
 * yahoo
 
 The following are in progress of being added:
@@ -60,25 +61,6 @@ The following are in progress of being added:
 * microsoft
 
 Note: Apple was considered, but there is a $99/year charge to each convention to be part of their developer program. That is required to use "Login with Apple".
-
-### Discord
-To use Discord, you need to have an account on discord and use their developer portal. There is no charge to be a member of discord.  
-1. Login to Discord with your account.
-2. Go to the Discord Developer Portal: https://discord.com/developers/home
-3. click "Applications" in left menu.
-4. Click "New Application" on the top right
-5. Under the "General Information" tab enter:
-* Name: this is the name displayed to the user when they click "login with discord"
-* Description: This is a longer description.  Please add to the description that the registration portal only accesses your email address, discord id, and 
-  user name.
-* Put a square avatar image in the app icon field, this is used to display what app is requesting access.
-* Ignore the rest of the fields on this page
-6. Click the Oauth2 item in the left menu
-* copy the client id and the secret into your reg_secret.ini file in the [discord] section.  This is the only chance you will have to access the secret, 
-  onse saved, it will not show it to you again.
-* Fill in the same Redirects as the Google Authorized Redirect URIs
-* Click Save.
-7. Update the reg_secret.ini by adding a section [discord] and the fields app_name, client_id, and client_secret.
 
 ### Amazon
 To use Amazon, you need to be a part of their developer program. There is no charge to be a member.  To join:
@@ -102,6 +84,50 @@ To use Amazon, you need to be a part of their developer program. There is no cha
  * Fill in the same allowed URLs as the Google Authorized Redirect URIs
  * Click Save.
 7. Update the reg_secret.ini by adding a section [amazon] and the fields app_name, client_id, and client_secret.
+
+### Discord
+To use Discord, you need to have an account on discord and use their developer portal. There is no charge to be a member of discord.
+1. Login to Discord with your account.
+2. Go to the Discord Developer Portal: https://discord.com/developers/home
+3. click "Applications" in left menu.
+4. Click "New Application" on the top right
+5. Under the "General Information" tab enter:
+* Name: this is the name displayed to the user when they click "login with discord"
+* Description: This is a longer description.  Please add to the description that the registration portal only accesses your email address, discord id, and
+  user name.
+* Put a square avatar image in the app icon field, this is used to display what app is requesting access.
+* Ignore the rest of the fields on this page
+6. Click the Oauth2 item in the left menu
+* copy the client id and the secret into your reg_secret.ini file in the [discord] section.  This is the only chance you will have to access the secret,
+  onse saved, it will not show it to you again.
+* Fill in the same Redirects as the Google Authorized Redirect URIs
+* Click Save.
+7. Update the reg_secret.ini by adding a section [discord] and the fields app_name, client_id, and client_secret.
+
+### Microsoft
+1. Sign in to Entra Admin Center with your Azure portal credentials
+2. Click "App Registrations" in the left menu bar
+3. Click "New Registration"
+4. Fill in the fields:
+   1. Name: Name that will be presented to the user, and the app_name in reg_secret.
+   2. Supported Account Types - select "Any Entra ID Tenant + Personal Microsoft accounts"
+   3. Redirect URI: enter the first of the redirect URI's for your application as per the google configuration
+   4. Click Register
+5. In the overview, copy the Application (client) ID for the app, this is the clinet_id
+6. Click "Certificates & secrets"
+7. Click "New client secret"
+8. Enter a description, and set the term to 24 months and click Add
+9. Copy the value of the secret and paste it into the reg_secret.ini file in the [microsoft] section as the client_secret.
+10. Update the reg_secret.ini by adding a section [microsoft] and the fields app_name, client_id, and client_secret.
+11. Make sure your con's domain name is a validated domain name in your entra tenent id. If not, follow the instructions to add the TXT record to verify in 
+    and add it as a verified doman
+11. Click "Branding and Properties" in the app menu on the left
+12. Update the logo (a square file layout image)
+13. Add your con website home page as home page url
+14. Add the policies/termns of service page from the con webiste as the terms of service url
+15. Add the privacy policy page from the con website as the privacy policy url
+16. Update Publisher domain to the domain of your convention using the update domain button.
+17. Click "save"
 
 ### Yahoo
 To use Yahoo, you need to be a member of the Yahoo Developer Network.  To join:
