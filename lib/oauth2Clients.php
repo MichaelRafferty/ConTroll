@@ -146,7 +146,7 @@ function oauth2Auth($client, $redirectURI = null) {
                 $oauthParams['displayName'] = $ownerDetails->getName();
                 break;
             case 'microsoft':
-                $oauthParams['displayName'] = $ownerDetails->getName();
+                $oauthParams['displayName'] = $ownerDetails->getDisplayName();
                 break;
             case 'yahoo':
                 $oauthParams['displayName'] = $ownerDetails->getName();
