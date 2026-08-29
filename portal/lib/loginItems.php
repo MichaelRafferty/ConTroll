@@ -47,8 +47,10 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
 <?php    }
     }
-    if (!$first)
+    if (!$first) {
         echo "</div>\n";
+        outputCustomText('main/oauth');
+    }
 ?>
             <div class="row mt-2 mb-2">
                 <div class='col-sm-auto'>
