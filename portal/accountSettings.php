@@ -4,7 +4,7 @@ require_once("lib/base.php");
 require_once("../lib/webauthn.php");
 
 global $config_vars;
-global $oauthProviders
+global $oauthProviders;
 
 $con = get_conf('con');
 $conid = $con['id'];

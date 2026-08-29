@@ -124,29 +124,33 @@ function oauth2Auth($client, $redirectURI = null) {
     if ($ownerDetails != null) {
         $oauthParams['subscriberId'] = $ownerDetails->getId();
         $oauthParams['email'] = $ownerDetails->getEmail();
-        $oauthParams['displayName'] = $ownerDetails->getName();
 
         // now the ones that can vary by provider
         switch ($client) {
             case 'google':
+                $oauthParams['displayName'] = $ownerDetails->getName();
                 $oauthParams['firstName'] = $ownerDetails->getFirstName();
                 $oauthParams['lastName'] = $ownerDetails->getLastName();
                 $oauthParams['avatarURL'] = $ownerDetails->getAvatar();
                 break;
             case 'facebook':
+                $oauthParams['displayName'] = $ownerDetails->getName();
                 $oauthParams['firstName'] = $ownerDetails->getFirstName();
                 $oauthParams['lastName'] = $ownerDetails->getLastName();
                 $oauthParams['avatarURL'] = $ownerDetails->getPictureUrl();
                 break;
             case 'discord':
+                $oauthParams['displayName'] = $ownerDetails->getUsername();
                 break;
             case 'amazon':
-                // nothing extra available for amazon
+                $oauthParams['displayName'] = $ownerDetails->getName();
                 break;
             case 'microsoft':
-                // nothing extra available for microsoft
+                $oauthParams['displayName'] = $ownerDetails->getName();
                 break;
             case 'yahoo':
+                $oauthParams['displayName'] = $ownerDetails->getName()
+
                 $oauthParams['firstName'] = $ownerDetails->getFirstName();
                 $oauthParams['lastName'] = $ownerDetails->getLastName();
                 $oauthParams['avatarURL'] = $ownerDetails->getAvatar();
