@@ -149,8 +149,7 @@ function oauth2Auth($client, $redirectURI = null) {
                 $oauthParams['displayName'] = $ownerDetails->getName();
                 break;
             case 'yahoo':
-                $oauthParams['displayName'] = $ownerDetails->getName()
-
+                $oauthParams['displayName'] = $ownerDetails->getName();
                 $oauthParams['firstName'] = $ownerDetails->getFirstName();
                 $oauthParams['lastName'] = $ownerDetails->getLastName();
                 $oauthParams['avatarURL'] = $ownerDetails->getAvatar();
