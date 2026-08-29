@@ -19,10 +19,12 @@ INSERT INTO `memCategories` VALUES
 ('formerGoH','Req: Only available to Former GoH','Y','Y','N','N',110,'Y','Former GoH'),
 ('freebie','Req: Comp memberships','Y','Y','N','N',50,'Y','Comp'),
 ('managed','Req: disable disassociate in portal and added by manager in portal','Y','Y','N','N',20,'Y','Attending'),
-('sitesel','Site selection only','Y','Y','N','N',120,'Y','X'),
+('sitesel','Site selection only','Y','Y','N','N',520,'N','SS'),
 ('standard','Req: Paid badge-able memberships','Y','Y','N','N',10,'Y','Std'),
 ('upgrade','Req: Upgrades to standard','Y','Y','N','N',30,'Y','Upg'),
 ('virtual','Req: Paid virtual memberships','Y','Y','N','N',130,'N','V'),
+('wsfs','WSFS Membership','Y','Y','N','N',500,'N','W'),
+('wsfsnom','WSFS Nomination Only','Y','Y','N','N',510,'N','W'),
 ('yearahead','Req: Next Con-Year Memberships','Y','Y','N','N',40,'Y','Y');
 ALTER TABLE `memCategories` ENABLE KEYS;
 UNLOCK TABLES;
