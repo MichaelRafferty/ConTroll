@@ -53,9 +53,9 @@ function oauth2Auth($client, $redirectURI = null) {
             break;
         case 'discord':
             $provider = new \Wohali\OAuth2\Client\Provider\Discord([
-                'clientId' => '{discord-client-id}',
-                'clientSecret' => '{discord-client-secret}',
-                'redirectUri' => '{your-server-uri-to-this-script-here}'
+                'clientId' => getConfValue('discord', 'client_id'),
+                'clientSecret' => getConfValue('discord', 'client_secret'),
+                'redirectUri' => $redirectURI,
             ]);
             break;
         case 'amazon':
