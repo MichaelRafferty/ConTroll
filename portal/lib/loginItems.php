@@ -35,6 +35,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     foreach ($oauthProviders as $provider) {
     if (getConfValue($provider, 'client_id', null)) {
         if ($first) {
+            outputCustomText('main/oauthTop');
             echo "       <div class='row'>\n";
             $first = false;
         }
@@ -49,7 +50,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     }
     if (!$first) {
         echo "</div>\n";
-        outputCustomText('main/oauth');
+        outputCustomText('main/oauthBottom');
     }
 ?>
             <div class="row mt-2 mb-2">

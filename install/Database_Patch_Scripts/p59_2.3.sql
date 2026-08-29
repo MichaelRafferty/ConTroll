@@ -19,6 +19,8 @@ INSERT INTO `controllAppSections` VALUES
 INSERT INTO `controllAppItems` VALUES
 ('portal','portal','main','beforePayment','Custom Text just above the make payment button'),
 ('portal','portal','main','afterPayment','Custom Text just below the make payment button'),
+('portal','index','main','oauthTop','Custom Text just above the login with buttons'),
+('portal','index','main','oauthBottom','Custom Text just below the login with buttons'),
 ('exhibitor','emails','artistAttReminder','html','Custom Text for the html artist attendance reminder email'),
 ('exhibitor','emails','fanAttReminder','html','Custom Text for the html fan table attendance reminder email'),
 ('exhibitor','emails','exhibitorAttReminder','html','Custom Text for the html exhibitor attendance reminder email'),
@@ -27,6 +29,11 @@ INSERT INTO `controllAppItems` VALUES
 ('exhibitor','emails','fanAttReminder','text','Custom Text for the text fan table attendance reminder email'),
 ('exhibitor','emails','exhibitorAttReminder','text','Custom Text for text html exhibitor attendance reminder email'),
 ('exhibitor','emails','vendorAttReminder','text','Custom Text for the text vendor (dealer) attendance reminder email');
+
+INSERT INTO `controllTxtItems` VALUES
+    ('portal','index','main','oauthTop',
+     'You can login immediately without waiting for an email to arrive with your login link by using our "Login With" providers.<br/>
+     We only access your email address, name, and subscriber id from the providers and do not share any information nor perform any other actions with them.');
 
 INSERT INTO `controllTxtItems` VALUES
 ('exhibitor','emails','artistAttReminder','html',
