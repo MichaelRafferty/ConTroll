@@ -137,24 +137,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         $redirectURI = $portal_conf['redirect_base'];
         if ($redirectURI == '')
             $redirectURI = null;
-        $oauthParams = null;
-        switch (getSessionVar('oauth2')) {
-            case 'amazon':
-                $oauthParams = amazonAuth($redirectURI);
-                break;
-            case 'facebook':
-                $oauthParams = facebookAuth($redirectURI);
-                break;
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                break;
-            case 'microsoft':
-                $oauthParams = microsoftAuth($redirectURI);
-                break;
-            case 'yahoo':
-                $oauthParams = yahooAuth($redirectURI);
-                break;
-        }
+        $oauthParams = oauth2Auth(getSessionVar('oauth2'), $redirectURI);
         if (isset($oauthParams['error'])) {
             web_error_log($oauthParams['error']);
             clearSession('oauth2');

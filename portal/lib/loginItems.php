@@ -1,6 +1,8 @@
 <?php
 // draw_login - draw the login options form
 function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
+    global $oauthProviders;
+
     $con = get_conf('con');
     $policies = getPolicies();
     $interests = getInterests();
@@ -28,7 +30,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             </div>
             <?php
     }
-    $oauthProviders = ['google', 'microsoft', 'amazon', 'yahoo'];
+
     $first = true;
     foreach ($oauthProviders as $provider) {
     if (getConfValue($provider, 'client_id', null)) {
