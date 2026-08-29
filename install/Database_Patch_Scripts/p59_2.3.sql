@@ -32,8 +32,13 @@ INSERT INTO `controllAppItems` VALUES
 
 INSERT INTO `controllTxtItems` VALUES
     ('portal','index','main','oauthTop',
-     'You can login immediately without waiting for an email to arrive with your login link by using our "Login With" providers.<br/>
-     We only access your email address, name, and subscriber id from the providers and do not share any information nor perform any other actions with them.');
+     '<p>&nbsp;<br/>You can login immediately without waiting for an email to arrive with your login link by using our "Login With" providers.<br/>
+We only access your email address, name, and subscriber id from the providers and do not share any information nor perform any other actions with them.</p>');
+
+INSERT INTO `controllTxtItems` VALUES
+    ('portal','index','main','oauthBottom',
+     '<p>&nbsp;<br/>Using the "Login with Email Authentication" will send you an email with a link to click to login.<br/>
+If you do not see the email, check your spam folder.</p>');
 
 INSERT INTO `controllTxtItems` VALUES
 ('exhibitor','emails','artistAttReminder','html',
