@@ -52,6 +52,7 @@ There is nothing to change in the configuration file in this case, the client id
 The following providers are currently supported by ConTroll:
 * google (required, and documented above)
 * amazon
+* discord
 * yahoo
 
 The following are in progress of being added:
@@ -59,6 +60,25 @@ The following are in progress of being added:
 * microsoft
 
 Note: Apple was considered, but there is a $99/year charge to each convention to be part of their developer program. That is required to use "Login with Apple".
+
+### Discord
+To use Discord, you need to have an account on discord and use their developer portal. There is no charge to be a member of discord.  
+1. Login to Discord with your account.
+2. Go to the Discord Developer Portal: https://discord.com/developers/home
+3. click "Applications" in left menu.
+4. Click "New Application" on the top right
+5. Under the "General Information" tab enter:
+* Name: this is the name displayed to the user when they click "login with discord"
+* Description: This is a longer description.  Please add to the description that the registration portal only accesses your email address, discord id, and 
+  user name.
+* Put a square avatar image in the app icon field, this is used to display what app is requesting access.
+* Ignore the rest of the fields on this page
+6. Click the Oauth2 item in the left menu
+* copy the client id and the secret into your reg_secret.ini file in the [discord] section.  This is the only chance you will have to access the secret, 
+  onse saved, it will not show it to you again.
+* Fill in the same Redirects as the Google Authorized Redirect URIs
+* Click Save.
+7. Update the reg_secret.ini by adding a section [discord] and the fields app_name, client_id, and client_secret.
 
 ### Amazon
 To use Amazon, you need to be a part of their developer program. There is no charge to be a member.  To join:
