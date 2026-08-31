@@ -30,7 +30,10 @@ class AuthToken
             $this->authToken = null;
         else {
             $this->authToken = getSessionVar('authToken');
-            if (!array_key_exists('auths', $this->authToken)) {
+            if ((!array_key_exists('userPerid', $this->authToken)) || $this->authToken['userPerid'] == null) {
+                $this->authToken['userPerid'] = null;
+                unsetSessionVar('authToken');
+            }  else if (!array_key_exists('auths', $this->authToken)) {
                 $this->authToken['auths'] = $this->loadAuth($this->authToken['userId']);
                 $this->authToken['authExpire'] = time();
             }
@@ -197,11 +200,17 @@ EOS;
         }
 
         $uR = dbSafeQuery($uQ, $typestr, $valArray);
-        if ($uR == false || $uR->num_rows == 0)
+        if ($uR === false)
             return false;
 
-        $user = $uR->fetch_assoc();
-        $uR->free();
+        if ($uR->num_rows == 0 && function_exists('get_admin_sets')) {
+            $user = $this->buildUser($email);
+            if ($user == null)
+                return false;
+        } else {
+            $user = $uR->fetch_assoc();
+            $uR->free();
+        }
 
         // set google_sub on first login
         if ($user['google_sub'] == '') {
@@ -309,5 +318,116 @@ EOS;
         $now = date('Y/m/d H:i:s');
         fprintf($fh, "%s: %s\n", $now, $logMsg);
         fclose($fh);
+    }
+
+    // build user - build a default user if allowed
+    function buildUser($email) {
+        // check if allowed auto create
+        $autoCreate = getConfValue('controll', 'autoCreate', 0);
+        if ($autoCreate == 0)
+            return null;
+
+        // ok, we have the rights to create it get the list of domains to validate
+        $authDomans =  trim(getConfValue('controll', 'autoDomains', ''));
+        if ($authDomans == '')
+            return null;
+        // validate we have an email address to check
+        if (trim($email) == '')
+            return null;
+
+        // see if this user exists in perinfo
+        $userQ = <<<EOS
+SELECT id, fullName
+FROM perinfo WHERE email_addr = ?;
+EOS;
+        $userR = dbSafeQuery($userQ, 's', array($email));
+        if ($userR === false || $userR->num_rows != 1) {
+            page_init($page,
+                /*css*/ array('css/base.css'),
+                /*js*/  array(
+                    'jslib/passkey.js',
+                    'js/login.js'
+                ),
+                null);
+            echo <<<EOS
+<h1 class="h3">Error: there must be a single user in the system with the email address '$email'</h1>
+EOS;
+            if ($userR !== false) {
+                if ($userR->num_rows == 0) {
+                    echo <<<EOS
+<p>You attempted to log in with an email address that will auto create a user with general reporting rights in the ConTroll Administrative back end.
+No such email exists in the ConTroll system.  Please create an account for yourself in the registration portal using the email '$email,
+and wait for a permanent id to be assigned to you.</p>
+<p>Once you have been assigned a permanent id (your registration portal account will say "Membership Number:" instead of "Temp Membership Number:"),
+then return to controll to try to login to the ConTroll administrative system.</p>
+EOS;
+                } else {
+                    echo <<<EOS
+<p>There are multiple users in the system with the email address '$email'. Please contact the system administrator to ask them to create your account.</p>
+EOS;
+                }
+            }
+
+            return null;    // dups or does not exist
+        }
+
+        $user = $userR->fetch_assoc();
+        $perid = $user['id'];
+        $userName = $user['fullName'];
+
+        $authDomains = explode(',', $authDomans);
+        $lastAt = strrpos($email, '@');
+        if ($lastAt === false)
+            return null;
+        $domain = trim(substr($email,$lastAt + 1));
+
+        // this is what we will insert if the domain is one of ours
+        $authInsertQ = <<<EOS
+INSERT IGNORE INTO user_auth(user_id, auth_id)
+SELECT ?, id
+FROM auth
+WHERE name = ?;
+EOS;
+        // now insert the user
+        $userInsertQ = <<<EOS
+INSERT IGNORE INTO user(perid, email, google_sub, name)
+VALUES (?, ?, null, ?);
+EOS;
+
+        $authList = getConfValue('controll', 'autoSets', '');
+        $sets = get_admin_sets();
+// now validate the domains
+        foreach ($authDomains as $allowed) {
+            if ($domain == 'gmail.com')
+                continue;
+
+            if ($domain == trim($allowed)) {
+                // ok, its one of ours, add the user to the user list
+
+                $userId = dbSafeInsert($userInsertQ, 'iss', array ($perid, $email, $userName));
+                if ($userId === false || $userId < 0)
+                    return null;    // cannot create the user
+
+                if ($authList != '') {
+                    $auths = explode(',', $authList);
+                    // now insert the auths into the auths table
+                    foreach ($auths as $auth) {
+                        if (trim($auth) == '')
+                            continue;
+
+                        // now load the auths in the set
+                        if (array_key_exists($auth, $sets)) {
+                            foreach ($sets[$auth] AS $perm) {
+                                error_log("Insert auth $perm for $userId, $userName");
+                                dbSafeInsert($authInsertQ, 'is', array ($userId, $perm));
+                            }
+                        }
+                    }
+                }
+                return array('id' => $userId, 'perid' => $perid, 'email' => $email, 'google_sub' => '', 'name' => $userName, 'new' => null);
+            }
+        }
+
+        return null;
     }
 }

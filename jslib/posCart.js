@@ -293,9 +293,12 @@ class PosCart {
         let mem =  this.#cartPerinfo[pindex].memberships;
         for (let i = 0; i < mem.length; i++) {
             if (mem[i].regid == regid) {
-                this.#cartPerinfo[pindex].memberships[i].paid = paid;
-                this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
-                this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
+                if (paid != null)
+                    this.#cartPerinfo[pindex].memberships[i].paid = paid;
+                if (discount != null)
+                    this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                if (couponId != null)
+                    this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
                 break;
             }
         }
@@ -695,7 +698,7 @@ class PosCart {
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRemove(' + row + ')">Remove</button>';
-            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManager())) {
+            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManagerActive())) {
                 col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
             html += `
@@ -735,11 +738,26 @@ class PosCart {
     // membership buttons
     buildRegItemButtons() {
         // loop over memList and build each button
-        let html = '';
+        let html = '<div class="row mt-1">\n';
         let rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         let atcon = false;
         if (config.hasOwnProperty('posType')) {
             atcon = config.posType == 'a';
+        }
+
+        let rowColor = false;
+        if (pos.getUseCartDesc()) {
+            html += `
+<div class="row">
+    <div class="col-sm-1" style="font-size: 130%; font-weight: bold; background-color: lightgray;"></div>
+    <div class="col-sm-1 text-center" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Price
+    </div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+        Item Name/Description
+    </div>
+</div>
+    `;
         }
 
         for (let row in memList) {
@@ -761,10 +779,46 @@ class PosCart {
             if (memCategories[mem.memCategory].variablePrice != 'Y') {
                 memLabel += ' (' + mem.price + ')';
             }
-            html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
-                ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
-                (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+             if (pos.getUseCartDesc()) {
+                 if (config.showCartDate == 1) {
+                     memLabel += '&emsp;(Start: ' + mem.startdate.slice(0, mem.startdate.indexOf(' ')) +
+                         ', End: ' + mem.enddate.slice(0, mem.enddate.indexOf(' ')) + ')';
+                 }
+                rowColor = !rowColor
+                html += `<div class="row pt-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
+    <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
+        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` + ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + `)">
+            Add
+        </button>
+    </div>
+    <div class="col-sm-1 text-end" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` + mem.price +
+    `</div>
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: ` +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` +  (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel  +
+    `</div>
+</div>
+`;
+                if (mem.cartDesc != null && mem.cartDesc != '') {
+                    html += `
+<div class="row">
+    <div class="col-sm-2" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;"></div>
+    <div class="col-sm-10 border-top border-2 border-dark" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">` +
+                        mem.cartDesc + `</div>
+</div>
+`;
+                }
+            } else {
+                 if (config.showCartDate == 1) {
+                     memLabel += '<br/>' + mem.startdate.slice(0, mem.startdate.indexOf(' ')) +
+                         '&mdash;' + mem.enddate.slice(0, mem.enddate.indexOf(' '));
+                 }
+                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
+                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
+                    (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            }
         }
+        html += '</div>\n';
         this.#membershipButtonsDiv.innerHTML = html;
     }
 
@@ -777,17 +831,17 @@ class PosCart {
         }
 
         let mbr = this.#memberships[row];
-        if (mbr.status != 'unpaid' && !pos.getManager()) {
+        if (mbr.status != 'unpaid' && !pos.getManagerActive()) {
             show_message("Cannot remove that registration item, only unpaid items can be deleted.", "warn", 'aeMessageDiv');
             return
         }
 
-        if (mbr.price == 0 && !pos.getManager()) {
+        if (mbr.price == 0 && !pos.getManagerActive()) {
             show_message("Please contact registration at " + config.regadminemail + "  to delete free items.", "warn", 'aeMessageDiv');
             return;
         }
 
-        if (mbr.paid > 0 && !pos.getManager()) {
+        if (mbr.paid > 0 && !pos.getManagerActive()) {
             show_message("Please contact registration at " + config.regadminemail + " to resolve this partially paid item.", "warn", 'aeMessageDiv');
             return;
         }
@@ -1165,7 +1219,9 @@ class PosCart {
         }
         rowhtml += `</div>
         <div class="col-sm-2 text-center">`;
-        if (pos.getManager() && !this.#freezeCart) {
+        let opennoteMode = pos.getOpennoteMode();
+        if (opennoteMode == 'any' || (opennoteMode == 'manager' && pos.getManager()) ||
+            (pos.getManagerActive() && opennoteMode == 'active')) {
             btncolor = 'btn-secondary';
             if (row.open_notes_pending !== undefined && row.open_notes_pending === 1)
                 btncolor = 'btn-warning';
@@ -1331,7 +1387,7 @@ class PosCart {
         pos.setMissingPolicies(0);
         let html = `
 <div id='reviewBody' class="container-fluid form-floating">
-  <form id='reviewForm' action='javascript: return false; ' class="form-floating">
+  <form id='reviewForm' onsubmit='return false; ' class="form-floating">
 `;
         let rownum = null;
         let row;

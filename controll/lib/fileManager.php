@@ -176,4 +176,22 @@ EOS;
                 <div class='row' id="exhibitorImagePreview"></div>
 EOS;
         }
+        if ($admin || $regAdmin || $reg_staff) {
+            echo <<<EOS
+                <div class='row mt-4 mb-2' id="badges">
+                    <div class='col-sm-auto'><h3>Badge Images</h3></div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="badgeShow" onclick="fileManager.toggleShowHide('badge');">Hide</button>
+                    </div>
+                </div>
+                <div class='row' id="badgePreview"></div>
+                <div class='row mt-4 mb-2' id="receipts">
+                    <div class='col-sm-auto'><h3>Receipts</h3></div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="receiptShow" onclick="fileManager.toggleShowHide('receipt');">Hide</button>
+                    </div>
+                </div>
+                <div class='row' id="receiptPreview"></div>
+EOS;
+        }
     }

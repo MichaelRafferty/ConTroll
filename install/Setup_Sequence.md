@@ -192,8 +192,9 @@ The software and these instructions reside in the repository
     1. users
 
 9. use controll's reg-admin to set up:
-    1. Membership Configuration Tables
-    2. Current Configuration Setup
+   1. Use Configuration Editor to enter your local parameters for all of its entries. 
+   2. Membership Configuration Tables
+   3. Current Configuration Setup
 
 10. If you are running the Zambia scheduling system, zambia needs to access the perinfo, reg, and memList tables to keep its copy of the program
 participant information updated and in sync with the ConTroll.  

@@ -13,6 +13,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $vendor = getSessionVar('id');
 $conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
+$response['redraw'] = 0;
 
 // validate that the items passed are the VendorSpace id and the VendorSpacePrice id
 if (!array_key_exists('regionYearId', $_POST)) {
@@ -73,9 +74,10 @@ if ($approvalReq == 'None') {
     $block = <<<EOS
 <div class='col-sm-auto p-0'><?php
     <p>Your request for permission was approved automatically.</p>
-    <p>This space needs to display the buy space block (perhaps put that in the lib directory)</p>
 </div>
 EOS;
+    $response['message'] = 'Your request has been automatically approved.';
+    $response['redraw'] = 1;
 } else {
     // store the request in the database
     $num_rows = dbSafeCmd($upQ, 'sii', array('requested', $vendor, $regionYearId));
@@ -108,8 +110,8 @@ EOS;
     <p>Please email $owner at <a href='mailto:$email'>$email</a> if you need to follow-up on this request.</p>
 </div>
 EOS;
+    $response['message'] = 'Your request has been sent, a copy of the email was sent to your contact email address.';
 }
 
 $response['block'] = $block;
-$response['message'] = "Your request has been sent, a copy of the email was sent to your contact email address.";
 ajaxSuccess($response);

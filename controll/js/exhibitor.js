@@ -544,20 +544,22 @@ class exhibitorsAdm {
             "       <div class='col-sm-auto p-1 ms-4'>\n";
         if (config.exhibitorConid == config.conid)
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
-            "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
-            "               Add New Exhibitor</button>\n";
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='addExhibitorSpaceBtn' onclick=" +
+            '"exhibitors.addNewSpace();">Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n' +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='addExhibitorBtn2' onclick=" +
+            '"exhibitors.addNew();">Add New Exhibitor</button>\n';
         if (data.usesInventory == 'Y' && config.exhibitorConid == config.conid) {
             html +=
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
-            "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='sendInvReminder' onclick=" +
+            '"exhibitors.sendInvReminder();">Send Inventory Reminder Email For Those Missing Inventory</button>\n';
         }
         html +=
-            "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
-            "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
-            "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm'" +
-            "               onclick='exhibitors.spacesDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1 mb-2' id='sendAttReminder' onclick=" +
+            '"exhibitors.sendAttReminder();">Send Attendance Reminder Email</button>\n' +
+            "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm mb-2'" +
+            " onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
+            "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm mb-2'" +
+            " onclick='exhibitors.spacesDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
             "       </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -606,8 +608,8 @@ class exhibitorsAdm {
             "    <div class='row mt-2'>\n" +
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'></div>\n" +
             "        <div class='col-sm-auto'>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onclick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onclick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
             "            <button id='" + groupid + "-exh-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.exhDownload(\"csv\"); return false;'>Download CSV</button>\n" +
         "           <button id='" + groupid + "-exh-xlsx' type='button' class='btn btn-info btn-sm'" +
@@ -640,14 +642,26 @@ class exhibitorsAdm {
         let spaceSUMRequested = '';
         let newExhibitor = -1;
         let space = -1;
-        let idS = ''
+        let idS = '';
+        let mailIn = 'X';
+        let exhibitor = null;
+
         for (idS in spaceKeys) {
             space = spaces[idS];
             //let newRegion = space.exhibitsRegionYearId;
             newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
+                exhibitor = null;
+                mailIn = 'X';
                 if (currentExhibitor > 0) {
+                    for (let i = 0; i < data.exhibitors.length; i++) {
+                        if (data.exhibitors[i].exhibitorId == currentExhibitor) {
+                            exhibitor = data.exhibitors[i];
+                            mailIn = exhibitor.mailin;
+                            break;
+                        }
+                    }
                     if (spaceSUMPurchased != '') {
                         spaceSUM = spaceSUMPurchased;
                     } else if (spaceSUMApproved == spaceSUMRequested) {
@@ -681,6 +695,7 @@ class exhibitorsAdm {
                     region.requested = spaceSUMRequested;
                     region.approved = spaceSUMApproved;
                     region.purchased = spaceSUMPurchased;
+                    region.mailIn = mailIn;
                     regionsLocal.push(make_copy(region));
                     spaceHTML = '';
                     spaceStage = '';
@@ -787,6 +802,14 @@ class exhibitorsAdm {
             }
         }
         if (currentExhibitor > 0) {
+            mailIn = 'X';
+            for (let i = 0; i < data.exhibitors.length; i++) {
+                if (data.exhibitors[i].exhibitorId == currentExhibitor) {
+                    exhibitor = data.exhibitors[i];
+                    mailIn = exhibitor.mailin;
+                    break;
+                }
+            }
             if (spaceSUMPurchased != '') {
                 spaceSUM = spaceSUMPurchased;
             } else if (spaceSUMApproved == spaceSUMRequested) {
@@ -831,6 +854,7 @@ class exhibitorsAdm {
             spaceSUMPurchased = '';
             spaceSUMApproved = '';
             spaceSUMRequested = '';
+            region.mailIn = mailIn;
             regionsLocal.push(make_copy(region));
         }
         return regionsLocal;
@@ -862,6 +886,7 @@ class exhibitorsAdm {
                     {title: "ID", field: "id", visible: true, width: 65, hozAlign:"right" },
                     {title: "RegionId", field: "regionId", visible: false},
                     {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true,  width: 75, hozAlign:"right" },
+                    {title: "Mail In", field: "mailIn", headerWordWrap: true,  width: 75, },
                     {title: "regionYearId", field: "regionYearId", visible: false},
                     {title: "ExhibitorYearId", field: "exhibitorYearId", visible: false},
                     {title: "ExhibitorRegionYearId", field: "exhibitorRegionYearId", visible: false},
@@ -942,6 +967,7 @@ class exhibitorsAdm {
                         {title: "exhibitorName", field: "exhibitorName", visible: false},
                         {title: "artistName", field: "artistName", visible: false},
                         {title: "Name", field: "fullExhName", width: 200, headerSort: true, headerFilter: true,formatter: "html"},
+                        {title: "Mail In", field: "mailin", headerWordWrap: true,  width: 75, },
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
@@ -2199,6 +2225,36 @@ class exhibitorsAdm {
         }
 
         let data = { action: action, email: email, type: 'invReminder', regionName: this.#regionName, exhibitsRegionYearId: this.#exhibitsRegionYearId };
+        emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
+    }
+
+    sendAttReminder() {
+        emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
+        let email = prompt("Would you like to send a test attendance reminder email?\n" +
+            "If so please enter the address to send the test to in the box below and click ok.\n" +
+            "If you don't provide a test address, you will be sending emails to a lot of people.\n" +
+            "You will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+            "Clicking cancel will cancel the sending of these emails.\n");
+        let action = "none";
+
+        if (email == null)
+            return false;
+
+        if (email == '') {
+            action = 'full';
+        } else {
+            action = 'test';
+        }
+
+        let data = {
+            action: action,
+            email: email,
+            type: 'exhAttReminder',
+            regionName: this.#regionName,
+            portalType: this.#portalType,
+            exhibitsRegionYearId: this.#exhibitsRegionYearId,
+        };
         emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
     }
 };

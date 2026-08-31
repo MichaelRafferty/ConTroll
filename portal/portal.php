@@ -12,6 +12,7 @@ require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
+require_once("../lib/log.php");
 require_once("../lib/tax.php");
 require_once('../lib/cc__load_methods.php');
 
@@ -23,6 +24,7 @@ $portal_conf = get_conf('portal');
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
+logInit(getConfValue('log', 'reg'));
 load_cc_procs();
 $now = date_format(date_create('now'), 'Y-m-d H:i:s');
 
@@ -61,6 +63,8 @@ $initCoupon = getSessionVar('curCoupon');
 $initCouponSerial = getSessionVar('curCouponSerial');
 $config_vars = array();
 $config_vars['label'] = $con['label'];
+$config_vars['conStartDate'] = $condata['startdate'];
+$config_vars['conEndDate'] = $condata['enddate'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
@@ -92,6 +96,11 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
+$config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
+
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
@@ -995,6 +1004,7 @@ if ($totalDue > 0) {
     if ($numCoupons > 0) {
         $payHtml .= '<button class="btn btn-primary btn-sm p-1 ps-3 pe-3 ms-2 h-100" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
     }
+    outputCustomText('main/beforePayment');
     echo <<<EOS
     <div class='row mt-4'>
         <div class="col-sm-$cols">$payHtml</div>
@@ -1003,6 +1013,7 @@ if ($totalDue > 0) {
         </div>
     </div>
 EOS;
+    outputCustomText('main/afterPayment');
 }
 
 // create a div and bg color it to separate it logically from the other parts

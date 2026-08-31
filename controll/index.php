@@ -1,8 +1,9 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once "lib/sets.php";
 require_once "lib/releaseNotes.php";
-require_once('../lib/googleOauth2.php');
+require_once('../lib/oauth2Clients.php');
 
 $page = "Home";
 $authToken = new authToken('web');
@@ -48,7 +49,7 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
             && array_key_exists('id', $_REQUEST)) {
         $id = $_REQUEST['id'];
         // we are internal, force a login for sub $id
-        $authToken->buildToken('internal', $id, 'noemail');
+        $authToken->buildToken('internal', $id, $id);
         $tokenState = $authToken->checkToken();
     } else {
         // this is a real login with google... start / continue the process
@@ -78,23 +79,19 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         $redirectURI = getConfValue('controll', 'redirect_base');
         if ($redirectURI == '')
             $redirectURI = null;
-        $oauthParams = null;
-        switch (getSessionVar('oauth2')) {
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log("Google oauth2 error: " . $oauthParams['error']);
-                    clearSession('oauth2');
-                    drawErrorPage('Google Login Issue: ', $oauthParams['error']);
-                    exit();
-                }
-        }
+        $oauthParams = oauth2Auth('google', $redirectURI);
         if ($oauthParams == null) {
             // an error occured with login by google
             $source = getSessionVar('oauth2');
             web_error_log("oauth2 error occurred, no params from $source");
             drawErrorPage("$source login issue: ","An error occured with the login with $source");
             clearSession('oauth2');
+            exit();
+        }
+        if (isset($oauthParams['error'])) {
+            web_error_log("Google oauth2 error: " . $oauthParams['error']);
+            clearSession('oauth2');
+            drawErrorPage('Google Login Issue: ', $oauthParams['error']);
             exit();
         }
         if (!isset($oauthParams['email'])) {
@@ -121,7 +118,8 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
             exit();
         }
     }
-    web_error_log("failed login, no match");
+    web_error_log("failed login, no match for '$email'");
+    header('location:' . getConfValue('controll', 'controllsite') . '?msg=' . urlencode('Invalid Login'));
     exit();
 }
 
@@ -241,7 +239,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id='loginPasskeyBtn' onclick='login.loginWithPasskey();'>
-                        <img src='lib/passkey.png' width='25'>Login with Passkey
+                        <img src='lib/passkey.png' alt='Passkey Logo' width='25'>Login with Passkey
                     </button>
                 </div>
                 <div class='col-sm-auto'>
@@ -258,6 +256,18 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             </div>
         </div>
         <?php
+        if (array_key_exists('msg', $_REQUEST)) {
+            $msg = $_REQUEST['msg'];
+            ?>
+            <div class="container-fluid">
+                <div class="row m-1 mt-4">
+                    <div class="col-sm-12 bg-danger text-white">
+                        <strong> <?php echo $msg; ?></strong>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
         if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
@@ -323,7 +333,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             </div>
             <div class="row mt-2">
                 <div class="col-sm-auto">
-                    If you need more access please email the appropriate person with the email and sub value listed below.<br/>
+                    If you need more access please email the appropriate person with the email and perid value listed below.<br/>
                 </div>
             </div>
 <?php
@@ -348,7 +358,7 @@ EOS;
         <div class='row mt-4'>
             <div class='col-sm-2'>
                 <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.deletePasskey(<?php echo $keyId; ?>);'>
-                    <img src='lib/passkey.png'>Delete Existing Passkey
+                    <img src='lib/passkey.png' alt='Passkey Logo'>Delete Existing Passkey
                 </button>
             </div>
         </div>
@@ -358,7 +368,7 @@ EOS;
         <div class='row mt-4'>
             <div class='col-sm-2'>
                 <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
-                    <img src='lib/passkey.png'>Add New Passkey
+                    <img src='lib/passkey.png' alt='Passkey Logo'>Add New Passkey
                 </button>
             </div>
         </div>
@@ -369,19 +379,23 @@ EOS;
             <div class="row">
                 <div class="col-sm-auto mt-4 mb-0">
                     <pre><?php
+                            $isAdmin = $authToken->checkAuth('admin');
+                            $isRegadmin = $authToken->checkAuth('reg-admin');
                             echo "Email: $user_email\n";
-                            echo "User id: $user_id\n";
+                            if ($isAdmin) echo "User id: $user_id\n";
                             echo "User perid: $user_perid\n";
-                            echo "Source: $source\n";
-                            echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
-                            echo 'Current Time: ' . date('c') . PHP_EOL;
-                            echo "Token Expires: " . date('c', $authToken->getExpire()) . PHP_EOL;
-                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . PHP_EOL;
-                            echo "PHP Version: " . phpversion() . PHP_EOL;
+                            echo "Token Source: $source\n";
+                            if ($isAdmin)  echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
+                            echo 'Current Time: ' . date('Y-m-d h:i:s T') . PHP_EOL;
+                            echo "Next Refresh: " . date('Y-m-d h:i:s T', $authToken->getRefresh()) . PHP_EOL;
+                            echo 'Token Expires: ' . date('Y-m-d h:i:s T', $authToken->getExpire()) . PHP_EOL;
+                            if ($isAdmin) echo "PHP Version: " . phpversion() . PHP_EOL;
                             echo returnReleaseNotesLink('', $authToken) . PHP_EOL;
-                            echo "$versionText";
-                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
-                            echo "Database Patch Level: $patchLevel\n";
+                            if ($isAdmin) {
+                                echo "$versionText";
+                                echo "Database Patch Level: $patchLevel\n";
+                            }
+                            if ($isAdmin || $isRegadmin) echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
                             echo "Conid: $conid\n";
                         ?>
                     </pre>
@@ -398,7 +412,7 @@ EOS;
             if ($nyF == 0) { ?>
                 <div class='row'>
                     <div class='col-sm-auto m-4'>
-                        <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
+                        <button class="btn btn-sm btn-primary" onclick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
                     </div>
                 </div>
                 <?php
@@ -455,7 +469,7 @@ EOS;
 
 page_foot($page);
 
-function drawErrorPage($who, $error) {
+function drawErrorPage($who, $error) : void {
     $page = "Home";
     page_init($page,
             /*css*/ array('css/base.css'),

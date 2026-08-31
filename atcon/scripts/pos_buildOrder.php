@@ -66,6 +66,7 @@ $drow = null;
 if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
     $drow = $_POST['drow'];
     $discount = $_POST['discountAmt'];
+    $response['drow'] = $drow;
 }
 
 try {
@@ -100,7 +101,10 @@ foreach ($cart_perinfo as $row) {
     foreach ($row['memberships'] as $membership) {
         $price = $membership['price'];
         $paid = $membership['paid'];
-        $couponDiscount = $membership['couponDiscount'];
+        if (array_key_exists('couponDiscount', $membership))
+            $couponDiscount = $membership['couponDiscount'];
+        else
+            $couponDiscount = 0;
         $unpaid = $price - ($paid + $couponDiscount);
         if ($unpaid == 0)
             continue;
@@ -122,6 +126,9 @@ foreach ($cart_perinfo as $row) {
             'memAge' => $membership['memAge'],
             'taxable' => $membership['taxable'],
             'fname' => $row['first_name'],
+            'fullName' => $row['fullName'],
+            'email_addr' => $row['email_addr'],
+            'phone' => $row['phone'],
             'shortname' => ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['shortname'],
             'conid' => $membership['conid'],
             'ageshortname' => $membership['ageShortName'],
@@ -161,7 +168,8 @@ $response['amount'] = $amount;
 
 //log requested badges
 
-logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
+labeled_logWrite('pos_buildOrder-request',
+    array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 
 $locationId = getSessionVar('terminal');
 if ($locationId) {
@@ -180,57 +188,16 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+    labeled_logWrite('pos_buildOrder-cc_buildOrder returned null',
+        array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
     ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
+
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
-
-// if coupon discount, update the badges with the coupon discount to update the in memory cart
-if ($coupon != null) {
-    foreach ($rtn['items'] as $item) {
-        if (array_key_exists('applied_discounts', $item)) {
-            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
-                $discount = $item['applied_discounts'][$discountNo];
-                if (str_starts_with($discount['uid'], 'couponDiscount')) {
-                    if (array_key_exists('applied_amount', $discount))
-                        $thisItemDiscount = $discount['applied_amount'];
-                    else
-                        $thisItemDiscount = $discount['applied_money']['amount'];
-                    // now find the reg entry to match this item
-                    $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
-                    $badges[$rowno]['coupon'] = $coupon['id'];
-                }
-            }
-        }
-    }
-}
-if ($drow != null) {
-    foreach ($rtn['items'] as $item) {
-        if (array_key_exists('applied_discounts', $item)) {
-            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
-                $discount = $item['applied_discounts'][$discountNo];
-                if (str_starts_with($discount['uid'], 'managerDiscount')) {
-                    if (array_key_exists('applied_amount', $discount))
-                        $thisItemDiscount = $discount['applied_amount'];
-                    else
-                        $thisItemDiscount = $discount['applied_money']['amount'];
-                    // now find the reg entry to match this item
-                    $rowno = $item['metadata']['rowno'];
-                    if (!array_key_exists('paid', $badges[$rowno]))
-                        $badges[$rowno]['paid'] = 0;
-                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
-                        $badges[$rowno]['couponDiscount'] = 0;
-                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
-                }
-            }
-        }
-    }
-    $response['badges'] = $badges;
-    $response['drow'] = $drow;
-}
+if (array_key_exists('results', $rtn) && array_key_exists('badges', $rtn['results']))
+    $response['badges'] = $rtn['results']['badges'];
 
 $taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
@@ -249,6 +216,6 @@ $valArray[] = $transId;
 
 $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
-logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
+labeled_logWrite('pos_buildOrder-return', array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
 ajaxSuccess($response);
 return;

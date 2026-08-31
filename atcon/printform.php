@@ -80,11 +80,11 @@ while ($day <= $end) {
     $day += 24*60*60;
 }
 $dayQ->free();
-//var_error_log($days);
+//labeled_error_log("printform days", $days);
 
 ?>
 <div class='container-fluid mt-4'>
-    <form method='POST' id='newBadge' name="newBadge" class='form-floating' action='javascript:void(0);'>
+    <form method='POST' id='newBadge' name="newBadge" class='form-floating' onsubmit='return false;'>
         <div class="row">
             <div class="col-sm-6">
                 <div class='form-floating mb-3'>

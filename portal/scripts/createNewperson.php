@@ -114,7 +114,8 @@ if ($loginId < 5) {
 }
 setSessionVar("cartId", $personId);
 setSessionVar('cartType', 'n');
-logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
+labeled_logWrite('p/createNewPerson-return',
+    array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
                'PolicyUpd' => $policy_msg, 'InterestUpd' => $interest_msg));
 
 if ($validationType == 'token') {

@@ -7,6 +7,7 @@ var fileManager = null
 var plans = null;
 var payors = null;
 var tax = null;
+var gl = null;
 
 // finance class - functions for finance page including payment plans and money related transactions
 class Finance {
@@ -29,6 +30,7 @@ class Finance {
 
         this.#financeTabs['overview'] = document.getElementById('overview-content');
         this.#financeTabs['taxConfig'] = document.getElementById('taxConfig-pane');
+        this.#financeTabs['glConfig'] = document.getElementById('glConfig-pane');
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
         this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
         this.#financeTabs['coupon'] = document.getElementById('coupon-pane');
@@ -73,6 +75,10 @@ class Finance {
             tax.close();
             tax = null;
         }
+        if (gl) {
+            gl.close();
+            gl = null;
+        }
 
         this.#currentPane.hidden = false;
 
@@ -81,6 +87,14 @@ class Finance {
                 if (tax == null)
                     tax = new taxConfig(config['conid'], config['debug']);
                 tax.open();
+                break;
+
+            case 'glConfig':
+                /*
+                if (gl == null)
+                    gl = new glConfig(config['conid'], config['debug']);
+                gl.open();
+                 */
                 break;
 
             case 'paymentPlans':

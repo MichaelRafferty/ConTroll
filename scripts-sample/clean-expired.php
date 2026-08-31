@@ -39,5 +39,5 @@ WHERE reg.status = 'cancelled' AND reg.paid = 0 AND reg.price > 0 AND m.enddate 
 EOS;
 
 $numexpired = dbCmd($expiredD);
-echo "Expired unpaid: $numExpired rows marked deleted";
+echo "Expired unpaid: $numExpired rows marked deleted\n";
 exit(0);

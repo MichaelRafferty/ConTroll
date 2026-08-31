@@ -59,7 +59,7 @@ while($badgeA = $badgeR->fetch_assoc()) {
         $response['amount'] = $info_assoc['paid'];
     }
 
-    logWrite($response);
+    labeled_logWrite('o/cancelTrans-cancel failed', $response);
 
     switch($_POST['choice']) {
         case 'donate':

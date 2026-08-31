@@ -28,6 +28,7 @@ function web_error_log($string, $debug = '', $both = true): void
             error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
     }
 }
+/* obsolete - let it throw an error, use labeled_error_log
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
 // the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
@@ -43,8 +44,27 @@ function var_error_log($object = null, $forceErrorlog = false): void
     } else {
         error_log($contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
     }
+} */
 
-}
+// Function labeled_error_log()
+// $object = object to be dumped to the PHP error log
+// the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
+    function labeled_error_log($label, $object = null, $forceErrorlog = false): void
+    {
+        global $logdest;
+        ob_start();                    // start buffer capture
+        if($logdest)
+            echo date('Y-m-d H:i:s') . ': ';
+        echo "$label: \n";
+        var_dump($object);           // dump the values
+        $contents = ob_get_contents(); // put the buffer into a variable
+        ob_end_clean(); // end capture
+        if ($forceErrorlog) {
+            error_log($contents . "\n");        // log contents of the result of var_dump( $object )
+        } else {
+            error_log($contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
+        }
+    }
 
 // Common function to log a mysql error
 function log_mysqli_error($query, $additional_error_message):void

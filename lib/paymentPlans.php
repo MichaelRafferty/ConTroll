@@ -208,7 +208,7 @@ function draw_customizePlanModal($from) : void  {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='customizePlanSubmit' onClick='paymentPlans.makePlan("<?php echo $from; ?>")' tabindex='20002'>Create Plan and pay amount due today of ???</button>
+                    <button class='btn btn-sm btn-primary' id='customizePlanSubmit' onclick='paymentPlans.makePlan("<?php echo $from; ?>")' tabindex='20002'>Create Plan and pay amount due today of ???</button>
                 </div>
             </div>
         </div>
@@ -239,7 +239,7 @@ function draw_payPlanModal($from) : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='payPlanSubmit' onClick='paymentPlans.makePlanPayment("<?php echo $from; ?>")' tabindex='20102'>Make Plan Payment</button>
+                    <button class='btn btn-sm btn-primary' id='payPlanSubmit' onclick='paymentPlans.makePlanPayment("<?php echo $from; ?>")' tabindex='20102'>Make Plan Payment</button>
                 </div>
             </div>
         </div>

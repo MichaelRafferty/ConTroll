@@ -105,7 +105,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
     ?>
-    <!-- Registgration/Edit Registration Modal Popup -->
+    <!-- Registration/Edit Registration Modal Popup -->
     <div id='profile' class="modal modal-xl fade" tabindex="-1" aria-labelledby="New Vendor" aria-hidden="true" style='--bs-modal-width: 80%;'>
         <div class="modal-dialog">
             <div class="modal-content">
@@ -117,7 +117,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                 </div>
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id="exhibitorProfileForm" name="exhibitorProfileForm" action="javascript:void(0);" class="form-floating">
+                        <form id="exhibitorProfileForm" name="exhibitorProfileForm" onsubmit="return false;" class="form-floating">
                             <input type="hidden" id='profileMode' name='profileMode' value="admin"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <?php
@@ -385,6 +385,14 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <div class='row mt-2'>
                                 <div class='col-sm-2'></div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Primary Contact</h1></div>
+                                <div class='col-sm-auto p-0 ms-4 me-0'>
+                                    <button class='btn btn-sm btn-primary' type='button' id='copyToContact'
+                                            tabindex="<?php echo $tabIndex;
+                                                $tabIndex += 2; ?>"
+                                            onclick='exhibitorProfile.copyBusToContactName()'>
+                                        Copy <?php echo $portalName; ?> Name/Info to Contact Name/Info
+                                    </button>
+                                </div>
                             </div>
                             <?php outputCustomText('profile/contact'); ?>
                             <div class='row mt-1'>
@@ -540,7 +548,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                         Cancel
                     </button>
                     <button class='btn btn-sm btn-primary' id='profileSubmitBtn' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                            onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')">Admin</button>
+                            onclick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')">Admin</button>
                 </div>
             </div>
         </div>
@@ -567,7 +575,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                 <div class="modal-body" style="padding: 4px; background-color: lightcyan;">
                     <?php if ($portalType != 'admin') outputCustomText('signup/top'); ?>
                     <div class="container-fluid form-floating" style="background-color: lightcyan;">
-                        <form id='exhibitorProfileForm' name='exhibitorProfileForm' action='javascript:void(0);' class='form-floating'>
+                        <form id='exhibitorProfileForm' name='exhibitorProfileForm' onsubmit='return false;' class='form-floating'>
                             <input type="hidden" id='profileMode' name='profileMode' value="admin"/>
                             <input type="hidden" id='profileType' name='profileType' value="<?php echo $portalType; ?>"/>
                             <?php
@@ -1064,7 +1072,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                             onclick="exhibitorProfile.prevPage();" disabled>Previous Page</button>
                     <button class='btn btn-sm btn-primary' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                             id='nextPageBtn' onclick="exhibitorProfile.nextPage();">Next Page</button>
-                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onClick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')"
+                    <button class='btn btn-sm btn-primary' id='profileSubmitBtn' onclick="exhibitorProfile.submitProfile('<?php echo $portalType; ?>')"
                             tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" disabled>Admin</button>
                 </div>
             </div>

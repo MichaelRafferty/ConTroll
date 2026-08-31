@@ -96,23 +96,18 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
-if (array_key_exists('creditoffline', $controll)) {
-    $config_vars['creditoffline'] = $controll['creditoffline'];
-}
-if (array_key_exists('creditonline', $controll)) {
-    $config_vars['creditonline'] = $controll['creditonline'];
-}
+$config_vars['creditoffline'] = getConfValue('controll', 'creditoffline', 1);
+$config_vars['creditonline'] = getConfValue('controll', 'creditonline', 0);
+$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
-
-if (array_key_exists('creditonline', $controll)) {
-    if ($controll['creditonline'] == 1) {
-        $cc = get_conf('cc');
-        load_cc_procs();
-        echo draw_cc_html($cc, '--', 'js');
-    }
-}
+$config_vars['showCartDescription'] = getConfValue('controll', 'showCartDescription', 0);
+$config_vars['showCartDate'] = getConfValue('controll', 'showCartDate', 0);
+load_cc_procs();
+$config_vars['ccCurrency'] = cc_getCurrency();
+$config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
 //    $useUSPS = true;
@@ -125,6 +120,11 @@ if (array_key_exists('creditonline', $controll)) {
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
+<?php
+    if ($config_vars['creditonline'] == 1) {
+        echo draw_cc_html('--', 'js');
+    }
+?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -283,7 +283,11 @@ drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true,
                     </div>
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class="container-fluid" id="NotesBody">
+                    <div class="container-fluid" id="NotesBody"></div>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm-12' id='notesEditWarning'></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>

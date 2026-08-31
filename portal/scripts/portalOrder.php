@@ -321,7 +321,8 @@ EOS;
     $response['amount'] = $amount;
 
 //log requested badges
-    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'results' => $results, 'request' => $badges));
+    labeled_logWrite('p/portalOrder-update transaction',
+        array ('con' => $condata['name'], 'trans' => $transId, 'results' => $results, 'request' => $badges));
     $upT = <<<EOS
 UPDATE transaction
 SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
@@ -337,7 +338,8 @@ EOS;
         $rtn = cc_buildOrder($results, true, $ccLocation);
         if ($rtn == null) {
             // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-            logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+            labeled_logWrite('p/portalOrder-cc_bulldOrder returned null',
+                array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
             ajaxSuccess(array ('status' => 'error', 'message' => 'Order not built'));
             exit();
         }
@@ -366,6 +368,6 @@ EOS;
 
 //$tnx_record = $rtn['tnx'];
     $response['status'] = 'success';
-    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    labeled_logWrite('c/portalOrder-return', array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     ajaxSuccess($response);
     return;

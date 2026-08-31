@@ -8,7 +8,7 @@ require_once('lib/portalForms.php');
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/interests.php");
-require_once("../lib/googleOauth2.php");
+require_once("../lib/oauth2Clients.php");
 
 global $config_vars;
 
@@ -57,7 +57,7 @@ if (isset($_REQUEST['logout'])) {
 
 /* NOTE: This is a 'future', as the oauth server didn't get written.
 // oauth= indicates an authentication request from the ConTroll Oauth2 server via redirect
-// This is not a login to portal via an oauth2 request (google, facebook, etc.)
+// This is not a login to portal via an oauth2 request (google, amazon, facebook, etc.)
 
 if (isset($_REQUEST['oauth'])) {
     // decrypt the request
@@ -137,22 +137,17 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         $redirectURI = $portal_conf['redirect_base'];
         if ($redirectURI == '')
             $redirectURI = null;
-        $oauthParams = null;
-        switch (getSessionVar('oauth2')) {
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log($oauthParams['error']);
-                    clearSession('oauth2');
-                    draw_indexPageTop($condata, $purpose);
-                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
-                    exit();
-                }
-
+        $oauthParams = oauth2Auth(getSessionVar('oauth2'), $redirectURI);
+        if (isset($oauthParams['error'])) {
+            web_error_log($oauthParams['error']);
+            clearSession('oauth2');
+            draw_indexPageTop($condata, $purpose);
+            draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
+            exit();
         }
 
         if ($oauthParams == null) {
-            // an error occured with login by google
+            // an error occured with login by league oauth client
             draw_indexPageTop($condata, $purpose);
             draw_login($config_vars,
                        'An error occured with the login with ' . getSessionVar('oauth2'), 'bg-danger text-white',
@@ -194,9 +189,12 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         clearSession("oauth2timeout");  // reset the timeout
         setSessionVar('email', $email);
         setSessionVar('displayName', $oauthParams['displayName']);
-        setSessionVar('firstName', $oauthParams['firstName']);
-        setSessionVar('lastName', $oauthParams['lastName']);
-        setSessionVar('avatarURL', $oauthParams['avatarURL']);
+        if (array_key_exists('firstName', $oauthParams))
+            setSessionVar('firstName', $oauthParams['firstName']);
+        if (array_key_exists('lastName', $oauthParams))
+            setSessionVar('lastName', $oauthParams['lastName']);
+        if (array_key_exists('avatarURL', $oauthParams))
+            setSessionVar('avatarURL', $oauthParams['avatarURL']);
         setSessionVar('subscriberId', $oauthParams['subscriberId']);
         setSessionVar('tokenType', 'oauth2');
         updateSubscriberId(getSessionVar('oauth2'), $email, $oauthParams['subscriberId']);
@@ -210,7 +208,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         if ($hrs == null || !is_numeric($hrs) || $hrs < 1) $hrs = 8;
         setSessionVar('tokenExpiration', time() + ($hrs * 3600));
 
-        if ($oldemail != null) {
+        if ($oldemail != null && $oldemail != '') {
             // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
             // don't disturb any other session variables
             validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'), getSessionVar('idSource'), getSessionVar('multiple'));
@@ -285,8 +283,7 @@ if (isSessionVar('id')) {
                 if (array_key_exists('id', $match)) {
                     $id = $match['id'];
                     if (!array_key_exists('tablename', $match)) {
-                        error_log('Missing table name, match:');
-                        var_error_log($match);
+                        labeled_error_log('portalOrder-Missing table name-match', $match);
                     } else
                     $tablename = $match['tablename'];
                 }

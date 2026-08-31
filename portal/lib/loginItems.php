@@ -1,6 +1,8 @@
 <?php
 // draw_login - draw the login options form
 function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
+    global $oauthProviders;
+
     $con = get_conf('con');
     $policies = getPolicies();
     $interests = getInterests();
@@ -13,7 +15,9 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
-            <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+<?php
+    if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS'])
+                    || $_SERVER['HTTPS'] == 'on')) { ?>
             <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
@@ -21,11 +25,35 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
+                    Passkey is our preferred login method. Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
                 </div>
             </div>
-            <?php } ?>
-            <div class="row mb-2">
+            <?php
+    }
+
+    $first = true;
+    foreach ($oauthProviders as $provider) {
+    if (getConfValue($provider, 'client_id', null)) {
+        if ($first) {
+            outputCustomText('main/oauthTop');
+            echo "       <div class='row'>\n";
+            $first = false;
+        }
+?>
+
+                <div class='col-sm-auto me-2 mt-2'>
+                    <button class='btn btn-sm btn-primary' onclick="login.loginWithOauth2('<?echo $provider; ?>');">
+                        Create Account or Login with <?echo ucfirst($provider);?>
+                    </button>
+                </div>
+<?php    }
+    }
+    if (!$first) {
+        echo "</div>\n";
+        outputCustomText('main/oauthBottom');
+    }
+?>
+            <div class="row mt-2 mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
                         Create Account or Login with Email Authentication
@@ -49,16 +77,10 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </div>
                 </div>
             </div>
-            <div class='row mb-2'>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Create Account or Login with Google</button>
-                </div>
-            </div>
-            <?php
-            // bypass for testing on Development PC
-                // TODO: back out seattle regtest from here.
+<?php
+                // bypass for testing on Development PC
     if (isDirectAllowed()) {
-                ?>
+?>
             <div class="row mt-3"><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
                 <div class='col-sm-auto'>
@@ -72,8 +94,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
             </div>
             <div class='row mb-2'><div class="col-sm-12" id="matchList"></div></div>
-            <?php
-    } ?>
+<?php } ?>
         </div>
     </div>
 <?php
@@ -209,7 +230,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         $interests = getInterests();
         [$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
         draw_addMembershipsConfirmModal();
-        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $countryOptions, $interests);
+        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['conStartDate'], $countryOptions, $interests);
         // ask to create new account
 ?>
         <h3 class="mt-3">The email <?php echo $email;?> does not have an account.</h3>

@@ -16,22 +16,42 @@ Predefined Required Membership Types: (memTypes)
                     on the proper day.
     donation:   a usually variable amount, that is non badgable, and defined as a donation to the organization
 
+Common Additional Membership Types for worldcons
+    presupport:  a contribution type membership with no attending rights until the convention bid is won and then it might convert to an attending type
+    bundle:      a documentation type of a membership that on saving to the cart unbundles itself into a set of bundled memberships
+    wsfs:        often useful for rules writing, its used to identify which memberships and bundles can provide a wsfs membership
+
+Notes:
+    Only full and oneday type memberships are printable as badges.
+    Upgrade is not a membership type, but it is a category.
+
 Membership Type Options:
     Notes:          not printed anywhere, shown to the admin for understand the use of this membership type
     Active:         Currently available for use this year,  If 'N' it's an archive element for prior years.
 
 Predefined Required Membership Categories: (memCategories)
 
-    standard:   a badgable attending membership
-    virtual:    a non badgable virtual membership
+    standard:   an attending membership
+    virtual:    a virtual membership
     upgrade:    a membership with a special price to upgrade another membership type (usually used to upgrade virtual or one day)
     yearahead:  a standard membership, but purchased for the following convention year (usually at a discounted price)
-    freebie:    any complimentary membership, badgable
-    artist:     a membership available at a special rate to artists who are in the art show.  This is a badgable membership and usually is
-                    only sold via the artist portal.
-    dealer:     a membership available at a special rate to vendors who are in the dealers room.  This is a badgable membership and usually
-                    is only sold via the vendor portal.
+    freebie:    any complimentary membership
+    artist:     a membership available at a special rate to artists who are in the art show.  This is usually only sold via the artist portal.
+    dealer:     a membership available at a special rate to vendors who are in the dealers room.  This usually only sold via the vendor portal.
     addon:      any add-on to a membership, that is not badgable.  Often used for lanyards, special events, etc.
+    addonTaxable: any add-on membership that is taxable, as standard memberships are normally not taxable.
+    managed:    memberships that require a managed account and prevents dis-association from the manager.
+    formerGOH:  memberships that are only available to people with the formerGOH flag in their profile.
+    donation:   usually a variable priced donation and not really a membership.
+
+Common Additional Membership Categories for worldcons
+    wsfs:       non nomination wsfs memberships, useful for rules
+    wsfsNom:    pass forward wsfs nomination only memberships from the prior years convention
+    supplement: used by rules to indicate a membership that requires a wsfs (a supplenent to a wsfs)
+    sitesel:    site selection tokens only
+    presupport: grouping for rules of pre-supporting memberships
+    presupportUpg:  grouping for rules of upgrades to pre-supporting memberships
+
 
 Membership Category Options:
     Notes:          not printed anywhere, shown to the admin for understand the use of this membership type
@@ -44,11 +64,14 @@ Membership Category Options:
     Active:         Currently available for use this year,  If 'N' it's an archive element for prior years.
 
 Membership Ages (ageList)
-    None of these are required, but they are a per convention year item.
+    All:    All Ages, required by all conventions
+
+    All other rows are optional and typical ones are adult, teen, child, KiT (Kid in Tow)
 
 Fields:
-    Age Type:   Internal short name of the item.  With the convention id it makes up the primary key
+    Age Type:   Internal short name of the item.  With the convention id it makes up the primary key, must not have a blank in it.
     Label:      What is added by the memLabel view to the age portion of the label
     shortname:  What is displayed as the age by the system
+    Verify Annually:  If 'Y' the age is verified annually, as they may have changed their age group since the last convention.
     Badge Flag: String that is printed "reverse video" on the badge for memberships of this age type
 

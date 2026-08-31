@@ -38,6 +38,7 @@ $config_vars['pageName'] = 'finance';
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $conConf['regadminemail'];
 $config_vars['debug'] = getConfValue('debug', 'controll_finance', 0);
+$config_vars['useGL'] = getConfValue('controll', 'useGLCodes', 1);
 $config_vars['conid'] = $conid;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $paymentPlans = getPlanConfig();
@@ -408,7 +409,7 @@ EOS;
                     <div class='row mb-1'>
                         <div class='col-sm-12' id='edit_coupon_preform'></div>
                     </div>
-                    <form id='coupon_form' class='form-floating' action='javascript:void(0);'>
+                    <form id='coupon_form' class='form-floating' onsubmit='return false;'>
                         <input type='hidden' name='couponId' id='form_couponId'/>
                         <div class='row mb-1'>
                             <div class='col-sm-4'>
@@ -538,7 +539,7 @@ EOS;
                             <div class="col-sm-auto p-0">
                                 <button id="form_submit" type="button" class="btn btn-primary btn-sm" onclick="coupons.UpdateCoupon();">Update Coupon</button>
                                 <button id="form_delete" type="button" class="btn btn-warning btn-sm" onclick="coupons.DeleteCoupon();">Delete Unused Coupon</button>
-                                <button id="form_cancel" type="button" class="btn btn-secondary btn-sm" onClick="coupons.HideEditModal();">Cancel</button>
+                                <button id="form_cancel" type="button" class="btn btn-secondary btn-sm" onclick="coupons.HideEditModal();">Cancel</button>
                             </div>
                         </div>
                     </form>
@@ -663,6 +664,14 @@ EOS;
                 Sales Tax Configuration
             </button>
         </li>
+        <?php if ($config_vars['useGL'] == 1) { ?>
+        <li>
+            <button class='nav-link' id='glConfig-tab' data-bs-toggle='pill' data-bs-target='#glConfig-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('glConfig-pane');">
+                General Ledger Setup
+            </button>
+        </li>
+        <?php } ?>
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='paymentPlans-tab' data-bs-toggle='pill' data-bs-target='#paymentPlans-pane' type='button' role='tab'
                     aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('paymentPlans-pane');">
@@ -708,9 +717,14 @@ EOS;
                     <p>The Finance tab handles functions related to money:</p>
                     <ol>
                         <li>Sales Tax Configuration - set tax rates for this convention year</li>
-                        <li>Payment Plan Configuration - Set up payment plans for this convention year</li>
-                        <li>Payor Plans - Display/(future)Change payor plans</li>
-                        <li>Refunds - Process Refunds (future)</li>
+    <?php if ($config_vars['useGL'] == 1) { ?>
+                        <li>General Ledger Configuration – Set up GL Numbers and Labels for this convention</li>
+    <?php } ?>
+                        <li>Payment Plan Configuration – Set up payment plans for this convention year</li>
+                        <li>Payor Plans – Display/(future)Change payor plans</li>
+                        <li>Coupons – Configure Coupons (partially functional)</li>
+                        <li>Refunds – Process Refunds (future)</li>
+                        <li>File Manager – Display/Download/Upload Data Files and Images (permission based)</li>
                     </ol>
                 </div>
             </div>
@@ -734,6 +748,16 @@ EOS;
             </div>
         </div>
     </div>
+    <div class='tab-pane fade' id='glConfig-pane' role='tabpanel' aria-labelledby='glConfig-tab' tabindex='0' hidden>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='glConfigDiv'><H1 class='h3'><b>General Ledger Configuration:</b></H1></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='glConfigTable'></div>
+            </div>
+        </div>
+    </div>
     <div class='tab-pane fade' id='paymentPlans-pane' role='tabpanel' aria-labelledby='paymentPlans-tab' tabindex='0' hidden>
         <div class='container-fluid'>
             <div class='row mt-2'>
@@ -742,12 +766,20 @@ EOS;
             <div class="row mt-2">
                 <div class="col-sm-12" id="paymentPlanTable"></div>
             </div>
-            <div class='row mt-2'>
+            <div class='row mt-2 mb-2'>
                  <div class="col-sm-auto">
                      <button class="btn btn-sm btn-secondary" onclick="plans.addNew();">Add New</button>
                  </div>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="planSaveBtn" onclick='plans.save();' disabled>Save Changes</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-csv' type='button' class='btn btn-info btn-sm'
+                        onclick=plans.downloadPlans('csv'); return false;">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=plans.downloadPlans('xlsx'); return false;">Download Excel</button>
                 </div>
             </div>
         </div>
@@ -759,6 +791,18 @@ EOS;
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-12' id='payorPlansTable'></div>
+            </div>
+            <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto'>
+                    <button id='plan-csv' type='button' class='btn btn-info btn-sm'
+                            onclick=payors.downloadPayors('csv'); return false;
+                    ">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='plan-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=payors.downloadPayors('xlsx'); return false;
+                    ">Download Excel</button>
+                </div>
             </div>
         </div>
     </div>

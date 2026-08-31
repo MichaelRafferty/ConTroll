@@ -50,6 +50,9 @@ class ExhibitorInvoice {
         if (id != null) {
             this.#exhibitorPaymentModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#paymentForDiv = document.getElementById("paymentForDiv");
+            id.addEventListener('hidden.bs.modal', function (event) {
+                orderCancel(false);
+            });
         }
         this.#membershipCostdiv = document.getElementById("membershipCost");
         this.#elcheckno = document.getElementById('pay-check-div');
@@ -58,7 +61,7 @@ class ExhibitorInvoice {
         this.#payCheckno = document.getElementById('pay-checkno');
         this.#payCcauth = document.getElementById('pay-ccauth');
         this.#payDescription = document.getElementById('pay-desc');
-        this.#payButton = document.getElementById('pay-btn-pay');
+        this.#payButton = document.getElementById('card-button');
         this.#overrideButton = document.getElementById('pay-override-pay');
         this.#payAmt = document.getElementById('pay-amt');
         this.#totalInvCost = document.getElementById('vendor_inv_cost');
@@ -520,18 +523,34 @@ class ExhibitorInvoice {
         let regionList = region_list[this.#regionYearId];
         let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
         let membershipCost = data.results.preTaxAmt - totalSpacePrice;
-        document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
+        let id = document.getElementById('vendor_pay_mbr_cost');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
         let totalPreOrder = data.results.preTaxAmt;
-        document.getElementById('vendor_pay_cost').innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
+        id = document.getElementById('vendor_pay_cost');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));
         let totalWithTax = data.orderRtn.totalAmt;
-        document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
+        id = document.getElementById('vendor_pay_total_due');
+        if (id)
+            id.innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
-        let id = document.getElementById(this.#purchaseLabel);
+        id = document.getElementById(this.#purchaseLabel);
         if (id)
             id.disabled = false;
         this.#totalAmountDue = Number(totalWithTax);
-        this.#exhibitorPaymentModal.show();
+        // now make sure the payment form is clear
+        this.#payAmt.style.backgroundColor = '';
+        this.#payAmt.value = '';
+        this.#paymentTypeDiv.style.backgroundColor = '';
+        document.getElementById('pt-cash').checked = false;
+        document.getElementById('pt-check').checked = false;
+        document.getElementById('pt-credit').checked = false;
+        document.getElementById('pay-ccauth').value = '';
+        document.getElementById('pay-checkno').value = '';
+        document.getElementById('pay-desc').value = '';
 
+        this.#exhibitorPaymentModal.show();
     }
 
     // process payment
@@ -591,8 +610,19 @@ class ExhibitorInvoice {
     }
 
     // cancel the order and close the modal
-    orderCancel() {
+    orderCancel(doHide = true) {
         let hideElement = this.#exhibitorPaymentModal;
+        clear_message();
+        clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
+        if (this.#orderData == null) {
+            if (doHide)
+                hideElement.hide();
+            return;
+        }
+
+        let _this = this;
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
@@ -609,7 +639,9 @@ class ExhibitorInvoice {
                     let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    hideElement.hide();
+                    _this.#orderData = null;
+                    if (doHide)
+                        hideElement.hide();
                     show_message(data['message'], 'success');
                     return;
                 } else {
@@ -727,7 +759,10 @@ class ExhibitorInvoice {
             postData.cancelOrderId = this.#currentOrderId;
             this.#currentOrderId = null;
         }
+        clear_message();
         clear_message('inv_result_message');
+        clear_message('ccPayMessageDiv');
+
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
@@ -760,6 +795,7 @@ class ExhibitorInvoice {
             this.#payButton.disabled = false;
             this.#overrideButton.disabled = false;
         } else if (data.status == 'success') {
+            this.#orderData = null;
             this.#exhibitorPaymentModal.hide();
             show_message(data.message + "Payment for space recorded.");
             if (data.exhibitor_spacelist) {
@@ -845,9 +881,9 @@ function incrPayValidate() {
     exhibitorInvoice.incrPayValidate();
 }
 
-function orderCancel() {
+function orderCancel(doHide) {
     if (exhibitorInvoice == null)
         return;
 
-    exhibitorInvoice.orderCancel();
+    exhibitorInvoice.orderCancel(doHide);
 }

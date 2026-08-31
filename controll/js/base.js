@@ -172,6 +172,7 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 var nowDate = null;
 var nowToday = false;
 var nowDateString = '';
+var optionDateChars = "<>=senafx";
 // date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
 function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     if (rowValue == null || rowValue == '')
@@ -179,7 +180,7 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 
     let option = headerValue.substring(0,1);
     let value = headerValue;
-    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e' || option == 'n') {
+    if (optionDateChars.includes(option)) {
         let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
@@ -204,6 +205,9 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
         case 'e':
             return rowValue.endsWith(value);
         case 'n':
+        case 'a':
+        case 'f':
+        case 'x':
             if (filterParams.field == '')
                 return rowValue.includes(value);
 
@@ -257,6 +261,12 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
                         ':' + newDate.getMinutes().toString().padStart(2, '0') + ':' + newDate.getSeconds().toString().padStart(2, '0');
                 }
             }
+
+            if (option == 'f')
+                return rowData.startdate >= nowDateString;
+
+            if (option == 'x')
+                return rowData.enddate <= nowDateString;
 
             if (filterParams.field == 'startdate')
                 return rowValue <= nowDateString && rowData.enddate > nowDateString;
@@ -439,6 +449,12 @@ function blankIfNull(value) {
 
 // pass object to a window.open via a post with json data
 function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
+    // if the data is too big, deny using this download method for now
+    if (tableData.length > 900  * 1024) { // 1MB upload limit, so limit to 900KB to leave room for
+        show_message("Data is too big to download via this method, you will need to do Only Download CSV or Only Download Excel to download the entire" +
+            " report dataset instead of the filtered version these buttons will access.", 'error');
+        return;
+    }
     // create the form
     let form = document.createElement('form');
     form.method = 'POST';
@@ -476,6 +492,37 @@ function downloadFilePost(format, fileName, tableData, excludeList = null, field
     tablejson.name = 'table'
     tablejson.value = tableData;
     form.appendChild(tablejson);
+    // now open the window
+    form.submit();
+    document.body.removeChild(form);
+}
+
+// pass object to a window.open via a post with json data
+function downloadRptPost(format, url, postdata) {
+    // create the form
+    let postjson = JSON.stringify(postdata);
+    let form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    // append it to the body
+    document.body.appendChild(form);
+    // create the file name to suggest to save it to....
+    let field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'format';
+    field.value = format;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'postjson';
+    field.value = postjson;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'action';
+    field.value = 'download';
+    form.appendChild(field);
+
     // now open the window
     form.submit();
     document.body.removeChild(form);

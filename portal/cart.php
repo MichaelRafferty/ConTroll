@@ -185,7 +185,6 @@ $ageName = $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [
 <?php
 // draw the placeholder for memberships they can buy and add the memberships in the javascript
 ?>
-    <div id="getNewMembershipDiv">
 <?php
     outputCustomText('main/memberships');
     drawGetNewMemberships(null);

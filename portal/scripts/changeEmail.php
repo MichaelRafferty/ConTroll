@@ -204,6 +204,6 @@ $response['logmessage'] = "$rows_upd rows updated, email address update successf
 $response['message'] = "Email address successfully updated from $curEmail to $email" .
     ($numDeleted > 0 ? " and the corresponding Passkey has been deleted." : "");
 logInit($log['reg']);
-logWrite($response);
+labeled_logWrite('p/changeEmail-response', $response);
 
 ajaxSuccess($response);

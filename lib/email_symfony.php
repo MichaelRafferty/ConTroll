@@ -69,8 +69,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
             $return_arr['status'] = "error";
             $return_arr['error_code'] = $e->getCode();
             $return_arr['email_error'] = $e->getMessage();
-            web_error_log("symfony send_email transport create error:");
-            var_error_log($return_arr);
+            labeled_error_log("symfony send_email transport create error", $return_arr);
             return $return_arr;
         }
     }
@@ -84,8 +83,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
             $return_arr['status'] = "error";
             $return_arr['error_code'] = $e->getCode();
             $return_arr['email_error'] = $e->getMessage();
-            web_error_log("symfony send_email mailer create error:");
-            var_error_log($return_arr);
+            labeled_error_log('symfony send_email mailer create error', $return_arr);
             return $return_arr;
         }
     }
@@ -193,8 +191,7 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
         $return_arr['status'] = "error";
         $return_arr['error_code'] = $e->getCode();
         $return_arr['email_error'] = $e->getMessage();
-        web_error_log("symfony send_email send error:");
-        var_error_log($return_arr);
+        labeled_error_log("symfony send_email send error", $return_arr);
         return $return_arr;
     }
     $return_arr['status'] = "success";

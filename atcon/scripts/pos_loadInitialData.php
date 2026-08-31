@@ -15,8 +15,6 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $con = get_conf('con');
-$atcon = get_conf('atcon');
-$controll = get_conf('controll');
 $usps = get_conf('usps');
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -37,15 +35,14 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
-$cc = get_conf('cc');
 load_cc_procs();
 // loadInitialData:
 // Load all the mapping tables for the POS function
 
-
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
-$response['discount'] = $atcon['discount'];
+$response['discount'] = getConfValue('atcon', 'discount', 'manager');
+$response['opennote'] = getConfValue('atcon', 'opennote', 'manager');
 $response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
 $response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
 if (isSessionVar('terminal'))
@@ -54,7 +51,7 @@ else
     $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
 $response['Manager'] = check_atcon('manager', $conid) ? 1 : 0;
-$response['cc_html'] = draw_cc_html($cc,'--','body');
+$response['cc_html'] = draw_cc_html('--','body');
 
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS

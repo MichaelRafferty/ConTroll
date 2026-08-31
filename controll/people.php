@@ -115,7 +115,7 @@ $policiesCell = drawPoliciesCell($policies);
                     <div class='row mt-1 mb-2'>
                         <div class="col-sm-auto">
                             <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                            <button class='btn btn-sm btn-primary' type='button' id='createNewTop' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                            <button class='btn btn-sm btn-primary' type='button' id='createNewTop' onclick='unmatchedPeople.saveMatch("n")' disabled>
                                 Create New Person
                             </button>
                         </div>
@@ -151,13 +151,13 @@ $policiesCell = drawPoliciesCell($policies);
             </div>
             <div class='modal-footer me-auto'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='unmatchedPeople.saveMatch("e")' disabled>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onclick='unmatchedPeople.saveMatch("e")' disabled>
                     Update Existing Person
                 </button>
-                <button class='btn btn-sm btn-primary' type='button' id='createNew' onClick='unmatchedPeople.saveMatch("n")' disabled>
+                <button class='btn btn-sm btn-primary' type='button' id='createNew' onclick='unmatchedPeople.saveMatch("n")' disabled>
                     Create New Person
                 </button>
-                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onClick='unmatchedPeople.deletePerson()' disabled>
+                <button class='btn btn-sm btn-warning' type='button' id='deleteNew' onclick='unmatchedPeople.deletePerson()' disabled>
                     Delete New Person
                 </button>
             </div>
@@ -177,7 +177,7 @@ $policiesCell = drawPoliciesCell($policies);
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
-                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
+                    <form id='f_editPerson' class='form-floating' onsubmit='return false;'>
                     <div class="row mt-2">
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
@@ -299,8 +299,8 @@ if (getConfValue('con', 'conRoles', 0) == 1)
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
-                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onClick='findPerson.saveEdit2()'>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onclick='findPerson.saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onclick='findPerson.saveEdit2()'>
                     Overrride Validation Checks and Update Existing Person
                 </button>
             </div>
@@ -386,7 +386,7 @@ if (getConfValue('con', 'conRoles', 0) == 1)
             <div class='row mt-2'>
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
-            <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
+            <form id='a_editPerson' class='form-floating' onsubmit='return false;'>
 <?php
     drawEditPersonBlock($con_conf, $countryOptions,true, $policies, 'addPerson', false, true,$ageByDate,
             null, $ageListIdx, 100, true, 'a_', false, false, $regAdmin, $regStaff);

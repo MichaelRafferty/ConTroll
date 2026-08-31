@@ -249,7 +249,7 @@ class rulesSetup {
                 <h4>
                     <strong>Rules Simulator:</strong>&nbsp;&nbsp;&nbsp;
                     Similated Current Date:
-                    <input type="text" maxlength="20" size="20" name="simDate" id="simDate" value="" onchange="rules.updateDate();"/>
+                    <input type="text" maxlength="20" size="20" name="simDate" id="simDate" value="" placeholder="YYYY-MM-DD" onchange="rules.updateDate();"/>
                     <select name="simLimit" id="simLimit" onchange="rules.updateDate();">
                         <option value="All" style="background-color: #D0D0D0;" "selected>All Membership Items</option>
                         <option value="Both" style="background-color: #D0FFD0;">Online=Y or Atcon=Y</option>

@@ -16,8 +16,13 @@ function getUSPSV3Token() {
     global $uspsAPIToken, $uspsAuthorization, $uspsKey, $uspsDisabled;
 
     $usps = get_conf('usps');
-    $key = $usps['clientId'];
-    $secret = $usps['secret'];
+    if (array_key_exists('secret', $usps) && $usps['secret'] != '') {
+        $key = $usps['clientId'];
+        $secret = $usps['secret'];
+    } else {
+        $uspsDisabled = true;
+        return;
+    }
 
     $tokenReq = array(
         'client_id' => $key,
