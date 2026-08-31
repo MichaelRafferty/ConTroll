@@ -4,6 +4,7 @@ require_once("lib/base.php");
 require_once("../lib/webauthn.php");
 
 global $config_vars;
+global $oauthProviders;
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -316,7 +317,6 @@ if ($personType == 'n') {
             <div class='col-sm-auto'><select id='provider' name='provider'>
                     <option value='token'>Email Authentication Token</option>
 <?php
-    $oauthProviders = ['google', 'amazon'];
     foreach ($oauthProviders as $provider) {
         if (getConfValue($provider, 'client_id', null)) {
             echo "<option value='$provider'>Login with " . ucfirst($provider) . "</option>";

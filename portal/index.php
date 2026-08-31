@@ -137,28 +137,13 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         $redirectURI = $portal_conf['redirect_base'];
         if ($redirectURI == '')
             $redirectURI = null;
-        $oauthParams = null;
-        switch (getSessionVar('oauth2')) {
-            case 'amazon':
-                $oauthParams = amazonAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log($oauthParams['error']);
-                    clearSession('oauth2');
-                    draw_indexPageTop($condata, $purpose);
-                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
-                    exit();
-                }
-                break;
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log($oauthParams['error']);
-                    clearSession('oauth2');
-                    draw_indexPageTop($condata, $purpose);
-                    draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
-                    exit();
-                }
-                break;
+        $oauthParams = oauth2Auth(getSessionVar('oauth2'), $redirectURI);
+        if (isset($oauthParams['error'])) {
+            web_error_log($oauthParams['error']);
+            clearSession('oauth2');
+            draw_indexPageTop($condata, $purpose);
+            draw_login($config_vars, $oauthParams['error'], 'bg-danger text-white', $why);
+            exit();
         }
 
         if ($oauthParams == null) {

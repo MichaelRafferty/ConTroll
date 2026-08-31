@@ -79,23 +79,19 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         $redirectURI = getConfValue('controll', 'redirect_base');
         if ($redirectURI == '')
             $redirectURI = null;
-        $oauthParams = null;
-        switch (getSessionVar('oauth2')) {
-            case 'google':
-                $oauthParams = googleAuth($redirectURI);
-                if (isset($oauthParams['error'])) {
-                    web_error_log("Google oauth2 error: " . $oauthParams['error']);
-                    clearSession('oauth2');
-                    drawErrorPage('Google Login Issue: ', $oauthParams['error']);
-                    exit();
-                }
-        }
+        $oauthParams = oauth2Auth('google', $redirectURI);
         if ($oauthParams == null) {
             // an error occured with login by google
             $source = getSessionVar('oauth2');
             web_error_log("oauth2 error occurred, no params from $source");
             drawErrorPage("$source login issue: ","An error occured with the login with $source");
             clearSession('oauth2');
+            exit();
+        }
+        if (isset($oauthParams['error'])) {
+            web_error_log("Google oauth2 error: " . $oauthParams['error']);
+            clearSession('oauth2');
+            drawErrorPage('Google Login Issue: ', $oauthParams['error']);
             exit();
         }
         if (!isset($oauthParams['email'])) {
@@ -243,7 +239,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
             <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id='loginPasskeyBtn' onclick='login.loginWithPasskey();'>
-                        <img src='lib/passkey.png' width='25'>Login with Passkey
+                        <img src='lib/passkey.png' alt='Passkey Logo' width='25'>Login with Passkey
                     </button>
                 </div>
                 <div class='col-sm-auto'>
@@ -362,7 +358,7 @@ EOS;
         <div class='row mt-4'>
             <div class='col-sm-2'>
                 <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.deletePasskey(<?php echo $keyId; ?>);'>
-                    <img src='lib/passkey.png'>Delete Existing Passkey
+                    <img src='lib/passkey.png' alt='Passkey Logo'>Delete Existing Passkey
                 </button>
             </div>
         </div>
@@ -372,7 +368,7 @@ EOS;
         <div class='row mt-4'>
             <div class='col-sm-2'>
                 <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
-                    <img src='lib/passkey.png'>Add New Passkey
+                    <img src='lib/passkey.png' alt='Passkey Logo'>Add New Passkey
                 </button>
             </div>
         </div>
@@ -473,7 +469,7 @@ EOS;
 
 page_foot($page);
 
-function drawErrorPage($who, $error) {
+function drawErrorPage($who, $error) : void {
     $page = "Home";
     page_init($page,
             /*css*/ array('css/base.css'),

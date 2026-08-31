@@ -21,6 +21,7 @@
         * the set names are the titles on the users tab of the admin page.
   * reg_secret.ini:
     * Addition of stripe options to the credit card section [cc], see the file for all the stripe variables.
+    * Addition of sections for alternate oAuth2 Providers: see the sample file for the sections and contents.
   * reg_conf.ini:
     * [con]
       * cashRoundingUnit=units to round cash transactions, default 1
@@ -88,7 +89,7 @@
 ## Portal:
 * Improvements to the payment interface as part of the Stripe addition
 * New custom text areas above and below the payment interface
-* Added Login with Amazon
+* Added Login with Amazon, Discord, Microsoft and Yahoo in addition to Google.  Facebook is in progress as well.
 
 ## Atcon:
 * Improvements in flow and button prompting when paying for an order, including how much is going to be paid, and send to terminal wording
@@ -107,6 +108,7 @@
 * Flesh out uncompleted code in change in approval flag after artist created
 * Make Type "Bundle" required
 * POS, add ability to edit/add an open note on a person
+* Return to memList with the same selection criteria as before pressing save changes.
 * Sends password reset link for contact that is not valid this year
 * ability to filter the Memlist table by active, expired, or future status
 * add badge preview directory to file manager
