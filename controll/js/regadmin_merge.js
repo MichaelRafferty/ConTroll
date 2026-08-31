@@ -407,7 +407,7 @@ class mergesetup {
         }
         let html = '';
         let mpol = this.#mergePerson['policies'];
-        for (policy in mpol) {
+        for (let policy in mpol) {
             html += policy + ': ' + mpol[policy] + "<br/>";
         }
         this.#mergePolicies.innerHTML = html;
@@ -431,7 +431,7 @@ class mergesetup {
         }
         html = '';
         mpol = this.#remainPerson['policies'];
-        for (policy in mpol) {
+        for (let policy in mpol) {
             html += policy + ': ' + mpol[policy] + "<br/>";
         }
         this.#remainPolicies.innerHTML = html;
