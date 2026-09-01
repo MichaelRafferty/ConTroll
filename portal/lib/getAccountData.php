@@ -1,17 +1,12 @@
 <?php
 // getAccountRegistrations - get all of the registrations for this login id (account)
 
-function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'all') {
-    switch ($getTypes) {
-        case 'unpaid':
-            $statusCheck = " = 'unpaid'";
-            break;
-        case 'plan':
-            $statusCheck = " = 'plan'";
-            break;
-        default:
-            $statusCheck = " IN ('unpaid', 'paid', 'plan', 'upgraded')";
-    }
+function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'all') : array {
+    $statusCheck = match ($getTypes) {
+        'unpaid' => " = 'unpaid'",
+        'plan' => " = 'plan'",
+        default => " IN ('unpaid', 'paid', 'plan', 'upgraded')",
+    };
 
     if ($personType == 'p') {
         $membershipsQ = <<<EOS
