@@ -40,6 +40,7 @@ function decryptCipher($string, $doJson = false) {
         $cipherParams = getLoginCipher();
     }
 
+    $string = base64_decode_url($string, false);
     $decValue = openssl_decrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']);
     if ($doJson) {
         $decValue = json_decode($decValue, true);
@@ -57,7 +58,7 @@ function encryptCipher($string, $doURLencode = false) : string {
 
     $string = openssl_encrypt($string, $cipherParams['cipher'], $cipherParams['key'], 0, $cipherParams['iv']);
     if ($doURLencode) {
-        $string = urlencode($string);
+        $string = urlencode(base64_encode_url($string, false));
     }
     return $string;
 }
@@ -69,6 +70,7 @@ function decryptAttach($string, $doJson = false) {
         $attachParams = getAttachCipher();
     }
 
+    $string = base64_decode_url($string, false);
     $decValue = openssl_decrypt($string, $attachParams['cipher'], $attachParams['key'], 0, $attachParams['iv']);
     if ($doJson) {
         $decValue = json_decode($decValue, true);
@@ -86,7 +88,7 @@ function encryptAttach($string, $doURLencode = false) : string {
 
     $string = openssl_encrypt($string, $attachParams['cipher'], $attachParams['key'], 0, $attachParams['iv']);
     if ($doURLencode) {
-        $string = urlencode($string);
+        $string = urlencode(base64_encode_url($string, false));
     }
     return $string;
 }
