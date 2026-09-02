@@ -1,17 +1,12 @@
 <?php
 // getAccountRegistrations - get all of the registrations for this login id (account)
 
-function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'all') {
-    switch ($getTypes) {
-        case 'unpaid':
-            $statusCheck = " = 'unpaid'";
-            break;
-        case 'plan':
-            $statusCheck = " = 'plan'";
-            break;
-        default:
-            $statusCheck = " IN ('unpaid', 'paid', 'plan', 'upgraded')";
-    }
+function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'all') : array {
+    $statusCheck = match ($getTypes) {
+        'unpaid' => " = 'unpaid'",
+        'plan' => " = 'plan'",
+        default => " IN ('unpaid', 'paid', 'plan', 'upgraded')",
+    };
 
     if ($personType == 'p') {
         $membershipsQ = <<<EOS
@@ -167,7 +162,7 @@ WITH mems AS (
         m.ageShortName AS ageshortname, m.shortname, p.first_name AS fname, p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        p.badge_name, p.badgeNameL2,  p.first_name, p.last_name,
+        p.badge_name, p.badgeNameL2,  p.first_name, p.last_name, p.id AS completePerid,
         p.id AS memberId, p.email_addr, p.phone, p.fullName, IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans

@@ -753,11 +753,11 @@ function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
             $onclick = "paymentHistory.gotoPayment();";
         }
 
+        $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
+        $nextPayDue = $data['nextPayDue'];
+        $minAmt = $data['minAmt'];
+        $nextPayColor = '';
         if ($payorPlan['status'] == 'active') {
-            $nextPayColor = '';
-            $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
-            $nextPayDue = $data['nextPayDue'];
-            $minAmt = $data['minAmt'];
             $nextPayTimestamp = $data['nextPayTimestamp'];
             if ($nextPayTimestamp < $now) { // past due
                 $nextPayColor = ' bg-danger text-white';

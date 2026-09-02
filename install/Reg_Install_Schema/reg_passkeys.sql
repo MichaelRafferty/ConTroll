@@ -23,7 +23,7 @@ CREATE TABLE `passkeys` (
   `lastUsedDate` datetime DEFAULT NULL,
   `lastUsedIP` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `useCount` int NOT NULL DEFAULT '0',
-  `publicKey` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `publicKey` varchar(5120) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `passkeys_cid_idx` (`credentialId`),
   KEY `passkeys_uid_idx` (`userId`),
