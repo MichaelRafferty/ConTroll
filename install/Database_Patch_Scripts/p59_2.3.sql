@@ -82,5 +82,7 @@ CREATE ALGORITHM=UNDEFINED
      JOIN ageList a ON m.memAge = a.ageType and m.conid = a.conid
      JOIN memCategories c ON m.memCategory = c.memCategory;
 
+ALTER TABLE passkeys MODIFY COLUMN publicKey varchar(5120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
+
 
 INSERT INTO patchLog(id, name) VALUES(59, 'Release 2.3 Stripe, Finance, Exhibitor and other changes');
