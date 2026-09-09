@@ -125,11 +125,16 @@ EOS;
 
         if ($groupBy == 'm') {
             $mon = $rL['month'];
+            $makefirst = false;
             if ($mon < $startStr) {
-                $mon = "Before $startStr";
+                $mon = " Before $startStr";
+                $makefirst = true;
             }
             if (!array_key_exists($mon, $colTotals)) {
-                $colTotals[$mon] = 1;
+                if ($makefirst) {
+                    $colTotals = [ $mon => 1, ...$colTotals];
+                } else {$colTotals[$mon] = 1;
+                }
             } else {
                 $colTotals[$mon]++;
             }
@@ -139,6 +144,8 @@ EOS;
     // in YYYY-MM format, can just sort the month array in ascii order to get the columns in order
     $cols = array_keys($colTotals);
     sort($cols, SORT_STRING);
+    if (substr($cols[0], 0, 7) == ' Before')
+    $cols[0] = trim($cols[0]);
     $colTotals['Total'] = $rR->num_rows;
     $top = "&nbsp;\n" . $rR->num_rows . " registrations loaded\n";
     $rR->free();

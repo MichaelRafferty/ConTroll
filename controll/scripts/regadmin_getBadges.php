@@ -89,7 +89,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
-LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
+LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid AND NP.perid IS NULL)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
 LEFT OUTER JOIN notes N on N.id = R.id
 LEFT OUTER JOIN printed PR on PR.id = R.id
@@ -128,7 +128,7 @@ WITH notes AS (
     IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM perinfo
 ), nfields AS (
-    SELECT id AS newperson_id, fullName,
+    SELECT id AS newperson_id, fullName, perid AS newperson_perid,
     IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM newperson
 )
@@ -151,8 +151,8 @@ FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN pfields P ON (P.perid=R.perid AND (P.fullname LIKE ? OR P.badge_name LIKE ? OR P.badgeNameL2 LIKE ?
         OR P.email_addr LIKE ? OR P.legalName LIKE ?))
-LEFT OUTER JOIN nfields NP ON (NP.newperson_id=R.newperid AND (NP.fullname LIKE ? OR NP.badge_name LIKE ? OR NP.badgeNameL2 LIKE ?
-        OR NP.email_addr LIKE ? OR NP.legalName LIKE ?))
+LEFT OUTER JOIN nfields NP ON (NP.newperson_perid IS NULL AND NP.newperson_id=R.newperid AND 
+    (NP.fullname LIKE ? OR NP.badge_name LIKE ? OR NP.badgeNameL2 LIKE ? OR NP.email_addr LIKE ? OR NP.legalName LIKE ?))
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
 LEFT OUTER JOIN notes N on N.id = R.id
 LEFT OUTER JOIN printed PR on PR.id = R.id

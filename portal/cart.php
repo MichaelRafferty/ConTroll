@@ -172,13 +172,18 @@ $person['Ages'] = $personAges;
 outputCustomText('main/top');
 // draw the skeleton
 drawVariablePriceModal('cart');
-$ageName = $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [' . $ruleData['ageListIdx'][$person['currentAgeType']]['label'] . ']';
+if (array_key_exists('currentAgeType', $person) && $person['currentAgeType'] !== null) {
+    $ageName =  ' (' .
+            $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [' . $ruleData['ageListIdx'][$person['currentAgeType']]['label'] .
+            ')';
+} else
+    $ageName = '';
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">
             <h1 class="size-h2" id="auHeader">
                 Add/Edit Memberships and Purchases to Your Cart for
-                <?php echo $person['fullName'] . ' (' . $ageName . ')'; ?>
+                <?php echo $person['fullName'] . $ageName; ?>
             </h1>
         </div>
     </div>
