@@ -810,7 +810,7 @@ class Find {
         }
 
         // now add the row to the database
-        addManages(index);
+        this.addManages(index);
     }
 
     // addManages - update the database and redraw the screen with a new manages entry
