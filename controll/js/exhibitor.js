@@ -803,9 +803,14 @@ class exhibitorsAdm {
         }
         if (currentExhibitor > 0) {
             mailIn = 'X';
-            for (let i = 0; i < data.exhibitors.length; i++) {
-                if (data.exhibitors[i].exhibitorId == currentExhibitor) {
-                    exhibitor = data.exhibitors[i];
+            let exhArr = [];
+            if (data.hasOwnProperty('exhibitors'))
+                exhArr = data.exhibitors;
+            else if (data.hasOwnProperty('detail'))
+                exhArr = data.detail;
+            for (let i = 0; i < exhArr.length; i++) {
+                if (exhArr[i].exhibitorId == currentExhibitor) {
+                    exhibitor = exhArr[i];
                     mailIn = exhibitor.mailin;
                     break;
                 }
