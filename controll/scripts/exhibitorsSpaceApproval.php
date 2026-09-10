@@ -338,7 +338,7 @@ WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
 GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName, eY.id, exRY.locations,
     exRY.id
 )
-SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
+SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail, xS.mailin,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
