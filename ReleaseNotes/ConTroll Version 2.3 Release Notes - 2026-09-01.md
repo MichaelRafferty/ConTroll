@@ -1,7 +1,7 @@
 # ConTroll Version 2.3 Release Notes
 
-## Version 2.3: ???
-### Target Release Date: 2026-09-01
+## Version 2.3:
+### Release Date: 2026-09-01
 
 # Major Configuration Changes in 2.3:
 

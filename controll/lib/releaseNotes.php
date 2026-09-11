@@ -14,8 +14,9 @@ $releaseNoteList = array(
     '2.1' => 'ConTroll Version 2.1 Release Notes - 2026-05-01.md',
     '2.2' => 'ConTroll Version 2.2 Release Notes - 2026-07-01.md',
     '2.3' => 'ConTroll Version 2.3 Release Notes - 2026-09-01.md',
+    '2.4-dev' => 'ConTroll Version 2.4 Release Notes - 2026-12-28.md',
 );
-$currentRelease = '2.3';
+$currentRelease = '2.4-dev';
 $releaseNoteIndex = array();
 $count = 0;
 foreach ($releaseNoteList as $key => $value) {
