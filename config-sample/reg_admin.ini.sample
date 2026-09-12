@@ -84,16 +84,13 @@ conname="ConTroll"
 ;   comma separated list of email domains that are allowed as email addresses in 'from:' type email addresses in the config files
 ;   and in exhibits configuration under owner email field.  No blanks are alloed in the list of email domains. (use ",", not ", ")
 emailDomains="convention.org,club.org"
-;;; Sales Tax Payment Items
-; This used to contaon the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
-; This is now superceeded by the tax table under finance.
-; Do not use the three fields (taxRate, taxLabel,and taxuid) and delete from from the configuration file.
-;   The year roll over will automatically create the tax table entry from them, and uid it as tax1.
-;   if they are present and the tax table is empty.
-;   they are included only by reference.
 ;;; currency: the currency codes are the ones used by PHP to format currency.
 ;       This is the 3-letter ISO 4217 currency code indicating the currency to use.  See https://datahub.io/core/currency-codes
 currency="USD"
+;;; Rounding of transactions - many currencies now require rounding payments. This rounding is in currency units, for example:
+;;;     USD=100, it's cash rounding = 5, so thats $0.05, Iselandic Kroner = 1, its cash rounding is 100.  The default is 1.
+;;;     supported only for cash payments, default is 1.
+cashRounding=5
 ;;; Trend Graph Limits
 ; minComp: how far back to run the membership by year comparision graph, by id
 minComp="2021"

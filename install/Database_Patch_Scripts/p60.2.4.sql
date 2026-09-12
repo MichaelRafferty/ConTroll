@@ -9,6 +9,11 @@
 CALL deleteDupsIntPol();
 
 /*
+ * Add rounding to transaction for cash rounding
+ */
+ALTER TABLE transaction ADD COLUMN rounding decimal(8,2) AFTER withtax;
+
+/*
  * new custom text items
  */
 
@@ -16,7 +21,7 @@ INSERT INTO `controllAppSections` VALUES
     ();
 
 INSERT INTO `controllAppItems` VALUES
-();
+    ();
 
 INSERT INTO `controllTxtItems` VALUES
     ();
