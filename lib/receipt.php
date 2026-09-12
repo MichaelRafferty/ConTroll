@@ -1101,6 +1101,25 @@ EOS;
         }
     }
     $total = $memberSubtotal + $spaceSubtotal + $artSubtotal + $tax;
+
+    // now for the rounding
+    if (array_key_exists('rounding', $master_transaction)) {
+        $rounding = $master_transaction['rounding'];
+        if ($rounding !== null && $rounding != 0) {
+            $roundfmt = $dolfmt->formatCurrency((float)$rounding, $currency);
+            $receipt_html .= <<<EOS
+    <div class="row mt-2">
+        <div class="col-sm-9">Cash Rounding:</div>
+        <div class="col-sm-2" style="text-align: right;">$roundfmt</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="2">Cash Rounding:</td><td style="text-align: right;">$roundfmt</td></tr>
+EOS;
+        }
+        $total += $rounding;
+    }
+
     // now the total due
     $price = $dolfmt->formatCurrency((float)$total, $currency);
     $receipt .= "\nTotal Due: $price\n";
