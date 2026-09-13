@@ -49,10 +49,15 @@ class Pos {
     #ccOnlineStarted = false;
     #ccNonce = null;
     #totalAmountDue = 0;
+    #cashAmountRounded = 0;
     #payPostData = null;
     #paymentElementDiv = null;
     #payOldText = 'Confirm Pay';
-    #payTypeRounds = false;
+    #payAmtDue = null;
+    #payTypeRounded = false;
+    #cashRounding = 1;
+    #cashRoundDiv = null;
+    #cashRoundDue = null;
     // Data Items
     #unpaid_table = [];
     #result_perinfo = [];
@@ -153,6 +158,9 @@ class Pos {
 
         if (config.hasOwnProperty('multiOneDay'))
             this.#multiOneDay = config.multiOneDay;
+
+        if (config.hasOwnProperty('cashRounding'))
+            this.#cashRounding = config.cashRounding;
 
         // set up the constants for objects on the screen
 
@@ -2288,6 +2296,41 @@ class Pos {
             this.#pay_button_pay.innerHTML = 'Send to Terminal';
             this.#pay_button_pay.disabled = false;
         }
+
+        // deal with cash rounding change
+        if (this.#cashRounding > 1) {
+            if (!this.#payTypeRounded && ptype == 'cash') {
+                // compute rounding adjustment
+                let oldTotal = this.#totalAmountDue * currencyMultiplier;
+                let roundedTotal = Math.round(oldTotal / this.#cashRounding) * this.#cashRounding;
+                this.#cashAmountRounded = (roundedTotal - oldTotal) / currencyMultiplier;
+                this.#cashRoundDue.innerHTML = this.#currencyFmt.format(Number(this.#cashAmountRounded).toFixed(2));
+                this.#cashRoundDiv.hidden = this.#cashAmountRounded == 0;
+                this.#totalAmountDue += this.#cashAmountRounded;
+                this.#payAmtDue.innerHTML = '<b>' + this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + '</b>';
+
+                if (this.#cashAmountRounded != 0) {
+                    // add call to round order here
+                    // check that rounding adjustment is not 0 and display rounding line
+                    this.#payTypeRounded = true;
+                } else {
+                    this.#payTypeRounded = false;
+                }
+            } else if (this.#payTypeRounded) {
+                this.#totalAmountDue -= this.#cashAmountRounded;
+                this.#cashAmountRounded = 0;
+                // clear rounding adjustment
+                this.#cashRoundDue.innerHTML = this.#currencyFmt.format(Number(this.#cashAmountRounded).toFixed(2));
+                this.#cashRoundDiv.hidden = this.#cashAmountRounded == 0;
+                this.#payAmtDue.innerHTML = '<b>' + this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + '</b>';
+                // add call to round order here for 0 round
+                this.#payTypeRounded = false;
+            }
+        } else {
+            this.#cashAmountRounded = 0;
+            this.#cashRoundDiv.hidden = true;
+            this.#payTypeRounded = false;
+        }
     }
 
     onlineCCEntered(token) {
@@ -3209,6 +3252,11 @@ class Pos {
                 }
             }
             pay_html += `
+    <div class="row mt-1" id="cash-round-amt-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Cash Rounding:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="cash-round-due">` +
+                this.#currencyFmt.format(Number(this.#cashAmountRounded).toFixed(2)) + `</div>
+    </div>
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0"><b>Amount Due:</b></div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due"><b>` +
@@ -3355,6 +3403,9 @@ class Pos {
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
+            this.#payAmtDue = document.getElementById("pay-amt-due");
+            this.#cashRoundDiv = document.getElementById("cash-round-amt-div");
+            this.#cashRoundDue = document.getElementById("cash-round-due");
         }
         cart.showStartOver();
     }

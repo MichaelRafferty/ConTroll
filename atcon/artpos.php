@@ -50,7 +50,7 @@ if (array_key_exists('taxLabel', $con)) {
     $taxUid = '';
 }
 $currency = getConfValue('con', 'currency', 'USD');
-$cashRounding = getConfValue('con', 'cashrounding', 1);
+$cashRounding = getConfValue('con', 'cashRounding', 1);
 $locale = getLocale();
 
 $regionQ = <<<EOS
