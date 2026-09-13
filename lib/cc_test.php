@@ -620,6 +620,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
     $rtn['source'] = $source;
+    $rtn['version'] = 1;
     $rtn['customerId'] = $order['customerId'];
     $rtn['locationId'] = $order['locationId'];
     $rtn['referenceId'] = $order['referenceId'];
@@ -647,45 +648,48 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $currencyMultiplier = get_currencyMultiplier($currency);
 
     $order = cc_fetchOrder($source, $orderId, $useLogWrite);
-    $version = $order['version'];
+    if (array_key_exists('version', $order)) {
+        $version = $order['version'];
+    } else {
+        $version = 1;
+    }
+    $order['version']++;
     $locationId = $order['locationId'];
 
     if ($roundAmt == 0) {
         unset($order['rounding_adjustment']);
     } else {
-        $order['version']++;
         $order['rounding_adjustment'] = round($roundAmt * $currencyMultiplier);
     }
 
+    $_SESSION['ccTestOrder'] = $order;
     // TODO need to determine what other items we need returned in rtn
     $rtn = array();
     // need to pass back order id, total_amount
     $rtn['order'] = $order;
-    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
-    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+    $rtn['discountAmt'] = $order['discountAmt'] / $currencyMultiplier;
+    $rtn['taxAmt'] = $order['taxAmount'] / $currencyMultiplier;
     // build the return array of taxes applied to the order
     $rtnTaxes = [];
     if ($rtn['taxAmt'] > 0) {
-        $taxAmounts = $order->getTaxes();
+        $taxAmounts = $order['taxes'];
         foreach ($taxAmounts as $tax) {
-            $uid = $tax->getUid();
-            $app = $tax->getAppliedMoney();
-            $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+            $uid = $tax['name'];
+            $rtnTaxes[$uid] = $tax['tax'];
         }
     }
 
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+    $rtn['totalAmt'] = $order['totalAmt'] / $currencyMultiplier;
     $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
     // load into the main rtn the items pay order needs directly
-    $rtn['orderId'] = $order->getId();
-    $rtn['version'] = $order->getVersion();
+    $rtn['orderId'] = $order['orderId'];
+    $rtn['version'] = $order['version'];
     $rtn['ccType'] = 'square';
     $rtn['source'] = $source;
-    $rtn['customerId'] = $order->getCustomerId();
-    $rtn['locationId'] = $order->getLocationId();
-    $rtn['referenceId'] = $order->getReferenceId();
+    $rtn['customerId'] = $order['customerId'];
+    $rtn['locationId'] = $order['locationId'];
+    $rtn['referenceId'] = $order['referenceId'];
     return $rtn;
 }
 

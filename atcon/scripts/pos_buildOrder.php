@@ -19,7 +19,6 @@ $response = array('post' => $_POST, 'get' => $_GET);
 
 $con = get_conf('con');
 $conid = $con['id'];
-$ini = get_conf('reg');
 $log = get_conf('log');
 $cc = get_conf('cc');
 load_cc_procs();
