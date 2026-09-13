@@ -640,6 +640,55 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null 
     return $_SESSION['ccTestOrder'];
 }
 
+// update the order for a new round amount, based on the change in selected payment type
+function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = null) : array {
+    $source = 'cc_roundOrder';
+    $currency = cc_getCurrency();
+    $currencyMultiplier = get_currencyMultiplier($currency);
+
+    $order = cc_fetchOrder($source, $orderId, $useLogWrite);
+    $version = $order['version'];
+    $locationId = $order['locationId'];
+
+    if ($roundAmt == 0) {
+        unset($order['rounding_adjustment']);
+    } else {
+        $order['version']++;
+        $order['rounding_adjustment'] = round($roundAmt * $currencyMultiplier);
+    }
+
+    // TODO need to determine what other items we need returned in rtn
+    $rtn = array();
+    // need to pass back order id, total_amount
+    $rtn['order'] = $order;
+    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
+    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+    // build the return array of taxes applied to the order
+    $rtnTaxes = [];
+    if ($rtn['taxAmt'] > 0) {
+        $taxAmounts = $order->getTaxes();
+        foreach ($taxAmounts as $tax) {
+            $uid = $tax->getUid();
+            $app = $tax->getAppliedMoney();
+            $amt = $app->getAmount();
+            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+        }
+    }
+
+    $rtn['taxes'] = $rtnTaxes;
+    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+    $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
+    // load into the main rtn the items pay order needs directly
+    $rtn['orderId'] = $order->getId();
+    $rtn['version'] = $order->getVersion();
+    $rtn['ccType'] = 'square';
+    $rtn['source'] = $source;
+    $rtn['customerId'] = $order->getCustomerId();
+    $rtn['locationId'] = $order->getLocationId();
+    $rtn['referenceId'] = $order->getReferenceId();
+    return $rtn;
+}
+
 // stub for cancel order
 function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
     $rtn['order'] = $orderId;
