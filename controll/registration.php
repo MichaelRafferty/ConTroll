@@ -64,6 +64,8 @@ if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = 0;
 }
 $currency = getConfValue('con', 'currency', 'USD');
+$cashRounding = getConfValue('con', 'cashrounding',1);
+
 $locale = getLocale();
 $policies = getPolicies();
 $policyIndex = array();
@@ -94,6 +96,7 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['source'] = 'registration';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['cashRounding'] = $cashRounding;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['creditoffline'] = getConfValue('controll', 'creditoffline', 1);
