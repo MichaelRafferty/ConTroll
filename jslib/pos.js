@@ -2070,7 +2070,7 @@ class Pos {
             ajax_request_action: 'updateCartElements',
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             user_id: this.#user_id,
-            source: config['source'],
+            source: config.source,
         };
         let _this = this;
         clear_message();
@@ -2249,6 +2249,7 @@ class Pos {
 
 // setPayType: shows/hides the appropriate fields for that payment type
     setPayType(ptype) {
+        clear_message();
         let elcheckno = document.getElementById('pay-check-div');
         let elccauth = document.getElementById('pay-ccauth-div');
         let elonline = document.getElementById('pay-online-div');
@@ -2310,9 +2311,8 @@ class Pos {
                 this.#payAmtDue.innerHTML = '<b>' + this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + '</b>';
 
                 if (this.#cashAmountRounded != 0) {
-                    // add call to round order here
-                    // check that rounding adjustment is not 0 and display rounding line
                     this.#payTypeRounded = true;
+                    this.#roundOrder(this.#pay_currentOrderId, this.#cashAmountRounded);
                 } else {
                     this.#payTypeRounded = false;
                 }
@@ -2323,14 +2323,48 @@ class Pos {
                 this.#cashRoundDue.innerHTML = this.#currencyFmt.format(Number(this.#cashAmountRounded).toFixed(2));
                 this.#cashRoundDiv.hidden = this.#cashAmountRounded == 0;
                 this.#payAmtDue.innerHTML = '<b>' + this.#currencyFmt.format(Number(this.#totalAmountDue).toFixed(2)) + '</b>';
-                // add call to round order here for 0 round
                 this.#payTypeRounded = false;
+                this.#roundOrder(this.#pay_currentOrderId, this.#cashAmountRounded);
             }
         } else {
             this.#cashAmountRounded = 0;
             this.#cashRoundDiv.hidden = true;
             this.#payTypeRounded = false;
         }
+    }
+
+    #roundOrder(orderId, roundAmount) {
+        let _this = this;
+        let postData = {
+            ajax_request_action: 'roundOrder',
+            orderId: orderId,
+            roundAmount: roundAmount,
+            pay_tid: this.#pay_tid,
+        };
+
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_roundOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                } else if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                }
+                checkRefresh(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
     }
 
     onlineCCEntered(token) {
@@ -2951,7 +2985,7 @@ class Pos {
                 regs: regs,
                 user_id: this.#user_id,
                 tid: this.#pay_tid,
-                source: config['source'],
+                source: config.source,
             };
             clear_message();
             $.ajax({
