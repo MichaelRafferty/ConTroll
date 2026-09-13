@@ -50,6 +50,7 @@ if (array_key_exists('taxLabel', $con)) {
     $taxUid = '';
 }
 $currency = getConfValue('con', 'currency', 'USD');
+$cashRounding = getConfValue('con', 'cashrounding', 1);
 $locale = getLocale();
 
 $regionQ = <<<EOS
@@ -108,6 +109,7 @@ else
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['cashRounding'] = $cashRounding;
 load_cc_procs();
 $config_vars['ccCurrency'] = cc_getCurrency();
 $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);

@@ -52,6 +52,7 @@ class Pos {
     #payPostData = null;
     #paymentElementDiv = null;
     #payOldText = 'Confirm Pay';
+    #payTypeRounds = false;
     // Data Items
     #unpaid_table = [];
     #result_perinfo = [];

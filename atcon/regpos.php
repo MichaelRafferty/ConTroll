@@ -74,6 +74,8 @@ if ($policies != null) {
 }
 $useUSPS = false;
 $currency = getConfValue('con', 'currency', 'USD');
+$cashRounding = getConfValue('con', 'cashrounding', 1);
+
 $locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
@@ -99,6 +101,7 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['cashRounding'] = $cashRounding;
 load_cc_procs();
 $config_vars['ccCurrency'] = cc_getCurrency();
 $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
