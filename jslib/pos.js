@@ -2333,6 +2333,7 @@ class Pos {
         }
     }
 
+    // make a call to the cc provider to add the appropriate rounding adjustment, being it to add or remove the rounding
     #roundOrder(orderId, roundAmount) {
         let _this = this;
         let postData = {
