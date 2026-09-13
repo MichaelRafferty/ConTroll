@@ -861,7 +861,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     return $rtn;
 }
 
-// build the order, pass it to square and get the order id
+// update the order for a new round amount, based on the change in selected payment type
 function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = null) : array {
     $source = 'cc_roundOrder';
     $squareDebug = getConfValue('debug', 'square', 0);
