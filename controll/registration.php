@@ -64,7 +64,7 @@ if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = 0;
 }
 $currency = getConfValue('con', 'currency', 'USD');
-$cashRounding = getConfValue('con', 'cashrounding',1);
+$cashRounding = getConfValue('con', 'cashRounding',1);
 
 $locale = getLocale();
 $policies = getPolicies();
