@@ -2335,6 +2335,8 @@ class Pos {
 
     // make a call to the cc provider to add the appropriate rounding adjustment, being it to add or remove the rounding
     #roundOrder(orderId, roundAmount) {
+        if (config.cctype == 'square')
+            return;
         let _this = this;
         let postData = {
             ajax_request_action: 'roundOrder',
