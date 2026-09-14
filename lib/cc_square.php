@@ -846,7 +846,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
-    $rtn['version'] = $order->getOrderVersion();
+    $rtn['version'] = $order->getVersion();
     $rtn['ccType'] = 'square';
     $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
@@ -869,7 +869,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $currencyMultiplier = get_currencyMultiplier($currency);
 
     $oldOrder = cc_fetchOrder($source, $orderId, $useLogWrite);
-    $version = $oldOrder->getOrderVersion();
+    $version = $oldOrder->getVersion();
     $locationId = $oldOrder->getLocationId();
 
     if ($roundAmt == 0) {
@@ -942,7 +942,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
-    $rtn['version'] = $order->getOrderVersion();
+    $rtn['version'] = $order->getVersion();
     $rtn['ccType'] = 'square';
     $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
@@ -988,7 +988,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
-          $rtn['version'] = $order->getOrderVersion();
+          $rtn['version'] = $order->getVersion();
       }
       catch (SquareApiException $e) {
           sqcc_logException($source, $e, 'Order API update order Exception', 'Order cancel failed', $useLogWrite, false);
