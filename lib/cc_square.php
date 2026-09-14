@@ -176,6 +176,7 @@ EOS;
 
 use Square\Environments;
 use Square\SquareClient;
+use Square\Orders\Requests\UpdateOrderRequest;
 use Square\Exceptions\SquareApiException;
 use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Types\Currency;
@@ -183,6 +184,7 @@ use Square\Types\Money;
 use Square\Types\CreateOrderRequest;
 use Square\Types\Order;
 use Square\Types\OrderSource;
+use Square\Types\OrderServiceCharge;
 use Square\Types\OrderLineItem;
 use Square\Types\OrderLineItemItemType;
 use Square\Types\OrderLineItemDiscount;
@@ -868,7 +870,8 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $currency = cc_getCurrency();
     $currencyMultiplier = get_currencyMultiplier($currency);
 
-    $oldOrder = cc_fetchOrder($source, $orderId, $useLogWrite);
+    $fetchRtn = cc_fetchOrder($source, $orderId, $useLogWrite);
+    $oldOrder = $fetchRtn['order'];
     $version = $oldOrder->getVersion();
     $locationId = $oldOrder->getLocationId();
 
@@ -876,23 +879,29 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
         $order = new Order([
             'locationId' => $locationId,
             'version' => $version,
-            'fields_to_clear' => ['rounding_adjustment']
+            'fields_to_clear' => ['service_charge']
         ]);
     } else {
         $order = new Order([
-            'orderId' => $orderId,
             'locationId' => $locationId,
             'version' => $version,
-            'rounding_adjustment' => new Money([
-                'amount' => round($roundAmt * $currencyMultiplier),
-                'currency' => $currency,
-            ])
+            'serviceCharges' => array(new OrderServiceCharge([
+                'uid' => 'cashRound',
+                'name' => 'Cash Rounding Adjustment',
+                'amountMoney' => new Money([
+                    'amount' => round($roundAmt * $currencyMultiplier),
+                    'currency' => $currency,
+                    ]),
+                'calculationPhase' => 'TOTAL_PHASE',
+                'taxable' => false,
+                ])),
         ]);
     }
 
     // build the order request from it's parts
     $body = new UpdateOrderRequest([
         'idempotencyKey' => guidv4(),
+        'orderId' => $orderId,
         'order' => $order,
     ]);
 
