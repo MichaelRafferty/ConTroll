@@ -2473,7 +2473,8 @@ class Pos {
         let ptype = null;
         let crow = null;
         let cprow = null;
-        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) + Number(this.#cashAmountRounded) -
+            (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
 
@@ -2527,6 +2528,15 @@ class Pos {
             if (pt_cash) {
                 let eltenderedamt = document.getElementById('pay-tendered');
                 tendered_amt = Number(eltenderedamt.value);
+                if (this.#cashRounding > 1) {
+                    let cash = tendered_amt * currencyMultiplier;
+                    if (cash % this.#cashRounding != 0) {
+                        show_message("Cash amount must be a multiple of " + this.#currencyFmt.format(
+                            this.#cashRounding / currencyMultiplier), 'warn');
+                        eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                        return;
+                    }
+                }
                 if (tendered_amt + 0.004 < this.#totalAmountDue) {
                     show_message("Cannot pay less than the amount due.",'warn');
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
@@ -2704,6 +2714,7 @@ class Pos {
             pay_tid_amt: this.#pay_tid_amt,
             preTaxAmt: this.#preTaxAmt,
             taxAmt: this.#taxAmt,
+            cashRound: this.#cashAmountRounded,
             totalAmtDue: this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             override: this.#payOverride,
