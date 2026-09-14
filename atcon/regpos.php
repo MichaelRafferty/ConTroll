@@ -110,6 +110,7 @@ $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
 $config_vars['showCartDescription'] = getConfValue('atcon', 'showCartDescription', 0);
 $config_vars['showCartDate'] = 0;
+$config_vars['cctype'] = getConfValue('cc', 'type', 'test')
 $useUSPS = false;
 // compute the placeholder value
 $searchTransactionId = getConfValue('atcon', 'searchTransactionId', 2);
