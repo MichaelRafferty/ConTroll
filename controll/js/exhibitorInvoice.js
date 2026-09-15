@@ -387,41 +387,6 @@ class ExhibitorInvoice {
         this.payValidate();
     }
 
-    buildOrder() {
-        let submitId = document.getElementById('total_with_tax_btn');
-        submitId.disabled = true;
-        let formData = $('#vendor_invoice_form').serialize()
-        clear_message('inv_result_message');
-        let _this = this;
-        $.ajax({
-            url: 'scripts/exhoibitorsSpaceOrder.php',
-            method: 'POST',
-            data: formData,
-            success: function (data, textStatus, jqXhr) {
-                if (config['debug'] & 1)
-                    console.log(data);
-                if (data['error']) {
-                    show_message(data['error'], 'error', 'inv_result_message');
-                    submitId.disabled = false;
-                } else if (data['status'] == 'error') {
-                    show_message(data['data'], 'error', 'inv_result_message');
-                    submitId.disabled = false;
-                } else if (data['status'] == 'success') {
-                    _this.getPaymentInfo(data);
-                    return;
-                } else {
-                    show_message('There was an unexpected error, please seek Assistance.', 'error', 'inv_result_message');
-                    submitId.disabled = false;
-                }
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
-                exhibitorInvoice.enablePayButton();
-                return false;
-            }
-        });
-    }
-
     getPaymentInfo(data) {
         if (config['debug'] & 1)
             console.log(data);
@@ -554,7 +519,7 @@ class ExhibitorInvoice {
     }
 
     // process payment
-    buildOrder() {
+    buildOrder(override = false) {
         this.#payButton.disabled = true;
         this.#overrideButton.disabled = true;
         let formArr = $('#vendor_invoice_form').serializeArray();
@@ -567,6 +532,7 @@ class ExhibitorInvoice {
         formData.portalType = this.#portalType;
         formData.exhibitorId = this.#exhibitorId;
         formData.exhibitorYearId = this.#exhibitorYearId;
+        formData.override = override ? 1 : 0;
 
         if (this.#currentOrderId) {
             formData.cancelOrderId = this.#currentOrderId;
