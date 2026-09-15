@@ -91,6 +91,11 @@ if (array_key_exists('salesTaxId', $_POST)) {
 } else
     $salesTaxId = null;
 
+if (array_key_exists('override', $_POST))
+    $override = $_POST['override'] == 1;
+else
+    $override = false;
+
 $exhId = $_POST['exhibitorId'];
 $eyID = $_POST['exhibitorYearId'];
 $source = 'controll-exhibitor';
@@ -209,14 +214,16 @@ $membership_fields = array('fname' => $required != '', 'mname' => false, 'lname'
                            'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
                            'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
                            'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
-                           'email' => true, 'phone' => false, 'badge_name' => false, 'badgeNameL2' =>  false);
+                           'email' => true, 'phone' => false, 'badge_name' => false, 'badgeNameL2' =>  false,  'age' => 1);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalName' => 'Legal Name',
                           'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province',
                           'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
-                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
+                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2',
+                          'age' => 'Age');
 
 $missing_msg = '';
 $valid = true;
+$formIssues = false;
 $allrequired = true;
 $notfound = array();
 $email_addresses = [];
@@ -227,11 +234,11 @@ $includedMemberships = 0;
 for ($num = 0; $num < $includedMembershipsMax; $num++) {
     $fname = '';
     $lname = '';
-    if (array_key_exists('fname_i_' . $num, $_POST))
-        $fname = $_POST['fname_i_' . $num];
+    if (array_key_exists('i_' . $num . '_fname', $_POST))
+        $fname = $_POST['i_' . $num . '_fname'];
 
-    if (array_key_exists('lname_i_' . $num, $_POST))
-        $lname = $_POST['lname_i_' . $num];
+    if (array_key_exists('i_' . $num . '_lname', $_POST))
+        $lname = $_POST['i_' . $num . '_lname'];
 
     if ($fname == '' && $lname == '')
         continue;
@@ -243,7 +250,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         if ($field == 'country')
             continue; // it's a pulldown, so it's always found and messes up required checks.
 
-        $postfield = $field . '_i_' . $num;
+        $postfield = 'i_' . $num . '_' . $field;
         if (array_key_exists($postfield, $_POST)) {
             $val = trim($_POST[$postfield]);
         } else {
@@ -265,15 +272,15 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
     }
 
     // for this included membership, must be either all or none found
-    $includedMembershipStatus[$num] = $allrequired && !$nonefound;
-    if ($nonefound || $allrequired) { // both of these are valid cases
-        if ($allrequired)
+    $includedMembershipStatus[$num] = ($allrequired || $override) && !$nonefound;
+    if ($nonefound || ($allrequired || $override)) { // both of these are valid cases
+        if ($allrequired || $override)
             $includedMemberships++;
         continue;
     }
     // some required data is missing
     $missing_msg .= "Included Membership " . $num + 1 . " is missing " . implode(',', $notfound) . "<br/>\n";
-    $valid = false;
+    $formIssues = true;
 }
 
 $totprice = $spacePrice;
@@ -282,11 +289,11 @@ $additionalMemberships = 0;
 for ($num = 0; $num < $additionalMembershipsMax; $num++) {
     $fname = '';
     $lname = '';
-    if (array_key_exists('fname_a_' . $num, $_POST))
-        $fname = $_POST['fname_a_' . $num];
+    if (array_key_exists('a_' . $num . '_fname', $_POST))
+        $fname = $_POST['a_' . $num . '_fname'];
 
-    if (array_key_exists('lname_a_' . $num, $_POST))
-        $lname = $_POST['lname_a_' . $num];
+    if (array_key_exists('a_' . $num . '_lname', $_POST))
+        $lname = $_POST['a_' . $num . '_lname'];
 
     if ($fname == '' && $lname == '')
         continue;
@@ -298,13 +305,13 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         if ($field == 'country')
             continue; // it's a pulldown, so it's always found and messes up required checks.
 
-        $postfield = $field . '_a_' . $num;
+        $postfield = 'a_' . $num . '_' . $field;
         if (array_key_exists($postfield, $_POST)) {
             $val = trim($_POST[$postfield]);
         } else {
             $val = '';
         }
-        if ($val != '' && ($field == 'fnme' || $field == 'lname')) {
+        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
@@ -315,15 +322,15 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
     }
 
     // for this included membership, must be either all or none found
-    $additionalMembershipStatus[$num] = $allrequired && !$nonefound;
-    if ($nonefound || $allrequired) {  // both of these are valid cases
-        if ($allrequired) {
+    $additionalMembershipStatus[$num] = ($allrequired || $override) && !$nonefound;
+    if ($nonefound || ($allrequired || $override)) {  // both of these are valid cases
+        if ($allrequired || $override) {
             $totprice += $region['additionalPrice'];
             $additionalMemberships++;
         } else {
             // some required data is missing
             $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
-            $valid = false;
+            $formIssues = true;
         }
     }
 }
@@ -333,7 +340,7 @@ $invalidEmail_msg = '';
 foreach ($email_addresses AS $email => $where) {
     if (array_key_exists($email, $_POST)) {
         $val = trim($_POST[$email]);
-        if ($val != '') {
+        if ($val != '' && $val != '/r') {
             if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
                 $invalidEmail_msg .= $where . " is not in the format of a valid email address<br/>\n";
                 $valid = false;
@@ -348,6 +355,9 @@ if ($additionalMembershipsMax > 0 || $includedMembershipsMax > 0) {
         $valid = false;
     }
 }
+
+if ($formIssues && ($override == false))
+    $valid = false;
 
 if (!$valid) {
     $response['error'] = "There were some issues with the data on the form.<br/>Please correct and re-submit.<br/><br/>$missing_msg\n$invalidEmail_msg\n";
@@ -367,7 +377,7 @@ $managedByNew = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
         $badge = buildBadge($authToken, $membership_fields, 'i', $i, $region, $conid, $transid, $portalName, $managedByNew);
-        if ($managedByNew == null)
+        if ($managedByNew === null)
             $managedByNew = $badge['newperid'];
         $transid = $badge['transid'];
         $status_msg .= $badge['status'];
@@ -378,7 +388,7 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
         $badge = buildBadge($authToken, $membership_fields, 'a', $i, $region, $conid, $transid, $portalName, $managedByNew);
-        if ($managedByNew == null)
+        if ($managedByNew === null)
             $managedByNew = $badge['newperid'];
         $transid = $badge['transid'];
         $badges[] = $badge;
@@ -460,7 +470,7 @@ if ($totprice > 0) {
     load_cc_procs();
 // for cash/check/etc build the order so it can be recorded
     $orderRtn = cc_buildOrder($results, true, $ccLocation);
-    if ($orderRtn == null) {
+    if ($orderRtn === null) {
 // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanupRegs($badgeResults);
@@ -520,7 +530,7 @@ return;
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
 function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transid, $portalName, $managedByNew) {
     $badge = array();
-    $suffix = '_' . $type . '_' . $index;
+    $prefix = $type . '_' . $index . '_';
     if ($type == 'i') {
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
@@ -532,9 +542,8 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
     }
 
     foreach ($fields as $field => $required) {
-        $badge[$field] = trim($_POST[$field . $suffix]);
+        $badge[$field] = trim($_POST[$prefix . $field]);
     }
-    $badge['age'] = 'all';
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
     $badge['contact'] = 'Y';
@@ -544,12 +553,12 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
     $badge['index'] = $index + 1;
 
     $legalName = $badge['legalName'];
-    if ($legalName == null || $legalName == '') {
+    if ($legalName === null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
-    if ($badge['currentAgeType'] == null || $badge['currentAgeType'] == '') {
-        $currentAgeType = $badge['currentAgeType'];
+    if ($badge['age'] === null || $badge['age'] == '') {
+        $currentAgeType = $badge['age'];
         $currentAgeConId = $conid;
     } else {
         $currentAgeType = null;
@@ -576,7 +585,7 @@ EOS;
 
     $badge['newperid'] = $newid;
     // if no tranasction yet, insert one
-    if ($transid == null) {
+    if ($transid === null) {
         $transQ = <<<EOS
 INSERT INTO transaction(newperid,  price, tax, withtax, type, conid, userid)
     VALUES(?, ?, ?, ?, ?, ?, ?);

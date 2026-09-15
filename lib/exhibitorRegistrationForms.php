@@ -212,7 +212,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                             <div class='row mt-1' id="exhProfileTaxIdRow">
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                    <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
                                     <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -725,7 +725,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                            <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                         </div>
                                         <div class="col-sm-10 p-0">
                                             <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
