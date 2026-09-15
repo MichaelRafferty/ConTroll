@@ -71,6 +71,8 @@ class Profile {
         this.#zipField = document.getElementById(prefix + "zip");
         this.#countryField = document.getElementById(prefix + "country");
         this.#email1Field = document.getElementById(prefix + "email1");
+        if (this.#email1Field == null)
+            this.#email1Field = document.getElementById(prefix + "email");
         this.#email2Field = document.getElementById(prefix + "email2");
         this.#phoneField = document.getElementById(prefix + "phone");
         this.#badgenameField = document.getElementById(prefix + "badge_name");

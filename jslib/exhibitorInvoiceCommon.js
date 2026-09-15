@@ -230,7 +230,7 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + additionalMemberships + ")</strong>" +
             "<input type='hidden' name='additionalMemberships' value='" + String(additionalMemberships) + "'></div></div>";
         for (mnum = 0; mnum < additionalMemberships; mnum++) {
-            // name fields includeing legal name
+            // name fields including legal name
             html += drawExhibitorMembershipBlock('Additional', mnum, 'a_' + mnum + '_', country_options, regionYearId, tabindex, true,
                 doTerms ? '' : 'exhibitorInvoice.');
             tabindex += 100;
@@ -384,7 +384,7 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
                 <div class="col-sm-auto ms-0 me-2 p-0">
                     <label for="` + prefix + `email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
                         reqFirstStar + `Email</span></label><br/>
-                    <input class="form-control-sm" type="email" name="` + prefix + 'email1" id="' + prefix + 'email1" size="35" maxlength="254"' +
+                    <input class="form-control-sm" type="email" name="` + prefix + 'email" id="' + prefix + 'email" size="35" maxlength="254"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;

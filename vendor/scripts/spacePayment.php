@@ -67,10 +67,10 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 
 $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0,
     'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1, 'country' => 1,
-    'email1' => 1, 'phone' => 0, 'badge_name' => 0, 'badgeNameL2' =>  0, 'age' => 1);
+    'email' => 1, 'phone' => 0, 'badge_name' => 0, 'badgeNameL2' =>  0, 'age' => 1);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalName' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province', 'zip' => 'Zip Code/Postal Code',
-    'country' => 'Country', 'email1' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2',
+    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2',
     'age' => 'Age');
 
 if ($required == 'addr') {
@@ -461,7 +461,7 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email1'], $badge['phone'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'],
         $badge['contact'], $badge['share'], $badge['age'], $conid, $managedByNew);

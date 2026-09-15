@@ -103,7 +103,7 @@ Contact email: $contactEmail
 $description
 <hr>
 <p>Their website is $websiteURL.<p>
-<p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
+<p>Please followup with $contactName at <a href="mailto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
 <p>Respectfully submitted,<br/>$portalName Portal</p>
 EOS;
 
@@ -196,7 +196,7 @@ $description
 <hr>
 <p>Their website is $websiteURL.<p>
 <p>$spacesHtml</p>
-<p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
+<p>Please followup with $contactName at <a href="mailto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
 <p>Respectfully submitted,<br/>$portalName Portal</p>
 EOS;
 
