@@ -365,6 +365,7 @@ if ($amt > 0) {
                 'source' => $source,
                 'change' => $change,
                 'locationId' => $locationId,
+                'cashAmountRounded' =>$cashAmountRounded,
             );
 
             //log requested badges

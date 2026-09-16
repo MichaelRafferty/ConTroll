@@ -2727,7 +2727,6 @@ class Pos {
             poll: this.#payPoll,
             drow: this.#drow,
             discountAmt: this.#managerDiscount,
-            roundingAdjustment: this.#cashAmountRounded,
         };
         this.#payOverride = 0;
         this.#pay_button_pay.disabled = true;
