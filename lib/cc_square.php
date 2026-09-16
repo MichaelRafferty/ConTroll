@@ -177,6 +177,7 @@ EOS;
 use Square\Environments;
 use Square\SquareClient;
 use Square\Orders\Requests\UpdateOrderRequest;
+use Square\Orders\Requests\PayOrderRequest;
 use Square\Exceptions\SquareApiException;
 use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Types\Currency;
@@ -1074,6 +1075,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $currency = cc_getCurrency();
     $currencyMultiplier = get_currencyMultiplier($currency);
     $squareDebug = getConfValue('debug', 'square', 0);
+    $client = null;
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -1109,18 +1111,21 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
+    $paymentIds = [];
+    $autoComplete = true;
 
     // first pay the rounding adjustment if the order type is cash and its a round down
-    if ($sourceId == 'CASH' && array_key_exists('cashAmountRounded', $ccParams) && $ccParams('cashAmountRounded') < 0) {
+    if ($sourceId == 'CASH' && array_key_exists('cashAmountRounded', $ccParams) && $ccParams['cashAmountRounded'] < 0) {
+        $autoComplete = false;
         $pbodyArgs = array(
             'idempotencyKey' => guidv4(),
-            'sourceId' => $sourceId,
+            'sourceId' => 'EXTERNAL',
             'amountMoney' => new Money([
                 'amount' => round(-$ccParams['cashAmountRounded'] * $currencyMultiplier),
                 'currency' => $currency,
             ]),
             'orderId' => $ccParams['orderId'],
-            'autocomplete' => false,
+            'autocomplete' => $autoComplete,
             'locationId' => $ccParams['locationId'],
             'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-cr-' . time(),
             'note' => "$source Cash Rounding Adjustment",
@@ -1138,18 +1143,21 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ]);
         $pbody = new CreatePaymentRequest($pbodyArgs);
 
-        $client = new SquareClient(
-            token: getConfValue('cc', 'token'),
-            options: [
-                'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
-                    Environments::Production->value : Environments::Sandbox->value,
-            ]);
+        if ($client === null) {
+            $client = new SquareClient(
+                token: getConfValue('cc', 'token'),
+                options: [
+                    'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                        Environments::Production->value : Environments::Sandbox->value,
+                ]);
+        }
 
         try {
             if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $useLogWrite);
             $apiResponse = $client->payments->create($pbody);
             $payment = $apiResponse->getPayment();
             if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
+            $paymentIds[] = $payment->getId();
         }
         catch (SquareApiException $e) {
             web_error_log('Payment Square API Exception: ' . $e->getMessage());
@@ -1191,7 +1199,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'currency' => $currency,
             ]),
         'orderId' => $ccParams['orderId'],
-        'autocomplete' => true,
+        'autocomplete' => $autoComplete,
         'locationId' => $ccParams['locationId'],
         'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-' . time(),
         'note' => "$source payment from " . $ccParams['source'],
@@ -1234,18 +1242,21 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
 
-    $client = new SquareClient(
-        token: getConfValue('cc', 'token'),
-        options: [
-            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
-                Environments::Production->value : Environments::Sandbox->value,
-    ]);
+    if ($client === null) {
+        $client = new SquareClient(
+            token: getConfValue('cc', 'token'),
+            options: [
+                'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                    Environments::Production->value : Environments::Sandbox->value,
+            ]);
+    }
 
     try {
-        if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $pbody, $useLogWrite);
         $apiResponse = $client->payments->create($pbody);
         $payment = $apiResponse->getPayment();
         if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
+        $paymentIds[] = $payment->getId();
     }
     catch (SquareApiException $e) {
         web_error_log('Payment Square API Exception: ' . $e->getMessage());
@@ -1326,6 +1337,54 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     } else {
         $category = 'reg';
     }
+
+    // now if autocomplete wasnt set, do a pay order call
+
+    if (!$autoComplete) {
+        $payRequest = new PayOrderRequest([
+            'idempotencyKey' => guidv4(),
+            'orderId' => $ccParams['orderId'],
+            'paymentIds' => $paymentIds,
+        ]);
+
+        try {
+            if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API order payment request', $payRequest, $useLogWrite);
+            $apiResponse = $client->payments->create($pbody);
+            $payResponse = $apiResponse->getPayment();
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $payResponse, $useLogWrite);
+        }
+        catch (SquareApiException $e) {
+            web_error_log('Payment Square API Exception: ' . $e->getMessage());
+            $ebody = json_decode($e->getBody(),true);
+            $errors = $ebody['errors'];
+            if ($errors) {
+                if ($squareDebug) sqcc_logObject('cc_square/payrequest returned non-success-errors', $errors, $useLogWrite);
+                foreach ($errors as $error) {
+                    $cat = $error['category'];
+                    $code = $error['code'];
+                    $detail = $error['detail'];
+                    if ($useLogWrite) {
+                        logWrite('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    }
+                    web_error_log('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    $msg = $code;
+                    if ($useLogWrite) {
+                        logWrite('Square pay request error for ' . $ccParams['transid'] . " of $msg");
+                    }
+                    web_error_log('Square pay request error for ' . $ccParams['transid'] . " of $msg");
+                    ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg", 'restoreBtn' => 1,));
+                    exit();
+                }
+            }
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
+            exit();
+        }
+        catch (Exception $e) {
+            sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
+        }
+    }
+
+    //
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',

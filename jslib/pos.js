@@ -680,6 +680,7 @@ class Pos {
         // clear the credit card stuff
         this.#ccNonce = null;
         this.#ccOnlineStarted = false;
+        this.#cashAmountRounded = 0;
         // clear the coupon
         coupon = null;
         coupon = new Coupon();
