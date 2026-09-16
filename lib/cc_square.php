@@ -874,6 +874,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $oldOrder = $fetchRtn['order'];
     $version = $oldOrder->getVersion();
     $locationId = $oldOrder->getLocationId();
+    $order = null;
 
     if ($roundAmt == 0) {
         $order = new Order([
@@ -898,65 +899,70 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
         ]);
     }
 
-    // build the order request from it's parts
-    $body = new UpdateOrderRequest([
-        'idempotencyKey' => guidv4(),
-        'orderId' => $orderId,
-        'order' => $order,
-    ]);
-
-    $client = new SquareClient(
-        token: getConfValue('cc', 'token'),
-        options: [
-            'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
-                Environments::Production->value : Environments::Sandbox->value,
+    if ($order) {
+        // build the order request from it's parts
+        $body = new UpdateOrderRequest([
+            'idempotencyKey' => guidv4(),
+            'orderId' => $orderId,
+            'order' => $order,
         ]);
 
-    // pass order to square and get order id
+        $client = new SquareClient(
+            token: getConfValue('cc', 'token'),
+            options: [
+                'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                    Environments::Production->value : Environments::Sandbox->value,
+            ]);
 
-    try {
-        if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order update-body', $body, $useLogWrite);
-        $apiResponse = $client->orders->update($body);
-        $order = $apiResponse->getOrder();
-        $phpOrder = json_decode(json_encode($order), true);
-        if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $order, $useLogWrite);
-    }
-    catch (SquareApiException $e) {
-        sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
-    }
-    catch (Exception $e) {
-        sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
-    }
+        // pass order to square and get order id
 
-    // TODO need to determine what other items we need returned in rtn
-    $rtn = array();
-    // need to pass back order id, total_amount
-    $rtn['order'] = $order;
-    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
-    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
-    // build the return array of taxes applied to the order
-    $rtnTaxes = [];
-    if ($rtn['taxAmt'] > 0) {
-        $taxAmounts = $order->getTaxes();
-        foreach ($taxAmounts as $tax) {
-            $uid = $tax->getUid();
-            $app = $tax->getAppliedMoney();
-            $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+        try {
+            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order update-body', $body, $useLogWrite);
+            $apiResponse = $client->orders->update($body);
+            $order = $apiResponse->getOrder();
+            $phpOrder = json_decode(json_encode($order), true);
+            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $order, $useLogWrite);
         }
-    }
+        catch (SquareApiException $e) {
+            sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+        }
+        catch (Exception $e) {
+            sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
+        }
 
-    $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
-    $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
-    // load into the main rtn the items pay order needs directly
-    $rtn['orderId'] = $order->getId();
-    $rtn['version'] = $order->getVersion();
-    $rtn['ccType'] = 'square';
-    $rtn['source'] = $source;
-    $rtn['customerId'] = $order->getCustomerId();
-    $rtn['locationId'] = $order->getLocationId();
-    $rtn['referenceId'] = $order->getReferenceId();
+        // TODO need to determine what other items we need returned in rtn
+        $rtn = array ();
+        // need to pass back order id, total_amount
+        $rtn['order'] = $order;
+        $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
+        $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+        // build the return array of taxes applied to the order
+        $rtnTaxes = [];
+        if ($rtn['taxAmt'] > 0) {
+            $taxAmounts = $order->getTaxes();
+            foreach ($taxAmounts as $tax) {
+                $uid = $tax->getUid();
+                $app = $tax->getAppliedMoney();
+                $amt = $app->getAmount();
+                $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+            }
+        }
+
+        $rtn['taxes'] = $rtnTaxes;
+        $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+        $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
+        // load into the main rtn the items pay order needs directly
+        $rtn['orderId'] = $order->getId();
+        $rtn['version'] = $order->getVersion();
+        $rtn['ccType'] = 'square';
+        $rtn['source'] = $source;
+        $rtn['customerId'] = $order->getCustomerId();
+        $rtn['locationId'] = $order->getLocationId();
+        $rtn['referenceId'] = $order->getReferenceId();
+        $rtn['orderChanged'] = 1;
+    } else {
+        $rtn['orderChanged'] = 0;
+    }
     return $rtn;
 }
 
