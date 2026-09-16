@@ -881,7 +881,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
             'version' => $version,
             'fields_to_clear' => ['service_charge']
         ]);
-    } else {
+    } else if ($roundAmt > 0) {
         $order = new Order([
             'locationId' => $locationId,
             'version' => $version,

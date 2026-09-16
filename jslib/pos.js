@@ -2335,8 +2335,6 @@ class Pos {
 
     // make a call to the cc provider to add the appropriate rounding adjustment, being it to add or remove the rounding
     #roundOrder(orderId, roundAmount) {
-        if (config.cctype == 'square')
-            return;
         let _this = this;
         let postData = {
             ajax_request_action: 'roundOrder',
@@ -2532,7 +2530,7 @@ class Pos {
                 tendered_amt = Number(eltenderedamt.value);
                 if (this.#cashRounding > 1) {
                     let cash = tendered_amt * currencyMultiplier;
-                    if (cash % this.#cashRounding != 0) {
+                    if (Math.round(cash % this.#cashRounding) != 0) {
                         show_message("Cash amount must be a multiple of " + this.#currencyFmt.format(
                             this.#cashRounding / currencyMultiplier), 'warn');
                         eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
