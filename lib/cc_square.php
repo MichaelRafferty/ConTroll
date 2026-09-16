@@ -1349,8 +1349,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
         try {
             if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API order payment request', $payRequest, $useLogWrite);
-            $apiResponse = $client->payments->create($pbody);
-            $payResponse = $apiResponse->getPayment();
+            $apiResponse = $client->orders->pay($payRequest);
+            $payResponse = $apiResponse->getOrder();
             if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $payResponse, $useLogWrite);
         }
         catch (SquareApiException $e) {
