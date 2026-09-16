@@ -99,7 +99,7 @@ if (is_array($new_payment)) {
 }
 
 if (array_key_exists('cashRound', $_POST))
-    $cashAmountRounded = $_POST['cashRound'];
+    $cashAmountRounded = round($_POST['cashRound'], 2);
 else
     $cashAmountRounded = 0;
 
@@ -365,7 +365,7 @@ if ($amt > 0) {
                 'source' => $source,
                 'change' => $change,
                 'locationId' => $locationId,
-                'cashAmountRounded' =>$cashAmountRounded,
+                'cashAmountRounded' => $cashAmountRounded,
             );
 
             //log requested badges
