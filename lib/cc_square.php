@@ -1110,6 +1110,78 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
 
+    // first pay the rounding adjustment if the order type is cash and its a round down
+    if ($sourceId == 'CASH' && array_key_exists('cashAmountRounded', $ccParams) && $ccParams('cashAmountRounded') < 0) {
+        $pbodyArgs = array(
+            'idempotencyKey' => guidv4(),
+            'sourceId' => $sourceId,
+            'amountMoney' => new Money([
+                'amount' => round(-$ccParams['cashAmountRounded'] * $currencyMultiplier),
+                'currency' => $currency,
+            ]),
+            'orderId' => $ccParams['orderId'],
+            'autocomplete' => false,
+            'locationId' => $ccParams['locationId'],
+            'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-cr-' . time(),
+            'note' => "$source Cash Rounding Adjustment",
+        );
+        if ($buyer['email'] != '')
+            $pbodyArgs['buyerEmailAddress'] = $buyer['email'];
+        if ($buyer['phone'] != '') {
+            $phone = phoneNumberNormalize($buyer);
+            if ($phone != '')
+                $pbodyArgs['buyerPhoneNumber'] = $phone;
+        }
+        $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
+            'type' => 'OTHER',
+            'source' => 'Cash Rounding',
+        ]);
+        $pbody = new CreatePaymentRequest($pbodyArgs);
+
+        $client = new SquareClient(
+            token: getConfValue('cc', 'token'),
+            options: [
+                'baseUrl' => getConfValue('cc', 'env', 'unknown') == 'production' ?
+                    Environments::Production->value : Environments::Sandbox->value,
+            ]);
+
+        try {
+            if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $useLogWrite);
+            $apiResponse = $client->payments->create($pbody);
+            $payment = $apiResponse->getPayment();
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
+        }
+        catch (SquareApiException $e) {
+            web_error_log('Payment Square API Exception: ' . $e->getMessage());
+            $ebody = json_decode($e->getBody(),true);
+            $errors = $ebody['errors'];
+            if ($errors) {
+                if ($squareDebug) sqcc_logObject('cc_square/Payment returned non-success-errors', $errors, $useLogWrite);
+                foreach ($errors as $error) {
+                    $cat = $error['category'];
+                    $code = $error['code'];
+                    $detail = $error['detail'];
+                    if ($useLogWrite) {
+                        logWrite('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    }
+                    web_error_log('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    $msg = $code;
+                    if ($useLogWrite) {
+                        logWrite('Square cash adjustment payment error for ' . $ccParams['transid'] . " of $msg");
+                    }
+                    web_error_log('Square cash adjustment payment error for ' . $ccParams['transid'] . " of $msg");
+                    ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg", 'restoreBtn' => 1,));
+                    exit();
+                }
+            }
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
+            exit();
+        }
+        catch (Exception $e) {
+            sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
+        }
+    }
+
     // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
@@ -1207,9 +1279,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                         $msg = $code;
                 }
                 if ($useLogWrite) {
-                    logWrite('Square card payment error for ' . $ccParams['transid'] . " of $msg");
+                    logWrite('Square payment error for ' . $ccParams['transid'] . " of $msg");
                 }
-                web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
+                web_error_log('Square payment error for ' . $ccParams['transid'] . " of $msg");
 
                 if ($cleanUpRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
