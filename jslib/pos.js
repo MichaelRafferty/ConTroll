@@ -3468,6 +3468,8 @@ class Pos {
         this.#current_tab = this.#print_tab;
         this.newPrint = false;
         this.#printActive = true;
+        this.#pay_currentOrderId = null;
+        this.#cashAmountRounded = 0;
 
         if (this.#printedObj == null) {
             this.#newPrint = true;
