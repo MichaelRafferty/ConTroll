@@ -28,7 +28,6 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
 
 $con = get_conf('con');
 $conid = $con['id'];
-$ini = get_conf('reg');
 $log = get_conf('log');
 load_cc_procs();
 logInit($log['reg']);
