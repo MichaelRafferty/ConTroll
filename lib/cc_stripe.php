@@ -1047,7 +1047,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $sourceIdStr = $ccParams['nonce'];
     if (array_key_exists('change', $ccParams)) {
-        $change = $ccParams['change'];
+        $change = round($ccParams['change'], 2);
     } else {
         $change = 0;
     }
@@ -1190,13 +1190,19 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         // for cash and check, need to do a create of a payment record to record the payment, adding the payment intent data we can as metadata,
         // this will cancel the payment intent.
         $orderId = $ccParams['orderId'];
-
         $paymentIntent = cc_fetchOrder($source, $orderId, $useLogWrite);
         $metadata = $paymentIntent['metadata'];
         $custId = $paymentIntent['customer'];
         $sourceId = $ccParams['nonce'];
         if ($sourceId == 'CASH') {
             $paymentType = 'cash';
+            if (array_key_exists('cashAmountRounded', $ccParams)) {
+                $roundAmount = $ccParams['cashAmountRounded'];
+                $metadata['cashAmountRounded'] = round($roundAmount * $currencyMultiplier);
+            } else {
+                $roundAmount = 0;
+            }
+
         } else {
             $paymentType = $ccParams['externalType'];
         }
@@ -1260,7 +1266,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $paymentRecord = json_decode(json_encode($paymentRecord), true);
 
         // now if cash and change is > 0, note change as refunded amount
-        if ($sourceId == 'CASH' && $change > 0) {
+        if ($sourceId == 'CASH' && $change > 0.004) {
             $refundFields = [
                 'processor_details' => [
                     'type' => 'custom',
@@ -1406,7 +1412,7 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
 
     $sourceIdStr = $ccParams['nonce'];
     if (array_key_exists('change', $ccParams)) {
-        $change = $ccParams['change'];
+        $change = round($ccParams['change']);
     } else {
         $change = 0;
     }
