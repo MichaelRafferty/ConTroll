@@ -1981,7 +1981,7 @@ function paySuccess(data) {
     cart.updatePmt(data);
     total_art_due -= data.preTaxAmt;
     total_tax_due -= data.taxAmt;
-    total_amount_due -= data.approved_amt;
+    total_amount_due -= (data.approved_amt - data.cashAmountRounded);
     payShown();
 }
 
