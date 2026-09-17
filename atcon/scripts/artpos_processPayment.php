@@ -669,6 +669,7 @@ $response['type'] = $rtn['paymentType'];
 $response['preTaxAmt'] = $rtn['preTaxAmt'];
 $response['taxAmt'] = $rtn['taxAmt'];
 $response['cart_art'] = $cart_art;
+$response['cashAmountRounded'] = $cashAmountRounded;
 ajaxSuccess($response);
 
 function resetTerminalStatus($name) :void {
