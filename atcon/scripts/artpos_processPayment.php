@@ -119,7 +119,7 @@ if (array_key_exists('tax', $new_payment))
 else
     $taxAmt = 0;
 
-$offset = $amt - ($preTaxAmt + $taxAmt);
+$offset = $amt - ($preTaxAmt + $taxAmt + $cashAmountRounded);
 if (abs($offset) > 0.008) {
     error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
