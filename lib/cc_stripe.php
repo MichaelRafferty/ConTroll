@@ -952,6 +952,14 @@ EOS;
     return $rtn;
 }
 
+// update the order for a new round amount, based on the change in selected payment type
+// since all of cash is in the payment request, not the order (payment intent), we don't need to do anything here
+function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = null) : array {
+    $rtn = array ();
+    $rtn['orderChanged'] = 0;
+    return $rtn;
+}
+
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array | null {
     $stripeDebug = getConfValue('debug', 'square', 0);
