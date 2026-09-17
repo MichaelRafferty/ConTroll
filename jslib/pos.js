@@ -681,6 +681,7 @@ class Pos {
         this.#ccNonce = null;
         this.#ccOnlineStarted = false;
         this.#cashAmountRounded = 0;
+        this.#payTypeRounded = false;
         // clear the coupon
         coupon = null;
         coupon = new Coupon();
