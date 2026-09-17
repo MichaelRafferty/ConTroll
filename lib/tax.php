@@ -266,7 +266,7 @@ function computeTax($item) : array {
     $taxes['totalTax_base'] = 0;
     foreach ($item['taxes'] as $tax) {
         $taxField  = $tax['taxUid'];
-        $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 2);
+        $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 0);
         $taxes[$taxField] = $amt;
         $taxes[$taxField . '_base'] = $item['basePriceMoney'];
         $taxes['totalTax'] += $amt;

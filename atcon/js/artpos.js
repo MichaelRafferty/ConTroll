@@ -61,6 +61,13 @@ var currentCurrency = 'usd';
 var currencyMultiplier = 100;
 var payPostData = null;
 var paymentElementDiv = null;
+var cashAmountRounded = 0;
+var payAmtDue = null;
+var payTypeRounded = false;
+var cashRounding = 1;
+var cashRoundDiv = null;
+var cashRoundDue = null;
+var payOldText = "Confirm Pay";
 
 // release items
 var releaseModal = null;
@@ -114,6 +121,8 @@ window.onload = function initpage() {
     // current items
     currentCurrency = config.ccCurrency;
     currencyMultiplier = config.currencyMultiplier;
+    if(config.hasOwnProperty('cashRounding'))
+        cashRounding = config.cashRounding;
     locale = config.locale;
     currencyFmt = new Intl.NumberFormat(locale, {
         style: 'currency',
@@ -328,6 +337,11 @@ function startOver(reset_all) {
     pay_tid = null;
     pay_currentOrderId = null;
     pay_InitialCart = true;
+
+    // clear the credit card stuff
+    ccNonce = null;
+    cashAmountRounded = 0;
+    payTypeRounded = false;
 
     // set tab to find-tab
     if (current_tab != find_tab) {
@@ -1484,6 +1498,7 @@ function initArtSalesComplete(data) {
 
 // setPayType: shows/hides the appropriate fields for that payment type
 function setPayType(ptype) {
+    clear_message();
     let elcheckno = document.getElementById('pay-check-div');
     let elccauth = document.getElementById('pay-ccauth-div');
     let elcashtendered = document.getElementById('pay-cash-div');
@@ -1517,6 +1532,81 @@ function setPayType(ptype) {
         resetCCPay(paymentElementDiv);
         ccOnlineStarted = false;
     }
+    if (ptype == 'terminal') {
+        if (payOldText != 'Send to Termianl')
+            payOldText = pay_button_pay.textContent;
+        pay_button_pay.textContent = 'Send to Terminal';
+    } else {
+        pay_button_pay.textContent = payOldText;
+    }
+
+    // deal with cash rounding change
+    if (cashRounding > 1) {
+        if (!payTypeRounded && ptype == 'cash') {
+            // compute rounding adjustment
+            let oldTotal = display_amount_due * currencyMultiplier;
+            let roundedTotal = Math.round(oldTotal / cashRounding) * cashRounding;
+            cashAmountRounded = (roundedTotal - oldTotal) / currencyMultiplier;
+            cashRoundDue.innerHTML = currencyFmt.format(Number(cashAmountRounded).toFixed(2));
+            cashRoundDiv.hidden = cashAmountRounded == 0;
+            display_amount_due += cashAmountRounded;
+            payAmtDue.innerHTML = '<b>' + currencyFmt.format(Number(display_amount_due).toFixed(2)) + '</b>';
+
+            if (cashAmountRounded != 0) {
+                payTypeRounded = true;
+                roundOrder(pay_currentOrderId, cashAmountRounded);
+            } else {
+                payTypeRounded = false;
+            }
+        } else if (payTypeRounded) {
+            display_amount_due -= cashAmountRounded;
+            cashAmountRounded = 0;
+            // clear rounding adjustment
+            cashRoundDue.innerHTML = currencyFmt.format(Number(cashAmountRounded).toFixed(2));
+            cashRoundDiv.hidden = cashAmountRounded == 0;
+            payAmtDue.innerHTML = '<b>' + currencyFmt.format(Number(display_amount_due).toFixed(2)) + '</b>';
+            payTypeRounded = false;
+            roundOrder(pay_currentOrderId, cashAmountRounded);
+        }
+    } else {
+        cashAmountRounded = 0;
+        cashRoundDiv.hidden = true;
+        payTypeRounded = false;
+    }
+}
+
+// make a call to the cc provider to add the appropriate rounding adjustment, being it to add or remove the rounding
+function roundOrder(orderId, roundAmount) {
+    let postData = {
+        ajax_request_action: 'roundOrder',
+        orderId: orderId,
+        roundAmount: roundAmount,
+        pay_tid: pay_tid,
+    };
+
+    clear_message();
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_roundOrder.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (typeof data == 'string') {
+                show_message(data, 'error');
+            } else if (data.error !== undefined) {
+                show_message(data.error, 'error');
+            } else if (data.message !== undefined) {
+                show_message(data.message, 'success');
+            } else if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
+            } else if (data.status == 'error') {
+                show_message(data.data, 'error');
+            }
+            checkRefresh(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
 }
 
 function makePurchase(token, label) {
@@ -1533,7 +1623,7 @@ function makePurchase(token, label) {
 
     ccNonce = nonce;
     pay_button_pay.disabled = false;
-    this.pay('');
+    pay('');
 }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
@@ -1661,9 +1751,9 @@ function pay(nomodal, prow = null, nonce = null) {
                 return;
             }
 
-            if (amtTendered < total_amount_due) {
+            if (amtTendered < display_amount_due) {
                 show_message("Cannot pay less than total amount due of " +
-                    currencyFmt.format(total_amount_due.toFixed(2)), "error");
+                    currencyFmt.format(display_amount_due.toFixed(2)), "error");
                 return;
             }
         }
@@ -1776,7 +1866,8 @@ function pay(nomodal, prow = null, nonce = null) {
         poll: payPoll,
         preTaxAmt: total_art_due,
         taxAmt: total_tax_due,
-        totalAmtDue: total_amount_due,
+        totalAmtDue: display_amount_due,
+        cashRound: cashAmountRounded,
     };
     pay_button_pay.disabled = true;
     payPostData = postData;
@@ -1803,7 +1894,6 @@ function payActionComplete(paymentIntent, post, payParams) {
     let data = payPostData;
     data.ajax_request_action =  'paymentComplete';
     data.paymentIntent = paymentIntent;
-    let _this = this;
     clear_message('');
     clear_message('ccPayMessageDiv');
 
@@ -2132,10 +2222,15 @@ function drawPay(readWrite = true) {
     }
 
     payHtml += `
+    <div class="row mt-1" id="cash-round-amt-div" hidden>
+        <div class="col-sm-6 ms-0 me-2 p-0">Cash Rounding:</div>
+        <div class="col-sm-3 m-0 p-0 ms-0 me-2 p-0 text-end" id="cash-round-due">\` +
+                currencyFmt.format(Number(cashAmountRounded).toFixed(2)) + \`</div>
+    </div>
     <div class="row mt-1">
-        <div class="col-sm-6 m-0 p-0">Amount Due:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">` +
-        currencyFmt.format(Number(display_amount_due).toFixed(2)) + `</div>
+        <div class="col-sm-6 m-0 p-0"><b>Amount Due:</b></div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due"><b>` +
+        currencyFmt.format(Number(display_amount_due).toFixed(2)) + `</b></div>
     </div>
     </div>
     <div id="pay-div-pay"></div>
@@ -2246,6 +2341,9 @@ function drawPay(readWrite = true) {
     pay_button_pay = document.getElementById('card-button');
     pay_button_rcpt = document.getElementById('pay-btn-rcpt');
     pay_button_ercpt = document.getElementById('pay-btn-ercpt');
+    cashRoundDiv = document.getElementById("cash-round-amt-div");
+    cashRoundDue = document.getElementById("cash-round-due");
+    payAmtDue = document.getElementById("total-amt-due");
 }
 // show the pay tab, and its current dataset, if first call, update artSales in the database.
 function payShown(readWrite = true) {
@@ -2483,7 +2581,6 @@ function onExit() {
             requestId: payCurrentRequest,
             user_id: user_id,
         };
-        let _this = this;
         clear_message();
         clear_message('ccPayMessageDiv');
 
