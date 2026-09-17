@@ -50,6 +50,7 @@ $roundAmount = $_POST['roundAmount'];
 $orderId = $_POST['orderId'];
 $source = 'atcon';
 
+
 $rtn = cc_roundOrder($orderId, $roundAmount);
 if ($rtn == null) {
     // note there is no reason cc_roundOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
@@ -68,6 +69,6 @@ EOS;
 
 $rows_upd = dbSafeCmd($upT, 'di', array($roundAmount, $transId));
 
-labeled_logWrite('pos_roundOrder-return', array('con' => $con['label'], 'trans' => $transId, 'rtn' => $rtn));
+labeled_logWrite('artpos_roundOrder-return', array('con' => $con['label'], 'trans' => $transId, 'rtn' => $rtn));
 ajaxSuccess($response);
 return;
