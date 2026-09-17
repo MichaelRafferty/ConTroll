@@ -104,6 +104,11 @@ if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
 }
 $amt = (float) $new_payment['amt'];
 
+if (array_key_exists('cashRound', $_POST))
+    $cashAmountRounded = round($_POST['cashRound'], 2);
+else
+    $cashAmountRounded = 0;
+
 if (array_key_exists('pretax', $new_payment))
     $preTaxAmt = $new_payment['pretax'];
 else
@@ -309,6 +314,7 @@ if ($amt > 0) {
             'source' => $source,
             'change' => $change,
             'locationId' => $locationId,
+            'cashAmountRounded' => $cashAmountRounded,
         );
 
         //log requested payment
