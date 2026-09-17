@@ -876,6 +876,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $version = $oldOrder->getVersion();
     $locationId = $oldOrder->getLocationId();
     $order = null;
+    $rtn = array ();
 
     if ($roundAmt == 0) {
         $order = new Order([
@@ -932,7 +933,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
         }
 
         // TODO need to determine what other items we need returned in rtn
-        $rtn = array ();
+
         // need to pass back order id, total_amount
         $rtn['order'] = $order;
         $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
