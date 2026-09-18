@@ -2035,6 +2035,49 @@ function settab(tabname) {
             registrationtable.destroy();
             registrationtable = null;
         }
+        // now destroy the filters
+        if (category !== null) {
+            category.off("cellClick");
+            category.destroy();
+            category = null;
+        }
+        if (type !== null) {
+            type.off("cellClick");
+            type.destroy();
+            type = null;
+        }
+
+        if (age !== null) {
+            age.off("cellClick");
+            age.destroy();
+            age = null;
+        }
+
+        if (price !== null) {
+            price.off("cellClick");
+            price.destroy();
+            price = null;
+        }
+
+        if (label !== null) {
+            label.off("cellClick");
+            label.destroy();
+            label = null;
+        }
+
+        if (coupon !== null) {
+            coupon.off("cellClick");
+            coupon.destroy();
+            coupon = null;
+        }
+
+        if (statusTable !== null) {
+            statusTable.off("cellClick");
+            statusTable.destroy();
+            statusTable = null;
+        }
+
+        document.getElementById('regListFilters').hidden = true;
         document.getElementById('limitConid').value = conid;
     }
 
