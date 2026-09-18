@@ -1,6 +1,6 @@
 [report]
 	name="regRevTrend"
-	auth=finance
+	auth=gen_rpts
 	csvfile="regRevenueTrend"
 	index=label
 	totals=bottom

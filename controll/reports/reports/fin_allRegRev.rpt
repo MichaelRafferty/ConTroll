@@ -1,6 +1,6 @@
 [report]
 	name="allRegRev"
-	auth=finance
+	auth=gen_rpts
 	csvfile="allRegRevenue"
 	index=conid,label
 	totals=bottom

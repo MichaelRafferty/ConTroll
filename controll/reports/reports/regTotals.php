@@ -11,7 +11,7 @@
     $returnAjaxErrors = true;
     $return500errors = true;
 
-    $perm = 'reg_admin';
+    $perm = 'gen_rpts';
     $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
     $authToken = new authToken('script');
     $response['tokenStatus'] = $authToken->checkToken();
@@ -142,10 +142,12 @@ EOS;
     }
 
     // in YYYY-MM format, can just sort the month array in ascii order to get the columns in order
-    $cols = array_keys($colTotals);
-    sort($cols, SORT_STRING);
-    if (substr($cols[0], 0, 7) == ' Before')
-    $cols[0] = trim($cols[0]);
+    if ($groupBy == 'm') {
+        $cols = array_keys($colTotals);
+        sort($cols, SORT_STRING);
+        if (substr($cols[0], 0, 7) == ' Before')
+            $cols[0] = trim($cols[0]);
+    }
     $colTotals['Total'] = $rR->num_rows;
     $top = "&nbsp;\n" . $rR->num_rows . " registrations loaded\n";
     $rR->free();

@@ -16,16 +16,6 @@
     auth=reg_admin
     type=rpt
     P001="prompt/~/days/~/Days before expire: /~/Limit to days before expire date/~/30"
-[150RegistrationCounts]
-    name="Registration Counts"
-    description="List of registrations by month broken into predefined categories by GL Label"
-    template=regTotals.php
-    auth=reg_admin
-    type=php
-    P001="prompt/~/conid/~/Totals for: /~/Conid (number only)/~/#con.id#"
-    P002="prompt/~/startdate/~/Start Date: /~/YYYY-MM-DD format, defaults to first record/~/"
-    P003="prompt/~/enddate/~/End Date: /~/YYYY-MM-DD format, defaults to last record/~/"
-    P004="prompt/~/monthly/~/Monthly or Totals Only: /~/m or t/~/t"
 [200RegHistory]
 	name="Registration History"
 	description="Registration History for a Person"
@@ -60,9 +50,3 @@
     auth=reg_admin
     type=rpt
     P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)/~/#con.id#"
-[600Attendance]
-    name="Current Attendance"
-    description="Badges Printed by Label for this year"
-    template=attendance.rpt
-    auth=reg_admin
-    type=rpt

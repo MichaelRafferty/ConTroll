@@ -1,0 +1,34 @@
+[group]
+	name=general
+	description="General Reports"
+	auth="gen_rpts"
+[100RegistrationCounts]
+    name="Registration Counts"
+    description="List of registrations by month broken into predefined categories by GL Label"
+    template=regTotals.php
+    auth="gen_rpts"
+    type=php
+    P001="prompt/~/conid/~/Totals for: /~/Conid (number only)/~/#con.id#"
+    P002="prompt/~/startdate/~/Start Date: /~/YYYY-MM-DD format, defaults to first record/~/"
+    P003="prompt/~/enddate/~/End Date: /~/YYYY-MM-DD format, defaults to last record/~/"
+    P004="prompt/~/monthly/~/Monthly or Totals Only: /~/m or t/~/t"
+[200Attendance]
+    name="Current Attendance"
+    description="Badges Printed by Label for this year"
+    template=attendance.rpt
+    auth="gen_rpts"
+    type=rpt
+[300AllRegRev]
+    name='All Reg Revenue'
+	description='Regiatration Revenue by Convention ID and Membership Label'
+	template=fin_allRegRev.rpt
+	auth="gen_rpts"
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID (will include yearaheads for next year)/~/#con.id#"
+[400TrendRegRev]
+    name='Reg Revenue 5 Year Trend'
+	description='5 Year Trend of Regiatration Revenue By Membership Label'
+	template=fin_regRevTrend.rpt
+	auth="gen_rpts"
+	type=rpt
+	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"

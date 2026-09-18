@@ -1,6 +1,6 @@
 [report]
 	name="Current Attendance"
-	auth=reg_admin
+	auth=gen_rpts
 	csvfile="attendance"
     index=label
     totals=bottom
