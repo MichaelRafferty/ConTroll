@@ -52,7 +52,7 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
             if ($authToken->checkAuth($report['group']['auth'])) {
                 $report['group']['file'] = "local_groups/$file";
                 $report['group']['prefix'] = 'local_reports';
-                $reports["local_groups/$file"] = $report;
+                $reports["groups/$file"] = $report;
             }
         }
     }
