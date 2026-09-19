@@ -506,7 +506,7 @@ function downloadRptPost(format, url, postdata) {
     form.action = url;
     // append it to the body
     document.body.appendChild(form);
-    // create the file name to suggest to save it to....
+    // what type of download
     let field = document.createElement('input');
     field.type = 'text';
     field.name = 'format';

@@ -1246,12 +1246,12 @@ draw_fileManagerModals($authToken);
 ?>
     <div class='container-fluid'>
         <div class="row">
-            <div class="col-sm-1"><label for="regListSearch">Restrict To:</label></div>
+            <div class="col-sm-auto"><label for="regListSearch">Find:</label></div>
             <div class="col-sm-auto">
                 <input type="text" size="48" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
                        id="regListSearch" name="regListSearch"/>
             </div>
-            <div class="col-sm-auto"><label for="limitConid">Convention Year:</label></div>
+            <div class="col-sm-auto"><label for="limitConid">Con Year:</label></div>
             <div class="col-sm-auto">
                 <select id="limitConid" name="limitConid">
 <?php
@@ -1263,8 +1263,10 @@ draw_fileManagerModals($authToken);
                 </select>
             </div>
             <div class="col-sm-auto">
-                <button class='btn btn-primary mb-4 ms-4' onclick='getData("s");'>Search Registration List</button>
-                <button class='btn btn-warning mb-4 ms-4' onclick='getData("f");'>Load Full Registration List</button>
+                <button class='btn btn-primary btn-sm mb-2 ms-2' onclick='getData("s");'>Search Reg List</button>
+                <button class='btn btn-warning btn-sm mb-2 ms-2' onclick='getData("f");'>Full Reg List</button>
+                <button class='btn btn-warning btn-sm mb-2 ms-2' onclick='getData("e");'>Download Reg Excel Only</button>
+                <button class='btn btn-warning btn-sm mb-2 ms-2' onclick='getData("c");'>Download Reg CSV Only</button>
             </div>
         </div>
         <div class='row'>
@@ -1398,7 +1400,7 @@ page_foot($page);
 
 function drawFilters() {
 ?>
-<div class="container-fluid" id="regListFilters">
+<div class="container-fluid" id="regListFilters" hidden>
     <div class="row mb-2">
         <div class="col-sm-auto me-2 p-0">Click on a row to toggle filtering by that value</div>
         <div class="col-sm-auto me-1 p-0">

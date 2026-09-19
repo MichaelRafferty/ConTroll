@@ -1,6 +1,7 @@
 <?php
 require_once "../lib/base.php";
 require_once '../lib/sessionAuth.php';
+require_once '../../lib/outputFile.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -17,38 +18,54 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     exit();
 }
 
-if (!(array_key_exists('style', $_POST) && array_key_exists('action', $_POST) && array_key_exists('search', $_POST))) {
-    $response['error'] = 'Calling Sequence Error';
-    ajaxSuccess($response);
-    exit();
-}
-
 $con=get_conf('con');
 $conid= $con['id'];
 $response['conid'] = $conid;
 
-$style = $_POST['style'];
 $action = $_POST['action'];
-$search = $_POST['search'];
-if (array_key_exists('limitConid', $_POST)) {
-    $limitConid = $_POST['limitConid'];
-    if ($limitConid > ($conid + 1))
-        $limitConid = $conid + 1;
-    if ($limitConid < $conid - 20)
+if ($action == 'download') {
+    // this is a download, get the format,
+    $format = $_POST['format'];
+    $postjson = $_POST['postjson'];
+    $postdata = json_decode($postjson, true);
+    $style = $postdata['style'];
+    $search = $postdata['search'];
+    if (array_key_exists('limitConid', $postdata)) {
+        $limitConid = $postdata['limitConid'];
+        if ($limitConid > ($conid + 1))
+            $limitConid = $conid + 1;
+        if ($limitConid < $conid - 20)
+            $limitConid = $conid;
+    } else {
         $limitConid = $conid;
+    }
+} else if ($action == 'badges') {
+    $style = $_POST['style'];
+    $search = $_POST['search'];
+    if (array_key_exists('limitConid', $_POST)) {
+        $limitConid = $_POST['limitConid'];
+        if ($limitConid > ($conid + 1))
+            $limitConid = $conid + 1;
+        if ($limitConid < $conid - 20)
+            $limitConid = $conid;
+    } else {
+        $limitConid = $conid;
+    }
+    $format = '';
 } else {
-    $limitConid = $conid;
-}
-$response['limitConid'] = $limitConid;
-
-if ($action != 'badges') {
     $response['error'] = 'Calling Sequence Error';
     ajaxSuccess($response);
     exit();
 }
 
-if ($style == 'f' || $search == '')
+$response['limitConid'] = $limitConid;
+
+if ($style == 'f' || $search == '') {
     $search = '%';
+    $sheetName = 'full';
+} else {
+    $sheetName = 'search_' . cleanFileName($search);
+}
 
 if (is_numeric($search)) {
     $badgeQ = <<<EOS
@@ -175,7 +192,7 @@ while($badge = $badgeA->fetch_assoc()) {
 
 $response['badges'] = $badges;
 
-if ($search == '%') {
+if ($search == '%' && ($style == 'f' || $style == 's')) {
 // now get all the filter tables (item, count)
     $catQ = <<<EOS
 WITH listitems AS (
@@ -368,5 +385,25 @@ while ($memLabel = $memLabelA->fetch_assoc()) {
     $memLabels[] = $memLabel;
 }
 $response['memLabelsNext'] = $memLabels;
+if ($format == '') {
+    ajaxSuccess($response);
+    exit();
+}
 
-ajaxSuccess($response);
+// now we are a direct download....
+$fileName = $sheetName . '-' . date('Y-m-d_H-i-s');
+outputFile($_POST['format'], $sheetName, $fileName, $response['badges']);
+
+function cleanFileName($file_name_str) {
+    // Replace all spaces with hyphens
+    $file_name_str = str_replace(' ', '-', $file_name_str);
+
+    // Remove special characters
+    $file_name_str = preg_replace('/[^A-Za-z0-9\-\_]/', '', $file_name_str);
+
+    // Replace multiple hyphens with a single one
+    $file_name_str = preg_replace('/-+/', '-', $file_name_str);
+
+    return $file_name_str;
+}
+

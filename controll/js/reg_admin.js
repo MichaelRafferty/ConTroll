@@ -1905,29 +1905,40 @@ function draw(data, textStatus, jqXHR) {
 
 // ajax call to retrieve the starting set of data for the filters and the registration list
 function getData(style) {
-    if (style == 's') {
+    // full list has no search parameter, others can
+    if (style == 'f')
+        curRegListSearch = '';
+    else
         curRegListSearch = document.getElementById('regListSearch').value.trim();
+
+    // search list requires a search list
+    if (style == 's') {
         if (curRegListSearch.length == 0) {
             document.getElementById('regListSearch').style.backgroundColor = "#FFC107";
             return;
         }
     }
-    if (style == 'f')
-        curRegListSearch = '';
 
     document.getElementById('regListSearch').style.backgroundColor = "";
     clear_message();
     clearError();
     limitConid = document.getElementById('limitConid').value;
+    let postData = {
+        style: style,
+        action: 'badges',
+        search: curRegListSearch,
+        limitConid: limitConid,
+    };
+    if (style == 'c' || style == 'e') {
+        // pass object to a window.open via a post with json data
+       downloadRegList(style == 'c' ? 'csv' : 'xlsx', "scripts/regadmin_getBadges.php", postData);
+       return;
+    }
+
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
-        data:   {
-            style: style,
-            action: 'badges',
-            search: curRegListSearch,
-            limitConid: limitConid,
-        },
+        data: postData,
         success: function (data, textStatus, jqXHR) {
             if (data.error !== undefined) {
                 show_message(data.error, 'error');
@@ -1948,6 +1959,37 @@ function getData(style) {
             return false;
         }
     })
+}
+
+// do a download of the list only
+function downloadRegList(format, url, postdata) {
+    // create the form
+    let postjson = JSON.stringify(postdata);
+    let form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    // append it to the body
+    document.body.appendChild(form);
+    // what type of download
+    let field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'format';
+    field.value = format;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'postjson';
+    field.value = postjson;
+    form.appendChild(field);
+    field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'action';
+    field.value = 'download';
+    form.appendChild(field);
+
+    // now open the window
+    form.submit();
+    document.body.removeChild(form);
 }
 
 function sendCancel() {
