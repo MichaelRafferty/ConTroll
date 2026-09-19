@@ -223,10 +223,10 @@ JOIN perinfo p ON (e.perid = p.id)
 /*JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)*/
 ORDER BY e.email;
 EOQ;
-    //$typestr = 'iiii';
-    $typestr = 'iii';
-    //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
-    $paramarray = array($conid, $priorcon, $priorcon2);
+    //$typestr = 'iiiii';
+    $typestr = 'iiii';
+    //$paramarray = array($conid, $lastyear, $priorcon, $priorcon2, $couponid);
+    $paramarray = array($conid, $lastyear, $priorcon, $priorcon2);
     $email_text = returnCustomText('comeback/text', null, false);
     $email_html = returnCustomText('comeback/html');
     $email_subject = "We miss you! Please come back to $conname";
