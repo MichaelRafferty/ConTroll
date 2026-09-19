@@ -150,6 +150,7 @@ EOQ;
 case 'comeback':
     updateContactOK();
 
+    $lastyear = $conid - 1;
     $priorcon = $conid - 2;
     $priorcon2 = $conid - 3;
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
@@ -208,10 +209,12 @@ if ($num_keys === false) {
 WITH people AS (
     SELECT p.email_addr as email, MIN(p.id) AS perid
     FROM perinfo p
+    LEFT OUTER JOIN reg py ON (py.perid = p.id and py.conid = ?)
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
     LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND py.id IS NULL
+    AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
     GROUP BY p.email_addr
 )
 SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
