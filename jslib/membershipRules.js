@@ -331,6 +331,14 @@ class MembershipRules {
             }
         }
 
+        if (step.ruleType == 'currentAge') {
+            // this check is independent of any memberships
+            if (step.ageList != null && step.ageList != '') {
+                if (step.ageListArray.indexOf(this.#age.toString()) == -1)
+                    return false; // this check is an absolute and not related to a membership, this is enough to fail the tep.
+            }
+        }
+
         if (step.ruleType == 'needAll' || step.ruleType == 'notAll') {
             // for the all rules we need an access to all types
             this.#allTypes = [];
@@ -418,6 +426,7 @@ class MembershipRules {
                     //console.log('typeCheck: ' + typeCheck + ', memCheck: ' + memCheck + ', catCheck: ' + catCheck + ', ageCheck: ' + ageCheck + ', stepPass: ' + stepPass);
                     if (stepPass)
                         checkMore = false;
+                    break;
             } // end of switch
 
             if (checkMore == false) {
