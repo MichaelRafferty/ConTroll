@@ -309,6 +309,15 @@ class MembershipRules {
             }
         }
 
+        if (step.ruleType == 'currentAge') {
+            // this check is independent of any memberships
+            if (this.#age == null)
+                return false;
+            if (step.ageList != null && step.ageList != '') {
+                return step.ageListArray.indexOf(this.#age.toString()) != -1;
+            }
+        }
+
         // check ageList against the person's age first
         if (step.ageList != null && step.ageList != '' && this.#age != null && this.#age != '' && step.applyTo == 'person') {
             var match = step.ageListArray.indexOf(this.#age) != -1;
@@ -328,14 +337,6 @@ class MembershipRules {
                     }
                     return false;
                 }
-            }
-        }
-
-        if (step.ruleType == 'currentAge') {
-            // this check is independent of any memberships
-            if (step.ageList != null && step.ageList != '') {
-                if (step.ageListArray.indexOf(this.#age.toString()) == -1)
-                    return false; // this check is an absolute and not related to a membership, this is enough to fail the tep.
             }
         }
 
