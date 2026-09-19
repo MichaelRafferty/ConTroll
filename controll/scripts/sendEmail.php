@@ -428,9 +428,9 @@ SELECT perid, max(conid) AS conid
 FROM memberPolicies where policy = 'marketing'
 GROUP by perid
 ) n ON p.id = n.perid
-JOIN memberPolicies m ON  m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
+JOIN memberPolicies m ON m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
 SET p.contact_ok = m.response
-WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into' AND m.conid = ?
+WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
 EOS;
     $rows = dbSafeCmd($sql, 'i', array($conid));
 }
