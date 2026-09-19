@@ -376,7 +376,9 @@ class consetup {
                     }
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
-                {title: "Sort", field: "sort_order", headerSort: true, sorter: "number"},
+                {
+                    title: "Sort", field: "sort_order", width: 80, headerSort: true, headerHozAlign: "right", hozAlign: "right", sorter: "number",
+                },
                 {
                     title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
