@@ -38,7 +38,7 @@
     require_once(__DIR__ . '/../Composer/vendor/autoload.php');
 
 // request to create a new passkey
-function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
+function createWebauthnArgs($userId, $userName, $userDisplayName, $source)  {
     $userDisplayName = filter_var($userDisplayName, FILTER_SANITIZE_SPECIAL_CHARS);
     $requireResidentKey = true;
     $userVerification = 'required';
@@ -57,9 +57,22 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     else
         $name .= ' ConTroll';
 
-    $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
-    $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
-        $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
+    try {
+        $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
+        $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60 * 4,
+            $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
+    }
+    catch (\lbuchs\WebAuthn\WebAuthnException $e) {
+        $errormsg = $e->getMessage();
+        return array('status' => 'error',
+            'message' => "The following error occurred getting your user authentication to create the passkey: $errormsg");
+    }
+    catch (Exception $e) {
+        $errormsg = $e->getMessage();
+        return array('status' => 'error',
+            'message' => "Unknown error occured getting your user authentication to create the passkey: $errormsg");
+    }
+
 
     // save challenge to session. you have to deliver it to processGet later.
     $challenge = base64_encode($WebAuthn->getChallenge()->getBinaryString());
@@ -135,11 +148,8 @@ EOS;
 
 // get a passkey to authenticate
 function getWebauthnArgs($source) {
-    $requireResidentKey = true;
-    $userVerification = 'required';
     $rpLevel = getRPLevel($source);
     $rpId = getRpId($rpLevel);
-    $crossPlatformAttachment = null;
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none'];
     $allowCredentials = null;
@@ -168,8 +178,8 @@ function checkPasskey($att, $source) {
     $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
     $authenticatorData = !empty($att['authenticatorData']) ? base64_decode($att['authenticatorData']) : null;
     $signature = !empty($att['signature']) ? base64_decode($att['signature']) : null;
-    $userHandle = !empty($att['userHandle']) ? base64_decode($att['userHandle']) : null;
-    $id = !empty($att['id']) ? base64_decode($att['id']) : null;
+    //$userHandle = !empty($att['userHandle']) ? base64_decode($att['userHandle']) : null;
+    //$id = !empty($att['id']) ? base64_decode($att['id']) : null;
     $challengeStr = getSessionVar('passkeyChallenge');
     $challenge = base64_decode($challengeStr);
     $credentialPublicKey = null;
@@ -288,7 +298,7 @@ EOS;
 }
 
 // get passkeys - return if the database has a passkey for this user for this rpid
-function getPasskey($userId, $source) : array {
+function getPasskey($userId, $source) : array | bool {
     // check for a potential passkey
     $rpLevel = getRpLevel($source);
     if ($rpLevel == 9999)

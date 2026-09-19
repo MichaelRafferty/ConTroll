@@ -52,6 +52,10 @@ switch ($action) {
         $userIdHex = hash('sha256', $email);
         // try emulating their method
         $createArgs = json_encode(createWebauthnArgs($userIdHex, $email, $_REQUEST['displayName'], $source));
+        if (is_array($createArgs))  {
+            ajaxSuccess($createArgs);
+            exit();
+        }
         header('Content-Type: application/json');
         print $createArgs;
         exit();
