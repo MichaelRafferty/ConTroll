@@ -128,7 +128,7 @@ EOQ;
     break;
 
 case 'marketing':
-    updateContactOK($conid);
+    updateContactOK();
 
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
@@ -148,7 +148,7 @@ EOQ;
     break;
 //TODO get a way for one use coupons to work in reg portal so I can reenable the coupon stuff
 case 'comeback':
-    updateContactOK($conid);
+    updateContactOK();
 
     $priorcon = $conid - 2;
     $priorcon2 = $conid - 3;
@@ -231,7 +231,7 @@ EOQ;
     break;
 
 case 'survey':
-    updateContactOK($conid);
+    updateContactOK();
 
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email, P.first_name
@@ -419,7 +419,7 @@ $response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
 
-function updateContactOK($conid) : void {
+function updateContactOK() : void {
 
     $sql = <<<EOS
 UPDATE perinfo p
@@ -432,5 +432,5 @@ JOIN memberPolicies m ON m.perid = p.id AND m.conid = n.conid AND m.policy = 'ma
 SET p.contact_ok = m.response
 WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
 EOS;
-    $rows = dbSafeCmd($sql, 'i', array($conid));
+    $rows = dbCmd($sql);
 }
