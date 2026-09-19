@@ -872,7 +872,7 @@ draw_fileManagerModals($authToken);
                                                 Limit Age (One reg must match any (like needany) but age check is manadatory)
                                             </option>
                                             <option value='currentAge'>
-                                                Current Age (Future, currently not used)
+                                                Current Age
                                             </option>
                                         </select>
                                     </div>
