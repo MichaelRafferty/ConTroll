@@ -39,6 +39,14 @@ $BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
 $SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
 $virtualURL = getConfValue('portal', 'virtualURL');
 $worldCon = getConfValue('portal', 'worldcon', '0');
+// ages not allowed to enter a contract (make a payment)
+$agePurchaseRestriction = getConfValue('portal', 'agePurchaseRestriction', '');
+if ($agePurchaseRestriction != '') {
+    $tempAge = explode(',', $agePurchaseRestriction);
+    $agePurchaseRestriction = array_map('trim', $tempAge);
+} else {
+    $agePurchaseRestriction = [];
+}
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -100,6 +108,12 @@ $config_vars['ccCurrency'] = cc_getCurrency();
 $config_vars['currencyMultiplier'] = get_currencyMultiplier($currency);
 $config_vars['payRedirectURL'] = getConfValue('cc', 'redirectURL', 'https://stripeIssue.php');
 $config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
+
+$currentAge = getSessionVar('idAge');
+$allowedPayment = true;
+if ($currentAge !== null && $currentAge != '' && count($agePurchaseRestriction) > 0) {
+    $allowedPayment = !in_array($currentAge, $agePurchaseRestriction);
+}
 
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
@@ -163,7 +177,7 @@ if ($hasPasskey == false) {
     $hasPasskey = hasPasskey($info['email_addr'], 'portal');
 }
 
-$allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
+$allowPasskey = getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
 
 // define these before check, as they are set in the sql that may or may not be run
@@ -858,8 +872,10 @@ draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate'], $c
 if ($interests != null && count($interests) > 0) {
     draw_editInterestsModal($interests);
 }
-draw_paymentDueModal();
-draw_makePaymentModal();
+if ($allowedPayment) {
+    draw_paymentDueModal();
+    draw_makePaymentModal();
+}
 draw_recieptModal();
 draw_couponModal();
 drawChangeEmailModal();
@@ -985,29 +1001,30 @@ EOS;
 
 // Block 3 - Payments
 
-$totalDueFormatted = '';
-if ($totalDue > 0) {
-    $totalDueFormatted = 'Total ';
-    if ($activePaymentPlans > 0)
-        $totalDueFormatted .= 'non plan ';
-    $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency) . ' for items purchased by you';
-    if ($unpaidByOthers > 0) {
-        $totalDueFormatted .= ' or by others for you';
-}
-    if ($numCoupons > 0) {
-        $cols = 'auto';
-        $w = '';
-    } else {
-        $cols = '2';
-        $w = ' w-100';
-    }
-    $payHtml = "<button class='btn btn-sm btn-primary p-1 ps-2 pe-2 h-100 $w' name='payBalanceBTNs' onclick='portal.choosePay(" . $totalDue . ");'" .
-            $disablePay . ">Make Payment</button>";
-    if ($numCoupons > 0) {
-        $payHtml .= '<button class="btn btn-primary btn-sm p-1 ps-3 pe-3 ms-2 h-100" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
-    }
-    outputCustomText('main/beforePayment');
-    echo <<<EOS
+if ($allowedPayment) {
+    $totalDueFormatted = '';
+    if ($totalDue > 0) {
+        $totalDueFormatted = 'Total ';
+        if ($activePaymentPlans > 0)
+            $totalDueFormatted .= 'non plan ';
+        $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency) . ' for items purchased by you';
+        if ($unpaidByOthers > 0) {
+            $totalDueFormatted .= ' or by others for you';
+        }
+        if ($numCoupons > 0) {
+            $cols = 'auto';
+            $w = '';
+        } else {
+            $cols = '2';
+            $w = ' w-100';
+        }
+        $payHtml = "<button class='btn btn-sm btn-primary p-1 ps-2 pe-2 h-100 $w' name='payBalanceBTNs' onclick='portal.choosePay(" . $totalDue . ");'" .
+                $disablePay . ">Make Payment</button>";
+        if ($numCoupons > 0) {
+            $payHtml .= '<button class="btn btn-primary btn-sm p-1 ps-3 pe-3 ms-2 h-100" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
+        }
+        outputCustomText('main/beforePayment');
+        echo <<<EOS
     <div class='row mt-4'>
         <div class="col-sm-$cols">$payHtml</div>
         <div class='col-sm-auto'>
@@ -1015,31 +1032,32 @@ if ($totalDue > 0) {
         </div>
     </div>
 EOS;
-    outputCustomText('main/afterPayment');
-}
+        outputCustomText('main/afterPayment');
+    }
 
-// create a div and bg color it to separate it logically from the other parts
-if (count($payorPlan) > 0) {
+    // create a div and bg color it to separate it logically from the other parts
+    if (count($payorPlan) > 0) {
 ?>
     <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
 <?php
-}
+    }
 
-if ($activePaymentPlans > 0) {
+    if ($activePaymentPlans > 0) {
 ?>
         <div class='row mt-5'>
             <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
         </div>
 <?php
-    outputCustomText('main/plan');
-    drawPaymentPlans($info, $paymentPlansData, true);
-}
+        outputCustomText('main/plan');
+        drawPaymentPlans($info, $paymentPlansData, true);
+    }
 
-setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
-if (count($payorPlan) > 0) {
+    setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
+    if (count($payorPlan) > 0) {
 ?>
     </div>
     <?php
+    }
 }
 
 // HR - then line 4 - People you manage (if you are not managed by someone else)

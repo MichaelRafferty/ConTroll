@@ -58,6 +58,7 @@ switch ($type) {
             }
             setSessionVar('id', $matches[0]['id']);
             setSessionVar('idType', $matches[0]['tablename']);
+            setSessionVar('idAge', $matches[0]['currentAgeType']);
             setSessionVar('idSource', 'dev');
             setSessionVar('tokenType', 'dev');
             setSessionVar('tokenExpiration', time() + (999999 * 3600));
