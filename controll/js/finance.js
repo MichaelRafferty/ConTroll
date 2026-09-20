@@ -90,11 +90,9 @@ class Finance {
                 break;
 
             case 'glConfig':
-                /*
                 if (gl == null)
                     gl = new glConfig(config['conid'], config['debug']);
                 gl.open();
-                 */
                 break;
 
             case 'paymentPlans':

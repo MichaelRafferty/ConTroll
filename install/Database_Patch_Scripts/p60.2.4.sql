@@ -14,6 +14,28 @@ CALL deleteDupsIntPol();
 ALTER TABLE transaction ADD COLUMN rounding decimal(8,2) AFTER withtax;
 
 /*
+ * move gl code and label definition to a dedicated gl table
+ */
+DROP TABLE IF EXISTS gl;
+CREATE TABLE gl (
+    glNum varchar(16) COLLATE utf8mb4_general_ci NOT NULL COMMENT "General Ledger Number in Accounting System",
+    glLabel varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT "Label for the GL Number",
+    description varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT "Useful instructions/details for this GL Number",
+    sortOrder int DEFAULT '0' COMMENT "Sort order for select pulldown where GL is used, and optionally the GL Edit screen",
+    createDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT "Auto field to mark when the record was inserted",
+    updateDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Auto tracking field for last update",
+    updateBy int DEFAULT NULL COMMENT "Tracking field of perid of who modifed the record last",
+    active enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y' COMMENT "Is this gl line active for this years convention",
+    PRIMARY KEY (`glNum`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE gl ADD CONSTRAINT gl_updatedby FOREIGN KEY(updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+/*
+ * Now modify all the tables that have glNum and glLabel to use just glNum as a ref to the gl table.
+ */
+
+
+/*
  * new custom text items
  */
 

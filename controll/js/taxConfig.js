@@ -96,7 +96,7 @@ class taxConfig {
                 {title: "Con Id", field: "conid", headerSort:false },
                 {title: "taxField", field: "taxField", headerSort:false , },
                 {title: "Receipt Label", field: "label", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
-                {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, },
+                {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, hozAlign: "right", },
                 {title: "Taxable Overrides", field: "taxItemsDisplay", headerSort:false, width: 300, formatter: 'textarea', },
                 {title: "GL Num", field: "glNum", headerSort: false, editor: "input", editorParams: {maxlength: "16"}, width: 120, },
                 {title: "GL Label", field: "glLabel", headerSort: false, editor: "input", editorParams: {maxlength: "64"}, width: 300, },

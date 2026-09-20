@@ -24,6 +24,7 @@ page_init($page,
                     //$cdn['luxon'],
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
+                    'js/glConfig.js',
                     'js/taxConfig.js',
                     'js/finance.js',
                     'js/planSetup.js',
@@ -668,7 +669,7 @@ EOS;
         <li>
             <button class='nav-link' id='glConfig-tab' data-bs-toggle='pill' data-bs-target='#glConfig-pane' type='button' role='tab'
                     aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('glConfig-pane');">
-                General Ledger Setup
+                General Ledger Configuration
             </button>
         </li>
         <?php } ?>
@@ -755,6 +756,26 @@ EOS;
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-12' id='glConfigTable'></div>
+            </div>
+            <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto'>
+                    <button id='gl-undo' type='button' class='btn btn-secondary btn-sm' onclick='gl.undo(); return false;' disabled>Undo</button>
+                    <button id='gl-redo' type='button' class='btn btn-secondary btn-sm' onclick='gl.redo(); return false;' disabled>Redo</button>
+                    <button class='btn btn-sm btn-secondary' onclick='gl.addNew();'>Add New</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id='glSaveBtn' onclick='gl.save();' disabled>Save Changes</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='gl-csv' type='button' class='btn btn-info btn-sm'
+                            onclick=gl.downloadGLs('csv'); return false;
+                    ">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='gl-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=gl.downloadGLs('xlsx'); return false;
+                    ">Download Excel</button>
+                </div>
             </div>
         </div>
     </div>
