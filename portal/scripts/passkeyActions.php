@@ -121,10 +121,10 @@ EOS;
                 // create the session, we are logged in....
                 // first get the items that match
                 $matchQ = <<<EOS
-SELECT 'p' AS idType, id, email_addr
+SELECT 'p' AS idType, id, email_addr, currentAgeType
 FROM perinfo
 WHERE email_addr = ? AND banned = 'N' AND deceased = 'N'
-UNION SELECT 'n' AS idType, id, email_addr
+UNION SELECT 'n' AS idType, id, email_addr, currentAgeType
 FROM newperson
 WHERE email_addr = ? AND perid IS NULL
 ORDER BY 1 DESC, 2 ASC;
@@ -146,6 +146,7 @@ EOS;
                 unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
                 setSessionVar('id', $firstMatch['id']);
                 setSessionVar('idType', $firstMatch['idType']);
+                setSessionVar('idAge', $firstMatch['currentAgeType']);
                 setSessionVar('idSource', 'passkey');
                 setSessionVar('tokenType', 'passkey');
                 setSessionVar('email', $passkey['userName']);
