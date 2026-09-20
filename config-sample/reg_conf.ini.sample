@@ -842,6 +842,16 @@ history=1
 ;; B:O
 ; ageRestriction = comma separated list of "Age Types" not allowed to log into the portal.
 ; ageRestriction=
+;; N:agePurchaseRestriction
+;; R:V,reg_admin
+;; P:Comma separated list of Age Types
+;; H:A comma separated list of "Age Types" that are prevented from purchasing (paying) in to the registration portal.
+;; H+ This will prevent them from paying for items in their cart
+;; H+ If this is omitted everyone can make payments
+;; D:s256
+;; B:O
+; agePurchaseRestriction = comma separated list of "Age Types" not allowed to make payments in the portal.
+; agePurchaseRestriction=
 
 ;;;;; HR Portal Policy Options
 ;;; policy flags
