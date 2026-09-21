@@ -31,9 +31,64 @@ CREATE TABLE gl (
 
 ALTER TABLE gl ADD CONSTRAINT gl_updatedby FOREIGN KEY(updateBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 /*
+ * preload the gl table
+ */
+UPDATE exhibitsRegions SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE exhibitsRegionYears SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE exhibitsSpacePrices SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE exhibitsSpaces SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE memList SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE taxList SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+
+INSERT INTO gl(glNum, glLabel)
+SELECT glNum, glLabel
+FROM (
+         SELECT DISTINCT glNum, glLabel FROM exhibitsRegions
+         UNION
+         SELECT DISTINCT glNum, glLabel FROM exhibitsRegionYears
+         UNION
+         SELECT DISTINCT glNum, glLabel FROM exhibitsSpacePrices
+         UNION
+         SELECT DISTINCT glNum, glLabel FROM exhibitsSpaces
+         UNION
+         SELECT DISTINCT glNum, glLabel FROM memList
+         UNION
+         SELECT DISTINCT glNum, glLabel FROM taxList
+     ) a
+WHERE glNum IS NOT NULL;
+
+/*
  * Now modify all the tables that have glNum and glLabel to use just glNum as a ref to the gl table.
  */
+ALTER TABLE exhibitsRegions DROP COLUMN glLabel;
+ALTER TABLE exhibitsRegionYears DROP COLUMN glLabel;
+ALTER TABLE exhibitsSpacePrices DROP COLUMN glLabel;
+ALTER TABLE exhibitsSpaces DROP COLUMN glLabel;
+ALTER TABLE memList DROP COLUMN glLabel;
+ALTER TABLE taxList DROP COLUMN glLabel;
+ALTER TABLE exhibitsRegions ADD CONSTRAINT FOREIGN KEY er_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+ALTER TABLE exhibitsRegionYears ADD CONSTRAINT FOREIGN KEY ery_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+ALTER TABLE exhibitsSpacePrices ADD CONSTRAINT FOREIGN KEY esp_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+ALTER TABLE exhibitsSpaces ADD CONSTRAINT FOREIGN KEY es_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+ALTER TABLE memList ADD CONSTRAINT FOREIGN KEY memList_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+ALTER TABLE taxList ADD CONSTRAINT FOREIGN KEY taxList_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
 
+/*
+ * now fix the memLabel view
+ */
+DROP VIEW IF EXISTS `memLabel`;
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY INVOKER
+VIEW memLabel AS SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,
+    m.memAge AS memAge,a.shortname AS ageShortName,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
+    m.cartDesc AS cartDesc,m.notes AS notes,m.rptGrouping AS rptGrouping,m.price AS price,m.badgeLabel AS badgeLabel,
+    m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS `online`,
+    m.glNum AS glNum,g.glLabel AS glLabel,
+    c.taxable AS taxable,c.badgeLabel AS catBadgeLabel
+FROM memList m
+JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+JOIN memCategories c ON m.memCategory = c.memCategory
+JOIN gl g ON g.glNum = m.glNum;
 
 /*
  * new custom text items
