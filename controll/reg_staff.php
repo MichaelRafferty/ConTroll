@@ -91,6 +91,12 @@ $policies = getPolicies();
 $policiesCell = drawPoliciesCell($policies);
 [$ageList, $ageListIdx] = getAgeList($conid);
 [$gl, $glNums, $glLabels] = getGL();
+
+// build gl list select options
+$glNumSelect = '<option value="">No GL assigned</option>' . PHP_EOL;
+foreach ($glLabels as $glNum => $glLabel) {
+    $glNumSelect .= '<option value="' . $glNum . '">' . $glNum . ': ' . $glLabel . '</option>';
+}
 bs_tinymceModal();
 draw_fileManagerModals($authToken);
 // edit memList entry modal
@@ -237,20 +243,13 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-2'>Gen. Ledger</div>
                                     <div class='col-sm-auto me-0'>Num:</div>
                                     <div class='col-sm-auto ms-0 ps-0 me-0'>
-                                        <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
-                                           onchange='glNumChange(editListMasterRow);'
-                                        />
-                                    </div>
-                                    <div class='col-sm-auto me-0'>Label:</div>
-                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
-                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='40' maxlength='64'
-                                            onchange='glLabelChange(editListMasterRow);'
-                                        />
+                                        <select name='editMemListGLNum' id='editMemListGLNum' onchange='glNumChange(editListMasterRow);'>
+                                            <?php echo $glNumSelect; ?>
+                                        </select>
                                     </div>
                                 </div>
                                 <?php } else { ?>
                                     <input type='hidden' name='editMemListGLNum' id='editMemListGLNum'/>
-                                    <input type='hidden' name='editMemListGLLabel' id='editMemListGLLabel'/>
                                 <?php } ?>
                             </div>
                         </div>
@@ -312,8 +311,7 @@ draw_fileManagerModals($authToken);
                         <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>O/Ride Label</div>
                         <div class='col-sm-1'>Rpt Grp</div>
-                        <div class="col-sm-1">GL Num</div>
-                        <div class="col-sm-1">GL Label</div>
+                        <div class="col-sm-2">GL Num</div>
                         <?php } else { ?>
                         <div class='col-sm-2'>O/Ride Label</div>
                         <div class='col-sm-2'>Rpt Grp</div>
@@ -366,15 +364,10 @@ draw_fileManagerModals($authToken);
                                    onchange="tsRptGroupingChange(<?php echo $i;?>)"
                             />
                         </div>
-                        <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'
-                                   onchange="tsGlNumChange(<?php echo $i;?>)"
-                            />
-                        </div>
-                        <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='12' maxlength='64'
-                                   onchange="tsGlLabelChange(<?php echo $i;?>)"
-                            />
+                        <div class='col-sm-2'>
+                            <select id='EMLTS<?php echo $i;?>_glNum' onchange="tsGlNumChange(<?php echo $i;?>)"
+                                <?php echo $glNumSelect; ?>
+                            </select>
                         </div>
                         <?php } else { ?>
                             <div class='col-sm-1'>

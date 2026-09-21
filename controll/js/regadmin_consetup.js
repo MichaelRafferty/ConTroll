@@ -625,7 +625,6 @@ class consetup {
         document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
         document.getElementById('editMemListRptGrouping').value = rowData.rptGrouping;
         document.getElementById('editMemListGLNum').value = rowData.glNum;
-        document.getElementById('editMemListGLLabel').value = rowData.glLabel;
         document.getElementById('catBadgeLabel').innerHTML = rowData.catBadgeLabel;
         document.getElementById('editMemListBadgeLabel').value = rowData.badgeLabel;
 
@@ -1305,13 +1304,12 @@ class consetup {
                 this.#editData[index].cartDesc = cartDesc;
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
-                this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
-                this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 if (config.useGL == 1) {
                     document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
-                    document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
                 }
                 document.getElementById('EMLTS' + index + '_badgeLabel').value = this.#editData[index].badgeLabel;
                 document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
@@ -1372,7 +1370,7 @@ class consetup {
                     this.#editData[index].shortname = shortname;
                     this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
-                    this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                    this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                     this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 }
                 if (bundle) {
@@ -1401,7 +1399,7 @@ class consetup {
                 this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping').value;
                 if (config.useGL == 1) {
                     this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
-                    this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                    this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                 }
                 index++;
             }
@@ -1415,8 +1413,8 @@ class consetup {
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+        this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
         this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
-        this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
         this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
 
@@ -1495,7 +1493,6 @@ class consetup {
             document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
             if (config.useGL == 1) {
                 document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
-                document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
             }
             document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
         }
@@ -1512,7 +1509,6 @@ class consetup {
             document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
             if (config.useGL == 1) {
                 document.getElementById('EMLTS' + index + '_glNum').value = '';
-                document.getElementById('EMLTS' + index + '_glLabel').value = '';
             }
             if (bundle) {
                 document.getElementById('EMLTS' + index + '_contains').value = '';
@@ -1800,12 +1796,6 @@ function glNumChange(masterRow) {
     memListModalDirty = true;
 }
 
-// top section edited glLabel, set bottom screen
-function glLabelChange(masterRow) {
-    document.getElementById('EMLTS' + masterRow + '_glLabel').value = document.getElementById('editMemListGLLabel').value;
-    memListModalDirty = true;
-}
-
 // top section edited badgeLabel, set bottom screen
 function badgeLabelChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_badgeLabel').value = document.getElementById('editMemListBadgeLabel').value;
@@ -1892,14 +1882,6 @@ function tsRptGroupingChange(row) {
 function tsGlNumChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListGLNum').value = document.getElementById('EMLTS' + row + '_glNum').value;
-        memListModalDirty = true;
-    }
-}
-
-// bottom section edited gllabel, set top screen
-function tsGlLabelChange(row) {
-    if (row == editListMasterRow) {
-        document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
         memListModalDirty = true;
     }
 }
