@@ -241,8 +241,7 @@ draw_fileManagerModals($authToken);
                                 <?php if ($config_vars['useGL'] == 1) { ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Gen. Ledger</div>
-                                    <div class='col-sm-auto me-0'>Num:</div>
-                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
+                                    <div class='col-sm-auto'>
                                         <select name='editMemListGLNum' id='editMemListGLNum' onchange='glNumChange(editListMasterRow);'>
                                             <?php echo $glNumSelect; ?>
                                         </select>
@@ -311,7 +310,7 @@ draw_fileManagerModals($authToken);
                         <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-1'>O/Ride Label</div>
                         <div class='col-sm-1'>Rpt Grp</div>
-                        <div class="col-sm-2">GL Num</div>
+                        <div class="col-sm-2">General Ledger</div>
                         <?php } else { ?>
                         <div class='col-sm-2'>O/Ride Label</div>
                         <div class='col-sm-2'>Rpt Grp</div>
