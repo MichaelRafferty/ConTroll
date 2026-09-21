@@ -185,6 +185,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         }
         $id = $match['id'];
         $idType = $match['tablename'];
+        $ageType = $match['currentAgeType'];
         $ts = ' ';
         if (array_key_exists('ts', $match)) {
             $ts = " with ts ". $match['ts'];
@@ -221,7 +222,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         if ($idType == 'p')
             updateIdentityUsage($id, $validationType, $origEmail);
         web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType", '', false);
-        validationComplete($id, $idType, $email, $validationType, $multiple);
+        validationComplete($id, $idType, $email, $ageType, $validationType, $multiple);
         exit();
     }
 
@@ -317,7 +318,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 //  possible responses:
 //      direct login: redirect to portal
 //      oauth authentication request: redirect back to oauth with the appropriate values
-function validationComplete($id, $idType, $email, $validationType, $multiple) : void {
+function validationComplete($id, $idType, $email, $ageType, $validationType, $multiple) : void {
     // if not oauth session variable to go portal
     $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
@@ -326,6 +327,7 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
             unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
             setSessionVar('id', $id);
             setSessionVar('idType', $idType);
+            setSessionVar('idAge', $ageType);
             setSessionVar('idSource', $validationType);
             // new login reset the PHP session id
             session_regenerate_id(true);

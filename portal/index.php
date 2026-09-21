@@ -211,7 +211,8 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         if ($oldemail != null && $oldemail != '') {
             // this is a refresh, don't choose the account again, just return to the home page of the portal or return the authentication response,
             // don't disturb any other session variables
-            validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'), getSessionVar('idSource'), getSessionVar('multiple'));
+            validationComplete(getSessionVar('id'), getSessionVar('idType'), getSessionVar('email'),
+                    getSessionVar('idAge'), getSessionVar('idSource'), getSessionVar('multiple'));
         }
 
         draw_indexPageTop($condata, $purpose);
@@ -232,6 +233,7 @@ if (isSessionVar('id')) {
     // In a session, just set the id and type
     $loginType = getSessionVar('idType');
     $loginId = getSessionVar('id');
+    $idAge = getSessionVar('idAge');
     if (isset($_GET['vid'])) {
         // we are logged in and took a vid link, if it decodes, log out and reload the page to reprocess the link
         $match = decryptCipher($_GET['vid'], true);
@@ -261,6 +263,7 @@ if (isSessionVar('id')) {
                                          $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
+                    $idAge = $match['currentAgeType'];
                 }
                 if (isSessionVar('oauth') == false) {
                     $refresh = true;
@@ -287,7 +290,7 @@ if (isSessionVar('id')) {
                     } else
                     $tablename = $match['tablename'];
                 }
-                validationComplete($id, $tablename, $email, getSessionVar('idSource'), getSessionVar('multiple'));
+                validationComplete($id, $tablename, $email, $idAge, getSessionVar('idSource'), getSessionVar('multiple'));
                 exit();
             }
         }
