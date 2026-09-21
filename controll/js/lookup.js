@@ -55,8 +55,8 @@ function findRegs() {
                 show_message(data.error, 'error');
                 return;
             }
-            if (data.success !== undefined) {
-                show_message(data.success, 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             checkRefresh(data);
             drawResults(data);
