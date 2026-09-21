@@ -135,17 +135,17 @@ EOS;
         }
 
         $addSQL = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,cartDesc,price,startdate,enddate,atcon,online,rptGrouping,glNum,glLabel,badgeLabel)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,cartDesc,price,startdate,enddate,atcon,online,rptGrouping,glNum,badgeLabel)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $addtypes = 'iisssssssssssssss';
+        $addtypes = 'iissssssssssssss';
         $updSQL = <<<EOS
 UPDATE memList
 SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?, cartDesc = ?, price = ?,startdate = ?,enddate = ?,
-    atcon = ?,online = ?, rptGrouping = ?, glNum = ?, glLabel = ?, badgeLabel = ?
+    atcon = ?,online = ?, rptGrouping = ?, glNum = ?, badgeLabel = ?
 WHERE id = ?
 EOS;
-        $updtypes = 'isssssssssssssssi';
+        $updtypes = 'issssssssssssssi';
 
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
@@ -167,10 +167,6 @@ EOS;
                 $glNum = $row['glNum'];
             else
                 $glNum = '';
-            if (array_key_exists('glLabel', $row))
-                $glLabel = $row['glLabel'];
-            else
-                $glLabel = '';
 
             if (strlen($row['shortname']) > 64) // truncate it if it gets to here as too long, the .js should catch it first.
                 $row['shortname'] = substr($row['shortname'], 0, 64);
@@ -178,7 +174,7 @@ EOS;
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
                     $row['startdate'],$row['enddate'],$row['atcon'],$row['online'], $row['rptGrouping'],
-                    $glNum,$glLabel, IFNULL($row['badgeLabel'],''));
+                    $glNum,IFNULL($row['badgeLabel'],''));
                 //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
                 if ($newid)
@@ -187,7 +183,7 @@ EOS;
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
                     $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['rptGrouping'],
-                    $glNum,$glLabel,IFNULL($row['badgeLabel'],''),$row['id']);
+                    $glNum,IFNULL($row['badgeLabel'],''),$row['id']);
                 //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
             }

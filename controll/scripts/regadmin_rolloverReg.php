@@ -50,8 +50,7 @@ LEFT OUTER JOIN regActions h ON h.regid = r.id AND h.action = 'print'
 WHERE r.id = ?
 )
 SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, m.label, m.memAge, m.memCategory, m.memType,
-                m.glNum, m.glLabel,
-                r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name
+                m.glNum, r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name
 FROM reg r
 JOIN memList m ON (r.memId = m.id)
 JOIN perinfo p ON (r.perid = p.id)
@@ -62,15 +61,15 @@ WHERE r.conid = ? AND r.id = ?;
 EOS;
 
 $matchMem = <<<EOS
-SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id, glNum glLabel
+SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id, glNum
 FROM memList m
 WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ?
 ORDER BY 1,2,3;
 EOS;
 
 $newMemI = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
 foreach ($rolloverList as $badgeId => $rollover) {
@@ -97,7 +96,6 @@ foreach ($rolloverList as $badgeId => $rollover) {
     $price = $membership['price'];
     $startdate = $membership['startdate'];
     $glNum = $membership['glNum'];
-    $glLabel = $membership['glLabel'];
 
     // handle common case that membership cannot exist already for next con
     if ($membership['nextid'] != null) {
@@ -141,8 +139,8 @@ foreach ($rolloverList as $badgeId => $rollover) {
             // none found, create one
             //conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
             $nextYear = substr(startEndDateToNextYear($startdate), 0, 4);
-            $newId = dbSafeInsert($newMemI, 'iisssssdssssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
-                "Auto created by rollover", $price, $nextYear . "/01/01 00:00", $nextYear . '/01/01 00:00', 'N', 'N', $glNum, $glLabel));
+            $newId = dbSafeInsert($newMemI, 'iisssssdsssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
+                "Auto created by rollover", $price, $nextYear . "/01/01 00:00", $nextYear . '/01/01 00:00', 'N', 'N', $glNum));
             if ($newId === false) {
                 $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create insert failure";
                 ajaxSuccess($response);

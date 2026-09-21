@@ -150,7 +150,7 @@ function findOrBuild($memId, $conId) : int | null {
 
     $priorMemQ = <<<EOS
 SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, 
-       DATE_ADD(startdate, INTERVAL 1 YEAR) AS startdate, DATE_ADD(enddate, INTERVAL 1 YEAR) AS enddate, atcon, online, glNum, glLabel
+       DATE_ADD(startdate, INTERVAL 1 YEAR) AS startdate, DATE_ADD(enddate, INTERVAL 1 YEAR) AS enddate, atcon, online, glNum
 FROM memList
 WHERE id = ? and conid = ?;
 EOS;
@@ -179,16 +179,16 @@ EOS;
 
     // non exists, add it
     $memI = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
     $valueArray = array($conId,
         $priorMem['sort_order'], $priorMem['memCategory'], $priorMem['memType'], $priorMem['memAge'], $priorMem['label'],
         $priorMem['notes'], $priorMem['price'], $priorMem['startdate'], $priorMem['enddate'], $priorMem['atcon'], $priorMem['online'],
-        $priorMem['glNum'], $priorMem['glLabel']
+        $priorMem['glNum']
     );
 
-    $newId = dbSafeInsert($memI, 'iisssssdssssss', $valueArray);
+    $newId = dbSafeInsert($memI, 'iisssssdsssss', $valueArray);
     if ($newId === false)
         return null;
     return $newId;
