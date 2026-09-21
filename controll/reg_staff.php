@@ -90,7 +90,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
 $policies = getPolicies();
 $policiesCell = drawPoliciesCell($policies);
 [$ageList, $ageListIdx] = getAgeList($conid);
-[$gl, $glNums] = getGL();
+[$gl, $glNums, $glLabels] = getGL();
 bs_tinymceModal();
 draw_fileManagerModals($authToken);
 // edit memList entry modal
@@ -1168,6 +1168,7 @@ draw_fileManagerModals($authToken);
     var policies = <?php echo json_encode($policies); ?>;
     var fullConfig = <?php echo json_encode(getFullConfig()); ?>;
     var gl = <?php echo json_encode($glNums); ?>;
+    var glLabels = <?php echo json_encode($glLabels); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>

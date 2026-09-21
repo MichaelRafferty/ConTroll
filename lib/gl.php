@@ -4,6 +4,7 @@
 function getGL() {
     $gl = null;
     $glNums = [];
+    $glLabels = [];
 
     $glQ = <<<EOS
 SELECT *
@@ -17,11 +18,12 @@ EOS;
         while ($glrow = $glR->fetch_assoc()) {
             $gl[] = $glrow;
             $glNums[] = $glrow['glNum'];
+            $glLabels[$glrow['glNum']] = $glrow['glLabel'];
         }
         $glR->free();
         if (count($gl) == 0) {
             $gl = null;
         }
     }
-    return (array($gl, $glNums));
+    return (array($gl, $glNums, $glLabels));
 }

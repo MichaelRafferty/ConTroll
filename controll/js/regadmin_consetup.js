@@ -458,7 +458,6 @@ class consetup {
                     },
                     {
                         title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
-                        editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
                         headerFilter: true, formatter: "textarea",
                     });
             } else {
@@ -488,10 +487,21 @@ class consetup {
             this.#memtable.on("rowMoved", function (row) {
                 _this.memlist_rowMoved(row)
             });
-            this.#memtable.on("cellEdited", cellChanged);
+            this.#memtable.on("cellEdited", memListCellChanged);
             this.#memlist_dirty = false;
         }
     };
+
+    memListCellChanged(cell) {
+        setCellChanged(cell);
+
+        // check if it's the gl cell, if so get the new value for gl label
+        if (cell.getField() == 'glNum') {
+            let glNum = cell.getValue();
+            let glLabel = glLabels[glNum];
+            cell.getRow().getCell('glLabel').setValue(glLabel);
+        }
+    }
 
     ageListEditor(cell, onRendered, success, cancel, editorParams){
         //cell - the cell component for the editable cell
@@ -1908,4 +1918,11 @@ function localeMoney(cell, formatParams, onRendered) {
         return value;
 
     return currencyFmt.format(Number(value).toFixed(2));
+}
+
+function memListCellChanged(cell) {
+    if (activeConSetup == 'next')
+        return next.memListCellChanged(cell);
+
+    current.memListCellChanged(cell);
 }
