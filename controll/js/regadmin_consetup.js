@@ -450,9 +450,11 @@ class consetup {
             ];
 
             if (config.useGL == 1) {
-                columns.push({
+                columns.push(
+                    {
                         title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                        editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
+                        editor: "list", editorParams: {values: gl,},
+                        headerFilter: true, headerFilterParams: {values: gl}
                     },
                     {
                         title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,

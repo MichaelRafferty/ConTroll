@@ -2,6 +2,7 @@
 require_once "lib/base.php";
 require_once "../lib/notes.php";
 require_once "../lib/policies.php";
+require_once "../lib/gl.php";
 require_once '../lib/profile.php';
 require_once 'lib/sessionAuth.php';
 require_once 'lib/match.php';
@@ -89,6 +90,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
 $policies = getPolicies();
 $policiesCell = drawPoliciesCell($policies);
 [$ageList, $ageListIdx] = getAgeList($conid);
+[$gl, $glNums] = getGL();
 bs_tinymceModal();
 draw_fileManagerModals($authToken);
 // edit memList entry modal
@@ -1165,6 +1167,7 @@ draw_fileManagerModals($authToken);
     var config = <?php echo json_encode($config_vars); ?>;
     var policies = <?php echo json_encode($policies); ?>;
     var fullConfig = <?php echo json_encode(getFullConfig()); ?>;
+    var gl = <?php echo json_encode($glNums); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
