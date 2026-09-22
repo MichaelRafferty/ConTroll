@@ -93,9 +93,12 @@ $policiesCell = drawPoliciesCell($policies);
 [$gl, $glNums, $glLabels] = getGL();
 
 // build gl list select options
+$glEditorList = [];
+$glEditorList[''] = 'No GL Assigned';
 $glNumSelect = '<option value="">No GL assigned</option>' . PHP_EOL;
 foreach ($glLabels as $glNum => $glLabel) {
     $glNumSelect .= '<option value="' . $glNum . '">' . $glNum . ': ' . $glLabel . '</option>';
+    $glEditorList[$glNum] = "$glNum: $glLabel";
 }
 bs_tinymceModal();
 draw_fileManagerModals($authToken);
@@ -1161,6 +1164,7 @@ draw_fileManagerModals($authToken);
     var fullConfig = <?php echo json_encode(getFullConfig()); ?>;
     var gl = <?php echo json_encode($glNums); ?>;
     var glLabels = <?php echo json_encode($glLabels); ?>;
+    var glEditorList = <?php echo json_encode($glEditorList); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>

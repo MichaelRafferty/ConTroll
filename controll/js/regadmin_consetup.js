@@ -452,13 +452,10 @@ class consetup {
             if (config.useGL == 1) {
                 columns.push(
                     {
-                        title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                        editor: "list", editorParams: {values: gl,},
-                        headerFilter: true, headerFilterParams: {values: gl}
-                    },
-                    {
-                        title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
-                        headerFilter: true, formatter: "textarea",
+                        title: "GL Num", field: "glNum", width: 320, headerWordWrap: true,
+                        editor: "list", editorParams: {values: glEditorList,},
+                        formatter: "lookup", formatterParams: glEditorList,
+                        headerFilter: true, headerFilterParams: {values: glEditorList},
                     });
             } else {
                 columns.push({field: "glNum", visible: false,}, {field: "glLabel", visible: false,});
