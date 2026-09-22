@@ -74,7 +74,7 @@ function drawResults(data) {
         let numMems = peritem.memberships.length
         if (config.oneoff == 0 && numMems == 0)
             continue;
-        if (numMens == 0) {
+        if (numMems == 0) {
             let row = [];
             row.perid = peritem.perid;
             row.fullName = peritem.fullName;
