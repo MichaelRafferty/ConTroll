@@ -452,13 +452,13 @@ class consetup {
             if (config.useGL == 1) {
                 columns.push(
                     {
-                        title: "GL Num", field: "glNum", width: 320, headerWordWrap: true,
+                        title: "GL Num/Label", field: "glNum", width: 320, headerWordWrap: true,
                         editor: "list", editorParams: {values: glEditorList,},
                         formatter: "lookup", formatterParams: glEditorList,
                         headerFilter: true, headerFilterParams: {values: glEditorList},
                     });
             } else {
-                columns.push({field: "glNum", visible: false,}, {field: "glLabel", visible: false,});
+                columns.push({field: "glNum", visible: false,});
             }
             columns.push({field: "to_delete", visible: false,}, {field: "catBadgeLabel", visible: false,});
 
@@ -491,13 +491,6 @@ class consetup {
 
     memListCellChanged(cell) {
         setCellChanged(cell);
-
-        // check if it's the gl cell, if so get the new value for gl label
-        if (cell.getField() == 'glNum') {
-            let glNum = cell.getValue();
-            let glLabel = glLabels[glNum];
-            cell.getRow().getCell('glLabel').setValue(glLabel);
-        }
     }
 
     ageListEditor(cell, onRendered, success, cancel, editorParams){
@@ -777,7 +770,6 @@ class consetup {
             label: '',
             notes: '',
             glNum: '',
-            glLabel: '',
             badgeLabel: '',
             catBadgeLabel: '',
         }, false).then(function (row) {
@@ -1074,7 +1066,7 @@ class consetup {
             'rptGrouping'
         ];
         if (config.useGL == 1) {
-            fieldList.push('glNum', 'glLabel');
+            fieldList.push('glNum');
         }
         fieldList.push('sort_order');
         downloadFilePost(format, filename, tabledata, null, fieldList);
@@ -1303,7 +1295,6 @@ class consetup {
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
-                this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                 this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 if (config.useGL == 1) {
                     document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
@@ -1367,7 +1358,6 @@ class consetup {
                     this.#editData[index].shortname = shortname;
                     this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
-                    this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                     this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 }
                 if (bundle) {
@@ -1396,7 +1386,6 @@ class consetup {
                 this.#editData[index].rptGrouping = document.getElementById('EMLTS' + row + '_rptGrouping').value;
                 if (config.useGL == 1) {
                     this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
-                    this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
                 }
                 index++;
             }
@@ -1410,7 +1399,6 @@ class consetup {
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
-        this.#editData[index].glLabel = glLabels[this.#editData[index].glNum];
         this.#editData[index].rptGrouping = document.getElementById('editMemListRptGrouping').value;
         this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
@@ -1883,7 +1871,7 @@ function tsGlNumChange(row) {
     }
 }
 
-// bottom section edited gllabel, set top screen
+// bottom section edited Badge Label, set top screen
 function tsBadgeLabelChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListBadgeLabel').value = document.getElementById('EMLTS' + row + '_badgeLabel').value;
