@@ -35,6 +35,8 @@ ALTER TABLE gl ADD CONSTRAINT gl_updatedby FOREIGN KEY(updateBy) REFERENCES peri
  */
 UPDATE exhibitsRegions SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 UPDATE exhibitsRegionYears SET glNum = null, glLabel = null WHERE trim(glNum) = '';
+UPDATE exhibitsRegionYears SET revenueGlLabel = null, revenueGlNum = null WHERE trim(revenueGlNum) = '';
+UPDATE exhibitsRegionYears SET mailinGLNum = null, mailinGLLabel = null WHERE trim(mailinGLNum) = '';
 UPDATE exhibitsSpacePrices SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 UPDATE exhibitsSpaces SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 UPDATE memList SET glNum = null, glLabel = null WHERE trim(glNum) = '';
@@ -51,13 +53,17 @@ CREATE TABLE temp_glnum(
 INSERT INTO temp_glnum(pri, glNum, glLabel)
 SELECT pri, glNum, glLabel
 FROM (
-         SELECT DISTINCT 6 as pri, glNum, glLabel FROM exhibitsRegions
+         SELECT DISTINCT 3 as pri, glNum, glLabel FROM exhibitsRegions
          UNION
          SELECT DISTINCT 5 as pri, glNum, glLabel FROM exhibitsRegionYears
          UNION
-         SELECT DISTINCT 3 as pri, glNum, glLabel FROM exhibitsSpacePrices
+         SELECT DISTINCT 6 as pri, revenueGlNum, revenueGlLabel FROM exhibitsRegionYears
          UNION
-         SELECT DISTINCT 4 as pri, glNum, glLabel FROM exhibitsSpaces
+         SELECT DISTINCT 7 as pri, mailinGLNum, mailinGLLabel FROM exhibitsRegionYears
+         UNION
+         SELECT DISTINCT 8 as pri, glNum, glLabel FROM exhibitsSpacePrices
+         UNION
+         SELECT DISTINCT 9 as pri, glNum, glLabel FROM exhibitsSpaces
          UNION
          SELECT DISTINCT 1 as pri, glNum, glLabel FROM memList
          UNION
@@ -86,6 +92,8 @@ DROP TABLE IF EXISTS temp_glnum;
  */
 ALTER TABLE exhibitsRegions DROP COLUMN glLabel;
 ALTER TABLE exhibitsRegionYears DROP COLUMN glLabel;
+ALTER TABLE exhibitsRegionYears DROP COLUMN revenueGlLabel;
+ALTER TABLE exhibitsRegionYears DROP COLUMN mailinGLLabel;
 ALTER TABLE exhibitsSpacePrices DROP COLUMN glLabel;
 ALTER TABLE exhibitsSpaces DROP COLUMN glLabel;
 ALTER TABLE memList DROP COLUMN glLabel;
