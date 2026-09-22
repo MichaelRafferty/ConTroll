@@ -524,12 +524,14 @@ EOS;
     $lastPID = -1;
     $pindex = null;
     $memberships = [];
+    $withMembership = 0;
 
     while ($l = $rm->fetch_assoc()) {
         if ($l['perid'] != $lastPID) {
             if ($lastPID >= 0) {
                 //membership[$lastPID] = $memberships;
                 $perinfo[$pindex]['memberships'] = $memberships;
+                $withMembership++;
             }
             $memberships = [];
             $lastPID = $l['perid'];
@@ -541,8 +543,10 @@ EOS;
     if ($lastPID >= 0) {
         //$membership[$lastPID] = $memberships;
         $perinfo[$pindex]['memberships'] = $memberships;
+        $withMembership++;
     }
     $rm->free();
+    $response['message'] .= ", $withMembership have memberships";
 
 // now get the policies the same way
     $lastPID = -1;
