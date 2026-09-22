@@ -18,7 +18,6 @@ class taxConfig {
     #taxLabel = null;
     #taxRate = null;
     #taxGLNum = null;
-    #taxGLLabel = null;
     #taxItemsDiv = null;
     #taxActive = null;
     #taxItemsTable = null;
@@ -47,7 +46,6 @@ class taxConfig {
             this.#taxLabel = document.getElementById('taxLabel');
             this.#taxActive = document.getElementById('taxActive');
             this.#taxGLNum = document.getElementById('taxGLNum');
-            this.#taxGLLabel = document.getElementById('taxGLLabel');
             this.#taxItemsDiv = document.getElementById('taxItemsDiv');
             this.#taxSaveRowBtn = document.getElementById('tax-saveRow-btn');
         }
@@ -98,8 +96,12 @@ class taxConfig {
                 {title: "Receipt Label", field: "label", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
                 {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, hozAlign: "right", },
                 {title: "Taxable Overrides", field: "taxItemsDisplay", headerSort:false, width: 300, formatter: 'textarea', },
-                {title: "GL Num", field: "glNum", headerSort: false, editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "GL Label", field: "glLabel", headerSort: false, editor: "input", editorParams: {maxlength: "64"}, width: 300, },
+                {
+                    title: "GL Num/Label", field: "glNum", width: 420, headerWordWrap: true,
+                    editor: "list", editorParams: {values: glEditorList,},
+                    formatter: "lookup", formatterParams: glEditorList,
+                    headerFilter: true, headerFilterParams: {values: glEditorList},
+                },
                 {title: "Last Update", field: "lastUpdate", headerSort:false, },
                 {title: "Updated By", field: "updatedBy", headerSort:false , },
                 { field: "taxItems", visible: false, },
@@ -151,7 +153,6 @@ class taxConfig {
         this.#taxRate.value = this.#taxRowBeforeEdit.rate == undefined ? '0.00' : this.#taxRowBeforeEdit.rate;
         this.#taxActive.value = this.#taxRowBeforeEdit.active == undefined ? 'Y' : this.#taxRowBeforeEdit.active;
         this.#taxGLNum.value = this.#taxRowBeforeEdit.glNum == undefined ? '' : this.#taxRowBeforeEdit.glNum;
-        this.#taxGLLabel.value = this.#taxRowBeforeEdit.glLabel == undefined ? '' : this.#taxRowBeforeEdit.glLabel;
         //this.#taxItemsDiv.innerHTML = this.#taxRowBeforeEdit.taxItemsDisplay;
         // build the edit area for the taxable items
         let taxablesArray = this.#taxRowBeforeEdit.taxItems;
@@ -194,7 +195,6 @@ class taxConfig {
         clearFieldChanged(this.#taxLabel);
         clearFieldChanged(this.#taxRate);
         clearFieldChanged(this.#taxGLNum);
-        clearFieldChanged(this.#taxGLLabel);
         this.#taxSaveRowBtn.disabled = true;
         this.#taxSaveRowBtn.innerHTML = "Save Changes";
         this.#taxEditModal.show();
@@ -222,7 +222,6 @@ class taxConfig {
         let label = this.#taxLabel.value.trim();
         let rate = this.#taxRate.value;
         let glNum = this.#taxGLNum.value.trim();
-        let glLabel = this.#taxGLLabel.value;
         let taxItemsData = this.#taxItemsTable.getData();
         let taxItems = {};
         for (let i = 0; i < taxItemsData.length; i++) {
@@ -259,10 +258,6 @@ class taxConfig {
             glNum = null;
         }
 
-        if (glLabel == '') {
-            glLabel = null;
-        }
-
         //console.log("oldItems: " + JSON.stringify(oldItems));
         //console.log("taxItems: " + JSON.stringify(taxItems));
 
@@ -276,8 +271,6 @@ class taxConfig {
             update.rate = rate;
         if (this.#taxRowBeforeEdit.glNum != glNum)
             update.glNum = glNum;
-        if (this.#taxRowBeforeEdit.glLabel != glLabel)
-            update.glLabel = glLabel;
 
         // now build the taxItems[] and taxItemsDisplay
         let newItems = [];

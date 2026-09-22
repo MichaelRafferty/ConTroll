@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/paymentPlans.php";
+require_once '../lib/gl.php';
 require_once "../lib/tax.php";
 require_once 'lib/sessionAuth.php';
 require_once 'lib/fileManager.php';
@@ -16,6 +17,17 @@ $conid = $con['id'];
 $regConf = get_conf('reg');
 $conConf = get_conf('con');
 $usps = get_conf('usps');
+
+[$gl, $glNums, $glLabels] = getGL();
+
+// build gl list select options
+$glEditorList = [];
+$glEditorList[''] = 'No GL Assigned';
+$glNumSelect = '<option value="">No GL assigned</option>' . PHP_EOL;
+foreach ($glLabels as $glNum => $glLabel) {
+    $glNumSelect .= '<option value="' . $glNum . '">' . $glNum . ': ' . $glLabel . '</option>';
+    $glEditorList[$glNum] = "$glNum: $glLabel";
+}
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -556,7 +568,7 @@ EOS;
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
                 <div class='modal-title'>
-                    <strong>Edit Sales Tax: <span id="tax-title"></span></strong>
+                    <strong>EditGL M Sales Tax: <span id="tax-title"></span></strong>
                 </div>
                 <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
             </div>
@@ -606,23 +618,15 @@ EOS;
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-2'>
-                            <label for='taxGLNum' class='form-label-sm'>GL Number</label>
+                            <label for='taxGLNum' class='form-label-sm'>General Ledger</label>
                         </div>
-                        <div class="col-sm-auto">
-                            <input class='form-control-sm' type='text' name='taxGLNum' id='taxGLNum' size='16' maxlength='16'
-                                   onchange="tax.editFieldChanged('taxGLNum')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        <div class='col-sm-auto'>
+                            <select iname='taxGLNum' id='taxGLNum'
+                                    onchange="tax.editFieldChanged('taxGLNum')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>">
+                            <?php echo $glNumSelect; ?>
+                            </select>
                         </div>
                         <div class="col-sm">Optional for Accounting</div>
-                    </div>
-                    <div class='row mt-2'>
-                        <div class='col-sm-2'>
-                            <label for='taxGLLabel' class='form-label-sm'>GL Label</label>
-                        </div>
-                        <div class="col-sm-auto">
-                            <input class='form-control-sm' type='text' name='taxGLLabel' id='taxGLLabel' size='64' maxlength='64'
-                                   onchange="tax.editFieldChanged('taxGLLabel')" tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
-                        </div>
-                        <div class='col-sm'>Optional for Accounting</div>
                     </div>
                     <div class='row mt-4'>
                         <div class="col-sm-auto">
@@ -705,6 +709,9 @@ EOS;
     var paymentPlans = <?php echo json_encode($paymentPlans); ?>;
     var memCategories = <?php echo json_encode($memCategories); ?>;
     var memLabels = <?php echo json_encode($memLabels); ?>;
+    var glNums = <?php echo json_encode($glNums); ?>;
+    var glLabels = <?php echo json_encode($glLabels); ?>;
+    var glEditorList = <?php echo json_encode($glEditorList); ?>;
 </script>
     <div class='tab-content ms-2' id='overview-content'>
         <div class='container-fluid'>
