@@ -74,6 +74,24 @@ function drawResults(data) {
         let numMems = peritem.memberships.length
         if (config.oneoff == 0 && numMems == 0)
             continue;
+        if (numMens == 0) {
+            let row = [];
+            row.perid = peritem.perid;
+            row.fullName = peritem.fullName;
+            row.badgename = peritem.badgename;
+            row.badge_name = peritem.badge_name;
+            row.badgeNameL2 = peritem.badgeNameL2;
+            row.email_addr = peritem.email_addr;
+            row.managerId = peritem.managedBy;
+            row.managerName = peritem.mgrFullName;
+            row.first_name = peritem.first_name;
+            row.middle_name = peritem.middle_name;
+            row.last_name = peritem.last_name;
+            row.suffix = peritem.suffix;
+            row.deceased = peritem.deceased;
+            row.formerGoH = peritem.formerGoH;
+            lookupdata.push(row);
+        }
         for (let j = 0; j < numMems; j++) {
             membership = peritem.memberships[j];
             let row = [];
