@@ -40,22 +40,46 @@ UPDATE exhibitsSpaces SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 UPDATE memList SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 UPDATE taxList SET glNum = null, glLabel = null WHERE trim(glNum) = '';
 
+DROP TABLE IF EXISTS temp_glnum;
+CREATE TABLE temp_glnum(
+    pri int,
+    glNum varchar(16) COLLATE utf8mb4_general_ci,
+    glLabel varchar(64) COLLATE utf8mb4_general_ci
+);
+
+
+INSERT INTO temp_glnum(pri, glNum, glLabel)
+SELECT pri, glNum, glLabel
+FROM (
+         SELECT DISTINCT 6 as pri, glNum, glLabel FROM exhibitsRegions
+         UNION
+         SELECT DISTINCT 5 as pri, glNum, glLabel FROM exhibitsRegionYears
+         UNION
+         SELECT DISTINCT 3 as pri, glNum, glLabel FROM exhibitsSpacePrices
+         UNION
+         SELECT DISTINCT 4 as pri, glNum, glLabel FROM exhibitsSpaces
+         UNION
+         SELECT DISTINCT 1 as pri, glNum, glLabel FROM memList
+         UNION
+         SELECT DISTINCT 2 as pri, glNum, glLabel FROM taxList
+     ) a
+WHERE glNum IS NOT NULL;
+
 INSERT INTO gl(glNum, glLabel)
 SELECT glNum, glLabel
 FROM (
-         SELECT DISTINCT glNum, glLabel FROM exhibitsRegions
-         UNION
-         SELECT DISTINCT glNum, glLabel FROM exhibitsRegionYears
-         UNION
-         SELECT DISTINCT glNum, glLabel FROM exhibitsSpacePrices
-         UNION
-         SELECT DISTINCT glNum, glLabel FROM exhibitsSpaces
-         UNION
-         SELECT DISTINCT glNum, glLabel FROM memList
-         UNION
-         SELECT DISTINCT glNum, glLabel FROM taxList
+         SELECT t.glNum, MAX(t.glLabel)AS glLabel
+         FROM (
+                  SELECT min(pri) as pri, glNum, glLabel
+                  FROM temp_glnum
+                  GROUP BY glNum) s
+                  JOIN temp_glnum t ON t.pri = s.pri and t.glNum = s.glNum
+         GROUP BY t.glnum
+         ORDER BY t.glnum
      ) a
-WHERE glNum IS NOT NULL;
+ORDER BY glNum
+
+DROP TABLE IF EXISTS temp_glnum;
 
 /*
  * Now modify all the tables that have glNum and glLabel to use just glNum as a ref to the gl table.
