@@ -179,7 +179,29 @@ EOS;
 
 // now get the current list
 $selSQL = <<<EOS
-SELECT glNum, glNum as keyfield, glLabel, description, sortOrder, active, createDate, updateDate, updateBy, 0 AS uses FROM gl ORDER BY glNum;
+WITH cnt AS (
+    SELECT glnum, count(*) cnt FROM memList GROUP BY glnum
+    UNION
+    SELECT glnum, count(*) cnt FROM taxList GROUP BY glnum
+    UNION
+    SELECT glnum, count(*) cnt FROM exhibitsRegions GROUP BY glnum
+    UNION
+    SELECT glnum, count(*) cnt FROM exhibitsRegionYears GROUP BY glnum
+    UNION
+    SELECT revenueGlNum, count(*) cnt FROM exhibitsRegionYears GROUP BY revenueGlNum
+    UNION
+    SELECT mailinGLNum, count(*) cnt FROM exhibitsRegionYears GROUP BY mailinGLNum
+    UNION
+    SELECT glnum, count(*) cnt FROM exhibitsSpacePrices GROUP BY glnum
+    UNION
+    SELECT glnum, count(*) cnt FROM exhibitsSpaces GROUP BY glnum
+), sum AS (
+    SELECT glnum, sum(cnt) cnt FROM cnt GROUP BY glnum
+)
+SELECT g.glNum, g.glNum as keyfield, glLabel, description, sortOrder, active, createDate, updateDate, updateBy, IFNULL(s.cnt, 0) AS uses 
+FROM gl g
+LEFT OUTER JOIN sum s ON g.glNum = s.glnum
+ORDER BY g.glNum;
 EOS;
 $glQ = dbQuery($selSQL);
 if ($glQ === false) {
