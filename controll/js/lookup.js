@@ -72,7 +72,7 @@ function drawResults(data) {
     for (let i = 0; i < perdata.length; i++) {
         let peritem = perdata[i];
         let numMems = peritem.memberships.length
-        if (config.oneoff == 1 && numMems == 0)
+        if (config.oneoff == 0 && numMems == 0)
             continue;
         for (let j = 0; j < numMems; j++) {
             membership = peritem.memberships[j];
