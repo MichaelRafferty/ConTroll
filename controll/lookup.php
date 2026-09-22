@@ -39,6 +39,7 @@ $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
 $config_vars['debug'] = getConfValue('debug', 'controll_lookup', 0);
 $config_vars['conid'] = $conid;
+$config_vars['oneoff'] = getConfValue('con', 'oneoff', 0);
 $config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
