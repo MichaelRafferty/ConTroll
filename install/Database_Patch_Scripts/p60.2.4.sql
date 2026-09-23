@@ -53,8 +53,6 @@ CREATE TABLE temp_glnum(
 INSERT INTO temp_glnum(pri, glNum, glLabel)
 SELECT pri, glNum, glLabel
 FROM (
-         SELECT DISTINCT 3 as pri, glNum, glLabel FROM exhibitsRegions
-         UNION
          SELECT DISTINCT 5 as pri, glNum, glLabel FROM exhibitsRegionYears
          UNION
          SELECT DISTINCT 6 as pri, revenueGlNum, revenueGlLabel FROM exhibitsRegionYears
