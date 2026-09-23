@@ -180,33 +180,32 @@ EOS;
 // now get the current list
 $selSQL = <<<EOS
 WITH cnt AS (
-    SELECT glnum, count(*) cnt FROM memList GROUP BY glnum
+    SELECT glNum, count(*) cnt FROM memList GROUP BY glNum
     UNION
-    SELECT glnum, count(*) cnt FROM taxList GROUP BY glnum
+    SELECT glNum, count(*) cnt FROM taxList GROUP BY glNum
     UNION
-    SELECT glnum, count(*) cnt FROM exhibitsRegions GROUP BY glnum
-    UNION
-    SELECT glnum, count(*) cnt FROM exhibitsRegionYears GROUP BY glnum
+    SELECT glNum, count(*) cnt FROM exhibitsRegionYears GROUP BY glNum
     UNION
     SELECT revenueGlNum, count(*) cnt FROM exhibitsRegionYears GROUP BY revenueGlNum
     UNION
     SELECT mailinGLNum, count(*) cnt FROM exhibitsRegionYears GROUP BY mailinGLNum
     UNION
-    SELECT glnum, count(*) cnt FROM exhibitsSpacePrices GROUP BY glnum
+    SELECT glNum, count(*) cnt FROM exhibitsSpacePrices GROUP BY glNum
     UNION
-    SELECT glnum, count(*) cnt FROM exhibitsSpaces GROUP BY glnum
+    SELECT glNum, count(*) cnt FROM exhibitsSpaces GROUP BY glNum
 ), sum AS (
-    SELECT glnum, sum(cnt) cnt FROM cnt GROUP BY glnum
+    SELECT glNum, sum(cnt) cnt FROM cnt GROUP BY glNum
 )
 SELECT g.glNum, g.glNum as keyfield, glLabel, description, sortOrder, active, createDate, updateDate, updateBy, IFNULL(s.cnt, 0) AS uses 
 FROM gl g
-LEFT OUTER JOIN sum s ON g.glNum = s.glnum
+LEFT OUTER JOIN sum s ON g.glNum = s.glNum
 ORDER BY g.glNum;
 EOS;
 $glQ = dbQuery($selSQL);
 if ($glQ === false) {
     $response['error'] = 'Select query failed, get help';
     ajaxSuccess($response);
+    exit();
 }
 $gl = [];
 while ($glR = $glQ->fetch_assoc()) {
