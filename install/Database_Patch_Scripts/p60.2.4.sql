@@ -91,6 +91,9 @@ DROP TABLE IF EXISTS temp_glnum;
  * Now modify all the tables that have glNum and glLabel to use just glNum as a ref to the gl table.
  */
 ALTER TABLE exhibitsRegions DROP COLUMN glLabel;
+ALTER TABLE exhibitsRegions DROP COLUMN glNum;
+ALTER TABLE exhibitsRegions DROP CONSTRAINT exhibitsRegions_ibfk_1; -- your constraint name may be different
+ALTER TABLE exhibitsRegions DROP COLUMN glNum;
 ALTER TABLE exhibitsRegionYears DROP COLUMN glLabel;
 ALTER TABLE exhibitsRegionYears DROP COLUMN revenueGlLabel;
 ALTER TABLE exhibitsRegionYears DROP COLUMN mailinGLLabel;
