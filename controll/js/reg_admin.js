@@ -535,23 +535,28 @@ function actionbuttons(cell, formatterParams, onRendered) {
     let btns = "";
     if (limitConid >= (conid - config.rolloverYears) && limitConid < (conid + 1) && perid > 0) {
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="changeReg(' + index + ')">Chgs</button>';
+            ' onclick="changeReg(' + index + ')">C</button>';
     }
 
     // receipt button
     if (paid > 0)
         btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="receipt(' + index + ')">Rcpt</button>';
+            ' onclick="receipt(' + index + ')">R</button>';
 
     // history button
     if (hcount > 0)
         btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="history(' + index + ')">Hist</button>';
+            ' onclick="history(' + index + ')">H</button>';
 
     // notes button
     if (ncount != null && ncount > 0)
         btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="showRegNotes(' + index + ', true)">Notes</button>';
+            ' onclick="showRegNotes(' + index + ', true)">N</button>';
+
+    // edit person button
+    if (perid != null && perid > 0)
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="editPerson(' + perid + ')">P</button>';
 
 return btns;
 }
@@ -1816,7 +1821,7 @@ function draw_registrations(data) {
         paginationElement: document.getElementById('tabPaginationDiv'),
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
-            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
+            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false, minWidth: 100, },
             { title: "TID", field: "display_trans", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "PID", field: "perid", width: 80, hozAlign: "right",
@@ -1825,12 +1830,12 @@ function draw_registrations(data) {
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "Full Name", field: "fullName", headerSort: true,
-                headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
-            { title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html', },
+            { title: "Full Name", field: "fullName", width: 200, headerSort: true, formatter: "textarea",
+                headerFilter: "textarea", headerFilterFunc: fullNameHeaderFilter, },
+            { title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: "textarea", formatter: 'html', },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
-            { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
-            { title: "#p", field: "pcount", hozAlign: "right",
+            { title: "Membership Type", field: "label", width: 200, headerSort: true, headerFilter: "textarea", formatter: "textarea" },
+            { title: "#pr", field: "pcount", minWidth: 50, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "mId", field: "memId", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
@@ -2254,6 +2259,11 @@ function deleterow(e, row) {
 // reg note items
 function addNote(regId) {
     showRegNotes(regId, false);
+}
+
+// action e (edit person)
+function editPerson(perid) {
+    window.open('people.php?perid=' + perid, '_blank');
 }
 
 function localeMoney(cell, formatParams, onRendered) {

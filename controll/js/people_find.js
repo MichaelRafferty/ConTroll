@@ -265,6 +265,14 @@ class Find {
         });
 
         this.#addPersonBtn.disabled = false;
+        let _this = this;
+        if (config.perid) {
+            // wait for table to render, then start edit
+            setTimeout(() => {
+                _this.editPerson(config.perid);
+                config.perid = null;
+            }, 600);
+        }
     }
 
     // tabulator formatter for the id field

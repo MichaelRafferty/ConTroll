@@ -18,6 +18,16 @@ window.onload = function initpage() {
     add_tab = document.getElementById("add-tab");
     find_tab = document.getElementById("findedit-tab");
     unmatched_tab = document.getElementById("unmatched-tab");
+    if (config.hasOwnProperty('perid')) {
+        if (config.perid > 0) {
+            if (profile =! null)
+                profile = null;
+            profile = new Profile('f_', 'people', 'warncolor');
+            peopleEditPerson(config.perid, null);
+            return;
+        }
+    }
+
     settab('unmatched-pane');
 }
 

@@ -60,6 +60,8 @@ $ageByDate = $startdate->format('F j, Y');
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
+if (array_key_exists('perid', $_REQUEST))
+    $config_vars['perid'] = $_REQUEST['perid'];
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
