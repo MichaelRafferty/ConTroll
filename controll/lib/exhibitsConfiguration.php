@@ -3,7 +3,7 @@
     // functions relating to configuring exhibits space
 
     // draw_exhibitsConfigurationModals - used for editing rows of configuration tables
-function draw_exhibitsConfigurationModals() {
+function draw_exhibitsConfigurationModals($useGL, $glNumSelect) {
     // regionYear
     ?>
     <div id='exhibitorRegionYearModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Exhibits Configuration-Edit Region Year' aria-hidden='true'
@@ -85,53 +85,48 @@ function draw_exhibitsConfigurationModals() {
                             </div>
                         </div>
                         <div class='row mt-2'>
-                            <div class='col-sm-2'>Sales Space GL Num:</div>
+                            <div class='col-sm-2'>Mail-in Fee:</div>
                             <div class='col-sm-auto'>
-                                <input type='text' id='eryRevenueGLNum' name='eryRevenueGLNum' maxlength='16' size='24'/>
+                                <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInFee' name='eryMailInFee' min='0'/>
                             </div>
                         </div>
                         <div class='row mt-2'>
-                            <div class='col-sm-2'>Sales Space GL Label:</div>
+                            <div class='col-sm-2'>Mail-in Base Exhibitor Number:</div>
                             <div class='col-sm-auto'>
-                                <input type='text' id='eryRevenueGLLabel' name='eryRevenueGLLabel' maxlength='64' size='64'/>
+                                <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInBase' name='eryMailInBase' min='0'/>
+                            </div>
+                        </div>
+<?php if ($useGL) { ?>
+                        <div class='row mt-2'>
+                            <div class='col-sm-2'>Sales Space General Ledger:</div>
+                            <div class='col-sm-auto'>
+                                <select id='eryRevenueGLNum' name='eryRevenueGLNum'>
+                                    <?php echo $glNumSelect; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="row mt-2">
                             <div class='col-sm-2'>Default Space GL Num:</div>
                             <div class='col-sm-auto'>
-                                <input type='text' id='eryGLNum' name='eryGLNum' maxlength='16' size='24'/>
+                                <select id='eryGLNum' name='eryGLNum'>
+                                    <?php echo $glNumSelect; ?>
+                                </select>
                             </div>
                         </div>
-                        <div class="row mt-2">
-                            <div class='col-sm-2'>Default Space GL Label:</div>
-                            <div class='col-sm-auto'>
-                                <input type='text' id='eryGLLabel' name='eryGLLabel' maxlength='64' size='64'/>
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class='col-sm-2'>Mail-in Fee:</div>
-                            <div class='col-sm-auto'>
-                                <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInFee' name='eryMailInFee' min="0"/>
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class='col-sm-2'>Mail-in Base Exhibitor Number:</div>
-                            <div class='col-sm-auto'>
-                                <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInBase' name='eryMailInBase' min="0"/>
-                            </div>
-                        </div>
+
                         <div class="row mt-2">
                             <div class='col-sm-2'>Mail-in Fee GL Num:</div>
                             <div class='col-sm-auto'>
-                                <input type='text' id='eryFeeGLNum' name='eryFeeGLNum' maxlength='16' size='24'/>
+                                <select id='eryFeeGLNum' name='eryFeeGLNum'>
+                                    <?php echo $glNumSelect; ?>
+                                </select>
                             </div>
                         </div>
-                        <div class="row mt-2">
-                            <div class='col-sm-2'>Mail-in Fee GL Label:</div>
-                            <div class='col-sm-auto'>
-                                <input type='text' id='eryFeeGLLabel' name='eryFeeGLLabel' maxlength='64' size='64'/>
-                            </div>
-                        </div>
+<?php } else { ?>
+                        <input type='hidden' id='eryRevenueGLNum' name='eryRevenueGLNum'/>
+                        <input type='hidden' id='eryGLNum' name='eryGLNum'/>
+                        <input type='hidden' id='eryFeeGLNum' name='eryFeeGLNum'/>
+<?php } ?>
                         <div class="row mt-2">
                             <div class="col-sm-12" id="ry_message_div"></div>
                         </div>

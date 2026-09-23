@@ -6,6 +6,7 @@ require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
 require_once "../lib/profile.php";
 require_once "../lib/policies.php";
+require_once '../lib/gl.php';
 require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
@@ -83,6 +84,14 @@ if (isSessionVar('initialTab')) {
 if (isSessionVar('initialSubtab')) {
     $initialSubtab = getSessionVar('initialSubtab');
     unsetSessionVar('initialSubtab');
+}
+
+$finance = $authToken->checkAuth('finance');
+$finance = $authToken->checkAuth('finance');
+if ($finance) {
+    $useGL = getConfValue('controll', 'useGLCodes', 1);
+} else {
+    $useGL = 0;
 }
 
 $cdn = getTabulatorIncludes();
@@ -170,6 +179,17 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['defaultCountry'] = $defaultCountry;
 $config_vars['exhibitorConid'] = $exhibitorConid;
 $config_vars['validDomains'] = explode(',', getConfValue('con', 'emailDomains', ''));
+$config_vars['useGL'] = $useGL;
+[$gl, $glNums, $glLabels] = getGL();
+
+// build gl list select options
+$glEditorList = [];
+$glEditorList[''] = 'No GL Assigned';
+$glNumSelect = '<option value="">No GL assigned</option>' . PHP_EOL;
+foreach ($glLabels as $glNum => $glLabel) {
+    $glNumSelect .= '<option value="' . $glNum . '">' . $glNum . ': ' . $glLabel . '</option>';
+    $glEditorList[$glNum] = "$glNum: $glLabel";
+}
 
 bs_tinymceModal();
 draw_fileManagerModals($authToken);
@@ -178,7 +198,7 @@ draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
 draw_exhibitorInvoiceModal('', null, $countryOptions, $testsite, null, 'Exhibitors', 'admin');
 draw_exhibitorChooseModal();
-draw_exhibitsConfigurationModals();
+draw_exhibitsConfigurationModals($useGL, $glNumSelect);
 ?>
 <!-- space detail modal -->
 <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -406,6 +426,9 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     var policies = <?php echo json_encode($policies); ?>;
     var policyHeader = <?php echo json_encode($header); ?>;
     var policyFooter = <?php echo json_encode($footer); ?>;
+    var gl = <?php echo json_encode($glNums); ?>;
+    var glLabels = <?php echo json_encode($glLabels); ?>;
+    var glEditorList = <?php echo json_encode($glEditorList); ?>;
 </script>
     <div class='tab-content ms-2' id='overview-content'>
         <div class='container-fluid'>

@@ -464,13 +464,10 @@ class exhibitssetup {
                 document.getElementById('eryTotalUnits').value = row.totalUnitsAvailable;
                 document.getElementById('eryAtConBase').value = row.atconIdBase;
                 document.getElementById('eryRevenueGLNum').value = row.revenueGlNum;
-                document.getElementById('eryRevenueGLLabel').value = row.revenueGlLabel;
                 document.getElementById('eryGLNum').value = row.glNum;
-                document.getElementById('eryGLLabel').value = row.glLabel;
                 document.getElementById('eryMailInFee').value = row.mailinFee;
                 document.getElementById('eryMailInBase').value = row.mailinIdBase;
                 document.getElementById('eryFeeGLNum').value = row.mailinGLNum;
-                document.getElementById('eryFeeGLLabel').value = row.mailinGLLabel;
 
                 this.#exhibitsRegionYearModal.show();
                 break;
@@ -495,13 +492,10 @@ class exhibitssetup {
             totalUnitsAvailable: document.getElementById('eryTotalUnits').value,
             atconIdBase: document.getElementById('eryAtConBase').value,
             revenueGlNum: document.getElementById('eryRevenueGLNum').value,
-            revenueGlLabel: document.getElementById('eryRevenueGLLabel').value,
             glNum: document.getElementById('eryGLNum').value,
-            glLabel: document.getElementById('eryGLLabel').value,
             mailinFee: document.getElementById('eryMailInFee').value,
             mailinIdBase: document.getElementById('eryMailInBase').value,
             mailinGLNum: document.getElementById('eryFeeGLNum').value,
-            mailinGLLabel: document.getElementById('eryFeeGLLabel').value,
         }
         this.#regionYearsTable.updateData([newrow]);
         this.#exhibitsRegionYearModal.hide();
@@ -827,6 +821,86 @@ class exhibitssetup {
             }
         }
 
+        let columns = [
+            {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
+            {title: "Edit", formatter: this.editRowBtn, formatterParams: {table: 'RegionYears', fieldName: 'id', },
+                hozAlign:"left", headerSort: false,
+            },
+            {title: "To Del", field: "to_delete", visible: this.#debugVisible,},
+            {
+                title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                cellClick: function (e, cell) {
+                    deleterow(e, cell.getRow());
+                }
+            },
+            {title: "ID", field: "id", width: 80, hozAlign: "right", headerSort: false, formatter: this.formatId },
+            {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
+            {
+                title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true,
+                headerFilter: true, headerFilterParams: {values: this.#regionListArr},
+                editor: this.getEditMode("list"), editorParams: {values: this.#regionListArr}, validator: "required",
+                formatter: "lookup", formatterParams: this.#regionListArr,
+            },
+            {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
+                editor: this.getEditMode("list"), editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
+                formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
+            },
+            {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
+                editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
+            },
+            {title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
+                editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
+            },
+            { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
+                editor: this.getEditMode("list"),  editorParams: { values: this.#memListArrIncl },
+                formatter:"lookup", formatterParams: this.#memListArrIncl,
+            },
+            { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
+                editor: this.getEditMode("list"),  editorParams: { values: this.#memListArr  },
+                formatter:"lookup", formatterParams: this.#memListArr,
+            },
+            {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true,
+                headerSort: false,
+                editor: this.getEditMode("input"), editorParams: {maxlength: "10"}},
+            {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                editor: this.getEditMode("number"), },
+            {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                formatter: localeMoney, editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
+            {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                editor: this.getEditMode("number"),},
+    ];
+        if (config.useGL == 1) {
+            columns.push(
+            {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, width: 320,
+                editor: "list", editorParams: {values: glEditorList,},
+                formatter: "lookup", formatterParams: glEditorList,
+                headerFilter: true, headerFilterParams: {values: glEditorList},
+            },
+            {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
+                editor: "list", editorParams: {values: glEditorList,},
+                formatter: "lookup", formatterParams: glEditorList,
+                headerFilter: true, headerFilterParams: {values: glEditorList},
+            },
+            {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, width: 320,
+                editor: "list", editorParams: {values: glEditorList,},
+                formatter: "lookup", formatterParams: glEditorList,
+                headerFilter: true, headerFilterParams: {values: glEditorList},
+        },
+
+            );
+        } else {
+            columns.push(
+                {field: "revenueGlNum", visible: false,},
+                {field: "glNum", visible: false,},
+                {field: "            {title: \"Fee GL Num\", field: \"mailinGLNum\", headerWordWrap: true, headerSort: true, width: 320,\n", visible: false,},
+            );
+        }
+        columns.push(
+            {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+        {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true,
+            hozAlign: "right", width: 90,}
+        );
+
         this.#regionYeardirty = false;
         this.#regionYearsPagination = this.#regionYears.length > 10;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
@@ -838,72 +912,7 @@ class exhibitssetup {
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            columns: [
-                {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
-                {title: "Edit", formatter: this.editRowBtn, formatterParams: {table: 'RegionYears', fieldName: 'id', },
-                    hozAlign:"left", headerSort: false,
-                },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible,},
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "ID", field: "id", width: 80, hozAlign: "right", headerSort: false, formatter: this.formatId },
-                {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
-                {
-                    title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true,
-                    headerFilter: true, headerFilterParams: {values: this.#regionListArr},
-                    editor: this.getEditMode("list"), editorParams: {values: this.#regionListArr}, validator: "required",
-                    formatter: "lookup", formatterParams: this.#regionListArr,
-                },
-                {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
-                    editor: this.getEditMode("list"), editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
-                    formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
-                },
-                {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
-                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
-                },
-                {title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
-                    editor: this.getEditMode("input"), editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
-                },
-                { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
-                    editor: this.getEditMode("list"),  editorParams: { values: this.#memListArrIncl },
-                    formatter:"lookup", formatterParams: this.#memListArrIncl,
-                },
-                { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
-                    editor: this.getEditMode("list"),  editorParams: { values: this.#memListArr  },
-                    formatter:"lookup", formatterParams: this.#memListArr,
-                },
-                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true,
-                    headerSort: false,
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "10"}},
-                {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    editor: this.getEditMode("number"), },
-                {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    formatter: localeMoney, editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
-                {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    editor: this.getEditMode("number"),},
-                {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Sales GL Label", field: "revenueGlLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
-                    formatter: "textarea",
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
-                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
-                    formatter: "textarea",
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
-                {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                        editor: this.getEditMode("input"), editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Fee GL Label", field: "mailinGLLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea",
-                    formatter: "textarea",
-                    editor: this.getEditMode("input"), editorParams: {maxlength: "64"}, width: 200, },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true,
-                    hozAlign: "right", width: 90,},
-                {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-            ],
+            columns: columns,
         });
         this.#regionYearsTable.on("dataChanged", function (data) {
             _this.dataChangedYears(data);
@@ -982,9 +991,7 @@ class exhibitssetup {
                 {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, },
                 {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
                 {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
-                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
+                    editor: "input", editorParams: {maxlength: "16"}, width: 320, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -1072,9 +1079,7 @@ class exhibitssetup {
                     editor: "tickCross", formatter: "tickCross", validator: "required",
                 },
                 {title: "GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
-                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
+                    editor: "input", editorParams: {maxlength: "16"}, width: 320, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -1625,11 +1630,9 @@ class exhibitssetup {
             "totalUnitsAvailable",
             "atconIdBase",
             "glNum",
-            "glLabel",
             "mailinFee",
             "mailinIdBase",
             "mailinGLNum",
-            "mailinGLLabel",
             "sortorder"
         ];
         downloadFilePost(format, filename, tabledata, null, fieldList);
@@ -1785,7 +1788,6 @@ class exhibitssetup {
             "description",
             "unitsAvailable",
             "glNum",
-            "glLabel",
             "sortorder"
         ];
         downloadFilePost(format,  filename, tabledata, null, fieldList);
@@ -1948,7 +1950,6 @@ class exhibitssetup {
             "additionalMemberships",
             "requestable",
             "glNum",
-            "glLabel",
             "sortorder"
         ];
         downloadFilePost(format, filename, tabledata, null, fieldList);
@@ -1976,10 +1977,9 @@ function cellChanged(cell) {
             value = rowData.exhibitsRegionYear;
             eryData = exhibits.getRegionYears(value);
             row = cell.getRow();
-            row.update({"glNum": eryData.glNum, "glLabel": eryData.glLabel});
+            row.update({"glNum": eryData.glNum});
             setCellChanged(cell);
             setCellChanged(row.getCell("glNum"));
-            setCellChanged(row.getCell("glLabel"));
             return;
 
         case 'spaceId':
@@ -1993,13 +1993,12 @@ function cellChanged(cell) {
             space = exhibits.getSpace(value);
             row = cell.getRow();
             eryData = exhibits.getRegionYears(space.exhibitsRegionYear);
-            row.update({"glNum": space.glNum, "glLabel": space.glLabel, "regionId": eryData.exhibitsRegion }).then(
+            row.update({"glNum": space.glNum,"regionId": eryData.exhibitsRegion }).then(
                 function () {
                     row.reformat();
                     setCellChanged(row.getCell("regionId"));
                     setCellChanged(row.getCell("spaceId"));
                     setCellChanged(row.getCell("glNum"));
-                    setCellChanged(row.getCell("glLabel"));
                 });
             return;
     }

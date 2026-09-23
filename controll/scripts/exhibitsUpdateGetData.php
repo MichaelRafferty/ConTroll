@@ -297,9 +297,24 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
+                if (array_key_exists('revenueGlNum', $row) && $row['revenueGlNum'] != '') {
+                    $revenueGlNum = $row['revenueGlNum'];
+                } else {
+                    $revenueGlNum = null;
+                }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
+                if (array_key_exists('mailinGLNum', $row) && $row['mailinGLNum'] != '') {
+                    $mailinGLNum = $row['mailinGLNum'];
+                } else {
+                    $mailinGLNum = null;
+                }
                 $numrows = dbSafeCmd($updsql, 'ssssssiiiidisii', array($row['exhibitsRegion'], $row['roomStatus'], $row['ownerName'],
-                    $row['ownerEmail'], $row['revenueGlNum'], $row['glNum'], $row['includedMemId'], $row['additionalMemId'],
-                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['mailinGLNum'],$row['sortorder'],
+                    $row['ownerEmail'], $revenueGlNum, $glNum, $row['includedMemId'], $row['additionalMemId'],
+                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $mailinGLNum,$row['sortorder'],
                     $row[$keyfield]));
                 $updated += $numrows;
             }
@@ -327,9 +342,24 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
+                if (array_key_exists('revenueGlNum', $row) && $row['revenueGlNum'] != '') {
+                    $revenueGlNum = $row['revenueGlNum'];
+                } else {
+                    $revenueGlNum = null;
+                }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
+                if (array_key_exists('mailinGLNum', $row) && $row['mailinGLNum'] != '') {
+                    $mailinGLNum = $row['mailinGLNum'];
+                } else {
+                    $mailinGLNum = null;
+                }
                 $numrows = dbSafeInsert($inssql, 'iisssssiiiidisi', array($conid, $row['exhibitsRegion'], $row['roomStatus'],
-                    $row['ownerName'], $row['ownerEmail'], $row['revenueGlNum'], $row['glNum'], $includedMemId, $additionalMemId,
-                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['mailinGLNum'], $row['sortorder']));
+                    $row['ownerName'], $row['ownerEmail'], $revenueGlNum, $glNum, $includedMemId, $additionalMemId,
+                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $mailinGLNum, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
