@@ -1271,7 +1271,8 @@ draw_fileManagerModals($authToken);
         </div>
         <div class='row'>
             <div class='col-sm-12 p-0 ms-2 me-1'>
-                <div><b>Actions: C:Change Reg Record, R:Display Reg Receipt, H:Display Reg History, N:Display Reg Notes, P:Edit Person, M: Match Person</b>
+                <div><b>Actions:&emsp;C:</b>Change Reg Record,&emsp;<b>R:</b>Display Reg Receipt,&emsp;<b>H:</b>Display Reg History,&emsp;
+                    <b>N:</b>Display Reg Notes,&emsp;<b>P:</b>Edit Person,&emsp;<b>M:</b>Match Person
                 </div>
             </div>
         </div>
