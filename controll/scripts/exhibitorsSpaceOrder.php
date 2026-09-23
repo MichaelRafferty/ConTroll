@@ -105,7 +105,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.mailinGLNum, ery.mailinGLLabel
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.mailinGLNum
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -154,7 +154,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel, ery.includedMemId, ery.additionalMemId
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, ery.includedMemId, ery.additionalMemId
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
