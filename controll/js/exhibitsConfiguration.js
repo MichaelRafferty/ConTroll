@@ -871,28 +871,27 @@ class exhibitssetup {
     ];
         if (config.useGL == 1) {
             columns.push(
-            {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, width: 320,
-                editor: "list", editorParams: {values: glEditorList,},
-                formatter: "lookup", formatterParams: glEditorList,
-                headerFilter: true, headerFilterParams: {values: glEditorList},
-            },
-            {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
-                editor: "list", editorParams: {values: glEditorList,},
-                formatter: "lookup", formatterParams: glEditorList,
-                headerFilter: true, headerFilterParams: {values: glEditorList},
-            },
-            {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, width: 320,
-                editor: "list", editorParams: {values: glEditorList,},
-                formatter: "lookup", formatterParams: glEditorList,
-                headerFilter: true, headerFilterParams: {values: glEditorList},
-        },
-
+                {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, width: 320,
+                    editor: "list", editorParams: {values: glEditorList,},
+                    formatter: "lookup", formatterParams: glEditorList,
+                    headerFilter: true, headerFilterParams: {values: glEditorList},
+                },
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
+                    editor: "list", editorParams: {values: glEditorList,},
+                    formatter: "lookup", formatterParams: glEditorList,
+                    headerFilter: true, headerFilterParams: {values: glEditorList},
+                },
+                {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, width: 320,
+                    editor: "list", editorParams: {values: glEditorList,},
+                    formatter: "lookup", formatterParams: glEditorList,
+                    headerFilter: true, headerFilterParams: {values: glEditorList},
+                },
             );
         } else {
             columns.push(
                 {field: "revenueGlNum", visible: false,},
                 {field: "glNum", visible: false,},
-                {field: "            {title: \"Fee GL Num\", field: \"mailinGLNum\", headerWordWrap: true, headerSort: true, width: 320,\n", visible: false,},
+                {field: "mailinGLNum", visible: false,},
             );
         }
         columns.push(
@@ -951,6 +950,57 @@ class exhibitssetup {
                 console.log(this.#spacesListArr);
             }
         }
+        let  columns = [
+            {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
+            {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
+            {
+                title: "&bigstar;Region",
+                field: "exhibitsRegionYear",
+                headerSort: true,
+                headerWordWrap: true,
+                width: 100,
+                headerFilter: true,
+                headerFilterParams: {values: this.#regionYearsListArr},
+                editor: "list", editorParams: {values: this.#regionYearsListArr},
+                validator: "required",
+                formatter: "lookup", formatterParams: this.#regionYearsListArr,
+            },
+            {
+                title: "&bigstar;Short Name", field: "shortname", headerSort: true, headerFilter: true, width: 200,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
+            },
+            {
+                title: "&bigstar;Name", field: "name", width: 400, headerSort: true, headerFilter: true,
+                editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
+            },
+            {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' },
+                hozAlign:"left", headerSort: false },
+            {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, },
+            {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false,
+                editor: "number", editorParams: {min:0, max:9999999}},
+        ];
+
+        if (config.useGL == 1)
+            columns.push(
+            {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
+                editor: "list", editorParams: {values: glEditorList,},
+                formatter: "lookup", formatterParams: glEditorList,
+                headerFilter: true, headerFilterParams: {values: glEditorList}, }
+            );
+        else
+            columns.push({ field: "glNum", visible: false});
+
+        columns.push(
+            {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
+            {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
+            {
+                title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                cellClick: function (e, cell) {
+                    deleterow(e, cell.getRow());
+                }
+            },
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
+        );
 
         this.#spacedirty = false;
         this.#spacesPagination = this.#spaces.length > 10;
@@ -963,45 +1013,7 @@ class exhibitssetup {
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            columns: [
-                {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
-                {
-                    title: "&bigstar;Region",
-                    field: "exhibitsRegionYear",
-                    headerSort: true,
-                    headerWordWrap: true,
-                    width: 100,
-                    headerFilter: true,
-                    headerFilterParams: {values: this.#regionYearsListArr},
-                    editor: "list", editorParams: {values: this.#regionYearsListArr},
-                    validator: "required",
-                    formatter: "lookup", formatterParams: this.#regionYearsListArr,
-                },
-                {
-                    title: "&bigstar;Short Name", field: "shortname", headerSort: true, headerFilter: true, width: 200,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
-                },
-                {
-                    title: "&bigstar;Name", field: "name", width: 400, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
-                },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' },
-                    hozAlign:"left", headerSort: false },
-                {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, },
-                {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
-                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {maxlength: "16"}, width: 320, },
-                {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
-                {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
-            ],
+            columns: columns,
         });
         this.#spacesTable.on("dataChanged", function (data) {
             _this.dataChangedSpaces(data);
@@ -1026,18 +1038,7 @@ class exhibitssetup {
         if (data.exhibitsSpacePrices)
             this.#spacePrices = data.exhibitsSpacePrices;
 
-        this.#spacePricedirty = false;
-        this.#spacePricesPagination = this.#spacePrices.length > 10;
-        this.#spacePricesTable = new Tabulator('#spacePrices-div', {
-            history: true,
-            movableRows: true,
-            data: this.#spacePrices,
-            layout: "fitDataTable",
-            pagination: this.#spacePricesPagination,
-            paginationAddRow: "table",
-            paginationSize: 10,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            columns: [
+            let columns = [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 {title: "ID", field: "id", width: 60, hozAlign: "right", headerSort: false},
                 {
@@ -1077,9 +1078,20 @@ class exhibitssetup {
                 {
                     title: "&bigstar;Req", field: "requestable", width: 80, hozAlign: "right", headerSort: false,
                     editor: "tickCross", formatter: "tickCross", validator: "required",
-                },
-                {title: "GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
-                    editor: "input", editorParams: {maxlength: "16"}, width: 320, },
+                }
+            ];
+
+            if (config.useGL == 1)
+                columns.push(
+                    {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
+                        editor: "list", editorParams: {values: glEditorList,},
+                        formatter: "lookup", formatterParams: glEditorList,
+                        headerFilter: true, headerFilterParams: {values: glEditorList}, }
+                );
+            else
+                columns.push({ field: "glNum", visible: false});
+
+            columns.push(
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -1087,7 +1099,20 @@ class exhibitssetup {
                     cellClick: function (e, cell) { deleterow(e, cell.getRow()); },
                 },
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
-            ],
+            );
+
+        this.#spacePricedirty = false;
+        this.#spacePricesPagination = this.#spacePrices.length > 10;
+        this.#spacePricesTable = new Tabulator('#spacePrices-div', {
+            history: true,
+            movableRows: true,
+            data: this.#spacePrices,
+            layout: "fitDataTable",
+            pagination: this.#spacePricesPagination,
+            paginationAddRow: "table",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: columns,
         });
         this.#spacePricesTable.on("dataChanged", function (data) {
             _this.dataChangedSpacePrices(data);

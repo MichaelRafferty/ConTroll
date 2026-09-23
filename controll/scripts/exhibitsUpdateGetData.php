@@ -413,8 +413,14 @@ EOS;
                 } else {
                     $description = null;
                 }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
+
                 $numrows = dbSafeCmd($updsql, 'issssiiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
-                    $row['glNum'],  $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
+                    $glNum,  $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -443,8 +449,14 @@ EOS;
                 } else {
                     $description = null;
                 }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
+
                 $numrows = dbSafeInsert($inssql, 'issssiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
-                    $row['glNum'], $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
+                    $glNum, $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -524,8 +536,13 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
                 $numrows = dbSafeCmd($updsql, 'isssddiiiii', array($row['spaceId'], $row['code'], $row['description'],
-                    $row['glNum'], $units, $price, $includedMemberships, $additionalMemberships, $requestable, $row['sortorder'], $row[$keyfield]));
+                    $glNum, $units, $price, $includedMemberships, $additionalMemberships, $requestable, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -563,8 +580,13 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
+                if (array_key_exists('glNum', $row) && $row['glNum'] != '') {
+                    $glNum = $row['glNum'];
+                } else {
+                    $glNum = null;
+                }
                 $numrows = dbSafeInsert($inssql, 'isssddiiii', array($row['spaceId'], $row['code'], $row['description'],
-                    $row['glNum'], $units, $price, $includedMemberships, $additionalMemberships, $requestable, $row['sortorder']));
+                    $glNum, $units, $price, $includedMemberships, $additionalMemberships, $requestable, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
