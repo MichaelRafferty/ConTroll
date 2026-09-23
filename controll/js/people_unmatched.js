@@ -206,7 +206,6 @@ class Unmatched {
         };
         if (newperid != null && newperid > 0) {
             postdata.searchPattern = newperid;
-            config.newperid = null;
             if (newmgr != null && newmgr > 0) {
                 postdata.managerPattern = newmgr;
                 config.newmgr = null;
@@ -314,6 +313,22 @@ class Unmatched {
 
         if (msg)
             show_message(msg, 'success');
+        if (config.hasOwnProperty('newperid')) {
+            let newperid = config.newperid;
+            config.newperid = null;
+            let newmgr = -99999;
+            if (config.hasOwnProperty('newmgr'))  {
+                newmgr = config.newmgr;
+                config.newmgr = null;
+            }
+            if (newmgr < 0 && newperid > 0) {
+                let _this = this;
+                setTimeout(() => {
+                    _this.matchPerson(newperid);
+                    config.perid = null;
+                }, 600);
+            }
+        }
     }
 
     // table related functions
