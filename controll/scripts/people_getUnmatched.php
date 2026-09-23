@@ -36,10 +36,15 @@ $cteJoin = '';
 $newperid = 0;
 if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') {
     $searchPattern = $_POST['searchPattern'];
+    $newmgr = -99999;
+    if (array_key_exists('managerPattern', $_POST))
+        $newmgr = $_POST['managerPattern'];
     if (is_numeric($searchPattern)) {
         $newperid = $searchPattern;
         $cte = <<<EOS
 ), ids AS (
+    SELECT ? AS matchId
+    UNION
     SELECT ? AS matchId
 EOS;
     } else {
@@ -116,7 +121,7 @@ if ($unmatchedCnt > 0) {
     if ($cte == '')
         $unR = dbQuery($unQ);
     else if ($newperid > 0)
-        $unR = dbSafeQuery($unQ,'i', array($newperid));
+        $unR = dbSafeQuery($unQ,'ii', array($newperid, $newmgr));
     else
         $unR = dbSafeQuery($unQ,'sssssssss', array($searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern,
             $searchPattern, $searchPattern, $searchPattern, $searchPattern));

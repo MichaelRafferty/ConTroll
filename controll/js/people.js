@@ -27,6 +27,19 @@ window.onload = function initpage() {
             return;
         }
     }
+    if (config.hasOwnProperty('newperid')) {
+        if (config.newperid > 0) {
+            let newmgr = null;
+            if (config.hasOwnProperty('newmgr'))
+                newmgr = config.newmgr;
+            if (profile =! null)
+                profile = null;
+            if (unmatchedPeople == null)
+                unmatchedPeople = new Unmatched(config['debug']);
+            unmatchedPeople.open(null, config.newperid, newmgr);
+            return;
+        }
+    }
 
     settab('unmatched-pane');
 }

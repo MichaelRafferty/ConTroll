@@ -529,6 +529,9 @@ function actionbuttons(cell, formatterParams, onRendered) {
     let paid = data.paid;
     let ncount = data.ncount;
     let hcount = data.hcount;
+    let npid = data.newperson_id;
+    let mgr = data.manager;
+    let mgrType = data.managedByType;
     let complete_trans = data.complete_trans;
     let index = cell.getRow().getIndex();
 
@@ -557,6 +560,15 @@ function actionbuttons(cell, formatterParams, onRendered) {
     if (perid != null && perid > 0)
         btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="editPerson(' + perid + ')">P</button>';
+    else if (npid != null && npid > 0) {
+        let nmgrNpid = 0;
+        if (mgr != null && mgr > 0 && mgrType == 'n') {
+            nmgrNpid = mgr;
+        }
+
+        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="matchPerson(' + npid + ',' + nmgrNpid + ')">M</button>';
+    }
 
 return btns;
 }
@@ -1830,6 +1842,7 @@ function draw_registrations(data) {
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { field: "managedByType", visible: false,},
             { title: "Full Name", field: "fullName", width: 200, headerSort: true, formatter: "textarea",
                 headerFilter: "textarea", headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: "textarea", formatter: 'html', },
@@ -2264,6 +2277,14 @@ function addNote(regId) {
 // action e (edit person)
 function editPerson(perid) {
     window.open('people.php?perid=' + perid, '_blank');
+}
+
+function matchPerson(npid, nmgr) {
+    let url = 'people.php?newperid=' + npid;
+    if (nmgr > 0) {
+        url += '&newmgr=' + nmgr;
+    }
+    window.open(url, '_blank');
 }
 
 function localeMoney(cell, formatParams, onRendered) {

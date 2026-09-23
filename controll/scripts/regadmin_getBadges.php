@@ -100,6 +100,12 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
     CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.managedBy, NP.managedByNew) ELSE IFNULL(P.managedBy, P.managedByNew) END AS manager,
+    CASE
+        WHEN R.perid IS NULL AND NP.managedBy IS NULL AND NP.managedByNew IS NOT NULL THEN 'n'
+        WHEN R.perid IS NULL AND NP.managedBy IS NOT NULL THEN 'p'
+        WHEN P.managedBy IS NOT NULL THEN 'p'
+        ELSE null
+    END AS managedByType,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
@@ -161,6 +167,11 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
     CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
     CASE WHEN R.perid IS NULL THEN NP.manager ELSE P.manager END AS manager,
+    CASE
+        WHEN R.perid IS NULL AND NP.manager IS NOT NULL THEN 'n'
+        WHEN R.perid IS NOT NULL AND P.manager IS NOT NULL THEN 'p'
+        ELSE null
+    END AS managedByType,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user

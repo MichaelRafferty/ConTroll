@@ -198,17 +198,26 @@ class Unmatched {
     }
 
     // called on open of the unmatched window
-    open(msg = null) {
+    open(msg = null, newperid = null, newmgr = null) {
         let _this = this;
         let script = "scripts/people_getUnmatched.php";
         let postdata = {
             ajax_request_action: 'unmatched',
         };
-        let search = document.getElementById('unmatched_pattern');
-        if (search) {
-            let searchPattern = search.value;
-            if (searchPattern != '')
-                postdata.searchPattern = searchPattern;
+        if (newperid != null && newperid > 0) {
+            postdata.searchPattern = newperid;
+            config.newperid = null;
+            if (newmgr != null && newmgr > 0) {
+                postdata.managerPattern = newmgr;
+                config.newmgr = null;
+            }
+        } else {
+            let search = document.getElementById('unmatched_pattern');
+            if (search) {
+                let searchPattern = search.value;
+                if (searchPattern != '')
+                    postdata.searchPattern = searchPattern;
+            }
         }
         clear_message();
         clearError();

@@ -62,6 +62,10 @@ $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;
 if (array_key_exists('perid', $_REQUEST))
     $config_vars['perid'] = $_REQUEST['perid'];
+if (array_key_exists('newperid', $_REQUEST))
+    $config_vars['newperid'] = $_REQUEST['newperid'];
+if (array_key_exists('newmgr', $_REQUEST))
+    $config_vars['newmgr'] = $_REQUEST['newmgr'];
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
