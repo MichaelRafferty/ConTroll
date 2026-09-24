@@ -81,7 +81,7 @@ FROM (
          GROUP BY t.glnum
          ORDER BY t.glnum
      ) a
-ORDER BY glNum
+ORDER BY glNum;
 
 DROP TABLE IF EXISTS temp_glnum;
 
