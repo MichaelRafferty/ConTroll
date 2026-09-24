@@ -166,7 +166,9 @@ EOS;
             if (array_key_exists('glNum', $row))
                 $glNum = $row['glNum'];
             else
-                $glNum = '';
+                $glNum = null;
+            if ($glNum == '')
+                $glNum = null;
 
             if (strlen($row['shortname']) > 64) // truncate it if it gets to here as too long, the .js should catch it first.
                 $row['shortname'] = substr($row['shortname'], 0, 64);
