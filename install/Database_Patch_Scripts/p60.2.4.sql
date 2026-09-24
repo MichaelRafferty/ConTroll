@@ -89,7 +89,6 @@ DROP TABLE IF EXISTS temp_glnum;
  * Now modify all the tables that have glNum and glLabel to use just glNum as a ref to the gl table.
  */
 ALTER TABLE exhibitsRegions DROP COLUMN glLabel;
-ALTER TABLE exhibitsRegions DROP COLUMN glNum;
 ALTER TABLE exhibitsRegions DROP CONSTRAINT exhibitsRegions_ibfk_1; -- your constraint name may be different
 ALTER TABLE exhibitsRegions DROP COLUMN glNum;
 ALTER TABLE exhibitsRegionYears DROP COLUMN glLabel;
@@ -99,7 +98,6 @@ ALTER TABLE exhibitsSpacePrices DROP COLUMN glLabel;
 ALTER TABLE exhibitsSpaces DROP COLUMN glLabel;
 ALTER TABLE memList DROP COLUMN glLabel;
 ALTER TABLE taxList DROP COLUMN glLabel;
-ALTER TABLE exhibitsRegions ADD CONSTRAINT FOREIGN KEY er_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegionYears ADD CONSTRAINT FOREIGN KEY ery_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
 ALTER TABLE exhibitsSpacePrices ADD CONSTRAINT FOREIGN KEY esp_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
 ALTER TABLE exhibitsSpaces ADD CONSTRAINT FOREIGN KEY es_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
@@ -121,7 +119,7 @@ VIEW memLabel AS SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m
 FROM memList m
 JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
 JOIN memCategories c ON m.memCategory = c.memCategory
-JOIN gl g ON g.glNum = m.glNum;
+LEFT OUTER JOIN gl g ON g.glNum = m.glNum;
 
 /*
  * new custom text items
