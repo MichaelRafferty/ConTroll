@@ -151,11 +151,10 @@ class EmailBulkSend {
             emailType: this.#emailType,
             macroSubstitution: this.#macroSubstitution
         };
-        let dataJSON = btoa(encodeURI(JSON.stringify(data)));
         let _this = this;
         $.ajax({
             url: this.#sendURL,
-            data: { data: dataJSON },
+            data: { data: JSON.stringify(data) },
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
                 checkRefresh(data);

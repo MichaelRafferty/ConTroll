@@ -79,9 +79,12 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                         </div>
                         <div class='row mt-2'>
                             <div class='col-sm-12 m-0 p-0' id='nfs-buttons'>
-                                <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNfs(); return false;" disabled>Undo</button>
-                                <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
-                                <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
+                                <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNFS(); return false;
+" disabled>Undo</button>
+                                <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNFS(); return false;
+" disabled>Redo</button>
+                                <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNFS(); return
+                                false;">Add New</button>
                                 <button id="nfs-save" type="button" class="btn btn-primary btn-sm"  onclick="auctionItemRegistration.saveAll(); return false;
 " disabled>Save Changes</button>
                             </div>

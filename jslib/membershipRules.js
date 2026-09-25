@@ -309,6 +309,15 @@ class MembershipRules {
             }
         }
 
+        if (step.ruleType == 'currentAge') {
+            // this check is independent of any memberships
+            if (this.#age == null)
+                return false;
+            if (step.ageList != null && step.ageList != '') {
+                return step.ageListArray.indexOf(this.#age.toString()) != -1;
+            }
+        }
+
         // check ageList against the person's age first
         if (step.ageList != null && step.ageList != '' && this.#age != null && this.#age != '' && step.applyTo == 'person') {
             var match = step.ageListArray.indexOf(this.#age) != -1;
@@ -418,6 +427,7 @@ class MembershipRules {
                     //console.log('typeCheck: ' + typeCheck + ', memCheck: ' + memCheck + ', catCheck: ' + catCheck + ', ageCheck: ' + ageCheck + ', stepPass: ' + stepPass);
                     if (stepPass)
                         checkMore = false;
+                    break;
             } // end of switch
 
             if (checkMore == false) {

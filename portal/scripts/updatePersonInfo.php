@@ -148,6 +148,11 @@ $id = $currentPersonType . $currentPerson;
 $portalProfileChecked[$id] = 1;
 setSessionVar('portalProfileChecked', $portalProfileChecked);
 
+// now update the session if this is the person logged in and their age changed
+if ($currentPerson == $personId && $currentPersonType == $personType) {
+    setSessionVar('idAge', $ageType);
+}
+
 $response['rows_upd'] = $rows_upd;
 $response['status'] = 'success';
 $response['logmessage'] = $message;

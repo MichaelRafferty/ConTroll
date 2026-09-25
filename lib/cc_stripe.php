@@ -1039,7 +1039,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $sourceIdStr = $ccParams['nonce'];
     if (array_key_exists('change', $ccParams)) {
-        $change = $ccParams['change'];
+        $change = round($ccParams['change'], 2);
     } else {
         $change = 0;
     }
@@ -1252,7 +1252,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $paymentRecord = json_decode(json_encode($paymentRecord), true);
 
         // now if cash and change is > 0, note change as refunded amount
-        if ($sourceId == 'CASH' && $change > 0) {
+        if ($sourceId == 'CASH' && $change > 0.004) {
             $refundFields = [
                 'processor_details' => [
                     'type' => 'custom',

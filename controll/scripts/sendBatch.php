@@ -37,8 +37,7 @@ $conid=$con['id'];
 $conname = $con['conname'];
 $code='';
 
-$json = urldecode(base64_decode($_POST['data']));
-$data = json_decode($json, true);
+$data = json_decode($_POST['data'], true);
 
 // now that we have the data block, validate the permission
 switch ($data['emailType']) {
