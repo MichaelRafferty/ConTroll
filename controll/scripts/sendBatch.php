@@ -9,7 +9,7 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$perm = 'admin';
+$perm = 'reg_admin';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
 $response['tokenStatus'] = $authToken->checkToken();
@@ -46,7 +46,7 @@ switch ($data['emailType']) {
         $perm = 'exhibitor';
         break;
     default:
-        $perm = 'admin';
+        $perm = 'reg_admin';
 }
 
 if ( !$authToken->checkAuth($perm)) {

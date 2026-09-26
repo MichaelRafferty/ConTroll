@@ -380,7 +380,7 @@ EOS;
                 <div class="col-sm-auto mt-4 mb-0">
                     <pre><?php
                             $isAdmin = $authToken->checkAuth('admin');
-                            $isRegadmin = $authToken->checkAuth('reg-admin');
+                            $isRegadmin = $authToken->checkAuth('reg_admin');
                             echo "Email: $user_email\n";
                             if ($isAdmin) echo "User id: $user_id\n";
                             echo "User perid: $user_perid\n";

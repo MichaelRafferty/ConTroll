@@ -32,7 +32,7 @@ function returnReleaseNotesLink($shown = '', $authToken = null) : string {
     if ($authToken == null)
         $authToken = new authToken('web');
 
-    if ($authToken->checkAuth('admin') || $authToken->checkAuth('reg-admin'))
+    if ($authToken->checkAuth('admin') || $authToken->checkAuth('reg_admin'))
         return "Controll Release: $shown, " . '<a href="markdown.php?mdf=ReleaseNotes/' . $releaseNoteList[$shown] .
         "&releaseNoteId=$shown" . '">Release Notes for ' . $shown . '</a>';
 

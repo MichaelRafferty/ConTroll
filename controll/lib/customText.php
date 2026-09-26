@@ -5,6 +5,7 @@
 function getCustomText($page) {
     switch ($page) {
         case 'reg-admin':
+        case 'reg_admin':
             $apps = "'portal','onlinereg','atcon','controll','profile'";
             break;
         case 'exhibitor':

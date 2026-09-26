@@ -21,7 +21,7 @@ switch ($email_type) {
         $perm = 'exhibitor';
         break;
     default:
-        $perm = 'admin';
+        $perm = 'reg_admin';
 }
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
