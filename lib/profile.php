@@ -195,6 +195,16 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             </div>
         </div>
     </div>
+    <div class='row'>
+        <div class='col-sm-auto'>
+            <label for="<?php echo $idPrefix . 'ec'; ?>" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
+                Emergency Contact</span></label><br/>
+            <textArea class='form-control-sm'  name='emergencyContact' id='<?php echo $idPrefix . 'emergencyContact'; ?>'
+                rows='5'  cols=80, maxlength='2047' tabindex="<?php echo $tabindex;
+                       $tabindex += 10; ?>"/>
+           </textArea>
+        </div>
+    </div>
 <?php
     if ($useUSPS) echo '</div></div><div class="col-sm-4" id="' . $idPrefix . 'uspsblock"></div></div>' . PHP_EOL;
     if ($admin == false) {

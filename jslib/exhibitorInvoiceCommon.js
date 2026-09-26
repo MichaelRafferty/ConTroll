@@ -369,6 +369,7 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
                 </div>
             </div>`;
     tabindex += 2;
+
     if (config.useUSPS) {
         html += `
         </div>
@@ -434,7 +435,18 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     }
     html += `
 </div>
+    <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <label for="` + prefix + `emergencyContact" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
+                Emergency Contact</span></label><br/>
+            <div class="col-sm-auto ms-0 me-0 p-0">
+                <textarea name="` + prefix + 'emergencyContact" id="' + prefix + 'emergencyContact" tabindex = ' + tabindex + `
+                    rows="3" cols="80" maxlength="2047" placeholder="Emergency Contact"></textarea>
+        </div>
+    </div>
 `;
+    tabindex += 2;
+
     if (policies == null || policies.length == 0)
         return html;
 

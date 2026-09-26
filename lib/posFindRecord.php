@@ -513,8 +513,10 @@ EOS;
         $index++;
     }
     if ($num_rows >= $limit) {
+        $responseField = 'warn';
         $response['warn'] = "$num_rows members found, limited to $limit, use different search criteria to refine your search.";
     } else {
+        $responseField = 'message';
         $response['message'] = "$num_rows members found";
     }
     $rp->free();
@@ -546,7 +548,7 @@ EOS;
         $withMembership++;
     }
     $rm->free();
-    $response['message'] .= ", $withMembership have memberships";
+    $response[$responseField] .= ", $withMembership have memberships";
 
 // now get the policies the same way
     $lastPID = -1;

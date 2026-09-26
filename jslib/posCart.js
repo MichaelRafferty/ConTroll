@@ -1522,10 +1522,18 @@ class PosCart {
             <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex +30) +
             '" value="' + row.postal_code + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
+    </div>
+    <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 32) + `">
                 ` + this.#country_select + `
             </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <textarea name='c` + rownum + `-emergencyContact' id='c` + rownum + `-emergencyContact' tabindex="` + String(tabindex + 34) + `"
+                rows="2" cols="80" maxlength="2047" placeholder="Emergency Contact"></textarea>
         </div>
     </div>
     <div class="row mb-4">
