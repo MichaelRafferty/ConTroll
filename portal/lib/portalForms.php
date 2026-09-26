@@ -327,7 +327,7 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         $fullAddress .= '<br/>' . $person['addr_2'];
     $fullAddress .= '<br/>' . $person['city'] . ', ' . $person['state'] . ' ' . $person['zip'];
     $country = $person['country'];
-    $emergencyContact = $person['emergencyContact'];
+    $emergencyContact = str_replace("\n", "<br/>\n", $person['emergencyContact']);
     $phone = $person['phone'];
     $email = $person['email_addr'];
     $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';

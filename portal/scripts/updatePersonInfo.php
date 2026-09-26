@@ -126,7 +126,7 @@ $value_arr = array(
     $currentPerson,
 );
 
-$rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssssiii', $value_arr);
+$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssssiii', $value_arr);
 if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();
