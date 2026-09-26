@@ -876,7 +876,7 @@ if ($allowedPayment) {
     draw_paymentDueModal();
     draw_makePaymentModal();
 }
-draw_recieptModal();
+draw_recieptModal('portal');
 draw_couponModal();
 drawChangeEmailModal();
 if (count($paymentPlans) > 0) {

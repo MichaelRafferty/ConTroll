@@ -801,7 +801,7 @@ function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
 }
 
 // draw_receiptModal - modal to display a receipt
-function draw_recieptModal() : void {
+function draw_recieptModal($class = 'portal') : void {
 ?>
     <div id='portalReceipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Portal Receipt' aria-hidden='true' style='--bs-modal-width:
     80%;'>
@@ -820,7 +820,7 @@ function draw_recieptModal() : void {
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-                <button class='btn btn-sm btn-primary' id='portalEmailReceipt' onclick='portal.emailReceipt("payor")'>Email Receipt</button>
+                <button class='btn btn-sm btn-primary' id='portalEmailReceipt' onclick='<?php echo $class ?>.emailReceipt("payor")'>Email Receipt</button>
             </div>
         </div>
     </div>

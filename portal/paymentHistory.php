@@ -166,7 +166,7 @@ portalPageInit('paymentHistory', $info,
     var membershipsPurchased = <?php echo json_encode($memberships); ?>;
 </script>
 <?php
-draw_recieptModal();
+draw_recieptModal('paymentHistory');
 $noPayments = true;
 
 $totalDueFormatted = '';
