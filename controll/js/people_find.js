@@ -958,6 +958,8 @@ class Find {
                 { title: "State/Prov", field: 'state', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Post Code", field: 'zip', headerWordWrap: true, headerSort: false, },
                 { title: "Ctry", field: 'country', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Emergency Contact", field: 'emergencyContact', format: "textarea", formatter: findPerson.colorSet,
+                    headerWordWrap: true, headerSort: false, },
                 { title: "Act", field: 'active', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Ban", field: 'banned', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Decd", field: 'deceased', formatter: findPerson.colorSet, headerSort: false, },
