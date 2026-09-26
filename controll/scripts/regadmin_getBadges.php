@@ -148,11 +148,13 @@ WITH notes AS (
     GROUP BY R.id
 ), pfields AS (
     SELECT id AS perid, fullName,
-    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
+        IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName,
+        pronouns, deceased, banned
     FROM perinfo
 ), nfields AS (
     SELECT id AS newperson_id, fullName, perid AS newperson_perid,
-    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
+        IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName,
+        pronouns, 'N' AS deceased, 'N' as banned
     FROM newperson
 )
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 
@@ -166,6 +168,8 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.email_addr ELSE P.email_addr END AS email_addr,
     CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
     CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
+    CASE WHEN R.perid IS NULL THEN NP.deceased ELSE P.deceased END AS deceased,
+    CASE WHEN R.perid IS NULL THEN NP.banned ELSE P.banned END AS banned,
     CASE WHEN R.perid IS NULL THEN NP.manager ELSE P.manager END AS manager,
     CASE
         WHEN R.perid IS NULL AND NP.manager IS NOT NULL THEN 'n'

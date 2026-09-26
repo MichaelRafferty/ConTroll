@@ -1836,7 +1836,7 @@ function draw_registrations(data) {
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false, minWidth: 100, },
             { title: "TID", field: "display_trans", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "PID", field: "perid", width: 80, hozAlign: "right",
+            { title: "PID", field: "perid", width: 80, hozAlign: "right", formatter: this.idStatus,
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "NPID", field: "newperson_id", width: 75, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
@@ -1879,6 +1879,8 @@ function draw_registrations(data) {
             {field: 'middle_name', visible: false,},
             {field: 'last_name', visible: false,},
             {field: 'create_user', visible: false,},
+            {field: 'deceased', visible: false,},
+            {field: 'banned', visible: false,},
             {field: 'updatedBy', visible: false,},
         ],
         initialSort: [
@@ -1887,6 +1889,23 @@ function draw_registrations(data) {
         ],
     });
     reglistDiv.hidden = false;
+}
+
+// tabulator formatter for the id field
+function idStatus(cell, formatterParams, onRendered) {
+    let deceased = cell.getRow().getData().deceased;
+    let banned = cell.getRow().getData().banned;
+    let value = cell.getValue();
+    let row = cell.getRow();
+    let element = row.getElement();
+    if (deceased == 'Y') {
+        element.style.backgroundColor = '#FFC0C0'
+    } else if (banned == 'Y') {
+        element.style.backgroundColor = '#FCFCC0';
+    } else {
+        element.style.backgroundColor = '';
+    }
+    return value;
 }
 
 // save off the data file
