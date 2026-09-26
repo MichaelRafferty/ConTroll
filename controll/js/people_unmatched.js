@@ -46,6 +46,7 @@ class Unmatched {
     #matchEmail = null;
     #matchAge = null;
     #matchPhone = null;
+    #matchEmergencyContact = null;
     #matchPolicies = null;
     #matchFlags = null;
     #matchManager = null;
@@ -60,6 +61,7 @@ class Unmatched {
     #newEmail = null;
     #newAge = null;
     #newPhone = null;
+    #newEmergencyContact = null;
     #newPolicies = null;
     #newFlags = null;
     #newManager = null;
@@ -124,6 +126,7 @@ class Unmatched {
             this.#matchEmail = document.getElementById('matchEmail');
             this.#matchAge = document.getElementById('matchAge');
             this.#matchPhone = document.getElementById('matchPhone');
+            this.#matchEmergencyContact = document.getElementById('matchEmergencyContact');
             this.#matchPolicies = document.getElementById('matchPolicies');
             this.#matchFlags = document.getElementById('matchFlags');
             this.#matchManager = document.getElementById('matchManager');
@@ -137,6 +140,7 @@ class Unmatched {
             this.#newEmail = document.getElementById('newEmail');
             this.#newAge = document.getElementById('newAge');
             this.#newPhone = document.getElementById('newPhone');
+            this.#newEmergencyContact = document.getElementById('newEmergencyContact');
             this.#newPolicies = document.getElementById('newPolicies');
             this.#newFlags = document.getElementById('newFlags');
             this.#newManager = document.getElementById('newManager');
@@ -746,7 +750,7 @@ class Unmatched {
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
             this.#matchAge.style.backgroundColor = this.#newperson.currentAgeType != this.#matchPerson.currentAgeType ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
-            this.#emergencyContact.style.backgroundColor = this.#newperson.emergencyCotact != this.#matchPerson.emergencyContact`` ? diffcolor : '';
+            this.#emergencyContact.style.backgroundColor = this.#newperson.emergencyCotact != this.#matchPerson.emergencyContact ? diffcolor : '';
             this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
             this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flags ? diffcolor : '';
             this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
