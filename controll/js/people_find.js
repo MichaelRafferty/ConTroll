@@ -1053,6 +1053,7 @@ class Find {
             emailAddr: profile.email(),
             email_addr: profile.email(),
             phone: profile.phone(),
+            emergencyContact: profile.emergencyContact(),
             managerId: this.#managerId.value,
             managerName: this.#managerName.innerHTML,
             active: this.#active.value,

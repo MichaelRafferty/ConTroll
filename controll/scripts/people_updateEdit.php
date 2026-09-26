@@ -66,7 +66,7 @@ $zip = $_POST['zip'] == null ? '' : trim($_POST['zip']);
 $country = $_POST['country'] == null ? '' : trim($_POST['country']);
 $email_addr = $_POST['emailAddr'] == null ? '' : trim($_POST['emailAddr']);
 $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
-$phone = $_POST['emergencyContact'] == null ? '' : trim($_POST['emerencyContact']);
+$emergencyContact = $_POST['emergencyContact'] == null ? '' : trim($_POST['emergencyContact']);
 $managedBy = $_POST['managerId'] == '' ? null : trim($_POST['managerId']);
 $active = $_POST['active'] == null ? 'Y' : trim($_POST['active']);
 $banned = $_POST['banned'] == null ? 'N' : trim($_POST['banned']);
