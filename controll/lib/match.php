@@ -346,7 +346,7 @@ function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $class
                         </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
                             <textarea id='emergencyContact' name='emergencyContact' maxlength='2047' 
-                                rows='3' cols='72' placeholder='Emergency Contact'></textarea>
+                                rows='3' cols='70' placeholder='Emergency Contact'></textarea>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>

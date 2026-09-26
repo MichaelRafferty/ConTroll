@@ -47,6 +47,7 @@ class mergesetup {
     #remainEmail = null;
     #remainAge = null;
     #remainPhone = null;
+    #remainEmergencyContact = null;
     #remainPolicies = null;
     #remainFlags = null;
     #remainManager = null;
@@ -99,6 +100,7 @@ class mergesetup {
             this.#mergeEmail = document.getElementById('matchEmail');
             this.#mergeAge = document.getElementById('matchAge');
             this.#mergePhone = document.getElementById('matchPhone');
+            this.#mergeEmergencyContact = document.getElementById('matchEmergencyContact');
             this.#mergePolicies = document.getElementById('matchPolicies');
             this.#mergeFlags = document.getElementById('matchFlags');
             this.#mergeManager = document.getElementById('matchManager');
@@ -112,6 +114,7 @@ class mergesetup {
             this.#remainEmail = document.getElementById('newEmail');
             this.#remainAge = document.getElementById('newAge');
             this.#remainPhone = document.getElementById('newPhone');
+            this.#remainEmergencyContact = document.getElementById('newEmergencyContact');
             this.#remainPolicies = document.getElementById('newPolicies');
             this.#remainFlags = document.getElementById('newFlags');
             this.#remainManager = document.getElementById('newManager');
