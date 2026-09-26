@@ -46,7 +46,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
     CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
-    GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS regs
+    IFNULL(GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', '), '') AS regs
 FROM perinfo p
 LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
@@ -73,7 +73,8 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
     CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
-    GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
+    IFNULL(GROUP_CONCAT(DISTINCT TRIM(
+        CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', '), '') AS memberships
 FROM perinfo p
 LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)

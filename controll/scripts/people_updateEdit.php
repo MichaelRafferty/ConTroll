@@ -347,7 +347,8 @@ SELECT p.*, ma.memAgeType, p.fullname, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     CASE WHEN mp.id IS NOT NULL THEN mp.fullName ELSE '' END AS manager,
     CASE WHEN mp.id IS NOT NULL THEN mp.id ELSE NULL END AS managerId,
-    GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
+    IFNULL(GROUP_CONCAT(DISTINCT TRIM(
+        CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', '), '') AS memberships
 FROM perinfo p
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)

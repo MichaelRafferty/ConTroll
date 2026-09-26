@@ -146,7 +146,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
     if (data.addr_2 != '') {
         hover_text += data.addr_2 + '<br/>';
     }
-    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.zip + '<br/>';
     if (data.country != '' && data.country != 'USA') {
         hover_text += data.country + '<br/>';
     }
@@ -744,6 +744,7 @@ function saveAdd2() {
         state: profile.state(),
         zip: profile.zip(),
         country: profile.country(),
+        emergencyContact: profile.emergencyContact(),
         emailAddr: profile.email(),
         phone: profile.phone(),
         currentAgeType: profile.age() == '' ? null : profile.age(),

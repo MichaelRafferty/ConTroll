@@ -46,6 +46,16 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?,?,?);
 EOS;
 $typestr = 'sssssssssssssssssisssi';
 
+if (array_key_exists('deceased', $_POST))
+    $deceased = $_POST['deceased'] == null ? 'N' : $_POST['deceased']
+else
+    $deceased = 'N';
+
+if (array_key_exists('formerGoH', $_POST))
+    $formerGoH = $_POST['formerGoH'] == null ? 'N' : $_POST['formerGoH'];
+else
+    $formerGoH = 'N';
+
 // built insert array
 $values = [
     $_POST['lastName'] == null ? '' : $_POST['lastName'],
@@ -67,8 +77,8 @@ $values = [
     $_POST['emergencyContact'] == null ? '' : $_POST['emergencyContact'],
     $currentAgeConId,
     $currentAgeType,
-    $_POST['deceased'] == null ? 'N' : $_POST['deceased'],
-    $_POST['formerGoH'] == null ? 'N' : $_POST['formerGoH'],
+    $deceased,
+    $formerGoH
 ];
 $values[] = $updatedBy;
 
