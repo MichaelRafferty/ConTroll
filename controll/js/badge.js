@@ -115,6 +115,7 @@ function loadWatchList(data) {
                 {field: "country", visible: false,},
                 {field: "city", visible: false,},
                 {field: "state", visible: false,},
+                {field: "emergencyContact", visible: false,},
                 {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -150,7 +151,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
         hover_text += data.country + '<br/>';
     }
     hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
-        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>Emergency Contact: ' + data.emergencyContact + '<br/>';
     if (data.managedBy) {
         hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
     } else if (data.cntManages > 0) {
@@ -291,6 +292,7 @@ function loadSelectList(data) {
             {field: "country", visible: false,},
             {field: "city", visible: false,},
             {field: "state", visible: false,},
+            {field: "emergencyContact", visible: false,},
             {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
             {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
             {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -482,6 +484,7 @@ function saveEdit2() {
         emailAddr: profile.email(),
         email_addr: profile.email(),
         phone: profile.phone(),
+        emergencyContact: profile.emergencyContact(),
         currentAgeType: profile.age() == '' ? null : profile.age(),
         newPolicies: JSON.stringify(URLparamsToArray($('#a_editPolicies').serialize())),
     };

@@ -62,6 +62,7 @@ class Add {
             emailAddr: profile.email(),
             email_addr: profile.email(),
             phone: profile.phone(),
+            emergencyContact: profile.emergencyContact(),
         };
         var script = 'scripts/people_checkExists.php';
         var _this = this;
@@ -133,6 +134,7 @@ class Add {
                     {field: 'state', visible: false,},
                     {field: 'zip', visible: false,},
                     {field: 'country', visible: false,},
+                    {field: 'emergencyContact', visible: false,},
                     {field: 'active', visible: false,},
                     {field: 'banned', visible: false,},
                     {field: 'deceased', visible: false,},
@@ -219,6 +221,7 @@ class Add {
             state: profile.state(),
             zip: profile.zip(),
             country: profile.country(),
+            emergencyContact: profile.emergencyContact(),
             emailAddr: profile.email(),
             email_addr: profile.email(),
             phone: profile.phone(),

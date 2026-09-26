@@ -79,7 +79,7 @@ WITH numregs AS (
     GROUP BY perid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, fullName,
+    address, addr_2, city, state, zip, country, fullName, emergencyContact,
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM perinfo p
 LEFT OUTER JOIN numregs n ON (n.perid = p.id)
@@ -96,7 +96,7 @@ WITH numregs AS (
     GROUP BY newperid
 )
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-    address, addr_2, city, state, zip, country, fullName,
+    address, addr_2, city, state, zip, country, fullName, emergencyContact,
     managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary
 FROM newperson p
 LEFT OUTER JOIN numregs n ON (n.newperid = p.id)

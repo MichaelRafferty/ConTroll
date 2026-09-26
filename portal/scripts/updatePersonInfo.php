@@ -67,7 +67,7 @@ if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, emergencyContact = ?,
     currentAgeType = ?, currentAgeConId = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
@@ -75,13 +75,14 @@ EOS;
     $updPersonQ =  <<<EOS
 UPDATE newperson
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, emergencyContact = ?,
     currentAgeType = ?, currentAgeConId = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badge_name', 'badgeNameL2', 'legalName', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badge_name', 'badgeNameL2', 'legalName', 'pronouns', 'addr', 'addr2',
+    'city', 'state', 'zip', 'emergencyContact'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
@@ -118,6 +119,7 @@ $value_arr = array(
     $person['state'] == null ? '' : trim($person['state']),
     $person['zip'] == null ? '' : trim($person['zip']),
     $person['country'] == null ? '' : trim($person['country']),
+    $person['emergencyContact'] == null ? '' : trim($person['emergencyContact']),
     $ageType,
     $ageConid,
     $personId,

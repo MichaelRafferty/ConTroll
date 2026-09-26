@@ -37,6 +37,7 @@ $city = array_key_exists('city', $_POST) ? trim(strtolower($_POST['city'])) : ''
 $state = array_key_exists('state', $_POST) ? trim(strtolower($_POST['state'])) : '';
 $zip = array_key_exists('zip', $_POST) ? trim(strtolower($_POST['zip'])) : '';
 $country = array_key_exists('country', $_POST) ? trim(strtolower($_POST['country'])) : '';
+$emergencyContact = array_key_exists('emergencyContact', $_POST) ? trim(strtolower($_POST['emergencyContact'])) : '';
 $emailAddr = array_key_exists('emailAddr', $_POST) ? trim(strtolower($_POST['emailAddr'])) : '';
 $phone = array_key_exists('phone', $_POST) ? trim(strtolower($_POST['phone'])) : '';
 $phoneCheck = str_replace('(', '',
@@ -47,8 +48,8 @@ $phoneCheck = str_replace('(', '',
 if ($emailAddr == '/r')
     $emailAddr = '';
 
-if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns .  $badgeName . $badgeNameL2 .  $address .  $addr2 .
-    $city .  $state .  $zip . $emailAddr .  $phone == '') {
+if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns . $badgeName . $badgeNameL2 .  $address .  $addr2 .
+    $city .  $state .  $zip . $emailAddr .  $phone . $emergencyContact == '') {
     $response['error'] = 'The form cannot be empty, you need something to match on beyond just country';
     ajaxSuccess($response);
     exit();
@@ -57,7 +58,7 @@ if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns 
 // does anyone match this person?
 $mQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.deceased, p.formerGoH,
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,

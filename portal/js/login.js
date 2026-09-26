@@ -138,6 +138,7 @@ class Login {
                             {title: 'Created', field: 'creation_date', headerWordWrap: true, headerFilter: false, tooltip: true, headerSort: true,},
                             {title: 'Act', field: 'active', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
                             {title: 'Ban', field: 'banned', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
+                            {title: 'Deceased', field: 'deceased', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
                             {title: 'Actions', width: 100, hozAlign: "center", headerFilter: false, headerSort: false, formatter: _this.loginSelectIcon,},
                         ],
                     });

@@ -66,6 +66,7 @@ $zip = $_POST['zip'] == null ? '' : trim($_POST['zip']);
 $country = $_POST['country'] == null ? '' : trim($_POST['country']);
 $email_addr = $_POST['emailAddr'] == null ? '' : trim($_POST['emailAddr']);
 $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
+$phone = $_POST['emergencyContact'] == null ? '' : trim($_POST['emerencyContact']);
 $managedBy = $_POST['managerId'] == '' ? null : trim($_POST['managerId']);
 $active = $_POST['active'] == null ? 'Y' : trim($_POST['active']);
 $banned = $_POST['banned'] == null ? 'N' : trim($_POST['banned']);
@@ -154,16 +155,17 @@ if ($origAgeType != $currentAgeType) {
 $uP = <<<EOS
 UPDATE perinfo
 SET $ageSQL last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?, deceased = ?, formerGoH = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, emergencyContact = ?, banned = ?, deceased = ?, formerGoH = ?,
     active = ?, open_notes = ?, admin_notes = ?, managedBy = ?, updatedBy = ?, 
     managedByNew = NULL, lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by People Edit screen')
 WHERE id = ?;
 EOS;
 
 
-$typeStr .= 'ssssssssssssssssssssssiii';
+$typeStr .= 'sssssssssssssssssssssssiii';
 array_push($valArray, $last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $legalName, $pronouns,
-    $address, $addr_2, $city, $state, $zip, $country, $banned, $deceased, $formerGoH, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
+    $address, $addr_2, $city, $state, $zip, $country, $emergencyContact, $banned, $deceased, $formerGoH, $active, $open_notes, $admin_notes,
+    $managedBy, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {
@@ -353,7 +355,7 @@ LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 LEFT OUTER JOIN memAge ma ON p.id = ma.perid
 WHERE p.id = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact,
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId,
     ma.memAgeType, p.currentAgeType, p.deceased, p.formerGoH

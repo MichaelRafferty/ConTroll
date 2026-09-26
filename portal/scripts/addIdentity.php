@@ -116,7 +116,7 @@ EOS;
 }
 
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, emergencyContact, 
        address, addr_2, city, state, zip, country, managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, fullName
 FROM perinfo
 WHERE id=?;

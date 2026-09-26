@@ -36,7 +36,7 @@ class mergesetup {
     #mergePolicies = null;
     #mergeFlags = null;
     #mergeManager = null;
-    #mergePersonPolicies = null;
+    #mergeEmergencyContact = null;
     // candidate (new) person display fields
     #remainId = null;
     #remainName = null;
@@ -50,7 +50,6 @@ class mergesetup {
     #remainPolicies = null;
     #remainFlags = null;
     #remainManager = null;
-    #remainPersonPolicies = null;
     // editing fields
     #firstName = null;
     #middleName = null;
@@ -71,6 +70,7 @@ class mergesetup {
     #phone = null;
     #policiesDiv = null;
     #managerDiv = null;
+    #emergencyContact = null;
     #active = null;
     #banned = null;
     #deceased = null;
@@ -133,6 +133,7 @@ class mergesetup {
             this.#emailAddr = document.getElementById('emailAddr');
             this.#age = document.getElementById('age');
             this.#phone = document.getElementById('phone');
+            this.#emergencyContact = document.getElementById('emergencyContact');
             this.#policiesDiv = document.getElementById('policiesDiv');
             this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
@@ -398,6 +399,7 @@ class mergesetup {
         this.#mergeEmail.innerHTML = this.#mergePerson.email_addr;
         this.#mergeAge.innerHTML = this.#mergePerson.currentAgeType;
         this.#mergePhone.innerHTML = this.#mergePerson.phone;
+        this.#mergeEmergencyContact.innerHTML = this.#mergePerson.emergencyContact;
         this.#mergeFlags.innerHTML = 'Active: ' + this.#mergePerson.active + ',&emsp;Banned: ' + this.#mergePerson.banned +
             '<br/>Deceased: ' + this.#mergePerson.deceased + ',&emsp;Former GoH: ' + this.#mergePerson.formerGoH;
         if (this.#mergePerson.managedBy) {
@@ -422,6 +424,7 @@ class mergesetup {
         this.#remainEmail.innerHTML = this.#remainPerson.email_addr;
         this.#remainAge.innerHTML = this.#remainPerson.currentAgeType;
         this.#remainPhone.innerHTML = this.#remainPerson.phone;
+        this.#remainEmergencyContact.innerHTML = this.#remainPerson.emergencyContact;
         this.#remainFlags.innerHTML = 'Active: ' + this.#remainPerson.active + ',&emsp;Banned: ' + this.#remainPerson.banned +
             '<br/>Deceased: ' + this.#remainPerson.deceased + ',&emsp;Former GoH: ' + this.#remainPerson.formerGoH;
         if (this.#remainPerson.managedBy) {
@@ -454,6 +457,7 @@ class mergesetup {
         this.#emailAddr.value = this.#remainPerson.email_addr;
         this.#age.value = this.#remainPerson.currentAgeType;
         this.#phone.value = this.#remainPerson.phone;
+        this.#emergencyContact.value = this.#remainPerson.emergencyContact;
         this.#active.value = this.#remainPerson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#remainPerson.banned == 'Y' ? 'Y' : 'N';  // default to N
         this.#deceased.value = this.#remainPerson.deceased == 'Y' ? 'Y' : 'N';  // default to N
@@ -482,6 +486,7 @@ class mergesetup {
         this.#mergeEmail.style.backgroundColor = this.#remainPerson.email_addr != this.#mergePerson.email_addr ? diffcolor : '';
         this.#mergeAge.style.backgroundColor = this.#remainPerson.currentAgeType != this.#mergePerson.currentAgeType ? diffcolor : '';
         this.#mergePhone.style.backgroundColor = this.#remainPerson.phone != this.#mergePerson.phone ? diffcolor : '';
+        this.#mergeEmergencyContact.style.backgroundColor = this.#emergencyContact.phone != this.#mergePerson.emergencyContact ? diffcolor : '';
         this.#mergePolicies.style.backgroundColor = this.#remainPerson.policies != this.#mergePerson.policies ? diffcolor : '';
         this.#mergeFlags.style.backgroundColor = this.#remainPerson.flags != this.#mergePerson.flags ? diffcolor : '';
         this.#mergeManager.style.backgroundColor = this.#remainPerson.manager != this.#mergePerson.manager ? diffcolor : '';
@@ -677,6 +682,14 @@ class mergesetup {
                 this.#phone.value = this.#remainPerson.phone;
                 break;
 
+            case 'matchEmergencyContact':
+                this.#emergencyContact.value = this.#mergePerson.emergencyContact;
+                break;
+
+            case 'newEmergencyContact':
+                this.#emergencyContact.value = this.#remainPerson.emergencyContact;
+                break;
+
             case 'newPolicies':
                 p = this.#remainPerson['policies'];
                 for (let pol in policies) {
@@ -753,6 +766,7 @@ class mergesetup {
                 this.#emailAddr.value = this.#mergePerson.email_addr;
                 this.#age.value = this.#mergePerson.currentAgeType;
                 this.#phone.value = this.#mergePerson.phone;
+                this.#emergencyContact.value = this.#mergePerson.emergencyContact;
                 p = this.#mergePerson['policies'];
                 for (let pol in policies) {
                     let polName = policies[pol].policy;
@@ -787,6 +801,7 @@ class mergesetup {
                 this.#emailAddr.value = this.#remainPerson.email_addr;
                 this.#age.value = this.#remainPerson.currentAgeType;
                 this.#phone.value = this.#remainPerson.phone;
+                this.#emergencyContact.value = this.#remainPerson.emergencyContact;
                 p = this.#remainPerson['policies'];
                 for (let pol in policies) {
                     let polName = policies[pol].policy;
@@ -839,6 +854,7 @@ class mergesetup {
             state: this.#state.value,
             zip: this.#zip.value,
             country: this.#country.value,
+            emergencyContact: this.#emergencyContact.value,
             email_addr: this.#emailAddr.value,
             currentAgeType: this.#age.value,
             phone: this.#phone.value,

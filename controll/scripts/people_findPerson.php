@@ -59,7 +59,7 @@ if (is_numeric($findPattern)) {
     $mQ = <<<EOS
 WITH perids AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact,
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
@@ -78,7 +78,7 @@ WITH perids AS (
     LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
     WHERE p.id = ? $excludeFree $excludeMerge
     GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact,
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 ), his AS (
@@ -118,7 +118,7 @@ EOS;
     $mQ = <<<EOS
 WITH per AS (
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
@@ -136,7 +136,7 @@ LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'pl
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE 1=1  $excludeFree $notMerge $excludeMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, p.deceased, p.formerGoH,
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, p.banned, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 ), perids AS (

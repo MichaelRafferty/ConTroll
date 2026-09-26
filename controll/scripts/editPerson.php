@@ -179,6 +179,16 @@ if(isset($_POST['country'])) {
   $types .= 's';
   $values[] = $_POST['country'];
 }
+if (isset($_POST['emergencyContact'])) {
+    if ($change) {
+        $query .= ', ';
+    }
+    $change = true;
+    $changeLog .= 'emergencyContact, ';
+    $query .= 'emergencyContact=?';
+    $types .= 's';
+    $values[] = $_POST['emergencyContact'];
+}
 if(isset($_POST['share_reg'])) {
   if($change) { $query .= ", "; }
   $change = true;

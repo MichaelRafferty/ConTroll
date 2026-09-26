@@ -327,6 +327,7 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         $fullAddress .= '<br/>' . $person['addr_2'];
     $fullAddress .= '<br/>' . $person['city'] . ', ' . $person['state'] . ' ' . $person['zip'];
     $country = $person['country'];
+    $emergencyContact = $person['emergencyContact'];
     $phone = $person['phone'];
     $email = $person['email_addr'];
     $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
@@ -528,6 +529,10 @@ EOS;
 <div class='row'>
     <div class="col-sm-2">Phone:</div>
     <div class="col-sm-auto"><b>$phone</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Emergency Contact:</div>
+    <div class="col-sm-auto"><b>$emergencyContact</b></div>
 </div>
 <div class='row'>
     <div class="col-sm-2">

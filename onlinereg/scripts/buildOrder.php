@@ -156,9 +156,9 @@ if ($coupon != null) {
 // now process the people and the memberships to add them to the tables
 $npInsertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
-    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId)
+    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, emergencyContact, contact_ok, share_reg_ok, currentAgeType, currentAgeConId)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?, ?);
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?);
 EOS;
 
 $intInsertQ = <<<EOS
@@ -223,13 +223,14 @@ foreach ($badges as $badge) {
             trim($badge['state']),
             trim($badge['zip']),
             $badge['country'],
+            $badge['emergencyContact'],
             array_key_exists('contact', $badge) ? $badge['contact'] : 'Y',
             array_key_exists('share', $badge) ? $badge['share'] :'Y',
             $badge['age'] == '' ? null : $badge['age'],
             $conid
         );
 
-        $newid = dbSafeInsert($npInsertQ, 'sssssssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($npInsertQ, 'ssssssssssssssssssssi', $value_arr);
         $people[$count]['newperid'] = $newid;
         $count++;
     } else {

@@ -502,6 +502,7 @@ class PosCart {
         cart_row.suffix = row.suffix;
         cart_row.legalName = row.legalName;
         cart_row.pronouns = row.pronouns;
+        cart_row.emergencyContact = row.emergencyContact;
         cart_row.badge_name = row.badge_name;
         cart_row.badgeNameL2 = row.badgeNameL2;
         cart_row.address_1 = row.address_1;

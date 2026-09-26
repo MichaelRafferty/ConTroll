@@ -17,7 +17,7 @@ class Pos {
     #review_dirty = false;
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'badge_name', 'badgeNameL2', 'email_addr',
-        'address_1', 'address_2', 'city', 'state', 'postal_code', 'country', 'phone',
+        'address_1', 'address_2', 'city', 'state', 'postal_code', 'country', 'emergencyContact', 'phone', 'emergencyContact',
         'currentAgeType', 'currentAgeConId', 'memberAgeType'
     ];
 
@@ -557,7 +557,7 @@ class Pos {
             hover_text += data.country + '<br/>';
         }
         hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
-            'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
+            'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' + 'Emergency Contact: ' + data.emergencyContact + '<br/>';
         if (data.managedBy) {
             hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
         } else if (data.cntManages > 0) {
@@ -989,6 +989,7 @@ class Pos {
         let new_suffix = profile.suffix().trim();
         let new_legalName = profile.legalName().trim();
         let new_pronouns = profile.pronouns().trim();
+        let new_emergencyContact = profile.emergencyContact().trim();
         let new_addr1 = profile.addr().trim();
         let new_addr2 = profile.addr2().trim();
         let new_city = profile.city().trim();
@@ -1020,6 +1021,7 @@ class Pos {
             row.suffix = new_suffix;
             row.legalName = new_legalName;
             row.pronouns = new_pronouns;
+            row.emergencyContact = new_emergencyContact;
             row.badge_name = new_badgename;
             row.badgeNameL2 = new_badgeNameL2;
             row.address_1 = new_addr1;
@@ -1257,7 +1259,7 @@ class Pos {
         let row = {
             perid: this.#new_perid, first_name: person.fname, middle_name: person.mname, last_name: person.lname, suffix: person.suffix,
             legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badge_name, badgeNameL2: person.badgeNameL2,
-            fullName: getFullName(person),
+            fullName: getFullName(person), emergencyContact: person.emergencyContact,
             address_1: person.addr , address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
             open_notes: '', currentAgeType: person.age, currentAgeConId: config.conid,
             country: person.country, email_addr: person.email1, phone: person.phone, active: 'Y', banned: 'N', policies: rowPolicies
@@ -1430,6 +1432,10 @@ class Pos {
     <div class="row">
        <div class="col-sm-3">Phone:</div>
        <div class="col-sm-9">` + data.phone + `</div>
+    </div>
+    <div class="row">
+       <div class="col-sm-3">Emergenct Contact:</div>
+       <div class="col-sm-9">` + data.emergencyContact + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Policies:</div>
@@ -1934,6 +1940,7 @@ class Pos {
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
                     {field: "pronouns", visible: false,},
+                    {field: "emergencyContact", visible: false,},
                     {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html',},
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},

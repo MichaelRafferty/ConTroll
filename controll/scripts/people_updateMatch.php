@@ -65,18 +65,18 @@ if ($matchPerid && $matchPerid > 0) {
 
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, currentAgeConId, phone, badge_name, badgenameL2,
-    legalName, pronouns, address, addr_2, city, state, zip, country,
+    legalName, pronouns, address, addr_2, city, state, zip, country, emergencyContact,
     banned, active, deceased, formerGoH, managedBy, managedReason, change_notes, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 $uP = <<<EOS
 UPDATE perinfo
 SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, currentAgeType = ?, currentAgeConId = ?, phone = ?,
     badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?,
-	banned = ?, active = ?, deceased = ?, formerGoH = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
+    emergencyContact = ?,banned = ?, active = ?, deceased = ?, formerGoH = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$typestr = 'ssssssisssssssssssssssissi';
+$typestr = 'ssssssissssssssssssssssissi';
 
 // built insert/update array
 $values = [
@@ -98,6 +98,7 @@ $values = [
     $_POST['state'] == null ? '' : $_POST['state'],
     $_POST['zip'] == null ? '' : $_POST['zip'],
     $_POST['country'] == null ? '' : $_POST['country'],
+    $_POST['emergencyContact'] == null ? '' : $_POST['emergencyContact'],
     $_POST['banned'] == null ? '' : $_POST['banned'],
     $_POST['active'] == null ? '' : $_POST['active'],
     $_POST['deceased'] == null ? '' : $_POST['deceased'],

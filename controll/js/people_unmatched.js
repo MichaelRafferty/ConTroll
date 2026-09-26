@@ -81,6 +81,7 @@ class Unmatched {
     #age = null;
     #emailAddr = null;
     #phone = null;
+    #emergencyContact = null;
     #policiesDiv = null;
     #managerDiv = null;
     #active = null;
@@ -157,6 +158,7 @@ class Unmatched {
             this.#emailAddr = document.getElementById('emailAddr');
             this.#age = document.getElementById('age');
             this.#phone = document.getElementById('phone');
+            this.#emergencyContact = document.getElementById('emergencyContact');
             this.#policiesDiv = document.getElementById('policiesDiv');
             this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
@@ -306,6 +308,7 @@ class Unmatched {
                 {field: 'badge_name', visible: false,},
                 {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
+                {field: 'emergencyContact', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
             ],
@@ -497,6 +500,7 @@ class Unmatched {
                 {field: 'badge_name', visible: false,},
                 {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
+                {field: 'emergencyContact', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
                 {field: 'managerId', visible: false,},
@@ -537,6 +541,7 @@ class Unmatched {
                 {field: 'badge_name', visible: false,},
                 {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
+                {field: 'emergencyContact', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
                 {field: 'banned', visible: false,},
@@ -580,6 +585,7 @@ class Unmatched {
                 {field: 'badge_name', visible: false,},
                 {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
+                {field: 'emergencyContact', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
                 {field: 'banned', visible: false,},
@@ -659,6 +665,7 @@ class Unmatched {
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchAge.innerHTML = this.#matchPerson.currentAgeType;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
+            this.#emergencyContact.innerHTML = this.#matchPerson.emergencyContact;
             this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ',&emsp;Banned: ' + this.#matchPerson.banned +
                 '<br/>Deceased: ' + this.#matchPerson.deceased + ',&emsp;Former GoH: ' + this.#matchPerson.formerGoH;
             if (this.#matchPerson.managerId) {
@@ -688,6 +695,7 @@ class Unmatched {
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newAge.innerHTML = this.#newperson.currentAgeType;
         this.#newPhone.innerHTML = this.#newperson.phone;
+        this.#newEmergencyContact.innerHTML = this.#newperson.emergencyContact;
         this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ',&emsp;Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
             this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
@@ -718,6 +726,7 @@ class Unmatched {
         this.#emailAddr.value = this.#newperson.email_addr;
         this.#age.value = this.#newperson.currentAgeType;
         this.#phone.value = this.#newperson.phone;
+        this.#emergencyContact.value = this.#newperson.emergencyContact;
         this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#newperson.banned == 'Y' ? 'Y' : 'N';  // default to N
         for (policy in this.#newpersonPolicies) {
@@ -737,6 +746,7 @@ class Unmatched {
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
             this.#matchAge.style.backgroundColor = this.#newperson.currentAgeType != this.#matchPerson.currentAgeType ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
+            this.#emergencyContact.style.backgroundColor = this.#newperson.emergencyCotact != this.#matchPerson.emergencyContact`` ? diffcolor : '';
             this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
             this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flags ? diffcolor : '';
             this.#matchManager.style.backgroundColor = this.#newperson.manager != this.#matchPerson.manager ? diffcolor : '';
@@ -780,6 +790,7 @@ class Unmatched {
             emailAddr: this.#emailAddr.value,
             age: this.#age.value == '' ? null : this.#age.value,
             phone: this.#phone.value,
+            emergencyContact: this.#emergencyContact.value,
             active: this.#active.value,
             banned: this.#banned.value,
             deceased: this.#deceased.value,
@@ -1041,6 +1052,14 @@ class Unmatched {
                 this.#phone.value = this.#newperson.phone;
                 break;
 
+            case 'matchEmergencyContact':
+                this.#emergencyContact.value = this.#matchPerson.emergencyContact;
+                break;
+
+            case 'newEmergencyContact':
+                this.#emergencyContact.value = this.#newperson.emergencyContact;
+                break;
+
             case 'newPolicies':
                 for (policy in this.#newpersonPolicies) {
                     document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
@@ -1098,6 +1117,7 @@ class Unmatched {
                 this.#emailAddr.value = this.#matchPerson.email_addr;
                 this.#age.value = this.#matchPerson.currentAgeType;
                 this.#phone.value = this.#matchPerson.phone;
+                this.#emergencyContact.value = this.#matchPerson.emergencyContact;
                 mpol = null;
                 if (this.#matchType == 'p')
                     mpol = this.#matchpeoplePolicies[this.#matchPerson.id];

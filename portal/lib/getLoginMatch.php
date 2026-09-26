@@ -8,8 +8,8 @@ function getLoginMatch($email, $id = null, $validationType = null) {
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename,
-       currentAgeConId, currentAgeType
+       address, addr_2, city, state, zip, country, emergencyContact,
+       creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename, currentAgeConId, currentAgeType
 FROM perinfo
 WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
@@ -18,8 +18,8 @@ EOS;
 // first get the perid items
         $regcountQ = <<<EOS
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename,
-       currentAgeConId, currentAgeType
+       address, addr_2, city, state, zip, country, emergencyContact,
+       creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename, currentAgeConId, currentAgeType
 FROM perinfo
 WHERE email_addr = ? AND id = ?;
 EOS;
@@ -27,8 +27,8 @@ EOS;
     } else {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename,
-       currentAgeConId, currentAgeType
+       address, addr_2, city, state, zip, country, emergencyContact,
+       creation_date, update_date, active, banned, deceased, fullName, 'p' AS tablename, currentAgeConId, currentAgeType
 FROM perinfo
 WHERE email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
 ORDER BY fullName;
@@ -50,7 +50,7 @@ EOS;
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.emergencyContact, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
        'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename, n.currentAgeConId, n.currentAgeType
 FROM newperson n
 WHERE n.id = ? AND n.perid IS NULL
@@ -60,7 +60,7 @@ EOS;
     } else if ($id != NULL) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.emergencyContact, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
        'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename, n.currentAgeConId, n.currentAgeType
 FROM newperson n
 WHERE n.email_addr = ? AND n.id = ? AND n.perid IS NULL
@@ -70,7 +70,7 @@ EOS;
     } else {
         $regcountQ = <<<EOS
 SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.emergencyContact, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
        'N' AS deceased, 'N' AS formerGoH, n.fullName, 'n' AS tablename, n.currentAgeConId, n.currentAgeType
 FROM newperson n
 WHERE n.email_addr = ? AND n.perid IS NULL
@@ -96,7 +96,7 @@ EOS;
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH, fullName,
+       address, addr_2, city, state, zip, country, emergencyContact, creation_date, update_date, active, banned, deceased, formerGoH, fullName,
        'p' AS tablename, p.currentAgeConId, p.currentAgeType
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
@@ -121,8 +121,8 @@ EOS;
     if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-    address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH, fullName, 'p' AS tablename,
-    p.currentAgeConId, p.currentAgeType
+    address, addr_2, city, state, zip, country, emergencyContact, 
+    creation_date, update_date, active, banned, deceased, formerGoH, fullName, 'p' AS tablename, p.currentAgeConId, p.currentAgeType
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
 WHERE pi.email_addr = ? AND pi.provider IN ('token', 'email', 'allow') AND pi.email_addr != p.email_addr

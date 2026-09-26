@@ -74,7 +74,7 @@ if ($newid === false) {
 
 $watchQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.deceased, p.formerGoH,
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, p.deceased, p.formerGoH,
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.lastverified, p.fullName, p.fullAddr,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ', ') AS memberships
@@ -84,8 +84,8 @@ LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ? AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid = ? AND m.memType in ('full', 'oneday', 'virtual'))
 WHERE b.conid = ? AND b.user_perid = ?
-GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
+GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact,
     p.creation_date, p.update_date, p.active, p.banned, p.deceased, p.formerGoH, p.open_notes, p.admin_notes,
     p.lastverified, phoneCheck, fullName;
 EOS;

@@ -8,6 +8,7 @@ class Profile {
     #suffixField = null;
     #legalNameField = null;
     #pronounsField = null;
+    #emergencyContactField = null;
     #addrField = null;
     #addr2Field = null;
     #cityField = null;
@@ -64,6 +65,7 @@ class Profile {
         this.#suffixField = document.getElementById(prefix + "suffix");
         this.#legalNameField = document.getElementById(prefix + "legalName");
         this.#pronounsField = document.getElementById(prefix + "pronouns");
+        this.#emergencyContactField = document.getElementById(prefix + "emergencyContact");
         this.#addrField = document.getElementById(prefix + "addr");
         this.#addr2Field = document.getElementById(prefix + "addr2");
         this.#cityField = document.getElementById(prefix + "city");
@@ -115,6 +117,10 @@ class Profile {
 
     pronouns() {
         return this.#pronounsField.value;
+    }
+
+    emergencyContact() {
+        return this.#emergencyContactField.value;
     }
 
     addr() {
@@ -299,6 +305,7 @@ class Profile {
             this.#zipField.value = '';
 
         this.#countryField.value = row.hasOwnProperty('country') ? row.country : '';
+        this.#emergencyContactField.value = row.hasOwnProperty('emergencyContact') ? row.emergencyContact : '';
 
         if (row.hasOwnProperty('phone'))
             this.#phoneField.value = row.phone;
@@ -715,6 +722,8 @@ class Profile {
             this.#ageField.value = '';
         if (this.#memberAge)
             this.#memberAge = '';
+        if (this.#emergencyContactField)
+            this.#emergencyContactField.value = '';
         if (this.#deceasedField)
             this.#deceasedField.value = 'N';
         if (this.#formerGoHField)

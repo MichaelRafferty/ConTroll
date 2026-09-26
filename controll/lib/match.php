@@ -330,6 +330,39 @@ function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $class
                         </div>
                     </div>
                     <div class='row'>
+                        <div class='col-sm-1 border border-dark ps-1 pe-1'>Emergency Contact</div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchEmergencyContact'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                type='button' onclick="$className.copy('matchEmergencyContact')">
+                                            &gt;&gt;
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-5 border border-dark ps-1 pe-1'>
+                            <textarea id='emergencyConcact' name='emergencyContact' maxlength='2047' 
+                                rows='3' cols='80' placeholder='Emergency Contact'></textarea>
+                        </div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                                type='button' onclick="$className.copy('newEmergencyContact')">
+                                            &lt;&lt;
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newEmergencyContact'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Policies</div>
                         <div class='col-sm-3 border border-dark pe-0'>
                             <div class='container-fluid'>
