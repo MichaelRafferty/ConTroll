@@ -1,6 +1,6 @@
 [report]
 	name="RegChurn"
-	auth=reg_admin
+	auth=gen_rpts
 	csvfile="RegChurn"
     index=regid
 [F001]

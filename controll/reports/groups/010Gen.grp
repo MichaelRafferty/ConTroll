@@ -32,3 +32,9 @@
 	auth="gen_rpts"
 	type=rpt
 	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"
+[500Churn]
+    name="Churn"
+    description="Churn by year for up to the last ten years"
+    template=reg_churn.rpt
+    auth=reg_admin
+    type=rpt
