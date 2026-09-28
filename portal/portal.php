@@ -169,7 +169,6 @@ $dolfmt = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 $hasWSFS = false;
 $hasNom =  false;
 $siteSelection = false;
-$hasMeeting = false;
 $hasVirtual = false;
 $tokenType = getSessionVar('tokenType');
 $hasPasskey = $tokenType == 'passkey';
@@ -344,11 +343,6 @@ EOS;
             if ($m['memCategory'] == 'sitesel' && $m['status'] == 'paid')
                 $siteSelection = true;
 
-            // hasMeeting
-            if ( ($m['memType'] == 'full' && $m['memCategory'] != 'artist' && $m['shortname'] != 'Access Caregiver')
-                    || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
-                $hasMeeting = true;
-
             // check age to prevent virtual, allowChild is true if child is allowed
             if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
                 $numChild++;
@@ -425,9 +419,6 @@ EOS;
     }
     $config_vars['numPrimary'] = $numPrimary;
     $config_vars['numPaidPrimary'] = $numPaidPrimary;
-
-    if (!$hasWSFS)
-        $hasMeeting = false;
 
     $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
 
@@ -948,7 +939,7 @@ echo <<<EOS
         <div class="col-sm-6">
 EOS;
 if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
-    drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+    drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $siteSelection, $loginId, $loginType, $info);
 echo <<<EOS
         </div>
     </div>
@@ -1189,7 +1180,7 @@ EOS;
 
 portalPageFoot();
 
-function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $hasSiteSelection, $loginId, $loginType, $info) {
+function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasSiteSelection, $loginId, $loginType, $info) {
     $portal_conf = get_conf('portal');
 
 // buttons are NomNom, Site Selection, Virtual Business Meeting
@@ -1279,12 +1270,12 @@ EOS;
         else
             $businessBtnText = 'Log into the Business Meeting';
 
-        if (!$hasMeeting) {
+        if (!$hasWSFS) {
             $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="You must have a WSFS membership AND one of the following supplements: Friend, Attending, Virtual or One Day.">';
         } else {
-            // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
-            $salt = 'SeattleIn2025';
+            // compute the LUMI password, note this is LIMI specific, so it will need to be modified for future worldcons if they do not use LUMI
+            $salt = getConfValue('client', 'lumiSalt', '');
             $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
             $un = $info['id'];
             $businessBtnSubText = "<br/>Membership Number: $un<br/>Password: $pw";
