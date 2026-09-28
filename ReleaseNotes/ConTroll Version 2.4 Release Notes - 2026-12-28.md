@@ -13,20 +13,28 @@
   * reg_admin.ini:
     * cashRounding: in base currency units, what amount to round to.  For USD, currency unit is 100, so rounding would be 5 for $0.05.
   * reg_secret.ini:
-    * 
+    * lumiSalt: salt to use for computing LUMI password for busines meeting login
   * reg_conf.ini:
-    * 
+    * agePurchaseRestriction: ages not allowed to pay for memberships in the portal
+    * ageRestriocton: ages not allowed to login to the portal
 
 * New Scripts: None
 
-# Major changes by application: 
- *  
+# Major changes by application:
+* All Applicatiomns
+   * Support for adding an Emergency Contact field to the profile
 
 ## ConTroll: (Administrative Back End to the system)
-* 
+* Additional options on registration list
+   * P takes you to people to edit that person
+   * M takes you to match to match that newperson
+* GL code entry moved to Finance Tab
+   * Use of GL Codes is now a select pulldown in other tabs
+* Some reports have been moved to the General Reports tab to allow more users access to them
+* One off conventions can see members as well as registrations in Reg Lookup
 
 ## Portal:
-* 
+* Ages limits for access to and paying for memberships are now supported in the portal.
 
 ## Atcon:
 * Support for rounding in square and stripe
