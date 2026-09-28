@@ -204,6 +204,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     $customerId = null;
+    if ($cust_email == '/r')
+        $cust_email = '';
     if ($cust_email != '') {
         // we have details to look up a customer
         // try a customer search for:
