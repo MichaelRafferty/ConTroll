@@ -44,6 +44,12 @@ class Pos {
     #totalPaid = null;
     #payOverride = 0;
     #payPoll = 0;
+    #autoPollStartSeconds = 60;
+    #autoPollInterval = 60;
+    #autoPollCount = 0;
+    #autoPollStart = null;  // time in seconds when auto poll started
+    #autoPollLimit = 450; // seven minutes minutes and 30 seconds, it will stop when the teminal times out as well.
+    #pollButton = null;
     #payCurrentRequest = null;
     #payForcePayShown = false;
     #ccOnlineStarted = false;
@@ -602,7 +608,7 @@ class Pos {
         if (!cart.confirmDiscardCartEntry(-1, false))
             return;
 
-        if (this.#payPoll == 1) {
+        if (this.#payPoll > 0) {
             if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
                 'Please use the "Payment Complete" button to check if the payment is complete,\n' +
                 'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
@@ -2385,8 +2391,8 @@ class Pos {
 // payPoll - poll to see if the payment is complete
     payPoll(action) {
         document.getElementById('pollRow').hidden = true;
-        if (action == 1) { // asked to poll for is it complete
-            this.#payPoll = 1;
+        if (action > 0) { // asked to poll for is it complete
+            this.#payPoll = action;
             this.pay('');
             return;
         }
@@ -2796,16 +2802,24 @@ class Pos {
 
         // things that stop us cold....
         if (typeof data == 'string') {
-            show_message(data, 'error');
             if (data.hasOwnProperty("cancelled")) {
+                show_message(data, 'error');
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
+                this.#pay_button_pay.textContent = 'Send to Terminal';
+                document.getElementById('pollRow').hidden = true;
                 return;
             }
-            if (this.#payPoll == 1) {
+            if (this.#payPoll > 0) {
+                show_message(data, this.#payPoll == 2 ? 'warn' : 'error');
                 this.#pay_button_pay.textContent = 'Poll Required...';
+                this.#pay_button_pay.disabled = true;
+                this.#pollButton.disabled = false;
                 document.getElementById('pollRow').hidden = false;
+                this.nextAutoPoll();
             } else {
+                show_message(data, this.#payPoll == 2 ? 'warn' : 'error');
                 this.#pay_button_pay.textContent = this.#payOldText;
             }
             return;
@@ -2813,15 +2827,22 @@ class Pos {
 
         if (data.error !== undefined) {
             // check for follow on actions (stripe)
-            show_message(data.error, 'error');
             if (data.error.includes("cancelled")) {
+                show_message(data.error, 'error');
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.disabled = false;
+                this.#pay_button_pay.textContent = 'Send to Terminal';
+                document.getElementById('pollRow').hidden = true;
+            } else if (this.#payPoll > 0) {
+                show_message(data.error, this.#payPoll == 2 ? 'warn' : 'error');
                 this.#pay_button_pay.textContent = 'Poll Required...';
                 this.#pay_button_pay.disabled = true;
+                this.#pollButton.disabled = false;
                 document.getElementById('pollRow').hidden = false;
+                this.nextAutoPoll();
             } else {
+                show_message(data.error, 'error');
                 this.#pay_button_pay.textContent = this.#payOldText;
                 this.#ccNonce = null;
             }
@@ -2831,15 +2852,22 @@ class Pos {
         }
 
         if (data.status == 'error') {
-            show_message(data.data, 'error');
             if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
+                show_message(data.data, 'error');
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
-            } else if (this.#payPoll == 1) {
+                this.#pay_button_pay.disabled = false;
+                this.#pay_button_pay.textContent = 'Send to Terminal';
+                document.getElementById('pollRow').hidden = true;
+            } else if (this.#payPoll > 0) {
+                show_message(data.data, this.#payPoll == 2 ? 'warn' : 'error');
                 this.#pay_button_pay.textContent = 'Poll Required...';
                 this.#pay_button_pay.disabled = true;
+                this.#pollButton.disabled = false;
                 document.getElementById('pollRow').hidden = false;
+                this.nextAutoPoll();!spaces
             }  else {
+                show_message(data.data, 'error');
                 this.#ccNonce = null;
                 this.#pay_button_pay.textContent = this.#payOldText;
             }
@@ -2870,6 +2898,7 @@ class Pos {
                 document.getElementById('pollRow').hidden = false;
                 this.#pay_button_pay.disabled = true;
                 this.#payPoll = 1;
+                this.startAutoPoll();
                 return;
             }
         }
@@ -2878,6 +2907,48 @@ class Pos {
         this.#pay_tid_amt += Number(data.pay_amt);
         this.#taxAmt -= Number(data.taxAmt);
         this.payShown();
+    }
+
+// Auto Poll Terminal Functions
+//      If a terminal is used for this payment, create a wait and auto poll schedule
+//      Sequence is #autoPollSeconds, once, then autoPollSeconds / 2 twice, then every thirty seconds
+    startAutoPoll() {
+        if (this.#payPoll == 0)
+            return;     // safety check, that polling is not happening now
+        this.#autoPollStart = Date.now();
+        this.#autoPollInterval = this.#autoPollStartSeconds;
+        this.#autoPollCount = 0;
+        this.#pollButton = document.getElementById('pay-poll-complete');
+        this.#pollButton.disabled = false;
+
+        setTimeout(autoPoll, this.#autoPollInterval * 1000);
+    }
+
+    autoPoll() {
+        if (this.#payPoll == 0)
+            return;         // already complete or cancelled
+
+        // perform a poll sequence
+        this.#autoPollCount++
+        let now = Date.now();
+        if (now > (this.#autoPollStart + (this.#autoPollLimit * 1000))) {
+            this.#payPoll = 0;
+            return;
+        }
+        this.#pollButton.disabled = true;
+        this.#payPoll = 2;
+        this.pay('');
+    }
+    nextAutoPoll() {
+        if (this.#payPoll == 0)
+            return;         // already complete or cancelled
+
+        if (this.#autoPollCount == 2)
+            this.#autoPollInterval = this.#autoPollInterval / 2;
+        if (this.#autoPollCount > 3)
+            this.#autoPollInterval = 15;
+        setTimeout(autoPoll, this.#autoPollInterval * 1000);
+        console.log("Next Auto Poll set for " + this.#autoPollInterval + " seconds for poll #" + this.#autoPollCount);
     }
 
 // Create a receipt and email it
@@ -3702,7 +3773,7 @@ class Pos {
     // combined exit change check
     confirmExit(event) {
         event.preventDefault();
-        if (this.#payPoll == 1)
+        if (this.#payPoll > 0)
             return "You are leaving without polling the terminal for payment completion.\n" +
                 'Please use the "Payment Complete" button to check if the payment is complete,\n' +
                 'or the "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
@@ -3718,7 +3789,7 @@ class Pos {
     onExit() {
         let _this = this;
         // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
-        if (this.#payPoll == 1) {
+        if (this.#payPoll > 0) {
             let currentOrder = this.#pay_currentOrderId;
             let user_id = this.#user_id;
             this.#pay_currentOrderId = null;
@@ -3866,4 +3937,9 @@ function pos_add_new() {
 
 function pos_add_new2() {
     pos.add_new2();
+}
+
+function autoPoll() {
+    console.log("global autopoll calling pos.autopoll");
+    pos.autoPoll();
 }
