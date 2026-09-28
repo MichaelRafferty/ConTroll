@@ -1534,7 +1534,7 @@ class PosCart {
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <textarea name='c` + rownum + `-emergencyContact' id='c` + rownum + `-emergencyContact' tabindex="` + String(tabindex + 34) + `"
-                rows="2" cols="80" maxlength="2047" placeholder="Emergency Contact"></textarea>
+                rows="2" cols="80" maxlength="2047" placeholder="Emergency Contact">` + row.emergencyContact + `</textarea>
         </div>
     </div>
     <div class="row mb-4">
