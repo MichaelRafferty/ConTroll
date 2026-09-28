@@ -747,6 +747,7 @@ class Profile {
         this.#cityField.classList.remove(this.#alert);
         this.#stateField.classList.remove(this.#alert);
         this.#zipField.classList.remove(this.#alert);
+        this.#email1Field.classList.remove(this.#alert);
 
         // reset the policies and interests
         if (typeof policies !== 'undefined') {
@@ -794,5 +795,6 @@ class Profile {
         this.#zipField.classList.remove(this.#alert);
         this.#countryField.classList.remove(this.#alert);
         this.#phoneField.classList.remove(this.#alert);
+        this.#email1Field.classList.remove(this.#alert);
     }
 }
