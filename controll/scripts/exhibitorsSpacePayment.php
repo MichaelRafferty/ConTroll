@@ -394,11 +394,23 @@ if ($exMailin == 'N') {
     $agentRequest = null;
     if ($agent == 'first') {
         if (count($badges) > 0) {
-            $perid = $badges[0]['perid'];
-            $newperid = $badges[0]['newperid'];
+            if (array_key_exists('perid', $badges[0]))
+                $perid = $badges[0]['perid'];
+            else
+                $perid = null;
+            if (array_key_exists('newperid', $badges[0]))
+                $newperid = $badges[0]['newperid'];
+            else
+                $newperid = null;
         } else {
-            $perid = $exhibitor['perid'];
-            $newperid = $exhibitor['newperid'];
+            if (array_key_exists('perid', $exhibitor))
+                $perid = $exhibitor['perid'];
+            else
+                $perid = null;
+            if (array_key_exists('newperid', $exhibitor))
+                $newperid = $exhibitor['newperid'];
+            else
+                $newperid = null;
         }
     } else if ($agent == 'self') {
         $agentRequest = 'Assign me as my own agent please.';

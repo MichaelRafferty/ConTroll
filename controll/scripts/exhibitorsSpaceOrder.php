@@ -214,10 +214,11 @@ $membership_fields = array('fname' => $required != '', 'mname' => false, 'lname'
                            'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
                            'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
                            'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
-                           'email' => true, 'phone' => false, 'badge_name' => false, 'badgeNameL2' =>  false,  'age' => 1);
+                           'emergencyContact' => false, 'email' => true, 'phone' => false, 'badge_name' => false, 'badgeNameL2' =>  false,
+                           'age' => 1);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalName' => 'Legal Name',
                           'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province',
-                          'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
+                          'zip' => 'Zip Code/Postal Code', 'country' => 'Country', 'emergencyContact' => 'Emergency Contact',
                           'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2',
                           'age' => 'Age');
 
@@ -259,7 +260,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
-            if ($required) {
+            if ($required && $val == '') {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
@@ -567,17 +568,18 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
 
     $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
-        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'],
-        $currentAgeType, $currentAgeConId, $managedByNew);
+        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['emergencyContact'],
+        $badge['contact'], $badge['share'], $currentAgeType, $currentAgeConId, $managedByNew);
 
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
-                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId, managedByNew)
+                      address, addr_2, city, state, zip, country, emergencyContact,
+                      contact_ok, share_reg_ok, currentAgeType, currentAgeConId, managedByNew)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?, ?);
+     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssii', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'sssssssssssssssssssii', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
