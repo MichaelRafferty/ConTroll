@@ -332,7 +332,7 @@ if ($amt > 0) {
         }
     } else {
         // this is a terminal do a terminal pay request
-        if ($poll == 1) {
+        if ($poll > 0) {
             $checkout = term_getPayStatus($name, $termStatus['currentPayment'], true);
             if ($checkout == null) {
                 ajaxSuccess(array ('error' => "Unable to get payment status from terminal $name"));
@@ -358,9 +358,14 @@ EOS;
 
                 case 'IN_PROGRESS':
                 case 'PENDING':
+
+                if ($poll == 2)
+                    ajaxSuccess(array ('error' => 'Auto poll: The terminal is still busy processing the payment.' .
+                        '<br/>Waiting until the customer has finished paying, or press Payment Complete to try right away.'));
+                else
                     ajaxSuccess(array ('error' => 'The terminal is still busy processing the payment.' .
                         '<br/>Please wait until the customer has finished paying and try again.'));
-                    exit();
+                exit();
 
                 case 'CANCEL_REQUESTED':
                     resetTerminalStatus($name);
