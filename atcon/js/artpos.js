@@ -54,6 +54,11 @@ var taxes = [];
 var orderMsg = '';
 var payOverride = 0;
 var payPoll = 0;
+var autoPollStartSeconds = 60;
+var autoPollInterval = 60;
+var autoPollCount = 0;
+var autoPollStart = null;  // time in seconds when auto poll started
+var autoPollLimit = 450; //
 var cc_html = '';
 var ccOnlineStarted = false;
 var ccNonce = '';
@@ -233,7 +238,7 @@ function loadInitialData(data) {
 
 // if no artSales or payments have been added to the database, this will reset for the next customer
 function startOver(reset_all) {
-    if (payPoll == 1) {
+    if (payPoll > 0) {
         if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
             'Please use the "Payment Complete" button to check if the payment is complete,\n' +
             'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
@@ -1635,8 +1640,8 @@ function overridePay(){
 // payPoll - poll to see if the payment is complete
 function payPollfcn(action) {
     document.getElementById('pollRow').hidden = true;
-    if (action == 1) { // asked to poll for is it complete
-        payPoll = 1;
+    if (action > 0) { // asked to poll for is it complete
+        payPoll = action;
         pay('');
         return;
     }
@@ -1922,32 +1927,74 @@ function paySuccess(data) {
     pay_button_pay.disabled = false;
     // things that stop us cold....
     if (typeof data == 'string') {
-        show_message(data, 'error');
         if (data.includes("cancelled")) {
+            show_message(data, 'error');
             payPoll = 0;
             payCurrentRequest = null;
-        } else if (payPoll == 1)
+            pay_button_pay.disabled = false;
+            pay_button_pay.textContent = 'Send to Terminal';
+            document.getElementById('pollRow').hidden = true;
+            return;
+        if (payPoll > 0)
             document.getElementById('pollRow').hidden = false;
+            show_message(data, payPoll == 2 ? 'warn' : 'error');
+            pay_button_pay.textContent = 'Poll Required...';
+            pay_button_pay.disabled = true;
+            pollButton.disabled = false;
+            document.getElementById('pollRow').hidden = false;
+            nextAutoPoll();
+        } else {
+            show_message(data, payPoll == 2 ? 'warn' : 'error');
+            pay_button_pay.textContent = payOldText;
+        }
         return;
     }
 
     if (data.error !== undefined) {
-        show_message(data.error, 'error');
+        // check for follow on actions (stripe)
         if (data.error.includes("cancelled")) {
+            show_message(data.error, 'error');
             payPoll = 0;
             payCurrentRequest = null;
-        }  else if (payPoll == 1)
+            pay_button_pay.disabled = false;
+            pay_button_pay.textContent = 'Send to Terminal';
+            document.getElementById('pollRow').hidden = true;
+        } else if (payPoll > 0) {
+            show_message(data.error, payPoll == 2 ? 'warn' : 'error');
+            pay_button_pay.textContent = 'Poll Required...';
+            pay_button_pay.disabled = true;
+            pollButton.disabled = false;
             document.getElementById('pollRow').hidden = false;
+            nextAutoPoll();
+        } else {
+            show_message(data.error, 'error');
+            pay_button_pay.textContent = payOldText;
+            ccNonce = null;
+        }
         return;
     }
 
     if (data.status == 'error') {
-        show_message(data.data, 'error');
-        if (data.data.includes("cancelled")) {
+        if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
+            show_message(data.data, 'error');
             payPoll = 0;
             payCurrentRequest = null;
-        } else if (payPoll == 1)
+            pay_button_pay.disabled = false;
+            pay_button_pay.textContent = 'Send to Terminal';
+            document.getElementById('pollRow').hidden = true;
+        } else if (payPoll > 0) {
+            show_message(data.data, payPoll == 2 ? 'warn' : 'error');
+            pay_button_pay.textContent = 'Poll Required...';
+            pay_button_pay.disabled = true;
+            pollButton.disabled = false;
             document.getElementById('pollRow').hidden = false;
+            nextAutoPoll();
+        }  else {
+            show_message(data.data, 'error');
+            ccNonce = null;
+            pay_button_pay.textContent = payOldText;
+        }
+        show_message(data.data, 'error');
         return;
     }
 
@@ -1973,6 +2020,7 @@ function paySuccess(data) {
             document.getElementById('pollRow').hidden = false;
             pay_button_pay.disabled = true;
             payPoll = 1;
+            startAutoPoll();
             return;
         }
     }
@@ -1983,6 +2031,49 @@ function paySuccess(data) {
     total_tax_due -= data.taxAmt;
     total_amount_due -= (data.approved_amt - data.cashAmountRounded);
     payShown();
+}
+
+    // Auto Poll Terminal Functions
+//      If a terminal is used for this payment, create a wait and auto poll schedule
+//      Sequence is #autoPollSeconds, once, then autoPollSeconds / 2 twice, then every thirty seconds
+function startAutoPoll() {
+    if (payPoll == 0)
+        return;     // safety check, that polling is not happening now
+    autoPollStart = Date.now();
+    autoPollInterval = autoPollStartSeconds;
+    autoPollCount = 0;
+    pollButton = document.getElementById('pay-poll-complete');
+    pollButton.disabled = false;
+
+    setTimeout(autoPoll, autoPollInterval * 1000);
+}
+
+function autoPoll() {
+    if (payPoll == 0)
+        return;         // already complete or cancelled
+
+    // perform a poll sequence
+    autoPollCount++
+    let now = Date.now();
+    if (now > (autoPollStart + (autoPollLimit * 1000))) {
+        payPoll = 0;
+        return;
+    }
+    pollButton.disabled = true;
+    payPoll = 2;
+    this.pay('');
+}
+
+function nextAutoPoll() {
+    if (payPoll == 0)
+        return;         // already complete or cancelled
+
+    if (autoPollCount == 2)
+        autoPollInterval = autoPollInterval / 2;
+    if (autoPollCount > 3)
+        autoPollInterval = 15;
+    setTimeout(autoPoll, autoPollInterval * 1000);
+    console.log("Next Auto Poll set for " + autoPollInterval + " seconds for poll #" + autoPollCount);
 }
 
 var last_receipt_type = '';
@@ -2571,7 +2662,7 @@ function processRelease() {
 // combined exit change check
 function onExit() {
     // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
-    if (payPoll == 1) {
+    if (payPoll > 0) {
         let currentOrder = pay_currentOrderId;
         let user_id = user_id;
         pay_currentOrderId = null;

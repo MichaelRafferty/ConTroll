@@ -2865,7 +2865,7 @@ class Pos {
                 this.#pay_button_pay.disabled = true;
                 this.#pollButton.disabled = false;
                 document.getElementById('pollRow').hidden = false;
-                this.nextAutoPoll();!spaces
+                this.nextAutoPoll();
             }  else {
                 show_message(data.data, 'error');
                 this.#ccNonce = null;
