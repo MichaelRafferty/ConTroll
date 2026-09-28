@@ -1284,8 +1284,8 @@ EOS;
         $businessURL = $portal_conf['businessmeetingURL'];
 
         $businessMeetingButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasMeeting ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
-        if (!$hasMeeting)
+            ($hasWSFS ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
+        if (!$hasWSFS)
             $businessMeetingButton .= '</span>';
     }
     ?>
