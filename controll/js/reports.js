@@ -21,10 +21,13 @@ window.onload = function initpage() {
     reportContentTabs = document.getElementsByClassName('report-content');
     reportContentDiv = document.getElementById('report-content-div');
     reportPromptDiv = document.getElementById('report-prompt-div');
-    var keys = Object.keys(reports);
+    var keys = Object.keys(reports).sort();
+    var firstTab = '';
     for (var i = 0; i < keys.length; i++) {
         var report = reports[keys[i]];
         reportTabs.push(report.group.name);
+        if (firstTab == '')
+            firstTab = report.group.name + '-pane';
         reportContents[report.group.name] = document.getElementById(report.group.name + '-content');
     }
 
@@ -34,6 +37,8 @@ window.onload = function initpage() {
 
     if (config.hasOwnProperty('reportName')) {
         runReport(config['reportName']);
+    } else if (keys.length > 0) {
+        settab(firstTab);
     }
 }
 
