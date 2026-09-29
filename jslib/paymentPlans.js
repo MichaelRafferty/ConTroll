@@ -598,7 +598,7 @@ class PaymentPlans {
     }
 
     // payPlan - make a payment against a plan
-    payPlan(payorPlanId) {
+    payPlan(payorPlanId, minAmt, balanceDue) {
         if (config.debug) console.log("trying to pay plan " + payorPlanId);
         let payorPlan = payorPlans[payorPlanId];
         let payments = payorPlan['payments'];
@@ -614,41 +614,11 @@ class PaymentPlans {
                 console.log('no payments');
         }
 
-        let paymentAmt = Number(payorPlan.minPayment);
-        let balanceDue = Number(payorPlan.balanceDue);
-        // compute if we're past due
-        if (payments) {
-            numPmts = Object.keys(payments).length;
-        }
-        let createDate = new Date(payorPlan.createDate);
-        let createTS = createDate.getTime();
-        let now = Date.now();
-        let daysDiff = Math.ceil((now - createTS) / (24 *3600 * 1000));
-        let daysBetween = payorPlan.daysBetween;
-        let nextDue = ((numPmts + 1) * daysBetween) - (1 + daysDiff);
-        let numDue = 1;
-        if (config.debug & 2) {
-            console.log('daysDiff = ' + daysDiff);
-            console.log('numPmts=' + numPmts);
-            console.log('daysBetween=' + daysBetween);
-            console.log('nextDue = ' + nextDue);
-            console.log('numDue = ' + numDue);
-        }
+        minAmt = Number(minAmt);
+        balanceDue = Number(balanceDue);
 
-        if (nextDue < 0)  {
-            let pastDue = Math.ceil(-nextDue / daysBetween);
-            numDue += pastDue;
-            if (config.debug & 2) console.log("pastDue = " + pastDue + ", numDue = " + numDue);
-        }
-        paymentAmt = numDue * paymentAmt;
-        if (paymentAmt > balanceDue)
-            paymentAmt = balanceDue
-
-        this.#planPaymentAmount = paymentAmt;
-        if (nextDue < 0)
-            this.#planPaymentMinPayment = paymentAmt;
-        else
-            this.#planPaymentMinPayment = Number(payorPlan.minPayment) > balanceDue ? balanceDue : Number(payorPlan.minPayment);
+        this.#planPaymentAmount = minAmt;
+        this.#planPaymentMinPayment = minAmt;
         this.#planPaymentBalanceDue = balanceDue;
         this.#planPaymentPayorPlanId = payorPlanId;
         this.#planPaymentPayorPlanName = plan.name;
@@ -665,13 +635,13 @@ class PaymentPlans {
         <div class="col-sm-2" style='text-align: right;'>Payment Amount:</div>
         <div class="col-sm-1 ms-2" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="newPaymentAmt" name="newPaymentAmt" style="width: 8em;" placeholder="amount" ` +
-            'min="' + paymentAmt.toFixed(2) + '" max="' + balanceDue.toFixed(2) + '" value="' + paymentAmt.toFixed(2) +
+            'min="' + minAmt.toFixed(2) + '" max="' + balanceDue.toFixed(2) + '" value="' + minAmt.toFixed(2) +
             `" onchange="paymentPlans.updatePaymentAmt();"/>
     </div>
 `;
 
         this.#payPlanBody.innerHTML = html;
-        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + this.#currencyFmt.format(paymentAmt.toFixed(2));
+        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + this.#currencyFmt.format(minAmt.toFixed(2));
         this.#payPlanModal.show();
     }
 

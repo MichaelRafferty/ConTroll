@@ -753,21 +753,27 @@ function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
         if ($activeOnly) {
             if ($payorPlan['status'] != 'active')
                 continue;
-            $onclick = "paymentPlans.payPlan($id);";
-        } else {
-            $onclick = "paymentHistory.gotoPayment();";
         }
 
         $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
         $nextPayDue = $data['nextPayDue'];
         $minAmt = $data['minAmt'];
+        $minAmtNum = $data['minAmtNum'];
+        $balanceDueNum = $data['balanceDueNum'];
+        $nextPayTimestamp = $data['nextPayTimestamp'];
+
+        if ($activeOnly) {
+            $onclick = "paymentPlans.payPlan($id, $minAmtNum, $balanceDueNum);";
+        } else {
+            $onclick = "paymentHistory.gotoPayment();";
+        }
+
+
         $nextPayColor = '';
         if ($payorPlan['status'] == 'active') {
-            $nextPayTimestamp = $data['nextPayTimestamp'];
             if ($nextPayTimestamp < $now) { // past due
                 $nextPayColor = ' bg-danger text-white';
-                $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
-                $minAmt = $data['minAmt'];
+                $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='$onclick'>Make Past Due Pmt</button>";
             } else if ($nextPayTimestamp < $now + 7 * 24 * 3600) { // are we within 7 days of a payment
                 $nextPayColor = ' bg-warning';
                 $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='$onclick'>Make Pmt</button>";

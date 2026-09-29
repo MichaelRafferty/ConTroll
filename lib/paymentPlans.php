@@ -286,9 +286,20 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) : array {
     } else {
         $numPmtsPastDue = 0;
         $nextPayTimestamp = $nextPayDueDate->getTimestamp();
-        if ($nextPayTimestamp < $now) { // past due
-            $numPmtsPastDue = 1 + ceil(($now - $nextPayTimestamp) / (24 * 3600 * $payorPlan['daysBetween']));
-            $minAmtNum = $numPmtsPastDue * $payorPlan['minPayment'];
+        if ($nextPayTimestamp < $now) {
+            // past due how far past due....
+            $numPmtsPastDue = ceil(($now - $nextPayTimestamp) / (24 * 3600 * $payorPlan['daysBetween']));
+            // now compute how far from the next payment due, based on catching up.
+            $nextPayPostPastDueDate = date_add(date_create($payorPlan['createDate']),
+                    date_interval_create_from_date_string(
+                            (($numPmts + $numPmtsPastDue + 1) * $payorPlan['daysBetween']) - 1 . ' days'));
+            $nextPayPostPastDueDateTS = $nextPayPostPastDueDate->getTimeStamp();
+            $nextPayPostPastDueDateFmt= date_format($nextPayPostPastDueDate, 'Y-m-d');
+            $daysLimit = getConfValue('con', 'pastdueDaysNext', 7);
+            $daysLimitTS = $nextPayPostPastDueDateTS - ($daysLimit * 24 * 3600);
+            // ok, now we have the Time in seconds for how far before we should add one more paymnet
+            $numPmtsDue = $numPmtsPastDue + ($now > $daysLimitTS ? 1 : 0);
+            $minAmtNum = $numPmtsDue * $payorPlan['minPayment'];
             if ($minAmtNum > $payorPlan['balanceDue'])
                 $minAmtNum = $payorPlan['balanceDue'];
             $minAmt = $dolfmt->formatCurrency((float)$minAmtNum, $currency);
@@ -313,6 +324,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) : array {
     $data['dateCreated'] = $dateCreated;
     $data['payByDate'] = $payByDate;
     $data['balanceDue'] = $balanceDue;
+    $data['balanceDueNum'] = $payorPlan['balanceDue'];
     $data['initialAmt'] = $initialAmt;
     return $data;
 }
