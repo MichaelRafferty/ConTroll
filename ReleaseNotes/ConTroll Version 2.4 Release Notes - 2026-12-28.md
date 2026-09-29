@@ -42,6 +42,7 @@
    * Stripe via a metadata value on the payment record
    * Rounding amount is maintained in the transaction table
    * Payment is the actual amount paid
+* Support for auto polling the terminal for completion
 
 ## Exhibitor (Vendor Portals)
 * 
