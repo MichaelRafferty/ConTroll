@@ -359,52 +359,56 @@ EOS;
     $tableData[] = [];
 
     // Section  2 One Day
-    $labelRowCols['rowTitle'] = '<b>One Day Memberships</b>';
-    $tableData[] = $labelRowCols;
-    $GRPs = array_keys($onedayGRP);
-    sort($GRPs, SORT_STRING);
-    $first = true;
-    $totals = [];
-    $totals['rowTitle'] = '<b>Total One Day</b>';
-    foreach ($GRPs AS $grp) {
-        if ($first) {
-            $totals = $onedayGRP[$grp];
-            $totals['rowTitle'] = '<b>Total One Day</b>';
-            $first = false;
-        } else {
-            foreach ($onedayGRP[$grp] as $name => $value) {
-                if ($name != 'rowTitle')
-                    $totals[$name] += $value;
+    if (count($onedayGRP) > 0) {
+        $labelRowCols['rowTitle'] = '<b>One Day Memberships</b>';
+        $tableData[] = $labelRowCols;
+        $GRPs = array_keys($onedayGRP);
+        sort($GRPs, SORT_STRING);
+        $first = true;
+        $totals = [];
+        $totals['rowTitle'] = '<b>Total One Day</b>';
+        foreach ($GRPs as $grp) {
+            if ($first) {
+                $totals = $onedayGRP[$grp];
+                $totals['rowTitle'] = '<b>Total One Day</b>';
+                $first = false;
+            } else {
+                foreach ($onedayGRP[$grp] as $name => $value) {
+                    if ($name != 'rowTitle')
+                        $totals[$name] += $value;
+                }
             }
+            $tableData[] = $onedayGRP[$grp];
         }
-        $tableData[] = $onedayGRP[$grp];
+        $tableData[] = $totals;
+        $tableData[] = [];
     }
-    $tableData[] = $totals;
-    $tableData[] = [];
 
     // Section 3 Comps
-    $labelRowCols['rowTitle'] = '<b>Comp Memberships</b>';
-    $tableData[] = $labelRowCols;
-    $GRPs = array_keys($compGRP);
-    sort($GRPs, SORT_STRING);
-    $first = true;
-    $totals = [];
-    $totals['rowTitle'] = '<b>Total Comps</b>';
-    foreach ($GRPs AS $grp) {
-        if ($first) {
-            $totals = $compGRP[$grp];
-            $totals['rowTitle'] = '<b>Total Comps</b>';
-            $first = false;
-        } else {
-            foreach ($compGRP[$grp] as $name => $value) {
-                if ($name != 'rowTitle')
-                    $totals[$name] += $value;
+    if (count($compGRP) > 0) {
+        $labelRowCols['rowTitle'] = '<b>Comp Memberships</b>';
+        $tableData[] = $labelRowCols;
+        $GRPs = array_keys($compGRP);
+        sort($GRPs, SORT_STRING);
+        $first = true;
+        $totals = [];
+        $totals['rowTitle'] = '<b>Total Comps</b>';
+        foreach ($GRPs as $grp) {
+            if ($first) {
+                $totals = $compGRP[$grp];
+                $totals['rowTitle'] = '<b>Total Comps</b>';
+                $first = false;
+            } else {
+                foreach ($compGRP[$grp] as $name => $value) {
+                    if ($name != 'rowTitle')
+                        $totals[$name] += $value;
+                }
             }
+            $tableData[] = $compGRP[$grp];
         }
-        $tableData[] = $compGRP[$grp];
+        $tableData[] = $totals;
+        $tableData[] = [];
     }
-    $tableData[] = $totals;
-    $tableData[] = [];
 
     // Section 4 Online
     if (count($onlGRP) > 0) {
