@@ -145,7 +145,7 @@ EOS;
     if ($groupBy == 'm') {
         $cols = array_keys($colTotals);
         sort($cols, SORT_STRING);
-        if (substr($cols[0], 0, 7) == ' Before')
+        if (count($cols) > 0 && substr($cols[0], 0, 7) == ' Before')
             $cols[0] = trim($cols[0]);
     }
     $colTotals['Total'] = $rR->num_rows;
@@ -212,6 +212,7 @@ EOS;
     $wsfsGRP = [];
     $preGRP = [];
     $otherGRP = [];
+    $onedayGRP = [];
     for ($i = 0; $i < count($regs); $i++) {
         //attending memberships by report grouping
         $reg = $regs[$i];
@@ -227,8 +228,8 @@ EOS;
         }
         $rptGrouping = $reg['rptGrouping'];
         $label = $reg['label'];
-        if ($rptGrouping != '') { // Sections 1-5
-            if (($type == 'full' || $type == 'oneday') && ($status == 'paid' || $status == 'plan') &&
+        if ($rptGrouping != '') { // Sections 1-6
+            if ($type == 'full' && ($status == 'paid' || $status == 'plan') &&
                 ($price > 0.0 || $age == 'child' || $age == 'kit' || str_contains(strtolower($label), 'upgrade'))) {
                 // Section 1: attending section rules
                 //      status is paid or plan, type = full or one day, price > 0 or label contains 'upgrade', or any age child
@@ -243,8 +244,23 @@ EOS;
                     $attGRP[$rptGrouping][$month]++;
                 }
                 $attGRP[$rptGrouping]['total']++;
+            } else  if ($type == 'oneday' && ($status == 'paid' || $status == 'plan') &&
+                    ($price > 0.0 || $age == 'child' || $age == 'kit' || str_contains(strtolower($label), 'upgrade'))) {
+                // Section 2: one day section rules
+                //      status is paid or plan, type = full or one day, price > 0 or label contains 'upgrade', or any age child
+                if (!array_key_exists($rptGrouping, $onedayGRP)) {
+                    $onedayGRP[$rptGrouping] = [];
+                    $onedayGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
+                    for ($c = 1; $c < count($columns); $c++) {
+                        $onedayGRP[$rptGrouping][$columns[$c]['field']] = 0;
+                    }
+                }
+                if ($groupBy == 'm') {
+                    $onedayGRP[$rptGrouping][$month]++;
+                }
+                $onedayGRP[$rptGrouping]['total']++;
             } else if ($price == 0 && ($type == 'full' || $type == 'oneday')  && ($status == 'paid' || $status == 'plan')) {
-                // Section 2: Comp Attending
+                // Section 3: Comp Attending
                 if (!array_key_exists($rptGrouping, $compGRP)) {
                     $compGRP[$rptGrouping] = [];
                     $compGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
@@ -257,7 +273,7 @@ EOS;
                 }
                 $compGRP[$rptGrouping]['total']++;
             } else if ($type == 'virtual' && ($status == 'paid' || $status == 'plan')) {
-                // Section 3: Online
+                // Section 4: Online
                 if (!array_key_exists($rptGrouping, $onlGRP)) {
                     $onlGRP[$rptGrouping] = [];
                     $onlGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
@@ -270,7 +286,7 @@ EOS;
                 }
                 $onlGRP[$rptGrouping]['total']++;
             } else if ($type == 'wsfs'  && $status == 'paid') {
-                // Section 4: WSFS
+                // Section 5: WSFS
                 if (!array_key_exists($rptGrouping, $wsfsGRP)) {
                     $wsfsGRP[$rptGrouping] = [];
                     $wsfsGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
@@ -283,7 +299,7 @@ EOS;
                 }
                 $wsfsGRP[$rptGrouping]['total']++;
             } else if (strtolower($type) == 'presupport' && $status == 'paid') {
-                // Section 5: Presupport
+                // Section 6: Presupport
                 if (!array_key_exists($rptGrouping, $preGRP)) {
                     $preGRP[$rptGrouping] = [];
                     $preGRP[$rptGrouping]['rowTitle'] = $rptGrouping;
@@ -296,7 +312,7 @@ EOS;
                 }
                 $preGRP[$rptGrouping]['total']++;
             } else if ($type != 'donation' && ($status == 'paid' || $status == 'plan')) {
-                // Section 6: Other, not donation
+                // Section 7: Other, not donation
                 if ($rptGrouping == '')
                     $rptGrouping = 'Label: ' . $reg['label'];
                 if (!array_key_exists($rptGrouping, $otherGRP)) {
@@ -341,8 +357,32 @@ EOS;
     }
     $tableData[] = $totals;
     $tableData[] = [];
-    
-    // Section 2 Comps
+
+    // Section  2 One Day
+    $labelRowCols['rowTitle'] = '<b>One Day Memberships</b>';
+    $tableData[] = $labelRowCols;
+    $GRPs = array_keys($onedayGRP);
+    sort($GRPs, SORT_STRING);
+    $first = true;
+    $totals = [];
+    $totals['rowTitle'] = '<b>Total One Day</b>';
+    foreach ($GRPs AS $grp) {
+        if ($first) {
+            $totals = $onedayGRP[$grp];
+            $totals['rowTitle'] = '<b>Total One Day</b>';
+            $first = false;
+        } else {
+            foreach ($onedayGRP[$grp] as $name => $value) {
+                if ($name != 'rowTitle')
+                    $totals[$name] += $value;
+            }
+        }
+        $tableData[] = $onedayGRP[$grp];
+    }
+    $tableData[] = $totals;
+    $tableData[] = [];
+
+    // Section 3 Comps
     $labelRowCols['rowTitle'] = '<b>Comp Memberships</b>';
     $tableData[] = $labelRowCols;
     $GRPs = array_keys($compGRP);
@@ -366,7 +406,7 @@ EOS;
     $tableData[] = $totals;
     $tableData[] = [];
 
-    // Section 3 Online
+    // Section 4 Online
     if (count($onlGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Online Memberships</b>';
         $tableData[] = $labelRowCols;
@@ -392,7 +432,7 @@ EOS;
         $tableData[] = [];
     }
     
-    // Section 4 WSFS
+    // Section 5 WSFS
     if (count($wsfsGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>WSFS Memberships</b>';
         $tableData[] = $labelRowCols;
@@ -418,7 +458,7 @@ EOS;
         $tableData[] = [];
     }
     
-    // Section 5 PreSupport
+    // Section 6 PreSupport
     if (count($preGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Presupport Memberships</b>';
         $tableData[] = $labelRowCols;
@@ -444,7 +484,7 @@ EOS;
         $tableData[] = [];
     }
     
-    // Section 6 Other
+    // Section 7 Other
     if (count($otherGRP) > 0) {
         $labelRowCols['rowTitle'] = '<b>Other Memberships</b>';
         $tableData[] = $labelRowCols;
