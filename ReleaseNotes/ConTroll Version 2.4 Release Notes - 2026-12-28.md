@@ -17,6 +17,7 @@
   * reg_conf.ini:
     * agePurchaseRestriction: ages not allowed to pay for memberships in the portal
     * ageRestriocton: ages not allowed to login to the portal
+    * pastdueDaysNext: When to include next payment in past due payments on plans
 
 * New Scripts: None
 
