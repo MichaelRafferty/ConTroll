@@ -338,10 +338,10 @@ EOS;
                         $nmbr['perid'] = $mbrPerid;
                         $nmbr['regid'] = -1;
                         array_splice($newMemberships, $mrow + $numSplit, 0, array ($nmbr));
-                        // since array numbers are not kept, reorder the array
                     }
                     $numSplit++;
                 }
+                // since array numbers are not kept, reorder the array
                 $memberships = [];
                 foreach ($newMemberships as $nmbr)
                     $memberships[] = $nmbr;

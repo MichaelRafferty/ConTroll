@@ -91,8 +91,9 @@ $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, 
+       mi.price AS includedPrice, mi.glNum AS includedGLNum, mi.label AS includedLabel, mi.notes AS includedNotes,
+       ma.price AS additionalPrice, ma.glNum AS additionalGLNum, ma.label AS additionalLabel, ma.notes AS additionalNotes,
        ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId, ery.mailinGLNum
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
@@ -108,8 +109,14 @@ if ($regionYearR === false || $regionYearR->num_rows != 1) {
 }
 $region = $regionYearR->fetch_assoc();
 $regionYearR->free();
+// ok, now populate the badge info for included and additional, for expanding a bundle
 
-//$response['region'] = $region;
+$includedMlist = buildMlist($region, $region['includedLabel'], 'included');
+$additionalMlist = buildMlist($region, $region['additionalLabel'], 'additional');
+
+$response['region'] = $region;
+$response['includedMlist'] = $includedMlist;
+$response['additionalMlist'] = $additionalMlist;
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
@@ -335,8 +342,7 @@ if (!$valid) {
     return;
 }
 
-
-// ok, it's valid, process the updates to the database and the payments
+// process the updates to the database and the payments
 $region['totprice'] = $totprice;
 $region['price'] = $spacePrice;
 $status_msg = '';
@@ -370,24 +376,24 @@ $transId = null;
 $managedByNew = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName, $managedByNew);
+        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName, $managedByNew, $includedMlist);
         if ($managedByNew == null)
-            $managedByNew = $badge['newperid'];
-        $transId = $badge['transid'];
-        $status_msg .= $badge['status'];
-        $error_msg .= $badge['error'];
-        $badges[] = $badge;
+            $managedByNew = $badge[0]['newperid'];
+        $transId = $badge[0]['transid'];
+        $status_msg .= $badge[0]['status'];
+        $error_msg .= $badge[0]['error'];
+        $badges = array_merge($badges, $badge);
     }
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName, $managedByNew);
+        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName, $managedByNew, $additionalMlist);
         if ($managedByNew == null)
-            $managedByNew = $badge['newperid'];
-            $transId = $badge['transid'];
-        $badges[] = $badge;
-        $status_msg .= $badge['status'];
-        $error_msg .= $badge['error'];
+            $managedByNew = $badge[0]['newperid'];
+            $transId = $badge[0]['transid'];
+        $status_msg .= $badge[0]['status'];
+        $error_msg .= $badge[0]['error'];
+        $badges = array_merge($badges, $badge);
     }
 }
 if ($error_msg != '') {
@@ -520,20 +526,69 @@ if ($totprice > 0) {
 ajaxSuccess($response);
 return;
 
+function buildMlist($region, $label, $type) {
+    $numSplit = 0;
+    $Mlist = [];
+    if (str_starts_with($label, 'Bundle: ')) {
+        $bQ = <<<EOS
+SELECT id, price, glNum, label
+FROM memList
+WHERE id = ?;
+EOS;
+        $bundleId = $type == 'included' ? $region['includedMemId'] : $region['additionalMemId'];
+        $notes = $type == 'included' ? $region['includedNotes'] : $region['additionalNotes'];
+        // its a bundle, get the bundle contents
+        $bundle = explode(',', strstr($notes, '/', true));
+        $numSplit = count($bundle);
+    }
+
+    // if bundle has contents expand it
+    if ($numSplit > 0) {
+        foreach ($bundle as $reg) {
+            $bR = dbSafeQuery($bQ, 'i', array ($reg));
+            if ($bR === false || $bR->num_rows != 1) {
+                $response['error'] = "Error adding bundle membership $bundleId, seek assistance.";
+                ajaxSuccess($response);
+                return;
+            }
+            $bL = $bR->fetch_assoc();
+            $mitem = [];
+            $mitem['id'] = $bL['id'];
+            $mitem['label'] = $bL['label'];
+            $mitem['price'] = $bL['price'];
+            $mitem['glNum'] = $bL['glNum'];
+            $Mlist[] = $mitem;
+            $bR->free();
+        }
+    } else {
+        // its a direct membership, build the value directly
+        $mitem = [];
+        $mitem['id'] = $type == 'included' ? $region['includedMemId'] : $region['additionalMemId'];
+        $mitem['label'] = $type == 'included' ? $region['includedLabel'] : $region['additionalLabel'];
+        $mitem['price'] = $type == 'included' ? $region['includedPrice'] : $region['additionalPrice'];
+        $mitem['glNum'] = $type == 'included' ? $region['includedGLNum'] : $region['additionalGLNum'];
+        $Mlist[] = $mitem;
+    }
+    return $Mlist;
+}
+
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName, $managedByNew) {
+function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName, $managedByNew, $Mlist) {
     $badge = array();
+    $badges = array();
     $prefix = $type . '_' . $index . '_';
     if ($type == 'i') {
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
         $glNum = $region['includedGLNum'];
         $label = $region['includedLabel'];
+        $notes = $region['includedNotes'];
     } else {
         $memid = $region['additionalMemId'];
         $memprice = $region['additionalPrice'];
         $glNum = $region['additionalGLNum'];
         $label = $region['additionalLabel'];
+        $notes = $region['additionalNotes'];
     }
 
     foreach ($fields as $field => $required) {
@@ -588,28 +643,35 @@ EOS;
     $badge['transid'] = $transId;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
-    $badgeQ = <<<EOS
+    // now loop over the list of badges for this person based on the Mlist.
+    foreach ($Mlist as $memId => $mFields) {
+        $badgeQ = <<<EOS
 INSERT INTO reg(conid, newperid, create_trans, price, status, memID)
 VALUES(?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiidsi', array(
-            $conid,
-            $badge['newperid'],
-            $transId,
-            $badge['price'],
-            $badge['price'] > 0 ? 'unpaid' : 'paid',
-            $badge['memId'])
+
+        $badge['label'] = $mFields['label'];
+        $badge['glNum'] = $mFields['glNum'];
+        $badgeId = dbSafeInsert($badgeQ, 'iiidsi', array (
+                $conid,
+                $badge['newperid'],
+                $transId,
+                $mFields['price'],
+                $mFields['price'] > 0 ? 'unpaid' : 'paid',
+                $mFields['id'])
         );
 
-    if ($badgeId === false) {
-        $badge['error'] .= 'Add of registration for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
-    }
-    $badge['badgeId'] = $badgeId;
-    if ($badge['error'] == '') {
-        $badge['status'] = 'Badge Created: ' . $badge['fname'] . ' ' . $badge['lname'] . "<br/>\n";
+        if ($badgeId === false) {
+            $badge['error'] .= 'Add of registration for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
+        }
+        $badge['badgeId'] = $badgeId;
+        if ($badge['error'] == '') {
+            $badge['status'] = 'Badge Created: ' . $badge['fname'] . ' ' . $badge['lname'] . "<br/>\n";
+        }
+        $badges[] = $badge;
     }
 
-    return $badge;
+    return $badges;
 }
 
 // cleanup up on a credit card failure (order or payment)
