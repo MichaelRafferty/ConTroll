@@ -160,15 +160,22 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
 END;;
 DELIMITER ;
 
+ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('n', 'y', 's') NOT NULL DEFAULT 'N'
+    COMMENT 'Require an emergency contact in the profile for this age type';
+
 /*
  * new custom text items
  */
 
+INSERT INTO `controllAppPages` VALUES
+    ('profile', 'profile', 'Profile modal / section on any page');
+
 INSERT INTO `controllAppSections` VALUES
-    ();
+    ('profile', 'profile', 'profile', 'Information Block for Profile Fields');
+
 
 INSERT INTO `controllAppItems` VALUES
-    ();
+    ('profile', 'profile', 'profile', 'emergencyContact', 'Info block for emergency Contact');
 
 INSERT INTO `controllTxtItems` VALUES
     ();
