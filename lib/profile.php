@@ -19,6 +19,9 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
         case 'addr':
             $addrStar = '<span class="text-danger">&bigstar;</span>';
     }
+
+    loadCustomText('profile', 'profile', getConfValue('global', 'customText'), 'production', true);
+    $emergencyContactDesc = returnCustomText('profile/emergencyContact', 'profile/profile/');
     $tabindex = $tabIndexStart;
     $yearahead = false;
     if ($editEmail == false) {
@@ -198,7 +201,22 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
     <div class='row'>
         <div class='col-sm-auto'>
             <label for="<?php echo $idPrefix . 'emergencyContact'; ?>" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
-                Emergency Contact</span></label><br/>
+                Emergency Contact</span></label>
+<?php if ($emergencyContactDesc != '') { ?>
+            <span class="small"><a href='#' onclick='$("#<?php echo $idPrefix . 'ecTip';?>Tip").toggle();return false;'>
+                    <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
+                         tabindex="<?php echo $tabindex; $tabindex += 1;?>"/>
+            </a></span>
+            <div id='<?php echo $idPrefix . 'ecTip';?>Tip' class='padded highlight' style='display:none'>
+                <p class='text-body'><?php echo $emergencyContactDesc; ?>
+                    <span class='small'><a href='#' onclick='$("#<?php echo $idPrefix . 'ecTip';?>Tip").toggle();return false;'>
+                          <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'
+                               tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                        </a></span>
+                </p>
+            </div>
+<?php } ?>
+            <br/>
             <textArea class='form-control-sm'  name='emergencyContact' id='<?php echo $idPrefix . 'emergencyContact'; ?>'
                 rows='5'  cols='80', maxlength='2047' tabindex="<?php echo $tabindex;
                        $tabindex += 10; ?>"></textArea>
