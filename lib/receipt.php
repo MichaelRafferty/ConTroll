@@ -1217,15 +1217,16 @@ EOS;
 EOS;
 
         if ($url != null && $url != '') {
+            $shortURL = substr($url, 0, strrpos($url,'/') + 3) . '...';
             $receipt .= "     $url\n";
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'></div>
-        <div class="col-sm-auto"><a href="$url" target="_blank">$url</a></div>
+        <div class="col-sm-auto"><a href="$url" target="_blank">$shortURL</a></div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>&nbsp;</td><td colspan="2"><a href="$url" target="_blank">$url</a></td></tr>
+<tr><td>&nbsp;</td><td colspan="2"><a href="$url" target="_blank">$shortURL</a></td></tr>
 EOS;
         }
     }
