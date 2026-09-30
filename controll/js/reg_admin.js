@@ -615,15 +615,15 @@ function receipt_email(addrchoice) {
         data: data,
         success: function (data, textstatus, jqxhr) {
             if (data.error !== undefined) {
-                show_message(data.error, 'error');
+                show_message(data.error, 'error', 'receiptMessageDiv');
                 return;
             }
             checkRefresh(data);
             if (data.success !== undefined) {
-                show_message(data.success, 'success');
+                show_message(data.success, 'success', 'receiptMessageDiv');
             }
             if (data.warn !== undefined) {
-                show_message(data.warn, 'warn');
+                show_message(data.warn, 'warn', 'receiptMessageDiv');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {

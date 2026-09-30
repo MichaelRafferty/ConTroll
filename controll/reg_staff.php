@@ -1103,7 +1103,7 @@ draw_fileManagerModals($authToken);
                 </div>
             </div>
             <div class='container-fluid'>
-                <div "class=row mt-2">
+                <div class="row mt-2">
                     <div class="col-sm-12" id="changeMessageDiv"></div>
                 </div>
             </div>
@@ -1128,6 +1128,11 @@ draw_fileManagerModals($authToken);
                 <div id="regadminemail" hidden="true"><?php echo getConfValue('con', 'regadminemail');?></div>
                 <div id="receipt-text" hidden="true"></div>
                 <div id="receipt-tables" hidden="true"></div>
+                <div class='container-fluid'>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='receiptMessageDiv'></div>
+                    </div>
+                </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
