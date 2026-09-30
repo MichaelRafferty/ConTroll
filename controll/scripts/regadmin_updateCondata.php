@@ -170,12 +170,17 @@ EOS;
             if ($glNum == '')
                 $glNum = null;
 
+            if (array_key_exists('rptGrouping', $row))
+                $rptGrouping = $row['rptGrouping'];
+            else
+                $rptGrouping = null;
+
             if (strlen($row['shortname']) > 64) // truncate it if it gets to here as too long, the .js should catch it first.
                 $row['shortname'] = substr($row['shortname'], 0, 64);
             if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'], $row['rptGrouping'],
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'], $rptGrouping,
                     $glNum,IFNULL($row['badgeLabel'],''));
                 //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
@@ -184,7 +189,7 @@ EOS;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['rptGrouping'],
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$rptGrouping,
                     $glNum,IFNULL($row['badgeLabel'],''),$row['id']);
                 //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
