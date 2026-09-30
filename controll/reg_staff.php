@@ -129,33 +129,33 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-auto' id='editMemListConID'></div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Category:</div>
+                                    <div class='col-sm-2'><label for="memListCategorySelect">Category:</label></div>
                                     <div class='col-sm-10' id="editMemListCategory"></div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Type:</div>
+                                    <div class='col-sm-2'><label for="memListTypeSelect">Type:</label></div>
                                     <div class='col-sm-10' id='editMemListType'></div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Age:</div>
+                                    <div class='col-sm-2'><label for="memListAgeSelect">Age:</label></div>
                                     <div class='col-sm-10' id='editMemListAge'></div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Short Label:</div>
+                                    <div class='col-sm-2'><label for="editMemListLabel">Short Label:</label></div>
                                     <div class='col-sm-10'>
                                         <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
                                                onchange='memListModalDirty = true;' size="64" maxlength="64" />
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Rpt Grouping:</div>
+                                    <div class='col-sm-2'><label for="editMemListRptGrouping">Rpt Grouping:</label></div>
                                     <div class='col-sm-10'>
                                         <input type='text' name='editMemListRptGrouping' id='editMemListRptGrouping' placeholder='Report Grouping'
                                                onchange='rptGroupingChange(editListMasterRow);' size='64' maxlength='128'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Cart Description:</div>
+                                    <div class='col-sm-2'><label for="editMemListCartDesc">Cart Description:</label></div>
                                     <div class='col-sm-10'>
                                         <textarea name='editMemListCartDesc' id='editMemListCartDesc' placeholder='Cart Description'
                                                   cols='80' rows='5' onchange='memListModalDirty = true;'>
@@ -163,7 +163,7 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Price:</div>
+                                    <div class='col-sm-2'><label for="editMemListPrice">Price:</label></div>
                                     <div class='col-sm-3'>
                                         <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name='editMemListPrice' min='0'
                                                style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
@@ -173,26 +173,25 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Start Date:</div>
+                                    <div class='col-sm-2'><label for="editMemListStart">Start Date:</div>
                                     <div class='col-sm-4'>
                                         <input type="datetime-local" id='editMemListStart' name='editMemListStart'
                                                onchange='startdateChange(editListMasterRow)'/>
                                     </div>
-                                    <div class='col-sm-2'>End Date:</div>
-
+                                    <div class='col-sm-2'><label for="editMemListEnd">End Date:</label></div>
                                     <div class='col-sm-4'>
                                         <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>At-Con:</div>
+                                    <div class='col-sm-2'><label for="editMemListAtcon">At-Con:</label></div>
                                     <div class='col-sm-auto'>
                                         <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
                                     </div>
-                                    <div class='col-sm-auto'>OnLine:</div>
+                                    <div class='col-sm-auto'><label for="editMemListOnline">OnLine:</label></div>
                                     <div class='col-sm-auto'>
                                         <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
                                             <option value='N'>No</option>
@@ -202,7 +201,7 @@ draw_fileManagerModals($authToken);
                                 </div>
                             <?php if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Bundle:</div>
+                                    <div class='col-sm-2'><label for="editMemListBundle">Bundle:</label></div>
                                     <div class='col-sm-10'>
                                         <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged(editListMasterRow);'>
                                             <option value='N'>No</option>
@@ -211,7 +210,7 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Contains:</div>
+                                    <div class='col-sm-2'><label for="editMemListBundleContains">Contains:</label></div>
                                     <div class="col-sm-auto">
                                         <button class='btn btn-sm btn-primary' type='button'
                                                 onclick="editBundleContains('editMemListBundleContains', 'editMemListStart', 'editMemListEnd');">
@@ -225,7 +224,7 @@ draw_fileManagerModals($authToken);
                                 </div>
                             <?php } ?>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Notes:</div>
+                                    <div class='col-sm-2'><label for="editMemListNotes">Notes:</label></div>
                                     <div class='col-sm-10'>
                                         <textarea id="editMemListNotes" name="editMemListNotes" cols="80" rows="5" onchange="memListModalDirty = true;">
                                         </textarea>
@@ -235,7 +234,7 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-2'>Override:</div>
                                     <div class='col-sm-auto'>Category Badge Label:</div>
                                     <div class='col-sm-auto' id='catBadgeLabel'></div>
-                                    <div class='col-sm-auto'>Override Badge Label:</div>
+                                    <div class='col-sm-auto'><label for="editMemListBadgeLabel">Override Badge Label:</label></div>
                                     <div class='col-sm-2'>
                                         <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
                                                size='20' maxlength='16' onchange='badgeLabelChange(editListMasterRow);'/>
@@ -243,7 +242,7 @@ draw_fileManagerModals($authToken);
                                 </div>
                                 <?php if ($config_vars['useGL'] == 1) { ?>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Gen. Ledger</div>
+                                    <div class='col-sm-2'><label for="editMemListGLNum">Gen. Ledger</label></div>
                                     <div class='col-sm-auto'>
                                         <select name='editMemListGLNum' id='editMemListGLNum' onchange='glNumChange(editListMasterRow);'>
                                             <?php echo $glNumSelect; ?>
@@ -263,7 +262,7 @@ draw_fileManagerModals($authToken);
                                 <div class='row'>
                                     <div class='col-sm-12 m-0 p-0' id='editMemlistBundleTable'></div>
                                 </div>
-                                <div class='row mt-1' id='editMemlistBundleButtons' name='editMemlistBundleButtons'>
+                                <div class='row mt-1' id='editMemlistBundleButtons'>
                                     <div class='col-sm-auto'>
                                         <button class='btn btn-secondary btn-sm' type='button' onclick="closeBundleSel();">Cancel Changes</button>
                                     </div>
@@ -372,16 +371,16 @@ draw_fileManagerModals($authToken);
                             </select>
                         </div>
                         <?php } else { ?>
-                            <div class='col-sm-1'>
-                                <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
-                                       onchange="tsBadgeLabelChange(<?php echo $i;?>)"
-                                />
-                            </div>
-                            <div class='col-sm-3'>
-                                <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='48' maxlength='128'
-                                       onchange="tsRptGroupingChange(<?php echo $i;?>)"
-                                />
-                            </div>
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
+                                   onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-3'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='48' maxlength='128'
+                                   onchange="tsRptGroupingChange(<?php echo $i;?>)"
+                            />
+                        </div>
                         <?php } ?>
                     </div>
 <?php
