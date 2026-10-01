@@ -244,6 +244,21 @@ class Profile {
         return email;
     }
 
+    ageChanged(id) {
+        let newAge = document.getElementById(id).value;
+        this.updateECFromAge(newAge);
+    }
+
+    updateECFromAge(age) {
+        let ecReq = 'N'
+        if (age != '' && age != null) {
+            ecReq = ageListIdx[age].emergencyContactReq;
+        }
+        this.#ecStarSpan.hidden = ecReq != 'Y';
+        this.#ecReq = ecReq == 'Y';
+        this.#ecRowDiv.hidden = ecReq == 'S';
+    }
+
     setAgeText(text, addon='') {
         this.#ageText.innerHTML = text + (addon != '' ? '<br/>' + addon : '');
         this.#ageText.hidden = false;
@@ -253,10 +268,12 @@ class Profile {
 
     setAge(age) {
         this.#ageField.value = age;
+        this.updateECFromAge(age);
     }
 
     setMemberAge(age) {
         this.#memberAge = age;
+        this.updateECFromAge(age);
     }
 
     setDeceased(deceased) {
