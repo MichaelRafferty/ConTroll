@@ -24,6 +24,10 @@ class Profile {
     #ageDiv = null;
     #ageText = null;
     #memberAge = '';
+    #emergencyContactReq = 'N';
+    #ecStarSpan = null;
+    #ecReq = false;
+    #ecRowDiv = null;
     #uspsDiv= null;
     #email1Input = true;
     #numPrimary = 0;
@@ -65,6 +69,9 @@ class Profile {
         this.#suffixField = document.getElementById(prefix + "suffix");
         this.#legalNameField = document.getElementById(prefix + "legalName");
         this.#pronounsField = document.getElementById(prefix + "pronouns");
+        this.#emergencyContactField = document.getElementById(prefix + "emergencyContact");
+        this.#ecRowDiv = document.getElementById(prefix + "ecRowDiv");
+        this.#ecStarSpan = document.getElementById(prefix + "ecStarSpan");
         this.#emergencyContactField = document.getElementById(prefix + "emergencyContact");
         this.#addrField = document.getElementById(prefix + "addr");
         this.#addr2Field = document.getElementById(prefix + "addr2");
@@ -315,12 +322,24 @@ class Profile {
         this.#badgenameField.value = row.hasOwnProperty('badge_name') ? row.badge_name : '';
         this.#badgenameL2Field.value = row.hasOwnProperty('badgeNameL2') ? row.badgeNameL2 : '';
 
-        if (row.hasOwnProperty('currentAgeType'))
+        let rowAge = '';
+        if (row.hasOwnProperty('currentAgeType')) {
             this.#ageField.value = row.currentAgeType;
-        else if (row.hasOwnProperty('age'))
+            rowAge = row.currentAgeType;
+        } else if (row.hasOwnProperty('age')) {
             this.#ageField.value = row.age;
-        else
+            rowAge = row.age;
+        } else
             this.#ageField.value = '';
+
+        let ecReq = 'N'
+        if (rowAge != '' && rowAge != null) {
+            let ecReq = ageListIdx[rowAge].emergencyContactReq;
+        }
+
+        this.#ecStarSpan.hidden = ecReq != 'Y';
+        this.#ecReq = ecReq == 'Y';
+        this.#ecRowDiv.hidden = ecReq == 'S';
 
         this.#numPrimary = row.hasOwnProperty('numPrimary') ? row.numPrimary : 0;
 
@@ -434,6 +453,7 @@ class Profile {
                 age: this.age(),
                 badge_name: this.badgename(),
                 badgeNameL2: this.badgenameL2(),
+                emergencyContact: this.emergencyContact(),
             }
         }
 
@@ -528,6 +548,17 @@ class Profile {
                 this.#stateField.classList.remove(this.#alert);
                 this.#zipField.classList.remove(this.#alert);
             }
+        }
+
+        if (this.#ecReq) {
+            if (person.emergencyContact == '') {
+                valid = false;
+                this.#emergencyContactField.classList.add(this.#alert);
+            } else {
+                this.#emergencyContactField.classList.remove(this.#alert);
+            }
+        } else {
+            this.#emergencyContactField.classList.remove(this.#alert);
         }
 
         // age is always required, but if memAge is all, it can't be checked right now

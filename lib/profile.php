@@ -198,10 +198,10 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             </div>
         </div>
     </div>
-    <div class='row'>
+    <div class='row' id="<?php echo $idPrefix . 'ecRowDiv'; ?>">
         <div class='col-sm-auto'>
             <label for="<?php echo $idPrefix . 'emergencyContact'; ?>" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
-                Emergency Contact</span></label>
+                <span id="<?php echo $idPrefix . 'ecStarSpan';?>"><?php echo $addrStar; ?></span>Emergency Contact</label>
 <?php if ($emergencyContactDesc != '') { ?>
             <span class="small"><a href='#' onclick='$("#<?php echo $idPrefix . 'ecTip';?>Tip").toggle();return false;'>
                     <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"

@@ -910,7 +910,7 @@ if ($ageType == '') {
     if ($holderMemberAge != '')
         $holderAgeLabel = ' <i>' . $ageListIdx[$holderMemberAge]['shortname'] . ' [' . $ageListIdx[$holderMemberAge]['label'] . ']' . '</i>';
     else
-        $holderAgeLabel = ' Age Not Yet Entered';
+        $holderAgeLabel = ' <i>Age Not Yet Entered</i>';
 } else {
     $holderAgeLabel = ' ' . $ageListIdx[$ageType]['shortname'] . ' [' . $ageListIdx[$ageType]['label'] . ']';
 }
@@ -1100,7 +1100,7 @@ EOS;
             if ($mAge != '')
                 $mAgeLabel = ' <i>' . $ageListIdx[$mAge]['shortname'] . ' [' . $ageListIdx[$mAge]['label'] . ']' . '</i>';
             else
-                $mAgeLabel = 'Age Not Yet Entered';
+                $mAgeLabel = ' <i>Age Not Yet Entered</i>';
         } else {
             $mAgeLabel = ' ' . $ageListIdx[$mAgeType]['shortname'] . ' [' . $ageListIdx[$mAgeType]['label'] . ']';
         }

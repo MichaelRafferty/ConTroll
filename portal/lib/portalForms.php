@@ -319,7 +319,7 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
     $personType = $person['personType'];
     $fullName = $person['fullName'];
     $ageType = $person['currentAgeType'];
-    $ageLabel = $ageType == '' ? 'unknown' : ($ageList[$ageType]['shortname'] . ' [' . $ageList[$ageType]['label'] . ']');
+    $ageLabel = $ageType == '' ? '<i>Not Yet Entered</i>' : ($ageList[$ageType]['shortname'] . ' [' . $ageList[$ageType]['label'] . ']');
     $legalName = $person['legalName'];
     $pronouns = $person['pronouns'];
     $fullAddress = $person['address'];
@@ -327,7 +327,10 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         $fullAddress .= '<br/>' . $person['addr_2'];
     $fullAddress .= '<br/>' . $person['city'] . ', ' . $person['state'] . ' ' . $person['zip'];
     $country = $person['country'];
-    $emergencyContact = str_replace("\n", "<br/>\n", $person['emergencyContact']);
+    if (array_key_exists('emergencyContact', $person) && $person['emergencyContact'] != null)
+        $emergencyContact = str_replace("\n", "<br/>\n", $person['emergencyContact']);
+    else
+        $emergencyContact = '';
     $phone = $person['phone'];
     $email = $person['email_addr'];
     $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
