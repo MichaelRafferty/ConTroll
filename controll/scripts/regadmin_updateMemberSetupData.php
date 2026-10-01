@@ -83,12 +83,12 @@ switch ($action) {
             $deleted += dbSafeCmd($delsql, 'i', array($year));
         }
         $inssql = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, badgeFlag, verify, sortorder)
-VALUES(?,?,?,?,?,?,?);
+INSERT INTO ageList(conid, ageType, label, shortname, badgeFlag, verify, emergencyContactReq, sortorder)
+VALUES(?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE ageList
-SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, verify = ?, sortorder = ?
+SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, verify = ?, emergencyContactReq = ?, sortorder = ?
 WHERE ageType = ? and conid = ?;
 EOS;
 
@@ -109,8 +109,8 @@ EOS;
                 } else
                     $badgeFlag = null;
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeCmd($updsql, 'sssssisi', array($ageType, $row['label'], $row['shortname'], $badgeFlag,
-                    $row['verify'], $row['sortorder'], $row['agekey'], $year));
+                $numrows = dbSafeCmd($updsql, 'ssssssisi', array($ageType, $row['label'], $row['shortname'], $badgeFlag,
+                    $row['verify'], $row['emergencyContactReq'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
         }
@@ -132,8 +132,8 @@ EOS;
                 } else
                     $badgeFlag = null;
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeInsert($inssql, 'isssssi', array($year, $ageType, $row['label'], $row['shortname'], $badgeFlag,
-                    $row['verify'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'issssssi', array($year, $ageType, $row['label'], $row['shortname'], $badgeFlag,
+                    $row['verify'], $row['emergencyContactReq'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

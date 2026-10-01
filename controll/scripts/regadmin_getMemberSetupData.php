@@ -28,7 +28,7 @@ $response['next_agelist'] = null;
 $response['current_id'] = $conid;
 $response['next_id'] = $nextconid;
 $ageSQL = <<<EOS
-SELECT a.conid,a.ageType, a.label, a.shortname, a.badgeFlag, a.sortorder, count(l.id) uses, a.ageType as agekey, a.verify
+SELECT a.conid,a.ageType, a.label, a.shortname, a.badgeFlag, a.sortorder, count(l.id) uses, a.ageType as agekey, a.verify, a.emergencyContactReq
 FROM ageList a
 LEFT OUTER JOIN memList l ON (a.conid = l.conid and a.ageType = memAge)
 WHERE a.conid = ?

@@ -160,7 +160,7 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
 END;;
 DELIMITER ;
 
-ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('n', 'y', 's') NOT NULL DEFAULT 'N'
+ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('N', 'Y', 'S') NOT NULL DEFAULT 'N'
     COMMENT 'Require an emergency contact in the profile for this age type';
 
 /*

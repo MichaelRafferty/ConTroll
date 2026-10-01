@@ -34,6 +34,68 @@ class memsetup {
 
     // constants
     #enumYN = ['Y', 'N'];
+    #enumNYS = ['N', 'Y', 'S'];
+    #ageColumns= [
+        {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+        {field: "agekey", visible: false},
+        {title: "ConID", field: "conid", visible: false},
+        {
+            title: "Age Type",
+            field: "ageType",
+            width: 100,
+            headerSort: true, headerWordWrap: true,
+            editor: "input",
+            editorParams: {elementAttributes: {maxlength: "16"}},
+            validator: "required"
+        },
+        {
+            title: "Label",
+            field: "label",
+            headerSort: false,
+            width: 200,
+            editor: "input",
+            editorParams: {elementAttributes: {maxlength: "64"}},
+            validator: "required"
+        },
+        {
+            title: "shortname",
+            field: "shortname",
+            headerSort: false,
+            width: 140,
+            editor: "input",
+            editorParams: {elementAttributes: {maxlength: "16"}},
+            validator: "required"
+        },
+        {
+            title: "Req Emer Contact", field: "emergencyContactReq",
+            headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumNYS,},
+            editable: adminEditable, editor: "list", editorParams: {values: this.#enumNYS,}, width: 90, validator: "required"
+        },
+        {
+            title: "Verify Ann-ually", field: "verify",
+            headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
+            editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 90, validator: "required"
+        },
+        {
+            title: "Badge Flag",
+            field: "badgeFlag",
+            headerSort: true,
+            width: 140,
+            editor: "input",
+            editorParams: {elementAttributes: {maxlength: "16"}},
+        },
+        {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
+        {
+            title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
+            hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                let ageType = cell.getRow().getCell('ageType').getValue();
+                if (ageType.toLowerCase() == 'all')
+                    return;
+                deleterow(e, cell.getRow());
+            }
+        },
+        {field: "to_delete", visible: false,}
+    ];
 
     constructor() {
         this.#message_div = document.getElementById('test');
@@ -124,7 +186,7 @@ class memsetup {
         this.current_conid = data['current_id'];
         this.next_conid = data['next_id'];
 
-        var html = `<h4><strong>Membership Setup Tables:</strong> (All entries in the first column of each table should not contain blanks, use - or _ instead.)</h4>
+        let html = `<h4><strong>Membership Setup Tables:</strong> (All entries in the first column of each table should not contain blanks, use - or _ instead.)</h4>
 <div class="container-fluid">
 <div class="row">
 <div class="col-sm-auto p-2 border border-2 border-primary">
@@ -197,7 +259,7 @@ class memsetup {
     };
 
     draw_memtype(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         this.#memtype_dirty = false;
 
@@ -253,7 +315,7 @@ class memsetup {
     };
 
     draw_memcat(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         this.#category_dirty = false;
 
@@ -336,7 +398,7 @@ class memsetup {
     }
 
     draw_curage(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         this.#curage_dirty = false;
         // current agelist table
@@ -350,62 +412,7 @@ class memsetup {
                 data: data['current_agelist'],
                 index: "ageType",
                 layout: "fitDataTable",
-                columns: [
-                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-                    {field: "agekey", visible: false},
-                    {title: "ConID", field: "conid", visible: false},
-                    {
-                        title: "Age Type",
-                        field: "ageType",
-                        width: 140,
-                        headerSort: true,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "16"}},
-                        validator: "required"
-                    },
-                    {
-                        title: "Label",
-                        field: "label",
-                        headerSort: false,
-                        width: 200,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "64"}},
-                        validator: "required"
-                    },
-                    {
-                        title: "shortname",
-                        field: "shortname",
-                        headerSort: false,
-                        width: 140,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "16"}},
-                        validator: "required"
-                    },
-                    {
-                        title: "Verify Annually", field: "verify",
-                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
-                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
-                    },
-                    {
-                        title: "Badge Flag",
-                        field: "badgeFlag",
-                        headerSort: true,
-                        width: 140,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "16"}},
-                    },
-                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
-                    {
-                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
-                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
-                            let ageType = cell.getRow().getCell('ageType').getValue();
-                            if (ageType.toLowerCase() == 'all')
-                                return;
-                            deleterow(e, cell.getRow());
-                        }
-                    },
-                    {field: "to_delete", visible: false,}
-                ],
+                columns: this.#ageColumns,
             });
 
             this.#curagetable.on("dataChanged", function (data) {
@@ -419,7 +426,7 @@ class memsetup {
     }
 
     draw_nextage(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         this.#nextage_dirty = false;
 
@@ -433,45 +440,7 @@ class memsetup {
                 index: "ageType",
                 data: data['next_agelist'],
                 layout: "fitDataTable",
-                columns: [
-                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
-                    {field: "agekey", visible: false},
-                    {title: "ConID", field: "conid", visible: false},
-                    {title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}},
-                    {title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}},
-                    {
-                        title: "shortname",
-                        field: "shortname",
-                        headerSort: false,
-                        width: 140,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "16"}}
-                    },
-                    {
-                        title: "Verify Annually", field: "verify",
-                        headerWordWrap: true, headerSort: true, headerFilter: true, headerFilterParams: {values: this.#enumYN,},
-                        editable: adminEditable, editor: "list", editorParams: {values: this.#enumYN,}, width: 100, validator: "required"
-                    },
-                    {
-                        title: "Badge Flag",
-                        field: "badgeFlag",
-                        headerSort: true,
-                        width: 140,
-                        editor: "input",
-                        editorParams: {elementAttributes: {maxlength: "16"}},
-                    },
-                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
-                    {
-                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
-                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
-                            let ageType = cell.getRow().getCell('ageType').getValue();
-                            if (ageType.toLowerCase() == 'all')
-                                return;
-                            deleterow(e, cell.getRow());
-                        }
-                    },
-                    {field: "to_delete", visible: false,}
-                ],
+                columns: this.#ageColumns,
             });
 
             this.#nextagetable.on("dataChanged", function (data) {
@@ -485,8 +454,8 @@ class memsetup {
     }
 
     open() {
-        var _this = this;
-        var script = "scripts/regadmin_getMemberSetupData.php";
+        let _this = this;
+        let script = "scripts/regadmin_getMemberSetupData.php";
         clear_message();
         clearError();
         $.ajax({
@@ -570,7 +539,7 @@ class memsetup {
     };
 
     addrowTypes() {
-        var _this = this;
+        let _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
             setCellChanged(row.getCell("memType"));
             setCellChanged(row.getCell("active"));
@@ -580,13 +549,13 @@ class memsetup {
 
     // set undo / redo status for mem type buttons
     checkTypeUndoRedo() {
-        var undosize = this.#memtypetable.getHistoryUndoSize();
+        let undosize = this.#memtypetable.getHistoryUndoSize();
         this.#memtype_undobtn.disabled = undosize <= 0;
         this.#memtype_redobtn.disabled = this.#memtypetable.getHistoryRedoSize() <= 0;
         return undosize;
     }
     saveTypesComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -599,7 +568,7 @@ class memsetup {
         clear_message();
         clearError();
         this.#memtype_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/regadmin_getMemberSetupData.php";
+        let script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -616,10 +585,10 @@ class memsetup {
     }
 
     saveTypes() {
-        var _this = this;
+        let _this = this;
 
         if (this.#memtypetable != null) {
-            var invalids = this.#memtypetable.validate();
+            let invalids = this.#memtypetable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 alert("MemType Table does not pass validation, please check for empty cells or cells in red");
@@ -628,9 +597,9 @@ class memsetup {
             this.#memtype_savebtn.innerHTML = "Saving...";
             this.#memtype_savebtn.disabled = true;
 
-            var script = "scripts/regadmin_updateMemberSetupData.php";
+            let script = "scripts/regadmin_updateMemberSetupData.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'memtype',
                 tabledata: JSON.stringify(this.#memtypetable.getData()),
                 tablename: "memTypes",
@@ -680,7 +649,7 @@ class memsetup {
     };
 
     addrowCat() {
-        var _this = this;
+        let _this = this;
 
         this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
                 badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
@@ -698,13 +667,13 @@ class memsetup {
     
     // set undo / redo status for category buttons
     checkCatUndoRedo() {
-        var undosize = this.#categorytable.getHistoryUndoSize();
+        let undosize = this.#categorytable.getHistoryUndoSize();
         this.#category_undobtn.disabled = undosize <= 0;
         this.#category_redobtn.disabled = this.#categorytable.getHistoryRedoSize() <= 0;
         return undosize;
     }
     saveCatComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -715,7 +684,7 @@ class memsetup {
             show_message(data['success']);
         }
         this.#category_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/regadmin_getMemberSetupData.php";
+        let script = "scripts/regadmin_getMemberSetupData.php";
         clearError();
         $.ajax({
             url: script,
@@ -733,10 +702,10 @@ class memsetup {
     }
 
     saveCat() {
-        var _this = this;
+        let _this = this;
 
         if (this.#categorytable != null) {
-            var invalids = this.#categorytable.validate();
+            let invalids = this.#categorytable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 alert("Category Table does not pass validation, please check for empty cells or cells in red");
@@ -745,9 +714,9 @@ class memsetup {
             this.#category_savebtn.innerHTML = "Saving...";
             this.#category_savebtn.disabled = true;
 
-            var script = "scripts/regadmin_updateMemberSetupData.php";
+            let script = "scripts/regadmin_updateMemberSetupData.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'category',
                 tabledata: JSON.stringify(this.#categorytable.getData()),
                 tablename: "memCategories",
@@ -798,7 +767,7 @@ class memsetup {
     };
 
     addrowCurAge() {
-        var _this = this;
+        let _this = this;
 
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
             false).then(function (row) {
@@ -811,14 +780,14 @@ class memsetup {
 
     // set undo / redo status for curent con ageList buttons
     checkCurageUndoRedo() {
-        var undosize = this.#curagetable.getHistoryUndoSize();
+        let undosize = this.#curagetable.getHistoryUndoSize();
         this.#curage_undobtn.disabled = undosize <= 0;
         this.#curage_redobtn.disabled = this.#curagetable.getHistoryRedoSize() <= 0;
         return undosize;
     }
 
     saveCurAgeComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -830,7 +799,7 @@ class memsetup {
         }
         this.#curage_savebtn.innerHTML = "Save Changes";
         clearError();
-        var script = "scripts/regadmin_getMemberSetupData.php";
+        let script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -847,10 +816,10 @@ class memsetup {
     }
 
     saveCurAge() {
-        var _this = this;
+        let _this = this;
 
         if (this.#curagetable != null) {
-            var invalids = this.#curagetable.validate();
+            let invalids = this.#curagetable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 alert("Age Table does not pass validation, please check for empty cells or cells in red");
@@ -861,9 +830,9 @@ class memsetup {
 
             clear_message();
             clearError();
-            var script = "scripts/regadmin_updateMemberSetupData.php";
+            let script = "scripts/regadmin_updateMemberSetupData.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'curage',
                 year: this.#current_conid,
                 tabledata: JSON.stringify(this.#curagetable.getData()),
@@ -912,7 +881,7 @@ class memsetup {
     };
 
     addrowNextAge()  {
-        var _this = this;
+        let _this = this;
 
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
             false).then(function (row) {
@@ -925,14 +894,14 @@ class memsetup {
 
     // set undo / redo status for next con ageList buttons
     checkNextageUndoRedo() {
-        var undosize = this.#nextagetable.getHistoryUndoSize();
+        let undosize = this.#nextagetable.getHistoryUndoSize();
         this.#nextage_undobtn.disabled = undosize <= 0;
         this.#nextage_redobtn.disabled = this.#nextagetable.getHistoryRedoSize() <= 0;
         return undosize;
     }
     
-    saveNextAgeComplete(data, textStatus, jhXHR) {
-        var _this = this;
+    saveNextAgeComplete(data) {
+        let _this = this;
 
         if ('error' in data && data['error'] != '') {
             showError(data['error']);
@@ -943,7 +912,7 @@ class memsetup {
             showError(data['success']);
         }
         this.#nextage_savebtn.innerHTML = "Save Changes";
-        var script = "scripts/regadmin_getMemberSetupData.php";
+        let script = "scripts/regadmin_getMemberSetupData.php";
         $.ajax({
             url: script,
             method: 'POST',
@@ -960,10 +929,10 @@ class memsetup {
     }
 
     saveNextAge() {
-        var _this = this;
+        let _this = this;
 
         if (this.#nextagetable != null) {
-            var invalids = this.#nextagetable.validate();
+            let invalids = this.#nextagetable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 alert("MemType Table does not pass validation, please check for empty cells or cells in red");
@@ -972,9 +941,9 @@ class memsetup {
             this.#nextage_savebtn.innerHTML = "Saving...";
             this.#nextage_savebtn.disabled = true;
 
-            var script = "scripts/regadmin_updateMemberSetupData.php";
+            let script = "scripts/regadmin_updateMemberSetupData.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'nextage',
                 year: this.#current_conid,
                 tabledata: JSON.stringify(this.#nextagetable.getData()),
@@ -988,7 +957,7 @@ class memsetup {
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
                     checkRefresh(data);
-                    _this.saveNextAgeComplete(data, textStatus, jhXHR);
+                    _this.saveNextAgeComplete(data);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -1019,7 +988,7 @@ function adminEditable(cell) {
 }
 
 function actEditable(cell) {
-    var cellData = cell.getData();
+    let cellData = cell.getData();
     if (cellData.regUses == 0) // not used in any existing reg for current or next year
         return true;
 
