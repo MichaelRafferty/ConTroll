@@ -309,6 +309,15 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
     if ($person['currentAgeType'] == null || $person['currentAgeType'] == '' ||
             ($person['currentAgeConId'] != $conid && $ageList[$person['currentAgeType']]['verify'] == 'Y'))
         $profileClass .= ' need-age';
+    else  if ($person['currentAgeType'] != null && $person['currentAgeType'] != '') {
+        if (!array_key_exists('emergencyContact', $person) || $person['emergencyContact'] == null || $person['emergencyContact'] == '') {
+            $age = $person['currentAgeType'];
+            $ecReq = $ageList[$age]['emergencyContactReq'];
+            if ($ecReq == 'Y')
+                $profileClass .= ' need-age';
+        }
+        // check if age requires emergency contact and its empty
+    }
 
     $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullName' => $person['fullName'],
                                 'first_name' => $person['first_name'], 'last_name' => $person['last_name'],

@@ -235,7 +235,7 @@ class Portal {
             let pid = type + id.toString();
             if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
                 _this.editPerson(id, type, true, true);
-                show_message('Age needs to be verified', "error", 'epMessageDiv');
+                show_message('Age/Emergency Contact needs to be verified', "error", 'epMessageDiv');
                 modalCalled = true;
             }
         });
