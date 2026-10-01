@@ -410,15 +410,7 @@ class PosCart {
         if (first) {
             this.#cartPerinfo.unshift(make_copy(p));
             // need to renumber the existing cart
-            for (pindex = 1; i < this.#cartPerinfo.length; pindex++) {
-                this.#cartPerinfo[pindex].index = i;
-                this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
-                let mrows = this.#cartPerinfo[pindex].memberships;
-                for (let mrownum in mrows) {
-                    this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
-                    this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
-                }
-            }
+            this.cartRenumber();
             pindex = 0;
         }
         else {
@@ -426,7 +418,10 @@ class PosCart {
             let added = false;
             for (i = 0; i < this.#cartPerinfo.length; i++) {
                 if (this.#cartPerinfo[i].managedBy == p.perid) {
+                    // this person gets added to the front because they are the manage of someone in the cart
                     this.#cartPerinfo.unshift(make_copy(p));
+                    this.cartRenumber();
+                    pindex = 0;
                     added = true;
                     break;
                 }
