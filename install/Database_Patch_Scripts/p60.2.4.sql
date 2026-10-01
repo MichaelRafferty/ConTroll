@@ -125,9 +125,9 @@ LEFT OUTER JOIN gl g ON g.glNum = m.glNum;
  * add optional textedit field emergencyContact to perinfo, newperson
  */
 
-ALTER TABLE perinfo ADD column emergencyContact varchar(2048) AFTER pronouns;
+ALTER TABLE perinfo ADD column emergencyContact varchar(2048) DEFAULT '' NOT NULL AFTER pronouns;
 ALTER TABLE perinfoHistory ADD column emergencyContact varchar(2048) AFTER pronouns;
-ALTER TABLE newperson ADD column emergencyContact varchar(2048) AFTER pronouns;
+ALTER TABLE newperson ADD column emergencyContact varchar(2048) DEFAULT '' NOT NULL AFTER pronouns;
 
 DROP TRIGGER perinfo_update;
 DELIMITER ;;
