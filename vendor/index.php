@@ -474,6 +474,11 @@ $ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
 foreach ($ageList as $age) {
     $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
 }
+
+loadCustomText('profile', 'profile', getConfValue('global', 'customText'), 'production', true);
+$emergencyContactDesc = returnCustomText('profile/emergencyContact', 'profile/profile/');
+$config_vars['emergencyContactDesc'] = $emergencyContactDesc;
+
 $policies = getPolicies();
 if ($policies != null && count($policies) > 0) {
     loadCustomText('exhibitor', 'profile', getConfValue('vendor', 'customtext', 'production'), true);

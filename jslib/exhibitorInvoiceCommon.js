@@ -435,17 +435,36 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     }
     html += `
 </div>
-    <div class="row">
-        <div class="col-sm-auto ms-0 me-0 p-0">
-            <label for="` + prefix + `emergencyContact" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
-                Emergency Contact</span></label><br/>
-            <div class="col-sm-auto ms-0 me-0 p-0">
-                <textarea name="` + prefix + 'emergencyContact" id="' + prefix + 'emergencyContact" tabindex = ' + tabindex + `
-                    rows="3" cols="80" maxlength="2047" placeholder="Emergency Contact"></textarea>
+<div class='row' id="` + prefix + `ecRowDiv">
+        <div class='col-sm-auto ms-0 me-2 p-0'>
+            <label for="` + prefix + `emergencyContact" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
+                <span id="` + prefix + `ecStarSpan">` + reqFirstStar + `</span>Emergency Contact</label>
+`;
+    if (config.emergencyContactDesc != '') {
+        html += `
+        <span class="small"><a href='#' onclick='$("#` + prefix + `ecTipTip").toggle();return false;'>
+                    <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
+                         tabindex="` + (tabindex+1) + `"/>
+            </a></span>
+            <div id='` + prefix + `ecTipTip' class='padded highlight' style='display:none'>
+                <p class='text-body'>` + config.emergencyContactDesc + `
+                    <span class='small'><a href='#' onclick='$("#` + prefix + `ecTipTip").toggle();return false;'>
+                          <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'
+                               tabindex="` + (tabindex + 2) + `"/>
+                        </a></span>
+                </p>
+            </div>
+    `;
+    }
+    html += `
+            <br/>
+            <textArea class='form-control-sm'  name='` + prefix + `emergencyContact' id='` + prefix + `emergencyContact'
+                rows='3'  cols='80', maxlength='2047' tabindex="<?php echo $tabindex;
+                       $tabindex += 10; ?>"></textArea>
         </div>
     </div>
 `;
-    tabindex += 2;
+    tabindex += 10;
 
     if (policies == null || policies.length == 0)
         return html;
