@@ -31,7 +31,7 @@ SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_n
     TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, 
     TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     p.country, TRIM(p.email_addr) AS email_addr,
-    TRIM(p.phone) as phone, TRIM(p.emergencyContact) AS emergencyContact, p.active, p.banned, p.deceased, p.formerGoH,
+    TRIM(p.phone) as phone, TRIM(IFNULL(p.emergencyContact, '')) AS emergencyContact, p.active, p.banned, p.deceased, p.formerGoH,
     IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     p.fullName, p.open_notes, p.managedBy, cnt.cntManages, mgr.fullName AS mgrFullName
 EOS;
