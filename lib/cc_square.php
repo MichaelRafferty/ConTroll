@@ -44,6 +44,10 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
       async function startCCPay(amount = 0) {
           const appId = '$appid';
           const locationId = '$location';
+          
+          if (squareCard) {
+              resetCCPay(null);
+          }
           squarePayments = Square.payments(appId, locationId);
           squareCard = await squarePayments.card({
               $postalCode        
@@ -80,7 +84,7 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
               const submitBtn =  document.getElementById("card-button");
               paySubmitButtonPayPriorText = submitBtn.textContent;
               submitBtn.disabled = true;
-              submitBtn.textContent = 'Processing...';
+              submitBtn.textContent = 'Processing...';         
 
               try {
                   const result = await squareCard.tokenize();
@@ -110,7 +114,9 @@ function draw_cc_html($postal_code = "--", $type='all') : string {
     function resetCCPay(div) {
           if (squareCard) {
               squareCard.detach('#card-container')
+              squareCard.destroy();
           }
+        
           squareCard = null;
           squarePayments = null;
           return;
