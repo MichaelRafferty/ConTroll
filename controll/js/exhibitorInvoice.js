@@ -853,3 +853,19 @@ function orderCancel(doHide) {
 
     exhibitorInvoice.orderCancel(doHide);
 }
+
+function ageChanged(prefix, field) {
+    let type = prefix.substring(0, 1);
+    let num = Number(prefix.substring(2, prefix.length - 1));
+    let profile = null;
+    if (type == 'i')
+        profile = inclProfiles[num];
+    else
+        profile = addlProfiles[num];
+
+    if (profile == null)
+        return;
+
+    age = document.getElementById(prefix + field).value;
+    profile.setAge(age);
+}
