@@ -307,13 +307,13 @@ function isWebRequest() {
 
 // getPersonInfo - retrieve the data for the logged in person
 // build info array about the account holder or the person passed
-function getPersonInfo($conid, $personType = null, $personId = null, $minimal = false) {
+function getPersonInfo($conid, $personType = null, $personId = null, $minimal = false, $cart = false) {
     if ($personType == null || $personId == null) {
         $personType = getSessionVar('idType');
         $personId = getSessionVar('id');
         $pmId = $personId;
         $pmType = $personType;
-        $getMemberships = false;
+        $getMemberships = $cart;
     } else {
         $pmType = getSessionVar('idType');
         $pmId = getSessionVar('id');
@@ -499,6 +499,54 @@ EOS;
            if ($mR !== false) {
                while ($row = $mR->fetch_assoc()) {
                    $allMemberships[] = $row;
+               }
+           }
+
+           if ($cart) {
+               $loginType = getSessionVar('idType');
+               $loginId = getSessionVar('id');
+               if ($loginId == $personId && $loginType == $personType && $info['managedByName'] != null && $info['managedByName'] != '') {
+                   if ($personType == 'p') {
+                       $managerId = $info['managedBy'];
+                       $mQ = <<<EOS
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN perinfo p ON p.id = r.perid
+WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
+EOS;
+                       $mR = dbSafeQuery($mQ, 'iii', array ($conid, $conid + 1, $managerId));
+                   } else {
+                       $managerId = $info['managedBy'];
+                       $managerIdNew = $info['managedByNew'];
+                       $mQ = <<<EOS
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
+       IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN newperson n ON n.id = r.newperid
+WHERE r.conid IN (?, ?) AND (n.id = ?) AND n.perid IS NULL
+UNION
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN perinfo p ON p.id = r.perid
+WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
+ORDER BY create_date;
+EOS;
+                       $mR = dbSafeQuery($mQ, 'iiiiii', array ($conid, $conid + 1, $managerIdNew, $conid, $conid + 1, $managerId));
+                   }
+
+                   if ($mR !== false) {
+                       while ($row = $mR->fetch_assoc()) {
+                           $allMemberships[] = $row;
+                       }
+                   }
                }
            }
         $info['allMemberships'] = $allMemberships;

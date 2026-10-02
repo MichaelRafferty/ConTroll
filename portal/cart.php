@@ -90,7 +90,7 @@ $config_vars['currency'] = $currency;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
-$info = getPersonInfo($conid, $loginType, $loginId);
+$info = getPersonInfo($conid, $loginType, $loginId, false, true);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();
@@ -100,7 +100,7 @@ if ($info === false) {
 $managedByLogin = false;
 $loginPrimary = false;
 if ($cartId != $loginId || $cartType != $loginType) {
-    $cartInfo = getPersonInfo($conid, $cartType, $cartId, true);
+    $cartInfo = getPersonInfo($conid, $cartType, $cartId, true, true);
     if ($loginType == 'p') {
         $managedByLogin = $loginId == $cartInfo['managedBy'];
     } else {
@@ -151,7 +151,7 @@ portalPageInit('addUpgrade', $info,
 if ($cartType == $loginType && $cartId == $loginId) {
     $person = $info;
 } else {
-    $person = getPersonInfo($conid, $cartType, $cartId);
+    $person = getPersonInfo($conid, $cartType, $cartId, false, true);
     $person['allMemberships'] = $info['allMemberships'];
 }
 $person['Ages'] = $personAges;
