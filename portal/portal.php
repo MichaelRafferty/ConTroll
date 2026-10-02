@@ -146,7 +146,6 @@ if ($info === false) {
 $manager = $info['managedByName'] == null;
 $managerId = null;
 $managerType = null;
-$managedPeople = [];
 if (!$manager) {
     $managedByName = $info['managedByName'];
     if (array_key_exists('managedByNew', $info)) {
@@ -315,7 +314,7 @@ EOS;
     else
         $addlVirtual = explode(',', $addlVirtual);
 
-    $noVirtual = getConfValue('portal', 'noVirtual');
+        $noVirtual = getConfValue('portal', 'noVirtual');
     if ($noVirtual == '')
         $noVirtual = [];
     else
@@ -334,11 +333,11 @@ EOS;
 
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer'
-                            || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
+                || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
                 $hasNom = true;
                 if ($m['memCategory'] != 'wsfsnom')
                     $hasWSFS = true;
-            }
+                }
 
             // site selection
             if ($m['memCategory'] == 'sitesel' && $m['status'] == 'paid')
@@ -348,11 +347,11 @@ EOS;
             if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
                 $numChild++;
 
-            // force additional virtual's from array
-            if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
+             // force additional virtual's from array
+             if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
                 $hasAddlVirtual = true;
 
-            if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
+             if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
                 $denyVirtual = true;
 
             if ($m['variablePrice'] == 'Y') {
@@ -423,10 +422,9 @@ EOS;
 
     $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
 
-    if ($manager) {
 // get people managed by this account holder and their registrations
-        if ($loginType == 'p') {
-            $managedSQL = <<<EOS
+    if ($loginType == 'p') {
+        $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
@@ -512,9 +510,9 @@ FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
 ORDER BY personType DESC, id ASC, create_date;
 EOS;
-            $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
-        } else {
-            $managedSQL = <<<EOS
+        $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
+    } else {
+        $managedSQL = <<<EOS
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
@@ -602,147 +600,90 @@ FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
 ORDER BY personType DESC, id ASC, create_date;
 EOS;
-            $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
-        }
-
-        if ($managedByR !== false) {
-            while ($p = $managedByR->fetch_assoc()) {
-                $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
-                if ($p['variablePrice'] == 'Y') {
-                    $p['label'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['label'];
-                    $p['shortname'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['shortname'];
-                }
-
-                // set the managed people array
-                $mId = $p['personType'] . $p['id'];
-                $missingPolicies[$mId] = $p['missingPolicies'];
-                if (array_key_exists($mId, $managedPeople))
-                    $mp = $managedPeople[$mId];
-                else {
-                    $mp = [];
-                    $mp['p'] = $p;
-                    $mp['person'] = getPersonInfo($conid, $p['personType'], $p['id']);
-                    $mp['memAge'] = '';
-                    $mp['primary'] = null;
-                }
-
-                if ($mp['memAge'] == '' && $p['memAge'] != 'all')
-                    $mp['memAge'] = $p['memAge'];
-
-                if (isPrimary($p, $conid)) {
-                    if ($p['status'] == 'unpaid' && ($p['actPaid'] + $p['actCouponDiscount']) == 0 && ($p['startdate'] > $now || $p['enddate'] < $now)) {
-                        $p['expired'] = 1;
-                    }
-                    $mp['primary'] = $p;
-                }
-
-                $managedPeople[$mId] = $mp;
-
-                $label = $p['label'];
-                $shortname = $p['shortname'];
-
-                // all memberships, not just other
-                if ($p['regid'] != null) {
-                    $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
-                            'memAge' => $p['memAge'], 'memType' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
-                            'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
-                            'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
-                            'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],
-                            'createPerid' => $p['createPerid'], 'completePerid' => $p['completePerid'], 'purchaserName' => $p['purchaserName'],
-                            'startdate' => $p['startdate'], 'enddate' => $p['enddate'], 'online' => $p['online'],
-                            'actPrice' => $p['actPrice'], 'actPaid' => $p['actPaid'], 'actCouponDiscount' => $p['actCouponDiscount'],
-                            'price' => $p['price'], 'paid' => $p['paid'], 'couponDiscount' => $p['couponDiscount'],
-                            'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
-                            'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
-                            'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'],
-                    );
-
-                    if (array_key_exists('expired', $p))
-                        $item['expired'] = $p['expired'];
-
-                    $item['create_date'] = $p['create_date'];
-                    $item['create_trans'] = $p['create_trans'];
-                    $item['complete_trans'] = $p['complete_trans'];
-                    $item['regid'] = $p['regid'];
-                    $item['memId'] = $p['memId'];
-                    $item['conid'] = $p['conid'];
-                    $item['regPerid'] = $p['regPerid'];
-                    $item['regNewperid'] = $p['regNewperid'];
-                    $item['sortTrans'] = $p['sortTrans'];
-                    $item['transDate'] = $p['transDate'];
-                    $item['age'] = $p['memAge'];
-                    $item['managedBy'] = $p['managedBy'];
-                    $item['managedByNew'] = $p['managedByNew'];
-                    $item['badge_name'] = $p['badge_name'];
-                    $item['badgeNameL2'] = $p['badgeNameL2'];
-                    $item['badgename'] = $p['badgename'];
-                    $item['fullName'] = $p['fullName'];
-                    $item['memberId'] = $p['memberId'];
-                    $allMemberships[] = $item;
-                }
-            }
-            $managedByR->free();
-        }
-    } else {
-        // we are managed, get the manager's memberships for allMemberships array
-        $managerRegR = dbSafeQuery($holderRegSQL, 'iii',
-                array ($conid, $managerType == 'p' ? $managerId : -1, $managerType == 'n' ? $managerId : -1));
-
-        if ($managerRegR !== false && $managerRegR->num_rows > 0) {
-            while ($m = $managerRegR->fetch_assoc()) {
-                $m['badgename'] = badgeNameDefault($m['badge_name'], $m['badgeNameL2'], $m['first_name'], $m['last_name']);
-
-                if ($m['variablePrice'] == 'Y') {
-                    $m['label'] = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
-                    $m['shortname'] = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
-                }
-                $label = $m['label'];
-                $shortname = $m['shortname'];
-                if ($m['status'] == 'unpaid' && ($m['actPaid'] + $m['actCouponDiscount']) == 0 && ($m['startdate'] > $now || $m['enddate'] < $now))
-                    $m['expired'] = 1;
-
-                if ($m['regid'] != null) {
-                    $item = array ('conid' => $m['conid'], 'label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label,
-                            'status' => $m['status'], 'memAge' => $m['memAge'], 'memType' => $m['memType'], 'memCategory' => $m['memCategory'],
-                            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname,
-                            'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'], 'variablePrice' => $m['variablePrice'],
-                            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-                            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-                            'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-                            'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-                            'price' => $m['actPrice'], 'paid' => $m['actPaid'], 'couponDiscount' => $m['actCouponDiscount'],
-                            'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
-                            'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
-                            'fname' => $m['first_name'], 'ageshortname' => $m['ageShortName'], 'planId' => $m['planId'],
-                    );
-
-                    if (array_key_exists('expired', $m))
-                        $item['expired'] = $m['expired'];
-                    $item['create_date'] = $m['create_date'];
-                    $item['create_trans'] = $m['create_trans'];
-                    $item['complete_trans'] = $m['complete_trans'];
-                    $item['regid'] = $m['regid'];
-                    $item['memId'] = $m['memId'];
-                    $item['conid'] = $m['conid'];
-                    $item['regPerid'] = $m['regPerid'];
-                    $item['regNewperid'] = $m['regNewperid'];
-                    $item['sortTrans'] = $m['sortTrans'];
-                    $item['transDate'] = $m['transDate'];
-                    $item['age'] = $m['memAge'];
-                    $item['managedBy'] = $m['managedBy'];
-                    $item['managedByNew'] = $m['managedByNew'];
-                    $item['badge_name'] = $m['badge_name'];
-                    $item['badgeNameL2'] = $m['badgeNameL2'];
-                    $item['badgename'] = $m['badgename'];
-                    $item['fullName'] = $m['fullName'];
-                    $item['memberId'] = $m['memberId'];
-                    $allMemberships[] = $item;
-                }
-            }
-            $managerRegR->free();
-        }
+        $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
 
+    $managedPeople = [];
+    if ($managedByR !== false) {
+        while ($p = $managedByR->fetch_assoc()) {
+            $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
+            if ($p['variablePrice'] == 'Y') {
+                $p['label'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['label'];
+                $p['shortname'] = $dolfmt->formatCurrency((float)$p['actPrice'], $currency) . ' ' . $p['shortname'];
+            }
+
+            // set the managed people array
+            $mId = $p['personType'] . $p['id'];
+            $missingPolicies[$mId] = $p['missingPolicies'];
+            if (array_key_exists($mId, $managedPeople))
+                $mp = $managedPeople[$mId];
+            else {
+                $mp = [];
+                $mp['p'] = $p;
+                $mp['person'] = getPersonInfo($conid, $p['personType'], $p['id']);
+                $mp['memAge'] = '';
+                $mp['primary'] = null;
+            }
+
+            if ($mp['memAge'] == '' && $p['memAge'] != 'all')
+                $mp['memAge'] = $p['memAge'];
+
+            if (isPrimary($p, $conid)) {
+                if ($p['status'] == 'unpaid' && ($p['actPaid'] + $p['actCouponDiscount']) == 0 && ($p['startdate'] > $now || $p['enddate'] < $now)) {
+                    $p['expired'] = 1;
+                }
+                $mp['primary'] = $p;
+            }
+
+            $managedPeople[$mId] = $mp;
+
+            $label = $p['label'];
+            $shortname = $p['shortname'];
+
+            // all memberships, not just other
+            if ($p['regid'] != null) {
+                $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
+                        'memAge' => $p['memAge'], 'memType' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
+                        'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
+                        'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
+                        'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],
+                        'createPerid' => $p['createPerid'], 'completePerid' => $p['completePerid'], 'purchaserName' => $p['purchaserName'],
+                        'startdate' => $p['startdate'], 'enddate' => $p['enddate'], 'online' => $p['online'],
+                        'actPrice' => $p['actPrice'], 'actPaid' => $p['actPaid'], 'actCouponDiscount' => $p['actCouponDiscount'],
+                        'price' => $p['price'], 'paid' => $p['paid'], 'couponDiscount' => $p['couponDiscount'],
+                        'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
+                        'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
+                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'],
+                );
+
+                if (array_key_exists('expired', $p))
+                    $item['expired'] = $p['expired'];
+
+                $item['create_date'] = $p['create_date'];
+                $item['create_trans'] = $p['create_trans'];
+                $item['complete_trans'] = $p['complete_trans'];
+                $item['regid'] = $p['regid'];
+                $item['memId'] = $p['memId'];
+                $item['conid'] = $p['conid'];
+                $item['regPerid'] = $p['regPerid'];
+                $item['regNewperid'] = $p['regNewperid'];
+                $item['sortTrans'] = $p['sortTrans'];
+                $item['transDate'] = $p['transDate'];
+                $item['age'] = $p['memAge'];
+                $item['managedBy'] = $p['managedBy'];
+                $item['managedByNew'] = $p['managedByNew'];
+                $item['badge_name'] = $p['badge_name'];
+                $item['badgeNameL2'] = $p['badgeNameL2'];
+                $item['badgename'] = $p['badgename'];
+                $item['fullName'] = $p['fullName'];
+                $item['memberId'] = $p['memberId'];
+                $allMemberships[] = $item;
+            }
+        }
+        $managedByR->free();
+    }
+
+    //$memberships = getAccountRegistrations($loginId, $loginType, $conid, 'all');
 
 // get the information for the interest  and policies blocks
     $interests = getInterests();
@@ -754,7 +695,7 @@ EOS;
     if ($interests != null && count($interests) > 0) {
         if ($loginType == 'p') {
             $pfield = 'perid';
-        } else {
+            } else {
             $pfield = 'newperid';
         }
         $iQ = <<<EOS
@@ -762,7 +703,7 @@ SELECT COUNT(*)
 FROM memberInterests
 WHERE $pfield = ? AND conid = ?;
 EOS;
-        $iR = dbSafeQuery($iQ, 'ii', array ($loginId, $conid));
+        $iR = dbSafeQuery($iQ, 'ii', array($loginId, $conid));
         if ($iR !== false) {
             $intCount = $iR->fetch_row()[0];
             $iR->free();
@@ -804,12 +745,6 @@ $numExpired = 0;
 $disablePay = '';
 
 foreach ($allMemberships as $key => $membership) {
-    if (!$manager) {
-        if ($loginType == 'p' && $membership['regPerid'] != $loginId)
-            continue;
-        if ($loginType == 'n' && $membership['regNewPerid'] != $loginId)
-            continue;
-    }
     $status = $membership['status'];
     if ($membership['completePerid'] != null) {
         $compareId = $membership['completePerid'];
