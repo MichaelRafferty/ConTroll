@@ -337,10 +337,6 @@ if ($personType == 'n') {
         </div>
         <div class='row mt-1 mt-3'>
             <div class='col-sm-1'></div>
-            <div class="col-sm-auto">Currently supported providers for alternate identities are: "Email Authentication Token" and "login with Google".</div>
-        </div>
-        <div class='row mt-1 mt-3'>
-            <div class='col-sm-1'></div>
             <div class='col-sm-auto'>An email will be sent to the email address with a link to verify that you own that email address.<br/>The identity will not be added until you click on the link in that email.</div>
         </div>
         <hr/>
