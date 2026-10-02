@@ -180,6 +180,15 @@ INSERT INTO `controllAppItems` VALUES
 INSERT INTO `controllTxtItems` VALUES
     ();
 
+/* better wording */
+UPDATE controllTxtItems SET contents =
+    CONCAT('<p>You can only change your accounts email address to an email address in your identities in Account Settings.</p>',
+      '<p>Please use the "Add New" button in the "Identities" section of "Account Setings" to add any new email addresses to your account.</p>',
+      '<p>Identities is only available in Account Settings once your account has been assigned an ID and is no longer has a temporary id.</p>',
+      '<p>You can only change the email address for an account you manage to one of your own (as created above) ',
+       'or to one of the email addresses of people you manage.</p>',
+      '<p>If you need to make any other changes, please contact registration at #regadminemail# and ask for assistance.</p>')
+where appName = 'portal' and appPage = 'portal' and appSection = 'main' and txtItem = 'changeEmail';
 /*
  * make new no show defaults for ones without a default value
  */
