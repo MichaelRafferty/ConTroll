@@ -10,16 +10,9 @@ span.req, .warn {
   color: red;
 }
 
-input.need {
-    background-color: rgba(255,0,0,0.3);
-}
-
-span.need {
-    background-color: rgba(255,0,0,0.3);
-}
-
-select.need {
-    background-color: rgba(255,0,0,0.3);
+.need {
+    border-color: red;
+    background-color: #fef;
 }
 
 .historyChangedBGColor {

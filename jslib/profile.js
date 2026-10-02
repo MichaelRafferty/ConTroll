@@ -72,7 +72,7 @@ class Profile {
         this.#emergencyContactField = document.getElementById(prefix + "emergencyContact");
         this.#ecRowDiv = document.getElementById(prefix + "ecRowDiv");
         this.#ecStarSpan = document.getElementById(prefix + "ecStarSpan");
-        this.#emergencyContactField = document.getElementById(prefix + "emergencyContact");
+        this.#ecRowDiv = document.getElementById(prefix + "ecRowDiv");
         this.#addrField = document.getElementById(prefix + "addr");
         this.#addr2Field = document.getElementById(prefix + "addr2");
         this.#cityField = document.getElementById(prefix + "city");

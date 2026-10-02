@@ -152,7 +152,7 @@ class VendorInvoice {
                         return;
                     if (message != '') {
                         this.#formValid = false;
-                        this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
+                        this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + "<br/>" + message;
                     }
                     numInclUsed++;
                 } else {
@@ -175,7 +175,7 @@ class VendorInvoice {
 
                 if (message != '') {
                     this.#formValid = false;
-                    this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
+                    this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + "<br/>" + message;
                 }
                 numAddlUsed++;
             } else {
@@ -624,4 +624,20 @@ function processPayComplete(data, textStatus, jqXhr) {
     if (vendorInvoice == null)
         return;
     vendorInvoice.processPayComplete(data);
+}
+
+function ageChanged(prefix, field) {
+    let type = prefix.substring(0, 1);
+    let num = Number(prefix.substring(2, prefix.length - 1));
+    let profile = null;
+    if (type == 'i')
+        profile = inclProfiles[num];
+    else
+        profile = addlProfiles[num];
+
+    if (profile == null)
+        return;
+
+    age = document.getElementById(prefix + field).value;
+    profile.setAge(age);
 }
