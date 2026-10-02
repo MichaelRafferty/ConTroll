@@ -120,14 +120,14 @@ if ($personId == $currentPersonId && $personType == $currentPersonType) {
     }
 
     if (count($validEmails) == 0) {
-        ajaxSuccess(array('status'=>'error', 'message'=>'You have no other validated email addresses.' .
-            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for your account.'));
+        ajaxSuccess(array('status'=>'ask', 'message'=>'You have no other validated email addresses.' .
+            '<br/>Would you like to use the "Add New section" of Identities in Account Settings to add additional validated email addresses for your account?'));
         exit();
     }
 
     if (!in_array($lcemail, $validEmails)) {
-        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses." .
-            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for your account.'));
+        ajaxSuccess(array('status'=>'ask', 'message'=>"The email, $email, is not one of your validated email addresses." .
+            '<br/>Would you like to use the "Add New section" of Identities in Account Settings to add additional validated email addresses for your account?'));
         exit();
     }
 
@@ -166,7 +166,7 @@ EOS;
     $vR->free();
 
     if (!in_array($lcemail, $validEmails)) {
-        ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses nor is it one of the people you manage.<br/>" .
+        ajaxSuccess(array('status'=>'ask', 'message'=>"The email, $email, is not one of your validated email addresses nor is it one of the people you manage.<br/>" .
             "Please ask them to change it themselves, otherwise contact $regadminemail for assistance."));
         exit();
     }

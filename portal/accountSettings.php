@@ -44,6 +44,10 @@ $config_vars['idType'] = $personType;
 if (array_key_exists('passkey', $_REQUEST) && $_REQUEST['passkey'] == 'create') {
     $config_vars['passkey'] = $_REQUEST['passkey'];
 }
+if (array_key_exists('identity', $_REQUEST)) {
+    $config_vars['scroll'] = 'identitiesDiv';
+    $config_vars['identityEmail'] = $_REQUEST['address'];
+}
 
 $cdn = getTabulatorIncludes();
 

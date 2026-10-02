@@ -18,6 +18,15 @@ class Settings {
         this.#newPasskeyBtn = document.getElementById('newPasskey');
         if (config.hasOwnProperty('passkey') && config.passkey == 'create')
             this.newPasskey();
+
+        if (config.hasOwnProperty('scroll')) {
+            if (config.hasOwnProperty('identityEmail')) {
+                let emailField = document.getElementById('identityEmailAddr');
+                emailField.value = config.identityEmail;
+                emailField.classList.add('warncolor');``
+                emailField.scrollIntoView();
+            }
+        }
     }
 
 // associate / disassociate a person from this account, by the account holders requests

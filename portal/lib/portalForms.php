@@ -109,6 +109,13 @@ function drawChangeEmailModal() : void {
                             <div class='col-sm-auto'><label for="changeEmailNewEmailAddr">Enter the new email address:</label></div>
                             <div class='col-sm-auto'><input type='text' size='64' maxlength='254' id='changeEmailNewEmailAddr' name='newEmailAddr'></div>
                         </div>
+                        <div class='row'>
+                            <div class='col-sm-1'>&nbsp;</div>
+                        </div>
+                        <?php outputCustomText('main/changeEmail'); ?>
+                        <div class='row'>
+                            <div class='col-sm-12' id='ceMessageDiv'></div>
+                        </div>
                         <div class='row mt-2' id='changeEmailVerifyMe' hidden>
                             <div class='col-sm-auto'>This is an email address you manage, do you wish to change to this same email address?</div>
                             <div class='col-sm-auto'>
@@ -116,10 +123,15 @@ function drawChangeEmailModal() : void {
                                 address</button>
                             </div>
                         </div>
-                        <div class="row"><div class="col-sm-1">&nbsp;</div></div>
-                        <?php outputCustomText('main/changeEmail');?>
-                        <div class='row'>
-                            <div class='col-sm-12' id='ceMessageDiv'></div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-auto' id="changeEmailAskAddMsg"></div>
+                        </div>
+                        <div class="row mt-2" id='changeEmailAskAdd' hidden>
+                            <div class='col-sm-auto'>
+                                <button class='btn btn-sm btn-primary' type='button' onclick='portal.addIdentity(1);'>
+                                    Yes, start the process to add a new email identity.
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

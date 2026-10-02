@@ -48,6 +48,8 @@ class Portal {
     #changeEmailSubmitBtn = null;
     #changeEmailNewEmailAddr = null;
     #changeEmailH1 = null;
+    #changeEmailAskAddMsg = null;
+    #changeEmailAskAdd = null;
 
     // person fields
     #currentPerson = null;
@@ -157,6 +159,8 @@ class Portal {
             this.#changeEmailSubmitBtn = document.getElementById('changeEmailSubmitBtn');
             this.#changeEmailNewEmailAddr = document.getElementById('changeEmailNewEmailAddr');
             this.#changeEmailH1 = document.getElementById('changeEmailH1');
+            this.#changeEmailAskAddMsg = document.getElementById('changeEmailAskAddMsg');
+            this.#changeEmailAskAdd = document.getElementById('changeEmailAskAdd');
 
             if (this.#changeEmailNewEmailAddr != null) {
                 this.#changeEmailNewEmailAddr.addEventListener('keyup', (e) => {
@@ -450,6 +454,8 @@ class Portal {
         // clear old stuff
         clear_message('ceMessageDiv');
         this.#changeEmailNewEmailAddr.value = '';
+        this.#changeEmailAskAddMsg.innerHTML = '';
+        this.#changeEmailAskAdd.hidden = true;
 
         let personData = null;
         try {
@@ -519,6 +525,7 @@ class Portal {
             action: 'validate'
         };
         let script = 'scripts/changeEmail.php';
+        let _this = this;
         $.ajax({
             url: script,
             data: data,
@@ -531,6 +538,11 @@ class Portal {
                 }
                 if (data.status == 'warn') {
                     show_message(data.message, 'warn', 'ceMessageDiv');
+                    return false;
+                }
+                if (data.status == 'ask') {
+                    _this.#changeEmailAskAddMsg.innerHTML = data.message;
+                    _this.#changeEmailAskAdd.hidden = false;
                     return false;
                 }
                 if (data.message) {
@@ -548,6 +560,11 @@ class Portal {
     // change email success - clean up from changing the email address
     changeEmailSuccess(data) {
         window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
+    }
+
+    // start the process to add an identity
+    addIdentity(mode) {
+        window.location.href = "accountSettings.php?identity&address=" + encodeURIComponent(this.#changeEmailNewEmailAddr.value);
     }
 
     // countryChange - if USPS and USA, then change button
