@@ -1290,6 +1290,10 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                     case 'ADDRESS_VERIFICATION_FAILURE':
                         $msg = 'Address Verification Failure: Zip Code';
                         break;
+                    case 'CARD_TOKEN_USED':
+                        $msg = 'You have submitted this credit card more than once for this payment.<br/>' .
+                            'Please press "Cancel" to cancel this payment and try the payment again.';
+                        break;
                     case 'INVALID_EXPIRATION':
                         $msg = 'Authorization error: Invalid Expiration Date';
                         break;
