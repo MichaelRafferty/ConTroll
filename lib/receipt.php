@@ -595,7 +595,6 @@ EOS;
 EOS;
             break;
     }
-
     // Section: New Payment Plan
     foreach ($data['plans'] as $plan) {
         $planType = $plan['name'];
