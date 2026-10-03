@@ -98,7 +98,7 @@ class Pos {
     #enddate = null;  // from load init data, ending date of convention (inclusive)
 
     // receipt items
-    #emailAddreesRecipients = [];
+    #emailAddressRecipients = [];
     #last_email_row = '';
     #receeiptEmailAddresses_div = null;
     #lastReceiptType = '';
@@ -739,7 +739,7 @@ class Pos {
 
         // reset data to call up
         this.#result_perinfo = [];
-        this.#emailAddreesRecipients = [];
+        this.#emailAddressRecipients = [];
         this.#last_email_row = '';
 
         // reset tabs to initial values
@@ -2951,8 +2951,10 @@ class Pos {
     }
 
 // Create a receipt and email it
-    emailReceipt(receipt_type) {
+    emailReceipt(receipt_type, tid = null) {
         this.#lastReceiptType = receipt_type;
+        if (tid == null)
+            tid = this.#pay_tid;
         // header text
         let header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
         // server side will print the receipt
@@ -2960,18 +2962,21 @@ class Pos {
             user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
-            payTid: this.#pay_tid,
+            payTid: tid,
             //prows: JSON.stringify(cart.getCartPerinfo()),
             //pmtrows: JSON.stringify(cart.getCartPmt()),
             //footer: footer_text,
             receipt_type: receipt_type,
-            email_addrs: this.#emailAddreesRecipients,
+            email_addrs: this.#emailAddressRecipients,
         };
         if (this.#receiptPrinterAvailable || receipt_type == 'email') {
-            if (receipt_type == 'email')
-                this.#pay_button_ercpt.disabled = true;
-            else
-                this.#pay_button_rcpt.disabled = true;
+            if (receipt_type == 'email') {
+                if (this.#pay_button_ercpt != null)
+                    this.#pay_button_ercpt.disabled = true;
+            } else {
+                if (this.#pay_button_rcpt != null)
+                    this.#pay_button_rcpt.disabled = true;
+            }
         }
 
         let _this = this;
@@ -2991,16 +2996,22 @@ class Pos {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
                 }
-                if (_this.#lastReceiptType == 'email')
-                    _this.#pay_button_ercpt.disabled = false;
-                else
-                    _this.#pay_button_rcpt.disabled = false;
+                if (receipt_type == 'email') {
+                    if (_this.#pay_button_ercpt != null)
+                        _this.#pay_button_ercpt.disabled = false;
+                } else {
+                    if (_this.#pay_button_rcpt != null)
+                        _this.#pay_button_rcpt.disabled = false;
+                }
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (_this.#lastReceiptType == 'email')
-                    _this.#pay_button_ercpt.disabled = false;
-                else
-                    _this.#pay_button_rcpt.disabled = false;
+                if (_this.#lastReceiptType == 'email') {
+                    if (_this.#pay_button_ercpt != null)
+                        _this.#pay_button_ercpt.disabled = false;
+                } else {
+                    if (_this.#pay_button_rcpt != null)
+                        _this.#pay_button_rcpt.disabled = true;
+                }
                 showAjaxError(jqXHR, textstatus, errorThrown);
             }
         });
@@ -3133,18 +3144,18 @@ class Pos {
         let emailCheckbox = document.getElementById('emailAddr_' + row.toString());
         let email_address = cart.getEmail(row);
         if (emailCheckbox.checked) {
-            if (!this.#emailAddreesRecipients.includes(email_address)) {
-                this.#emailAddreesRecipients.push(email_address);
+            if (!this.#emailAddressRecipients.includes(email_address)) {
+                this.#emailAddressRecipients.push(email_address);
             }
         } else {
-            if (this.#emailAddreesRecipients.includes(email_address)) {
-                for (let index = 0; index < this.#emailAddreesRecipients.length; index++) {
-                    if (this.#emailAddreesRecipients[index] == email_address)
-                        this.#emailAddreesRecipients.splice(index, 1);
+            if (this.#emailAddressRecipients.includes(email_address)) {
+                for (let index = 0; index < this.#emailAddressRecipients.length; index++) {
+                    if (this.#emailAddressRecipients[index] == email_address)
+                        this.#emailAddressRecipients.splice(index, 1);
                 }
             }
         }
-        this.#pay_button_ercpt.disabled = this.#emailAddreesRecipients.length == 0;
+        this.#pay_button_ercpt.disabled = this.#emailAddressRecipients.length == 0;
     }
 
     checkboxCheck() {
@@ -3244,7 +3255,7 @@ class Pos {
                     this.#receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' +
                         email_html;
                     if (email_count == 1) {
-                        this.#emailAddreesRecipients.push(cart.getEmail(this.#last_email_row));
+                        this.#emailAddressRecipients.push(cart.getEmail(this.#last_email_row));
                         setTimeout(checkboxCheck, 100);
                     }
                 }
@@ -3600,13 +3611,12 @@ class Pos {
         let print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
         if (this.#badgePrinterAvailable === false) {
-            print_html += 'No printer selected, unable to print badges.  </div>';
+            print_html += 'No badge printer selected, unable to print badges.  </div>';
             this.#printDiv.innerHTML = print_html;
-            return;
-        }
-        this.#badgeList = [];
-        print_html += cart.printList(this.#newPrint, this.#printedObj);
-        print_html += `
+        } else {
+            this.#badgeList = [];
+            print_html += cart.printList(this.#newPrint, this.#printedObj);
+            print_html += `
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
@@ -3614,23 +3624,40 @@ class Pos {
         </div>
     </div>
 `;
+        }
 
-        // now add any receipts
-        let receipts = data.receipts;
-        if (receipts.length > 0) {
-            // we have receipts build the buttons
-            for (let i = 0; i < receipts.length; i++) {
-                let receipt = receipts[i];
-                print_html += `
+        if (this.#receiptPrinterAvailable || this.#ccTerminalAvailable) {
+            // now add any receipts
+            let receipts = data.receipts;
+            if (receipts.length > 0) {
+                // we have receipts build the buttons
+                for (let i = 0; i < receipts.length; i++) {
+                    let receipt = receipts[i];
+                    if (this.#ccTerminalAvailable && receipt.ccPaymentId != '') {
+                    print_html += `
         <div class="row mt-2">
             <div class="col-sm-2 ms-0 me-2 p-0">
                 <button class="btn btn-secondary btn-sm" type="button" onclick="pos.termPrintReceipt('` + receipt.ccPaymentId + `')">
-                    Print CC Receipt
+                    Print Receipt (Term)
                 </button>
             </div>
-            <div class="col-sm-9 ms-2 p-0">` + receipt.fullName + '/' + receipt.time + `</div>
+            <div class="col-sm-9 ms-2 p-0">` + receipt.fullName + ' / ' + receipt.time + ' for ' + this.#currencyFmt.format(Number(receipt.amount)) + `</div>
         </div>
 `;
+                    }
+                    if (this.#receiptPrinterAvailable) {
+                        print_html += `
+        <div class="row mt-2">
+            <div class="col-sm-2 ms-0 me-2 p-0">
+                <button class="btn btn-secondary btn-sm" type="button" onclick="pos.emailReceipt('print','` + receipt.transid + `')">
+                    Print Receipt (Printer)
+                </button>
+            </div>
+            <div class="col-sm-9 ms-2 p-0">` + receipt.fullName + ' / ' + receipt.time + ' for ' + this.#currencyFmt.format(Number(receipt.amount)) + `</div>
+        </div>
+`;
+                    }
+                }
             }
         }
 
