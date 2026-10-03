@@ -7,6 +7,7 @@ require_once('../../lib/purchase.php');
 require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
 require_once('../../lib/tax.php');
+require_once('../../lib/receipt.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/email__load_methods.php');
 
@@ -424,11 +425,10 @@ if ($amount > 0 && $planPayment != 1) {
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($amount > 0) {
-    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
-        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $taxes, $planPayment );
+    [$body, $bodyHtml] = getEmailBody($transId, $info, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['amount'], $planPayment);
 
 } else {
-    $body = getNoChargeEmailBody($results, $info, $badges);
+    [$body, $bodyHtml] = getNoChargeEmailBody($transId, $info);
 }
 
 if ($planRecast == 1) {
@@ -451,7 +451,7 @@ if ($planRecast == 1) {
 
 $return_arr = send_email($conf['regadminemail'],
     trim($info['email_addr']), /* cc */ getConfValue('con', 'regconfirmcc', null),
-    /* subject */ $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
+    /* subject */ $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ $bodyHtml);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

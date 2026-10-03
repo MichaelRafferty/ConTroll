@@ -1,8 +1,7 @@
 <?php
-function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $preTaxAmt, $taxAmt, $taxes, $planPayment = 0): string {
+function getEmailBody($transid, $owner, $coupon, $planRec, $amount, $planPayment = 0): array {
     $condata = get_con();
     $con = get_conf('con');
-    $conid = $con['id'];
     $testsite = getConfValue('portal', 'test') == 1;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -19,14 +18,18 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
     else
         $rollovers = '';
 
-    $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
-    $body .= 'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
+    $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n" .
+        'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
+    $bodyHtml = '<p>Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",</p>\n" .
+        '<p>Thank you for paying via the registration portal for ' . $condata['label'] . "!</p>\n";
 
     if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
+        $bodyHtml .= "<p class='warn'>This email was sent as part of testing.</p>\n";
     }
 
-    $body .= "Your Transaction number is $transid and Receipt number is $rid.\n";
+    $body .= "Your Transaction number is $transid.\n";
+    $bodyHtml .= "<p>Your Transaction number is $transid.</p>\n";
 
     if ($planRec != '') {
         $num = $planRec['numPayments'];
@@ -34,110 +37,51 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
         if ($planRec != null && $planPayment == 0) {
             if (array_key_exists('name', $planRec)) {
                 $name = $planRec['name'];
-            }
-            else {
+            } else {
                 $planData = $planRec['plan'];
                 $name = $planData['name'];
             }
             if (array_key_exists('paymentAmt', $planRec)) {
                 $pmtAmt = $planRec['paymentAmt'];
+                $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
+                    $dolfmt->formatCurrency((float)$pmtAmt, $currency) . " each.\n";
+                $bodyHtml .= "<p>This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
+                    $dolfmt->formatCurrency((float)$pmtAmt, $currency) . " each.</p>\n";
+            } else {
+                $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days.\n";
+                $bodyHtml .= "<p>This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days.</p>\n";
             }
-            $body .= "This payment is part of the $name payment plan, and you have agreed to make $num payments, one every $days days for " .
-                $dolfmt->formatCurrency((float)$pmtAmt, $currency) . " each.\n";
         }
     }
 
     if ($coupon != null && $planPayment == 0) {
         $body .= 'A coupon of type ' . $coupon['code'] . ' (' . $coupon['name'] . ') was applied to this transaction';
-        if ($coupon['discount'] > 0)
-            $body .= ' for a savings of ' . $dolfmt->formatCurrency((float) $coupon['totalDiscount'], $currency);
+        $bodyHtml .= '<p>A coupon of type ' . $coupon['code'] . ' (' . $coupon['name'] . ') was applied to this transaction';
+        if ($coupon['discount'] > 0) {
+            $txt = ' for a savings of ' . $dolfmt->formatCurrency((float)$coupon['totalDiscount'], $currency);
+            $body .= $txt;
+            $bodyHtml .= $txt;
+        }
         $body .= "\n";
+        $bodyHtml .= "</p>\n";
     }
 
     if ($planPayment != 1) {
-        if ($taxAmt > 0) {
-            $taxList = getTaxRates();
-            $body .= 'The pre sales tax price for your order was ' . $dolfmt->formatCurrency((float)$preTaxAmt, $currency) . "\n";
-            $numTaxes = 0;
-            foreach ($taxList as $tax) {
-                if ($tax['rate'] > 0) {
-                    if (!array_key_exists('taxField', $tax))
-                        continue; // tax not applicable
-                    if (!array_key_exists($tax['taxField'], $taxes))
-                        continue; // no tax chanrged
-                    $stax = $taxes[$tax['taxField']];
-                    if (is_array($stax))
-                        $stax = $stax['tax'];
-                    if ($stax == 0)
-                        continue;
-                    $label = $tax['label'];
-                    $body .= "$label: " . $dolfmt->formatCurrency((float) $stax, $currency) . "\n";
-                    $numTaxes++;
-                }
-            }
-            if ($numTaxes == 1)
-                $taxCode = "(Items with a T at the end of the price are taxable .)\n";
-            else if ($numTaxes > 1)
-                $taxCode = "(Items with a T at the end of the price are taxable by one or more of the taxes listed above.)\n";
-            $body .= 'Total tax for the taxable portion of this order was ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . "\n" .
-                'For a total amount due of ' . $dolfmt->formatCurrency((float)$amount, $currency) . "\n\n";
-        } else
-            $taxCode = '';
-
         $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction\n\n";
-
-        $nonTaxTaxable = false;
-        $taxTaxable = false;
-        if ($memberships && count($memberships) > 0) {
-            $body .= "The following memberships were involved in this payment:\n$taxCode\n";
-            if ($taxCode != '') {
-                foreach ($taxList as $tax) {
-                    $taxItems = $tax['taxItems'];
-                    foreach ($taxItems as $taxItem) {
-                        if ($taxItem['item'] == 'nontaxMem' && $taxItem['taxable'] == 'Y')
-                            $nonTaxTaxable = true;
-                        if ($taxItem['item'] == 'taxableMem' && ($taxItem['taxable'] == 'Y' || $taxItem['taxable'] == '-'))
-                            $taxTaxable = true;
-                    }
-                }
-            }
-
-            foreach ($memberships as $membership) {
-                $label = $membership['conid'] == $conid ? $membership['label'] : ("$conid " . $membership['label']);
-                // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
-
-                $taxMark = '';
-                // determine taxability based on taxable flag in membership filtered by taxconfig
-                if ($membership['taxable'] == 'Y' && $taxTaxable) {
-                    $taxMark = ' T';
-                }
-                if ($membership['taxable'] == 'N' && $nonTaxTaxable) {
-                    $taxMark = ' T';
-                }
-
-                $body .= '     * ' . $membership['fullName'] . " ($label) for " .
-                    $dolfmt->formatCurrency((float) $membership['price'], $currency) . $taxMark;
-
-                $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
-                if ($due > 0.01) {
-                    $body .= ' with a balance due of ' . $dolfmt->formatCurrency($due, $currency);
-                }
-
-                $body .= "\n\n";
-            }
-        }
+        $bodyHtml .= "<p>Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction</p>\n";
     } else {
         $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this plan payment" .
             " and your remaining balance due is " . $dolfmt->formatCurrency((float) $planRec['balanceDue'], $currency) . "\n\n";
+        $bodyHtml .= '<p>Your card was charged ' . $dolfmt->formatCurrency((float)$amount, $currency) . ' for this plan payment' .
+            ' and your remaining balance due is ' . $dolfmt->formatCurrency((float)$planRec['balanceDue'], $currency) . "</p>\n";
     }
 
-    if ($url != '') {
-        $body .= "Your credit card receipt is available at $url\n\n";
-    } else {
-        $body .= "You will receive a separate email with credit card receipt details.\n\n";
-    }
+    $receipt = trans_receipt($transid);
+    $body .= $receipt['receipt'];
+    $bodyHtml .= $receipt['receipt_tables'];
 
-    $body .= 'Please contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".\n";
+    $body .= '\nPlease contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".\n";
+    $bodyHtml .= '<p>Please contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".</p>\n";
 
     $body .=
         'For hotel information and directions please see ' . $con['hotelwebsite'] . "\n" .
@@ -146,14 +90,24 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
         $con['conname'] . " memberships are not refundable. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
-    return $body;
+
+    $bodyHtml .=
+        '<ul><li>For hotel information and directions please see ' . $con['hotelwebsite'] . "</li>\n" .
+        '<li>Click <a href="' . $con['policy'] . '">'  . $con['policy'] . '</a> for the ' . $con['policytext'] . ".</li>\n" .
+        '<li>For more information about ' . $con['conname'] . ' please email <a href="mailto:' . $con['infoemail'] . '">' .
+            $con['infoemail'] . "</a></li>\n" .
+        '<li>For questions about ' . $con['conname'] . ' Registration, email <a href="mailto:' . $con['regemail'] . '">' .
+            $con['regemail'] . "</a></li>\n</ul>\n" .
+        '<p>' . $con['conname'] .
+            " memberships are not refundable. For details and questions about transfers $rollovers, please see The Registration Policies Page.</p>\n";
+
+    return array($body, $bodyHtml);
 }
 
-function getNoChargeEmailBody($transid, $owner, $memberships): string {
+function getNoChargeEmailBody($transid, $owner): array {
     $condata = get_con();
     $testsite = getConfValue('portal', 'test') == 1;
     $con = get_conf('con');
-    $conid = $con['id'];
 
     if (array_key_exists('oneoff', $con)) {
         $oneoff = $con['oneoff'];
@@ -166,45 +120,44 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     else
         $rollovers = '';
 
-    $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
-    $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
+    $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n" .
+        'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
+    $bodyHtml = '<p>Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",</p>\n" .
+        '<p>Thank you for paying via the registration portal for ' . $condata['label'] . "!</p>\n";
 
     if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
+        $bodyHtml .= "<p class='warn'>This email was sent as part of testing.</p>\n";
     }
 
-    $body .= "Your Transaction number is $transid\n";
-    if (array_key_exists('code', $owner) && $owner['code'] != null) {
-        $body .= 'A coupon of type ' . $owner['code'] . ' (' . $owner['name'] . ') was applied to this transaction';
-        if ($owner['couponDiscountCart'] > 0)
-            $body .= ' for a savings of ' . $owner['totalDiscount'];
-        $body .= "\n";
-    }
+    $body .= "Your Transaction number is $transid and as there is no charge for this transaction, this is your receipt.\n\n";
+    $bodyHtml .= "<p>Your Transaction number is $transid and as there is no charge for this transaction, this is your receipt.</p>\n";
 
-    $body .= "and as there is no charge for this transaction, this is your receipt.\n\n" .
-        "\n\nThe following memberships were involved in this transaction:\n\n";
+    $receipt = trans_receipt($transid);
+    $body .= $receipt['receipt'];
+    $bodyHtml .= $receipt['receipt_tables'];
 
-    $fullnames = [];
-    foreach ($memberships as $membership) {
-        // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
-        if ($membership['modified'] == true) {
-            if (array_key_exists($membership['fullName'], $fullnames))
-                continue;
-            $label = $membership['conid'] == $conid ? $membership['label'] : ("$conid " . $membership['label']);
-            $body .= '     * ' . $membership['fullName'] . " ($label)\n\n";
 
-            $fullnames[$membership['fullName']] = 1;
-        }
-    }
-
-    $body .= 'Please contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".\n";
+    $body .= "\nPlease contact " . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".\n";
+    $bodyHtml .= '<p>Please contact ' . $con['regemail'] . ' with any questions and we look forward to seeing you at ' . $condata['label'] . ".</p>\n";
 
     $body .=
         'For hotel information and directions please see ' . $con['hotelwebsite'] . "\n" .
         'Click ' . $con['policy'] . ' for the ' . $con['policytext'] . ".\n" .
         'For more information about ' . $con['conname'] . ' please email ' . $con['infoemail'] . ".\n" .
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
-    return $body;
+
+    $bodyHtml .=
+        '<ul><li>For hotel information and directions please see ' . $con['hotelwebsite'] . "</li>\n" .
+        '<li>Click <a href="' . $con['policy'] . '">'  . $con['policy'] . '</a> for the ' . $con['policytext'] . ".</li>\n" .
+        '<li>For more information about ' . $con['conname'] . ' please email <a href="mailto:' . $con['infoemail'] . '">' .
+        $con['infoemail'] . "</a></li>\n" .
+        '<li>For questions about ' . $con['conname'] . ' Registration, email <a href="mailto:' . $con['regemail'] . '">' .
+        $con['regemail'] . "</a></li>\n</ul>\n" .
+        '<p>' . $con['conname'] .
+        " memberships are not refundable. For details and questions about transfers $rollovers, please see The Registration Policies Page.</p>\n";
+
+    return array($body, $bodyHtml);
 }
