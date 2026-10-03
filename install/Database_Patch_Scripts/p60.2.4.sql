@@ -164,6 +164,11 @@ ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('N', 'Y', 'S') NOT NULL 
     COMMENT 'Require an emergency contact in the profile for this age type';
 
 /*
+ * fix some old bad data from free badges and rollover volunteer
+ */
+update reg set complete_trans = create_trans where price = 0 and status = 'paid' and complete_trans is null;
+
+/*
  * new custom text items
  */
 
