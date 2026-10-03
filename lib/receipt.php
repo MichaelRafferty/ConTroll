@@ -213,7 +213,11 @@ EOS;
 
     $conid = $transL['conid'];
     $userid = $transL['userid'];
-    $type = strtolower($transL['type']);
+    $type = $transL['type'];
+    if ($type === null)
+        $type = '';
+    else
+        $type = strtolower($type);
 
     $response['transid'] = $transid;
     $response['type'] = $type;
