@@ -508,16 +508,30 @@ function draw_person(receipts) {
 `;
     for (let i = 0; i < receipts.length ; i++) {
         let receipt = receipts[i];
-        html += `
+        if (config.terminal == 1) {
+            html += `
     <div class="row mt-2">
-        <div class="col-sm-3">
+        <div class="col-sm-4">
             <button class="btn btn-secondary btn-sm" type="button" onclick="termPrintReceipt('` + receipt.ccPaymentId + `')">
-                Print CC Receipt
+                Print Receipt (Term)
             </button>
         </div>
-        <div class="col-sm-9">` + receipt.transid + '/' + receipt.time + `</div>
+        <div class="col-sm-8">` + receipt.transid + ' / ' + receipt.time + ' for ' + currencyFmt.format(Number(receipt.amount)) + `</div>
     </div>
 `;
+        }
+        if (config.receipt == 1) {
+            html += `
+    <div class="row mt-2">
+        <div class="col-sm-4">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="print_receipt('print', '` + receipt.transid + `')">
+                Print Receipt (Printer)
+            </button>
+        </div>
+        <div class="col-sm-8">` + receipt.transid + ' / ' + receipt.time + ' for ' + currencyFmt.format(Number(receipt.amount)) + `</div>
+    </div>
+`;
+        }
     }
     html += `
 </div>
@@ -2078,27 +2092,32 @@ function nextAutoPoll() {
 
 var last_receipt_type = '';
 // Create a receipt and send it to the receipt printer
-function print_receipt(receipt_type) {
+function print_receipt(receipt_type, tid = null) {
     last_receipt_type = receipt_type;
     let d = new Date();
     let payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
+    if (tid == null)
+        tid = pay_tid;;
 
     // header text
-    let header_text =  "Receipt for payment to " + conlabel + "By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
+    let header_text =  "Receipt for payment to " + conlabel + "By: " + payee + ", Cashier: " + user_id + ", Transaction: " + tid + "\n";
     // server side will print the receipt
     let postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
         person: currentPerson,
-        payTid: pay_tid,
+        payTid: tid,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
     };
     if (receiptPrinterAvailable || receipt_type == 'email') {
-        if (receipt_type == 'email')
-            pay_button_ercpt.disabled = true;
-        else
-            pay_button_rcpt.disabled = true;
+        if (receipt_type == 'email') {
+            if (pay_button_ercpt != null)
+                pay_button_ercpt.disabled = true;
+        } else {
+            if (pay_button_rcpt != null)
+                pay_button_rcpt.disabled = true;
+        }
 
         $.ajax({
             method: "POST",
@@ -2115,16 +2134,22 @@ function print_receipt(receipt_type) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                if (last_receipt_type == 'email')
-                    pay_button_ercpt.disabled = false;
-                else
-                    pay_button_rcpt.disabled = false;
+                if (last_receipt_type == 'email') {
+                    if (pay_button_ercpt != null)
+                        pay_button_ercpt.disabled = false;
+                } else {
+                    if (pay_button_rcpt != null)
+                        pay_button_rcpt.disabled = false;
+                }
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (last_receipt_type == 'email')
-                    pay_button_ercpt.disabled = false;
-                else
-                    pay_button_rcpt.disabled = false;
+                if (last_receipt_type == 'email') {
+                    if (pay_button_ercpt != null)
+                        pay_button_ercpt.disabled = false;
+                } else {
+                    if (pay_button_rcpt != null)
+                        pay_button_rcpt.disabled = false;
+                }
                 showAjaxError(jqXHR, textstatus, errorThrown);
             }
         });

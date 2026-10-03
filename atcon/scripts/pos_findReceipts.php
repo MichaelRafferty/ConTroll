@@ -50,12 +50,12 @@ $perids = array_unique($perids, SORT_NUMERIC);
 $regids = implode(',', array_unique($regids, SORT_NUMERIC));
 
 $recQ = <<<EOS
-SELECT t.perid, p.transid, p.ccPaymentId, p.time, w.fullName
+SELECT DISTINCT t.perid, p.transid, IFNULL(p.ccPaymentId, '') AS ccPaymentId, p.time, w.fullName, p.amount
 FROM reg r
 JOIN transaction t ON t.id = r.complete_trans AND t.perid = r.perid
 JOIN payments p ON t.id = p.transid
 JOIN perinfo w ON w.id = t.perid
-WHERE r.id IN ($regids) AND p.receipt_url LIKE 'https://%';
+WHERE r.id IN ($regids);
 EOS;
 $receipts = [];
 $recR = dbQuery($recQ);

@@ -167,7 +167,7 @@ EOS;
 
         // get prior payments to receipts
         $recQ = <<<EOS
-SELECT DISTINCT t.perid, p.transid, p.ccPaymentId, p.time
+SELECT DISTINCT t.perid, p.transid, p.ccPaymentId, p.time, p.amount
 FROM artSales s
 JOIN artItems a ON s.artid = a.id
 JOIN transaction t ON t.id = s.transid

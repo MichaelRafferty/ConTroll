@@ -106,6 +106,15 @@ if (isSessionVar('terminal'))
     $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
 else
     $config_vars['terminal'] = 0;
+if (isSessionVar('receiptPrinter'))
+    $config_vars['receipt'] = getSessionVar('receiptPrinter')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['receipt'] = 0;
+if (isSessionVar('genericPrinter'))
+    $config_vars['generic'] = getSessionVar('genericPrinter')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['generic'] = 0;
+
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;

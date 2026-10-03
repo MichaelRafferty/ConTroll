@@ -572,7 +572,7 @@ EOS;
             break;
         case 'atcon':
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
@@ -586,7 +586,7 @@ EOS;
             break;
         default: // reg_control receipts (registration, badgelist, people, etc.)
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge),\nVia: Registration Staff Member: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
@@ -861,7 +861,7 @@ EOS;
     if (count($data['planPayments']) == 0) {
         // if its not a payment on a plan, show the memberships here
         if (count($data['memberships']) > 0) {
-            $receipt .= "\nMemberships:\nRegID    Membership Name    Status    Price";
+            $receipt .= "\nMemberships:\nRegID    Membership Name    Status    Price\n";
             $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
@@ -935,7 +935,7 @@ EOS;
         foreach ($data['art'] as $art) {
             if ($art['type'] == 'art') {
                 if ($needHeader) {
-                    $receipt .= "\n\nArt Auction Items:\nItem id    Title/Artist    Type/Amount";
+                    $receipt .= "\n\nArt Auction Items:\nItem id    Title/Artist    Type/Amount\n";
                     $receipt_html .= <<<EOS
     <div class='row mt-2'>
         <div class='col-sm-12'>
@@ -997,7 +997,7 @@ EOS;
         foreach ($data['art'] as $art) {
             if ($art['type'] == 'print') {
                 if ($needHeader) {
-                    $receipt .= "\n\nArt Sales/Print Shop Items:\nItem id    Title/Artist    Qty/Amount";
+                    $receipt .= "\n\nArt Sales/Print Shop Items:\nItem id    Title/Artist    Qty/Amount\n";
                     $receipt_html .= <<<EOS
     <div class='row mt-2'>
         <div class='col-sm-12'>
