@@ -212,7 +212,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                             <div class='row mt-1' id="exhProfileTaxIdRow">
                                 <div class='col-sm-2'>
-                                    <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                    <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>: /label>
                                 </div>
                                 <div class="col-sm-10 p-0">
                                     <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -278,7 +278,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php if ($portalType == 'admin') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhNotes'>Exhibitor Notes:</label>
+                                    <label for='exhNotes'>Exhibitor Notes: </label>
                                 </div>
                                 <div class='col-sm-9 p-0 ms-0 me-0'>
                                     <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
@@ -327,7 +327,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php outputCustomText('profile/add' . $portalName); ?>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr"><span class='text-danger'>&bigstar;</span>Address </label>
+                                    <label for="addr"><span class='text-danger'>&bigstar;</span>Address: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='addr' type='text' size="64" name='addr'
@@ -345,7 +345,17 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                            <div class="row mt-1">
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'>
+                                    <label for='country'>Country: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 pb-2'>
+                                    <select id='country' name='country' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                                        <?php echo $countryOptions; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-sm-2">
                                     <label for="city"><span class='text-danger'>&bigstar;</span>City: </label>
                                 </div>
@@ -369,16 +379,6 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
                                            placeholder="Postal Code" tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                     />
-                                </div>
-                            </div>
-                            <div class='row mt-1'>
-                                <div class='col-sm-2'>
-                                    <label for='country'> Country </label>
-                                </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select id='country' name='country' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                                        <?php echo $countryOptions; ?>
-                                    </select>
                                 </div>
                             </div>
                             <!-- Contact Info -->
@@ -476,7 +476,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php outputCustomText('profile/shipping'); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipCompany'><span class='text-danger'>&bigstar;</span>Company </label>
+                                    <label for='shipCompany'><span class='text-danger'>&bigstar;</span>Company: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
@@ -486,7 +486,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipAddr'><span class='text-danger'>&bigstar;</span>Address </label>
+                                    <label for='shipAddr'><span class='text-danger'>&bigstar;</span>Address: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
@@ -502,7 +502,17 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                            <div class='row mt-1'>
+                            <div class='row mt-2'>
+                                <div class='col-sm-2'>
+                                    <label for='shipCountry'> Country: </label>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-0 me-0 pb-2'>
+                                    <select id='shipCountry' name='shipCountry' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                                        <?php echo $countryOptions; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class='row'>
                                 <div class='col-sm-2'>
                                     <label for='shipCity'><span class='text-danger'>&bigstar;</span>City: </label>
                                 </div>
@@ -526,16 +536,6 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required
                                            placeholder='Postal Code' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                     />
-                                </div>
-                            </div>
-                            <div class='row mt-1'>
-                                <div class='col-sm-2'>
-                                    <label for='shipCountry'> Country </label>
-                                </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
-                                    <select id='shipCountry' name='shipCountry' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                                        <?php echo $countryOptions; ?>
-                                    </select>
                                 </div>
                             </div>
                             <?php } ?>
@@ -623,7 +623,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='artistPayree'><span class='text-danger'>&bigstar;</span>Artist Payee:</label>
+                                        <label for='artistPayree'><span class='text-danger'>&bigstar;</span>Artist Payee: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='artistPayee' id='artistPayee' maxlength='128' size='50'
@@ -725,7 +725,8 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                            <label for='salesTaxId'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:
+                                            </label>
                                         </div>
                                         <div class="col-sm-10 p-0">
                                             <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -789,7 +790,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php if ($portalType == 'admin') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='exhNotes'>Exhibitor Notes:</label>
+                                            <label for='exhNotes'>Exhibitor Notes: </label>
                                         </div>
                                         <div class='col-sm-9 p-0 ms-0 me-0'>
                                     <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
@@ -960,9 +961,9 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='country'> Country </label>
+                                        <label for='country'> Country: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                    <div class='col-sm-auto p-0 ms-0 me-0 pb-2'>
                                         <select id='country' name='country'
                                                 tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
                                             <?php echo $countryOptions; ?>
@@ -1040,9 +1041,9 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='shipCountry'> Country </label>
+                                            <label for='shipCountry'> Country: </label>
                                         </div>
-                                        <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
+                                        <div class='col-sm-auto p-0 ms-0 me-0 pb-2'>
                                             <select id='shipCountry' name='shipCountry' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
                                                 <?php echo $countryOptions; ?>
                                             </select>
