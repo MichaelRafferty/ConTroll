@@ -38,7 +38,7 @@ class ExhibitorProfile {
     #debugFlag = 0;
 
     static #fieldList = ["artistName", "artistPayee", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId",
-        "pw1", "pw2", "description", "publicity", "addr", "city", "state", "zip", "country", "mailin",
+        "pw1", "pw2", "description", "publicity", "addr", "city", "state", "zip", "country", "mailin", "shipState",
         /* note this is validate only not require, see code */ "contactEmail"];
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
@@ -227,6 +227,9 @@ class ExhibitorProfile {
         for (let fieldNum in ExhibitorProfile.#fieldList) {
             let fieldName = ExhibitorProfile.#fieldList[fieldNum];
             let field = document.getElementById(fieldName);
+            let city;
+            let country;
+            let zip;
             minLength = 2;
             if (field == null) {
                 if (fieldName != 'salesTaxId' && this.#debugFlag > 0) // salestax id is optional don't log it.
@@ -304,6 +307,73 @@ class ExhibitorProfile {
                     } else if (lcvalue.includes("<script")) {
                         value = false
                         m2 += " and the description field cannot contain a <script tag;";
+                    }
+                    break;
+
+                case 'state':
+                    country = document.getElementById("country");
+                    zip = document.getElementById("zip");
+                    city = document.getElementById("city");
+                    if (country.value == 'USA' || country.value == 'CAN') {
+                        if (city.value == null || city.value.trim() == '') {
+                            valid = false;
+                            city.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the city field is required";
+                        } else {
+                            city.style.backgroundColor = '';
+                        }
+                        if (field.value == '' || field.value.trim().length != 2) {
+                            valid = false;
+                            field.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the state field must be the valid postal service two-letter abbreviation";
+                        } else {
+                            field.style.backgroundColor = '';
+                        }
+                        if (zip.value == '') {
+                            valid = false;
+                            zip.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the zip/postal code is required";
+                        } else {
+                            zip.style.backgroundColor = '';
+                        }
+                    } else {
+                        field.style.backgroundColor = '';;
+                        zip.style.backgroundColor = '';
+                    }
+                    break;
+
+                case 'shipState':
+                    let address = document.getElementById("shipAddr");
+                    if (address.value == null || address.value == '')
+                        break;  // do not validate rest of shipping address if the address field is empty
+                    country = document.getElementById("shipCountry");
+                    zip = document.getElementById("shipZip");
+                    city = document.getElementById("shipCity");
+                    if (country.value == 'USA' || country.value == 'CAN') {
+                        if (city.value == null || city.value.trim() == '') {
+                            valid = false;
+                            city.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the shipping address city field is required";
+                        } else {
+                            city.style.backgroundColor = '';
+                        }
+                        if (field.value == '' || field.value.trim().length != 2) {
+                            valid = false;
+                            field.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the shipping address state field must be the valid postal service two-letter abbreviation";
+                        } else {
+                            field.style.backgroundColor = '';
+                        }
+                        if (zip.value == '') {
+                            valid = false;
+                            zip.style.backgroundColor = 'var(--bs-warning)';
+                            m2 += "<br/>For USA and Canada, the shipping address zip/postal code is required";
+                        } else {
+                            zip.style.backgroundColor = '';
+                        }
+                    } else {
+                        field.style.backgroundColor = '';;
+                        zip.style.backgroundColor = '';;
                     }
                     break;
 
