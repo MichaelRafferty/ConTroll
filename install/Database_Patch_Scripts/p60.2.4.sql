@@ -173,17 +173,36 @@ update reg set complete_trans = create_trans where price = 0 and status = 'paid'
  */
 
 INSERT INTO `controllAppPages` VALUES
-    ('profile', 'profile', 'Profile modal / section on any page');
+    ('profile', 'profile', 'Profile modal / section on any page'),
+    ('portal', 'email', 'Custom Emails sent by Portal');
 
 INSERT INTO `controllAppSections` VALUES
-    ('profile', 'profile', 'profile', 'Information Block for Profile Fields');
-
+    ('profile', 'profile', 'profile', 'Information Block for Profile Fields'),
+    ('portal', 'email', 'donation', 'Donation Thank you Email');
 
 INSERT INTO `controllAppItems` VALUES
-    ('profile', 'profile', 'profile', 'emergencyContact', 'Info block for emergency Contact');
+    ('profile', 'profile', 'profile', 'emergencyContact', 'Info block for emergency Contact'),
+    ('portal', 'email', 'donation', 'html', 'HTML portion of Donation acknowledgement Email'),
+    ('portal', 'email', 'donation', 'text', 'Text portion of Donation acknowledgement Email');
 
 INSERT INTO `controllTxtItems` VALUES
-    ();
+    ('portal','email','donation','html', '<p>Dear [[FirstName]] [[LastName]],</p>
+<p>#org#, a 501(c)3 organization, would like to thank you for making a donation of [[amount]] to #label#.</p>
+<p>This is to certify that you have received nothing of value from #org# for your donation and the full amount will go to running #label#.
+As such, to the extent permitted by code, for US tax filers, the full amount of this contribution is tax deductible on your federal tax return.
+Please see your tax advisor for deductibility of this contribution on a state tax return.</p>
+<p>Again, thank you for your contribution,</p>
+<p>#org#</p>'),
+    ('portal','email','donation','text', 'Dear [[FirstName]] [[LastName]],
+
+#org#, a 501(c)3 organization, would like to thank you for making a donation of [[amount]] to #label#.
+
+This is to certify that you have received nothing of value from #org# for your donation and the full amount will go to running #label#.
+As such, to the extent permitted by code, for US tax filers, the full amount of this contribution is tax deductible on your federal tax return.
+Please see your tax advisor for deductibility of this contribution on a state tax return.
+
+Again, thank you for your contribution,
+#org#');
 
 /* better wording */
 UPDATE controllTxtItems SET contents =
