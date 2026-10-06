@@ -35,15 +35,27 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     recursiveBase64StrToArrayBuffer(createArgs);
 
 // create credentials
-    var cred = await navigator.credentials.create(createArgs);
-
+    try {
+        var cred = await navigator.credentials.create(createArgs);
+    } catch (e) {
+        console.log(e);
+        show_message("Your browser might be incompatable with our PassKey library." +
+            "<br/>Unable to create your PassKey credentials, received error '" + e.message + "'", 'error');
+        return;
+    }
 // create object
-    var authenticatorAttestationResponse = {
-        transports: cred.response.getTransports ? cred.response.getTransports() : null,
-        clientDataJSON: cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
-        attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
-    };
-
+    try {
+        var authenticatorAttestationResponse = {
+            transports: cred.response.getTransports ? cred.response.getTransports() : null,
+            clientDataJSON: cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+            attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
+        };
+    } catch (e) {
+        console.log(e);
+        show_message("Your browser might be incompatable with our PassKey library." +
+            "<br/>Unable to create your PassKey attestation, received error '" + e.message + "'", 'error');
+        return;
+    }
 
     // check asstetation and store in server if successful
     // save key in server database
