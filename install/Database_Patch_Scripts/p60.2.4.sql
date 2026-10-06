@@ -166,7 +166,21 @@ ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('N', 'Y', 'S') NOT NULL 
 /*
  * fix some old bad data from free badges and rollover volunteer
  */
-update reg set complete_trans = create_trans where price = 0 and status = 'paid' and complete_trans is null;
+UPDATE reg SET complete_trans = create_trans WHERE price = 0 AND status = 'paid' AND complete_trans is null;
+
+/*
+ * new date range table
+ */
+DROP TABLE IF EXISTS dateRanges;
+CREATE TABLE dateRanges (
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Primary key for access, update, and deletes",
+    conid int NOT NULL COMMENT "applicable convention year for this date range",
+    nickName varchar(16) NOT NULL
+        COMMENT "identifier for the time period, should be unique to the conid, used for select list for applying dates from the list",
+    startdate datetime NOT NULL COMMENT "range starts on this datetime inclusive of the datetime).",
+    enddate datetime NOT NULL COMMENT "range ends before this datetime (exclusive of the datetime).",
+    sortorder int NOT NULL COMMENT "Display order for select lists using this table."
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*
  * new custom text items
