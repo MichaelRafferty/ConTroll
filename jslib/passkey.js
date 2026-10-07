@@ -57,7 +57,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         return;
     }
 
-    // check asstetation and store in server if successful
+    // check attestation and store in server if successful
     // save key in server database
     data = {
         action: 'save',
