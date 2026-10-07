@@ -169,7 +169,7 @@ ALTER TABLE ageList ADD COLUMN emergencyContactReq enum('N', 'Y', 'S') NOT NULL 
 UPDATE reg SET complete_trans = create_trans WHERE price = 0 AND status = 'paid' AND complete_trans is null;
 
 /*
- * new date range table
+ * new date range table - and the correspond changes to memList and memListDates
  */
 DROP TABLE IF EXISTS dateRanges;
 CREATE TABLE dateRanges (
@@ -181,6 +181,130 @@ CREATE TABLE dateRanges (
     enddate datetime NOT NULL COMMENT "range ends before this datetime (exclusive of the datetime).",
     sortorder int NOT NULL COMMENT "Display order for select lists using this table."
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS memListDates;
+CREATE TABLE memListDates (
+    `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Internal id, unique key for this date item",
+    `memId` int NOT NULL COMMENT "Which memList id does this date belong to",
+    `glNum` varchar(16)  DEFAULT NULL COMMENT "For accounting, which General Ledger account gets registations of this type and time",
+    `price` decimal(8,2) NOT NULL COMMENT "Price for this registration item",
+    `startdate` datetime DEFAULT NULL COMMENT "Valid starting on or after startdate",
+    `enddate` datetime DEFAULT NULL COMMENT "Valid before enddate",
+    `nickName`  varchar(16) DEFAULT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE memListDates ADD CONSTRAINT FOREIGN KEY mldate_memList(memId) REFERENCES memList(id) ON UPDATE CASCADE;
+ALTER TABLE memListDates ADD CONSTRAINT FOREIGN KEY mldate_glt(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
+
+-- now select what goes into it
+INSERT INTO memListDates(memid, glNum, price, startdate, enddate)
+WITH lowestdates AS (
+    SELECT conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel, min(startdate) as startdate
+    FROM memList
+    GROUP by conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel
+), mastermids AS (
+    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel, m.startdate
+    FROM memList m
+    JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+        m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+        m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
+)
+SELECT md.id, m.glNum, m.price, m.startdate, m.enddate
+FROM memList m
+JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+    m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel;
+
+UPDATE memListDates m
+JOIN memList ml ON ml.id = m.memId
+JOIN dateRanges d ON m.startdate = d.startdate and m.enddate = d.enddate and ml.conid = d.conid
+SET m.nickName = d.nickName
+WHERE d.nickName IS NOT NULL AND d.nickName != '';
+
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memLabel AS SELECT
+         m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,
+         a.shortname AS ageShortName, m.label AS shortname, concat(m.label,' [',a.label,']') AS label,
+         m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
+         md.price, md.startdate, md.enddate, md.nickName, md.glNum,
+         c.taxable, c.badgeLabel AS catBadgeLabel
+    FROM memList m
+    JOIN memListDates md ON m.id = md.memId
+    JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+    JOIN memCategories c ON m.memCategory = c.memCategory;
+
+DROP VIEW IF EXISTS memListFull;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memListFull AS SELECT
+         m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,	m.label,
+         m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
+         md.price, md.startdate, md.enddate, md.nickName, md.glNum
+    FROM memList m
+    JOIN memListDates md ON m.id = md.memId;
+
+-- now update the existing regs and old rows
+DROP TABLE IF EXISTS memListMap;
+CREATE TABLE memListMap (
+    oldMemId int PRIMARY KEY,
+    newMemId int NOT NULL,
+    newMdId int NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO memListMap(oldMemId, newMemId, newMdId)
+WITH lowestdates AS (
+    SELECT conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel, min(startdate) as startdate
+    FROM memList
+    GROUP by conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel
+), mastermids AS (
+    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel, m.startdate, m.enddate
+    FROM memList m
+    JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+        m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+        m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
+)
+SELECT m.id, md.id, mld.id
+FROM memList m
+JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+    m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel
+JOIN memListDates mld WHERE md.id = mld.memId AND mld.startDate = md.startDate AND mld.enddate = md.enddate;
+
+-- now rebuild reg and exhibitsRegionYears
+DROP TRIGGER IF EXISTS reg_update;
+ALTER TABLE reg ADD COLUMN mldId int DEFAULT NULL COMMENT "registration date/price detail for a memList entry" AFTER memId;
+ALTER TABLE reg ADD CONSTRAINT FOREIGN KEY reg_mldates(mldId) REFERENCES memListDates(id) ON UPDATE CASCADE;
+ALTER TABLE regHistory ADD COLUMN mldId int DEFAULT NULL AFTER memId;
+
+UPDATE reg
+JOIN memListMap mlm ON reg.memId = mlm.oldMemId
+SET memId = mlm.newMemid, mldId = mlm.newMdId;
+
+DELIMITER ;;
+CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
+    IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
+        OR OLD.oldperid != NEW.oldperid OR OLD.priorRegId != NEW.priorRegId OR OLD.create_date != NEW.create_date
+        OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price
+        OR OLD.couponDiscount != NEW.couponDiscount OR OLD.paid != NEW.paid OR OLD.create_trans != NEW.create_trans
+        OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
+        OR OLD.memId != NEW.memId OR OLD.mldId != NEW.mldId OR OLD.coupon != NEW.coupon OR OLD.planId != NEW.planId
+        OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
+    THEN
+        INSERT INTO regHistory(id, conid, perid, newperid, oldperid, create_date, change_date, pickup_date, price, couponDiscount,
+                               paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, mldId, coupon, planId, printable, status)
+        VALUES (OLD.id, OLD.conid, OLD.perid, OLD.newperid, OLD.oldperid, OLD.create_date, OLD.change_date, OLD.pickup_date,
+                OLD.price, OLD.couponDiscount, OLD.paid, OLD.create_trans, OLD.complete_trans, OLD.locked, OLD.create_user,
+                OLD.updatedBy, OLD.memId, OLD.mldId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
+    END IF;
+END;;
+DELIMITER ;
+
+DROP TABLE IF EXISTS memListMap;
+
+-- now clean up old fields
+ALTER TABLE memList DROP CONSTRAINT memList_ibfk_1;
+ALTER TABLE memList DROP startdate, DROP enddate, DROP glNum, DROP price;
 
 /*
  * new custom text items
