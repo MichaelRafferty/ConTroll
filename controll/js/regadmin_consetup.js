@@ -246,7 +246,7 @@ class consetup {
         <div class="col-sm-5">
             <div class="container-fluid p-0 m-0">
                 <div class="row">
-                    <div class="col-sm-12" id="` + this.#setup_type + `-conlist"></div>
+                    <div class="col-sm-12 p-0 ms-3" id="` + this.#setup_type + `-conlist"></div>
                 </div>
                 <div class="row pt-2">
                     <div class="col-sm-12">
@@ -266,7 +266,7 @@ class consetup {
          <div class="col-sm-5">
             <div class="container-fluid p-0 m-0">
                 <div class="row">
-                    <div class="col-sm-12" id="` + this.#setup_type + `-daterange"></div>
+                    <div class="col-sm-12 p-0 ms-3" id="` + this.#setup_type + `-daterange"></div>
                 </div>
                 <div class="row pt-2">
                     <div class="col-sm-12">
