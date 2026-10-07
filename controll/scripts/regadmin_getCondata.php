@@ -17,7 +17,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     exit();
 }
 
-if(!isset($_GET) || !isset($_GET['year'])) {
+if(!isset($_POST) || !isset($_POST['year'])) {
     $response['error'] = "Invalid Query";
     ajaxSuccess($response);
     exit();
@@ -27,8 +27,8 @@ $con=get_con();
 $conid= $con['id'];
 
 $id = 0;
-$year = $_GET['year'];
-$type= $_GET['type'];
+$year = $_POST['year'];
+$type= $_POST['type'];
 if ($year == 'current') {
     $id = $conid;
 } else if ($year == 'next') {
@@ -52,16 +52,31 @@ EOS;
 $result = dbSafeQuery($conlistSQL, 'i', array($id));
 if($result->num_rows == 1) {
     $currentcondata = $result->fetch_assoc();
-    if ($type == 'all' || $type = 'conlist') {
+    if ($type == 'all' || $type == 'conlist') {
     $response['conlist'] = $currentcondata;
     }
 } else {
     $response['conlist'] = null;
 }
 
+if ($type == 'all' || $type == 'datelist') {
+    $dateSQL = <<<EOS
+SELECT *, id AS dateRangeKey, 0 AS uses
+FROM dateRanges
+WHERE conid = ?;
+EOS;
+    $result = dbSafeQuery($dateSQL, 'i', array($id));
+    $dateRanges = array();
+    if ($result !== false) {
+        while($row = $result->fetch_assoc()) {
+            array_push($dateRanges, $row);
+        }
+    }
+    $response['dateRanges'] = $dateRanges;
+}
 
 
-if ($type == 'all' || $type = 'memlist') {
+if ($type == 'all' || $type == 'memlist') {
     $memSQL = <<<EOS
 SELECT m.id, m.id AS memlistkey,
     m.conid,

@@ -28,7 +28,7 @@ $tablename=$_POST['tablename'];
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
     // now resort the table data rows on sort id column:
-    function cmp($a, $b) {
+    function cmp($a, $b) : int {
         if (array_key_exists('sort_order', $a) && array_key_exists('sort_order', $b)) {
             if ($a['sort_order'] == $b['sort_order'])
                 return 0;
@@ -79,6 +79,86 @@ EOS;
                 $response['error'] = "Invalid Request";
         }
         break;
+
+    case 'daterange':
+        $data = $tabledata;
+        $year = $action == 'current' ? $conid : $nextconid;
+        $coninfo = get_con();
+        $conendPlus1 = date('Y-m-d H:i:s', strtotime($coninfo['enddate'] . ' +1 day'));
+        // find keys to delete (somehow)
+        $delete_keys = '';
+        $first = true;
+        $sort_order = 10;
+        foreach ($data as $index => $row) {
+            if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('dateRangeKey', $row)) {
+                if ($first) {
+                    $delete_keys =  "'" . sql_safe($row['dateRangeKey']) . "'";
+                    $first = false;
+                } else {
+                    $delete_keys .= ",'" . sql_safe($row['dateRangeKey']) . "'";
+                }
+            } else {
+                $data[$index]['sortorder'] = $sort_order;
+            }
+        }
+        //labeled_error_log("regadmin_updateConData-dateMatch/Keys to delete-delete_keys', $delete_keys);
+        $deleted = 0;
+        $inserted = 0;
+        $updated = 0;
+        if ($delete_keys != '') {
+            $delSQL = 'DELETE FROM dateRanges WHERE conid = ? AND id IN (' . $delete_keys . ');';
+            web_error_log("conid: $conid, delSQL = /$delSQL/");
+            $deleted += dbSafeCmd($delSQL, 'i', array ($conid));
+        }
+
+        $addSQL = <<<EOS
+INSERT INTO dateRanges(conid,nickName,startdate,enddate,sortorder)
+VALUES (?, ?, ?,  ?, ?);
+EOS;
+        $addtypes = 'isssi';
+        $updSQL = <<<EOS
+UPDATE dateRanges
+SET nickName = ?,startdate = ?,enddate = ?, sortorder = ?
+WHERE id = ?
+EOS;
+        $updtypes = 'sssii';
+
+        foreach ($data as $row) {
+            if (!array_key_exists('nickName', $row))
+                $row['nickName'] = null;
+            else if ($row['nickName'] != null) {
+                $row['nickName'] = trim($row['nickName']);
+                if ($row['nickName'] == '')
+                    $row['nickName'] = null;
+            }
+
+            if (!array_key_exists('startdate', $row))
+                $row['startdate'] = date_create()->format('Y-m-d H:i:s');
+            else if ($row['startdate'] == null)
+                $row['startdate'] = date_create()->format('Y-m-d H:i:s');
+
+            if (!array_key_exists('enddate', $row))
+                $row['enddate'] = $conendPlus1;
+            else if ($row['enddate'] == null)
+                $row['enddate'] = $conendPlus1;
+
+
+            if (!is_numeric($row['id']) || $row['id'] < 0) {
+                $paramarray = array ($row['conid'], $row['nickName'], $row['startdate'], $row['enddate'], $row['sortorder']);
+                //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
+                $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
+                if ($newid)
+                    $inserted++;
+            } else {
+                $paramarray = array ($row['nickName'], $row['startdate'], $row['enddate'], $row['sortorder'], $row['id']);
+                //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
+                $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
+            }
+        }
+        $response['success'] = "date ranges updated: $inserted added, $updated changed, $deleted removed.";
+        //error_log($response['success']);
+        break;
+
     case "memlist":
         $data = $tabledata;
         // find keys to delete (somehow)
@@ -100,7 +180,7 @@ EOS;
                     $first[$cid] = false;
                 }
             } else {
-                if (array_key_exists('sort_order', $row)) { // deal with table add rows now having sort order
+                if (array_key_exists('sort_order', $row)) { // deal with table add rows not having sort order
                     $roworder = $row['sort_order'];
                 } else {
                     $roworder = 10;

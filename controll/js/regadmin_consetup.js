@@ -13,6 +13,7 @@ class consetup {
     #bundlesEnabled = false;
     #contable = null;
     #memtable = null;
+    #datetable = null;
     #condate = null;
     #conyear = null;
     #conid = null;
@@ -26,6 +27,12 @@ class consetup {
     #conlist_redobtn = null;
     #conlist_div = null;
     #conlist_pane = null;
+    #daterange_dirty = false;
+    #daterange_savebtn = null;
+    #daterange_undobtn = null;
+    #daterange_redobtn = null;
+    #daterange_addrowbtn = null;
+    #daterange_div = null;
     #memlist_dirty = false;
     #memlist_savebtn = null;
     #memlist_undobtn = null;
@@ -124,6 +131,24 @@ class consetup {
         this.checkConlistUndoRedo();
     };
 
+    // set undo / redo status for date ranges)
+    checkDateRangeUndoRedo() {
+        let undosize = this.#datetable.getHistoryUndoSize();
+        this.#daterange_undobtn.disabled = undosize <= 0;
+        this.#daterange_redobtn.disabled = this.#datetable.getHistoryRedoSize() <= 0;
+        return undosize;
+    }
+
+    daterange_dataChanged(data) {
+        //data - the updated table data
+        if (!this.#daterange_dirty) {
+            this.#daterange_savebtn.innerHTML = "Save Changes*";
+            this.#daterange_savebtn.disabled = false;
+            this.#daterange_dirty = true;
+        }
+        this.checkDateRangeUndoRedo();
+    };
+
     // set undo / redo status for memlist (membership type data)
     checkMemlistUndoRedo() {
         let undosize = this.#memtable.getHistoryUndoSize();
@@ -210,21 +235,67 @@ class consetup {
 
         this.#ageListSame = this.#yaAgeListOptions == null || this.#ageListOptions == this.#yaAgeListOptions || this.#yaAgeListOptions == '';
 
-        let html = '<h5><strong>' + this.#setup_title + ` Convention Data:</strong></h5>
-<div id="` + this.#setup_type + `-conlist"></div>
-<div id="conlist-buttons">  
-    <button id="` + this.#setup_type + `conlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoConlist(); return false;" disabled>Undo</button>
-    <button id="` + this.#setup_type + `conlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoConlist(); return false;" disabled>Redo</button>
-    <button id="` + this.#setup_type + `conlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveConlist(); return false;" disabled>Save Changes</button>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+        let html = `
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-5"><h5><strong>` + this.#setup_title + ` Convention Data:</strong></h5></div>
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6"><h5><strong>` + this.#setup_title + ` Convention Date Range Data:</strong></h5></div>
     </div>
-   <div class="col-sm-6 text-end">
-       <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_new">How to filter on Start or End Date</a></strong>
-   </div>
-</div>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="container-fluid p-0 m-0">
+                <div class="row">
+                    <div class="col-sm-12" id="` + this.#setup_type + `-conlist"></div>
+                </div>
+                <div class="row pt-2">
+                    <div class="col-sm-12">
+                        <div id="conlist-buttons">  
+                            <button id="` + this.#setup_type + `conlist-undo" type="button" class="btn btn-secondary btn-sm" 
+                                onclick="` + this.#setup_type + `.undoConlist(); return false;" disabled>Undo</button>
+                            <button id="` + this.#setup_type + `conlist-redo" type="button" class="btn btn-secondary btn-sm"
+                                onclick="` + this.#setup_type + `.redoConlist(); return false;" disabled>Redo</button>
+                            <button id="` + this.#setup_type + `conlist-save" type="button" class="btn btn-primary btn-sm"
+                                onclick="` + this.#setup_type + `.saveConlist(); return false;" disabled>Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-1"></div>
+         <div class="col-sm-5">
+            <div class="container-fluid p-0 m-0">
+                <div class="row">
+                    <div class="col-sm-12" id="` + this.#setup_type + `-daterange"></div>
+                </div>
+                <div class="row pt-2">
+                    <div class="col-sm-12">
+                        <div id="conlist-buttons">  
+                            <button id="` + this.#setup_type + `daterange-undo" type="button" class="btn btn-secondary btn-sm" 
+                                onclick="` + this.#setup_type + `.undoDateRange(); return false;" disabled>Undo</button>
+                            <button id="` + this.#setup_type + `daterange-redo" type="button" class="btn btn-secondary btn-sm"
+                                onclick="` + this.#setup_type + `.redoDateRange(); return false;" disabled>Redo</button>
+                            <button id="` + this.#setup_type + `daterange-addrow" type="button" class="btn btn-secondary btn-sm"
+                                onclick="` + this.#setup_type + `.addrowDateRange(); return false;">Add New</button>
+                            <button id="` + this.#setup_type + `daterange-save" type="button" class="btn btn-primary btn-sm"
+                                onclick="` + this.#setup_type + `.saveDateRange(); return false;" disabled>Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6" id="` + this.#setup_type + `-daterange"></div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-6">
+            <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+        </div>
+       <div class="col-sm-6 text-end">
+           <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_new">How to filter on Start or End Date</a></strong>
+       </div>
+    </div>
 `;
         if (!this.#ageListSame) {
             html += `
@@ -259,6 +330,11 @@ class consetup {
         this.#conlist_undobtn = document.getElementById(this.#setup_type + 'conlist-undo');
         this.#conlist_redobtn = document.getElementById(this.#setup_type + 'conlist-redo');
         this.#conlist_div = document.getElementById(this.#setup_type + '-conlist');
+        this.#daterange_savebtn = document.getElementById(this.#setup_type + 'daterange-save');
+        this.#daterange_undobtn = document.getElementById(this.#setup_type + 'daterange-undo');
+        this.#daterange_redobtn = document.getElementById(this.#setup_type + 'daterange-redo');
+        this.#daterange_addrowbtn = document.getElementById(this.#setup_type + 'daterange-addrow')
+        this.#daterange_div = document.getElementById(this.#setup_type + '-daterange');
         this.#memlist_div = document.getElementById(this.#setup_type + '-memlist');
         this.#memlist_savebtn = document.getElementById(this.#setup_type + 'memlist-save');
         this.#memlist_undobtn = document.getElementById(this.#setup_type + 'memlist-undo');
@@ -266,6 +342,7 @@ class consetup {
         this.#memlist_addrowbtn = document.getElementById(this.#setup_type + 'memlist-addrow')
 
         this.draw_conlist(year, data, textStatus, jhXHR);
+        this.draw_daterange(year, data, textStatus, jhXHR);
         this.draw_memlist(year, data, textStatus, jhXHR);
     };
 
@@ -291,7 +368,7 @@ class consetup {
                 maxHeight: "400px",
                 history: true,
                 data: [data['conlist']],
-                layout: "fitDataTable",
+                layout: "fitColumns",
                 columns: [
                     {title: "ID", field: "id", width: 50, headerSort: false},
                     {
@@ -307,13 +384,13 @@ class consetup {
                         title: "Label",
                         field: "label",
                         headerSort: false,
-                        width: 350,
+                        widthGrow: 3,
                         editor: "input",
                         editorParams: {elementAttributes: {maxlength: "40"}},
                         validator: "required"
                     },
-                    {title: "Start Date", field: "startdate", width: 100, headerSort: false, editor: "date", validator: "required"},
-                    {title: "End Date", field: "enddate", width: 100, headerSort: false, editor: "date", validator: "required"},
+                    {title: "Start Date", field: "startdate", widthGrow: 1, headerSort: false, editor: "date", validator: "required"},
+                    {title: "End Date", field: "enddate", widthGrow: 1, headerSort: false, editor: "date", validator: "required"},
                     {field: "to_delete", visible: false,}
                 ],
             });
@@ -324,6 +401,57 @@ class consetup {
                 _this.conlist_dataChanged(data);
             });
             this.#contable.on("cellEdited", cellChanged);
+        }
+    };
+
+    draw_daterange(year, data, textStatus, jhXHR) {
+        let _this = this;
+        this.#daterange_dirty = false;
+
+        if (this.#datetable != null) {
+            // just replace the data
+            this.#datetable.replaceData(data['dateRanges']);
+            this.#daterange_dirty = false;
+        } else {
+
+            this.#datetable = new Tabulator('#' + this.#setup_type + '-daterange', {
+                maxHeight: "400px",
+                history: true,
+                movableRows: true,
+                data: data['dateRanges'],
+                layout: "fitColumns",
+                columns: [
+                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                    {
+                        title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                        cellClick: function (e, cell) {
+                            deleterow(e, cell.getRow());
+                        }
+                    },
+                    {title: "ID", field: "id", width: 50, headerSort: false, visible: false},
+                    {field: "dateRangeKey", visible: false,},
+                    {
+                        title: "Nick Name", field: "nickName", headerSort: true, headerWordWrap: true,
+                        width: 250, editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
+                    },
+                    {
+                        title: "Start Date", field: "startdate", widthGrow: 3, editor: "datetime", validator: "required",
+                        headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},
+                    },
+                    {
+                        title: "End Date", field: "enddate", widthGrow: 3, editor: "datetime", validator: "required",
+                        headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},
+                    },
+                    {field: "to_delete", visible: false,}
+                ],
+            });
+
+            if (this.#datetable) {
+                this.#datetable.on("dataChanged", function (data) {
+                    _this.daterange_dataChanged(data);
+                });
+                this.#datetable.on("cellEdited", cellChanged);
+            }
         }
     };
 
@@ -355,7 +483,6 @@ class consetup {
         if (data['memlist'] == null) {
             show_message("Nothing defined yet", 'warn')
             data['memlist'] = [];
-        } else {
         }
         if (this.#memtable != null) {
             // just replace the data
@@ -669,8 +796,8 @@ class consetup {
         clearError();
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'year=' + this.#setup_type + '&type=all',
+            method: 'POST',
+            data: { year: this.#setup_type, type: 'all' },
             success: function (data, textStatus, jhXHR) {
                 checkRefresh(data);
                 if (data['year'] == 'current') {
@@ -706,6 +833,7 @@ class consetup {
         this.#memlist_dirty = false;
     };
 
+    // conlist functions
     undoConlist() {
         if (this.#contable != null) {
             this.#contable.undo();
@@ -730,6 +858,56 @@ class consetup {
         }
     };
 
+    // daterange functions
+    undoDateRange() {
+        if (this.#datetable != null) {
+            this.#datetable.undo();
+
+            if (this.checkDateRangeUndoRedo() <= 0) {
+                this.#daterange_dirty = false;
+                this.#daterange_savebtn.innerHTML = "Save Changes";
+                this.#daterange_savebtn.disabled = true;
+            }
+        }
+    };
+
+    redoDateRange() {
+        if (this.#datetable != null) {
+            this.#datetable.redo();
+
+            if (this.checkDateRangeUndoRedo() > 0) {
+                this.#daterange_dirty = true;
+                this.#daterange_savebtn.innerHTML = "Save Changes*";
+                this.#daterange_savebtn.disabled = false;
+            }
+        }
+    };
+
+    addrowDateRange() {
+        let _this = this;
+
+        this.#datetable.clearFilter(true);
+        this.#datetable.addRow({
+            id: -99999,
+            conid: this.#conid,
+            nickName: '',
+        }, false).then(function (row) {
+            setCellChanged(row.getCell("nickName"));
+            setCellChanged(row.getCell("startdate"));
+            setCellChanged(row.getCell("enddate"));
+            _this.checkDateRangeUndoRedo();
+
+        });
+    };
+
+    daterange_rowMoved(row) {
+        this.#daterange_savebtn.innerHTML = "Save Changes*";
+        this.#daterange_savebtn.disabled = false;
+        this.#daterange_dirty = true;
+        this.checkDateRangeUndoRedo();
+    }
+
+    // memlist functions
     undoMemList() {
         if (this.#memtable != null) {
             this.#memtable.undo();
@@ -828,8 +1006,8 @@ class consetup {
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'year=' + this.#setup_type + '&type=conlist',
+            method: 'POST',
+            data: { year: this.#setup_type, type: 'conlist' },
             success: function (data, textStatus, jhXHR) {
                 if (data['error']) {
                     show_message(data['error'], 'error');
@@ -904,6 +1082,90 @@ class consetup {
         }
     };
 
+    saveDateRangeComplete(data, textStatus, jhXHR) {
+        this.#daterange_savebtn.innerHTML = "Save Changes";
+
+        clear_message();
+        clearError();
+        let script = "scripts/regadmin_getCondata.php";
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: { year: this.#setup_type, type: 'datelist' },
+            success: function (data, textStatus, jhXHR) {
+                if (data['error']) {
+                    show_message(data['error'], 'error');
+                    return false;
+                }
+                checkRefresh(data);
+                if (data['year'] == 'current') {
+                    current.draw_daterange(data['year'], data, textStatus, jhXHR);
+                } else {
+                    next.draw_daterange(data['year'], data, textStatus, jhXHR);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+
+    saveDateRange() {
+        if (this.#datetable != null) {
+            let invalids = this.#datetable.validate();
+            if (!invalids === true) {
+                console.log(invalids);
+                show_message("Date Range Table does not pass validation, please check for empty cells or cells in red", 'error');
+                return false;
+            }
+
+            this.#daterange_savebtn.innerHTML = "Saving...";
+            this.#daterange_savebtn.disabled = true;
+
+            let script = "scripts/regadmin_updateCondata.php";
+
+            let postdata = {
+                ajax_request_action: this.#setup_type,
+                tabledata: JSON.stringify(this.#datetable.getData()),
+                tablename: "daterange",
+                indexcol: "id"
+            };
+            clear_message();
+            clearError();
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
+                        // reset save button
+                        if (data['year'] == 'current') {
+                            current.daterange_dataChanged(data);
+                        } else {
+                            next.daterange_dataChanged(data);
+                        }
+                        return false;
+                    } else {
+                        show_message(data['success'], 'success');
+                    }
+                    checkRefresh(data);
+                    if (data['year'] == 'current') {
+                        current.saveDateRangeComplete(data, textStatus, jhXHR);
+                    } else {
+                        next.saveDateRangeComplete(data, textStatus, jhXHR);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+        }
+    };
+
     saveMemListComplete(data, textStatus, jhXHR) {
         if (data['error']) {
             this.#memlist_savebtn.innerHTML = "Save Changes*";
@@ -917,8 +1179,8 @@ class consetup {
         let script = "scripts/regadmin_getCondata.php";
         $.ajax({
             url: script,
-            method: 'GET',
-            data: 'year=' + this.#setup_type + '&type=memlist',
+            method: 'POST',
+            data: { year: this.#setup_type, type: 'memlist' },
             success: function (data, textStatus, jhXHR) {
                 checkRefresh(data);
                 if (data['year'] == 'current') {
