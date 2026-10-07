@@ -104,13 +104,14 @@ $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.mailinGLNum
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, mi.mdId AS includedMdId, mi.price AS includedPrice, mi.glNum AS includedGLNum,
+       additionalMemId, ma.mdId AS additionalMdId, ma.price AS additionalPrice, ma.glNum AS additionalGLNum,
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.mailinGLNum
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
-LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
-LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
-WHERE ery.id = ?;
+LEFT OUTER JOIN memListFull mi ON ery.includedMemId = mi.id
+LEFT OUTER JOIN memListFull ma ON ery.additionalMemId = ma.id
+WHERE ery.id = ? AND mi.startDate >= NOW() AND mi.endDate < NOW() AND ma.startDate >= NOW() AND ma.endDate < NOW();
 EOS;
 $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
 if ($regionYearR == false || $regionYearR->num_rows != 1) {
@@ -154,7 +155,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, ery.includedMemId, ery.additionalMemId
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
@@ -417,11 +418,11 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId, R.mldId,
     M.label, M.label AS shortname, A.shortname AS ageshortname, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
-JOIN memList M ON (M.id = R.memID)
+JOIN memListFull M ON (M.id = R.memId AND M.mdId = R.mldId)
 JOIN ageList A ON (A.ageType = M.memAge AND M.conid = A.conid)
 WHERE NP.transid=?;
 EOS;
@@ -534,10 +535,12 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
     $prefix = $type . '_' . $index . '_';
     if ($type == 'i') {
         $memid = $region['includedMemId'];
+        $mdId = $region['includedMdId'];
         $memprice = $region['includedPrice'];
         $glNum = $region['includedGLNum'];
     } else {
         $memid = $region['additionalMemId'];
+        $mdId = $region['additionalMdId'];
         $memprice = $region['additionalPrice'];
         $glNum = $region['additionalGLNum'];
     }
@@ -547,6 +550,7 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
     }
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
+    $badge['mldId'] = $mdId;
     $badge['contact'] = 'Y';
     $badge['share'] = 'Y';
     $badge['type'] = $type;
@@ -610,8 +614,8 @@ EOS;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, create_trans, price, status, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, price, status, memId, mldId)
+VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
     $badgeId = dbSafeInsert($badgeQ,  'iiidsi', array(
             $conid,
@@ -619,7 +623,8 @@ EOS;
             $transid,
             $badge['price'],
             $badge['price'] > 0 ? 'unpaid' : 'paid',
-            $badge['memId'])
+            $badge['memId'],
+            $badge['mldId'])
         );
 
     if ($badgeId === false) {

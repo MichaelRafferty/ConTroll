@@ -194,10 +194,10 @@ EOS;
 if ($membershipReq == 'Y' || $membershipReq == 'B') {
     $memberships = [];
     $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND m.mdId = r.mldId
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
 ORDER BY r.create_date, r.id;
 EOS;

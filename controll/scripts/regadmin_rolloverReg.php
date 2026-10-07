@@ -49,23 +49,27 @@ FROM reg r
 LEFT OUTER JOIN regActions h ON h.regid = r.id AND h.action = 'print'
 WHERE r.id = ?
 )
-SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, m.label, m.memAge, m.memCategory, m.memType,
+SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, r.mldId m.label, m.memAge, m.memCategory, m.memType,
                 m.glNum, r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name
 FROM reg r
-JOIN memList m ON (r.memId = m.id)
+JOIN memListFull m ON (r.memId = m.id AND r.mldId = m.mdId)
 JOIN perinfo p ON (r.perid = p.id)
 JOIN prints h
 LEFT OUTER JOIN reg r1 ON (r1.conid = ? AND r.perid = r1.perid AND r1.status IN ('paid', 'unpaid', 'plan', 'upgraded'))
-LEFT OUTER JOIN memList m1 ON (r1.memId = m1.id)
+LEFT OUTER JOIN memListFull m1 ON (r1.memId = m1.id AND r1.mldId = m1.mdId)
 WHERE r.conid = ? AND r.id = ?; 
 EOS;
 
 $matchMem = <<<EOS
-SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id, glNum
-FROM memList m
+SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id, m.mdId, m.glNum
+FROM memListFull m
 WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ?
 ORDER BY 1,2,3;
 EOS;
+// TODO: make it follow new date structure for the rolled over membership using memListDates
+$response['error'] = 'ERROR: reached TODO: need memList and memListDates rollover';
+ajaxSuccess($response);
+exit();
 
 $newMemI = <<<EOS
 INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
@@ -175,8 +179,8 @@ SET reg.status = 'rolled-over', updatedBy = ?
 WHERE reg.id = ? AND reg.conid = ?;
 EOS;
 $insSql = <<<EOS
-INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, status, memId, create_trans, complete_trans, priorRegId, create_user)
-VALUES(?, ?, CURRENT_TIMESTAMP, 0, 0, 0, 'paid', ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, status, memId, mldId, create_trans, complete_trans, priorRegId, create_user)
+VALUES(?, ?, CURRENT_TIMESTAMP, 0, 0, 0, 'paid', ?, ?, ?, ?, ?, ?);
 EOS;
 $insNoteSQL = <<<EOS
 insert into regActions(logdate, source, userid, tid, regid, action,notes)
@@ -196,7 +200,7 @@ foreach ($rolloverList as $basdgeId => $rollover) {
     }
 
     // insert new reg
-    $newid = dbSafeInsert($insSql, 'iiiiiii', array ($nextcon, $perid, $newMemId, $newtid, $newtid, $badgeId, $user_perid));
+    $newid = dbSafeInsert($insSql, 'iiiiiiii', array ($nextcon, $perid, $newMemId, $newMdId, $newtid, $newtid, $badgeId, $user_perid));
     if ($newid === false) {
         $response['error'] = "Failed inserting rolled over badge for $badgeId ($perid: $first_name $last_name) of $newMemId";
         ajaxSuccess($response);

@@ -532,8 +532,8 @@ function buildMlist($region, $label, $type) {
     if (str_starts_with($label, 'Bundle: ')) {
         $bQ = <<<EOS
 SELECT id, price, glNum, label
-FROM memList
-WHERE id = ?;
+FROM memListFull
+WHERE id = ? AND startdate >= NOW() and enddate < NOW();;
 EOS;
         $bundleId = $type == 'included' ? $region['includedMemId'] : $region['additionalMemId'];
         $notes = $type == 'included' ? $region['includedNotes'] : $region['additionalNotes'];
@@ -579,12 +579,14 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     $prefix = $type . '_' . $index . '_';
     if ($type == 'i') {
         $memid = $region['includedMemId'];
+        $mdId = $region['includedMdId'];
         $memprice = $region['includedPrice'];
         $glNum = $region['includedGLNum'];
         $label = $region['includedLabel'];
         $notes = $region['includedNotes'];
     } else {
         $memid = $region['additionalMemId'];
+        $mdId = $region['additionalMdId'];
         $memprice = $region['additionalPrice'];
         $glNum = $region['additionalGLNum'];
         $label = $region['additionalLabel'];
@@ -596,6 +598,7 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     }
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
+    $badge['mldId'] = $mdId;
     $badge['label'] = $label;
     $badge['contact'] = 'Y';
     $badge['share'] = 'Y';
@@ -646,19 +649,20 @@ EOS;
     // now loop over the list of badges for this person based on the Mlist.
     foreach ($Mlist as $memId => $mFields) {
         $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, create_trans, price, status, memID)
-VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, price, status, memID, mldId)
+VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
         $badge['label'] = $mFields['label'];
         $badge['glNum'] = $mFields['glNum'];
-        $badgeId = dbSafeInsert($badgeQ, 'iiidsi', array (
+        $badgeId = dbSafeInsert($badgeQ, 'iiidsii', array (
                 $conid,
                 $badge['newperid'],
                 $transId,
                 $mFields['price'],
                 $mFields['price'] > 0 ? 'unpaid' : 'paid',
-                $mFields['id'])
+                $mFields['id'],
+                $mFields['mdId'])
         );
 
         if ($badgeId === false) {

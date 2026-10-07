@@ -30,11 +30,12 @@ $response['regid'] = $regid;
 
 $bQ = <<<EOS
 SELECT 999999999 AS historyId, id, conid, perid, newperid, oldperid, priorRegId, create_date, change_date, pickup_date, price, couponDiscount, 
-       paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, coupon, planId, printable, status
+       paid, create_trans, complete_trans, locked, create_user, updatedBy, CONCAT(memId, '/', IFNULL(mldId, '')) AS memId, coupon, planId, printable, status
 FROM reg
 WHERE id = ?
 UNION SELECT historyId, id, conid, perid, newperid, oldperid, priorRegId, create_date, change_date, pickup_date, price, couponDiscount, 
-             paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, coupon, planId, printable, status
+             paid, create_trans, complete_trans, locked, create_user, updatedBy, CONCAT(memId, '/', IFNULL(mldId, '')) AS memId, coupon, planId, printable, 
+             status
 FROM regHistory
 WHERE id = ?
 ORDER BY historyId desc

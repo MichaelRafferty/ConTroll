@@ -106,11 +106,11 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
         WHEN P.managedBy IS NOT NULL THEN 'p'
         ELSE null
     END AS managedByType,
-    M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    M.label, CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid AND NP.perid IS NULL)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
@@ -176,11 +176,11 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
         WHEN R.perid IS NOT NULL AND P.manager IS NOT NULL THEN 'p'
         ELSE null
     END AS managedByType,
-    M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    M.label, CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 LEFT OUTER JOIN pfields P ON (P.perid=R.perid AND (P.fullname LIKE ? OR P.badge_name LIKE ? OR P.badgeNameL2 LIKE ?
         OR P.email_addr LIKE ? OR P.legalName LIKE ?))
 LEFT OUTER JOIN nfields NP ON (NP.newperson_perid IS NULL AND NP.newperson_id=R.newperid AND 
@@ -263,7 +263,7 @@ EOS;
 WITH listitems AS (
     SELECT M.label, count(*) occurs
     FROM reg R
-    JOIN memLabel M ON (M.id=R.memId)
+    JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
     WHERE R.conid=?
     GROUP BY M.label
 ), totalrow AS (

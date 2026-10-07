@@ -19,6 +19,9 @@ $useportal = $controll['useportal'];
 $id = $con['id'];
 $maxDiff = 7*24*60*60;
 
+echo "Needs mldid changes\n";
+exit();
+
 if ($useportal == 0) {
     // only for non portal sites
 

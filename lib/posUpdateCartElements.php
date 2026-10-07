@@ -56,16 +56,16 @@ EOS;
     $updPDt = 'sssssssssssssssssssiii';
 
     $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,updatedBy,create_trans,memId,coupon,create_date,status,complete_trans)
-VALUES (?,?,?,?,?,?,?,?,?,?,NOW(),?,?);
+INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,updatedBy,create_trans,memId,mldId,coupon,create_date,status,complete_trans)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?);
 EOS;
-    $insRDt = 'iidddiiiiisi';
+    $insRDt = 'iidddiiiiiisi';
 
     $updRegSQL = <<<EOS
-UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=NOW(),status=?,complete_trans=?
+UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,mldId=?,coupon=?,updatedBy=?,change_date=NOW(),status=?,complete_trans=?
 WHERE id = ? AND complete_trans IS NULL;
 EOS;
-    $updRDt = 'dddiiisii';
+    $updRDt = 'dddiiiisii';
 
     $delRegSQL = <<<EOS
 DELETE FROM reg
@@ -97,12 +97,12 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.couponDiscount, r1.coupon,
-    r1.create_date, IFNULL(r1.create_trans, -1) as tid, IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, 
+    r1.create_date, IFNULL(r1.create_trans, -1) as tid, IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.mldId, r1.planId, r1.status, 
     IFNULL(pc.printcount, 0) AS printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, null as rstid,
     CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable, m.ageShortName, m.badgeLabel
 FROM reg r1
-JOIN memLabel m ON (r1.memId = m.id)
+JOIN memLabelFull m ON (r1.memId = m.id AND r1.mldId = m.mdId)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
@@ -294,9 +294,9 @@ EOS;
                 $bundle = $bR->fetch_row()[0];
                 $bR->free();
                 $bQ = <<<EOS
-SELECT id, conid, price, label, memCategory, memType, memAge
-FROM memList
-WHERE id = ?;
+SELECT id, conid, price, label, memCategory, memType, memAge, mdId
+FROM memListFull
+WHERE id = ? AND startdate >= NOW() AND enddate < NOW();
 EOS;
                 $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));
                 $numSplit = 0;
@@ -313,6 +313,7 @@ EOS;
                     if ($numSplit == 0) {
                         $mbr['conid'] = $bL['conid'];
                         $mbr['memId'] = $bL['id'];
+                        $mbr['mldId'] = $bL['mdId'];
                         $mbr['price'] = $bL['price'];
                         $mbr['label'] = $bL['label'];
                         $mbr['memCategory'] = $bL['memCategory'];
@@ -327,6 +328,7 @@ EOS;
                         $nmbr = $mbr;
                         $nmbr['conid'] = $bL['conid'];
                         $nmbr['memId'] = $bL['id'];
+                        $nmbr['mldId'] = $bL['mdId'];
                         $nmbr['price'] = $bL['price'];
                         $nmbr['label'] = $bL['label'];
                         $nmbr['memCategory'] = $bL['memCategory'];
@@ -365,7 +367,7 @@ EOS;
                     $mbr['perid'] = $cartrow['perid'];
                 }
                 $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
-                    $mbr['paid'], $user_perid, $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
+                    $mbr['paid'], $user_perid, $user_perid, $master_transid, $mbr['memId'], $mbr['mldId'], $mbr['coupon'],
                     $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
                     $mbr['price'] > $mbr['paid'] ? null : $master_transid);
                 $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);
@@ -382,7 +384,7 @@ EOS;
                     $reg_del += dbSafeCmd($delRegSQL, $delRDt, $paramarray);
                 } else {
                     // update membership
-                    $paramarray = array ($mbr['price'], $mbr['couponDiscount'], $mbr['paid'], $mbr['memId'], $mbr['coupon'],
+                    $paramarray = array ($mbr['price'], $mbr['couponDiscount'], $mbr['paid'], $mbr['memId'], $mbr['mldId'], $mbr['coupon'],
                         $user_perid, $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
                         $mbr['price'] > $mbr['paid'] ? null : $master_transid, $mbr['regid']);
                     $reg_upd += dbSafeCmd($updRegSQL, $updRDt, $paramarray);

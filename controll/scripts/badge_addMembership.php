@@ -43,7 +43,7 @@ $regId = $_POST['regId'];
 
 // chech to see if there already is a primary membership for this person
 $iQ = <<<EOS
-SELECT r.id, r.memId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
+SELECT r.id, r.memId, r.mldId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
 FROM reg r
 JOIN memList m ON r.memId = m.id AND r.memId = m.id AND m.memType in ('full', 'oneday', 'virtual')
 WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
@@ -78,14 +78,30 @@ if ($numPrimary > 0 && !$foundFreeId) {
     exit();
 }
 
+// find the active mldId for this period
+$dateSQL = <<<EOS
+SELECT id
+FROM memListDates
+WHERE memId = ? AND startDate >= now() AND endDate < now();
+EOS;
+
+$dateR = dbSafeQuery($dateSQL, 'i', array($memId));
+if ($dateR === false) {
+    ajaxError('Unable to create retrive valid rollover volunteer date range, seek assistance');
+    return;
+}
+$dateL = $dateR->fetch_assoc();
+$mldId = $dateL['id'];
+$dateR->free();
+
 // check to see if this is a change or an add of a free membership
 if ($foundFreeId) {
     $iR = <<<EOS
 UPDATE reg
-SET memId = ?
+SET memId = ?, mldId = ?
 WHERE id = ? AND conid = ? AND perid = ? AND memId = ?
 EOS;
-    $numUpd = dbSafeCmd($iR, 'iiiii', array($memId, $regId, $conid, $perid, $oldMemId));
+    $numUpd = dbSafeCmd($iR, 'iiiiii', array($memId, $mldId, $regId, $conid, $perid, $oldMemId));
     if ($numUpd === false) {
         $response['error'] = "Update of registration $regId from $oldMemId to $memId for $perid failed, see log.";
         ajaxSuccess($response);
@@ -104,10 +120,10 @@ EOS;
     $dtT = 'iii';
 
     $iR = <<<EOS
-INSERT INTO reg(conid,perid,memId,create_date,price,couponDiscount,paid,create_trans,complete_trans,create_user,updatedBy,status)
-VALUES(?,?,?,NOW(),0,0,0,?,?,?,?,'paid');
+INSERT INTO reg(conid,perid,memId,mldId,create_date,price,couponDiscount,paid,create_trans,complete_trans,create_user,updatedBy,status)
+VALUES(?,?,?,?,NOW(),0,0,0,?,?,?,?,'paid');
 EOS;
-    $dtR = 'iiiiiii';
+    $dtR = 'iiiiiiii';
 
     $newTid = dbSafeInsert($iT, $dtT, array ($conid, $perid, $user_perid));
     if ($newTid === false) {
@@ -116,7 +132,7 @@ EOS;
         exit();
     }
 
-    $newReg = dbSafeInsert($iR, $dtR, array ($conid, $perid, $memId, $newTid, $newTid, $user_perid, $user_perid));
+    $newReg = dbSafeInsert($iR, $dtR, array ($conid, $perid, $memId, $mldId, $newTid, $newTid, $user_perid, $user_perid));
     if ($newReg === false) {
         $response['error'] = 'Insert of membership failed, see log.';
         ajaxSuccess($response);

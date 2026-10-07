@@ -161,7 +161,7 @@ $num_ins = 0;
 // load the memList for comparision against this cart for valid prices for new items not in the database added to the cart
 $memListQ = <<<EOS
 SELECT id, price, startdate, enddate, label, c.variablePrice
-FROM memList m
+FROM memListFull m
 JOIN memCategories c ON m.memCategory = c.memCategory
 WHERE (conid = ? OR conid = (? + 1)) AND startdate <= NOW() AND enddate > NOW() AND online = 'Y';
 EOS;
@@ -229,9 +229,9 @@ EOS;
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
-INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId)
-SELECT ?, IFNULL(p.id, n.perid) AS perid, n.id AS newperid, ?, ?, ?, ?, ?, m.id
-FROM memList m
+INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId, mldId)
+SELECT ?, IFNULL(p.id, n.perid) AS perid, n.id AS newperid, ?, ?, ?, ?, ?, m.id, m.mdId
+FROM memListFull m
 LEFT OUTER JOIN perinfo p ON p.id = ?
 LEFT OUTER JOIN newperson n ON n.id = ?
 WHERE m.id = ?;
@@ -256,8 +256,8 @@ EOS;
                 $nR->free();
                 $nQ = <<<EOS
 SELECT id, conid, price
-FROM memList
-WHERE id = ?;
+FROM memListFull
+WHERE id = ? AND startdate >= NOW() AND enddate < NOW();
 EOS;
 
                 $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));

@@ -54,7 +54,7 @@ function getRulesData($conid, $regadmin = false, $atcon = false) {
     }
     $QQ = <<<EOS
 SELECT m.*, m.id as memId
-FROM memList m
+FROM memListFull m
 JOIN memTypes mt ON m.memType = mt.memType
 WHERE ((conid = ? AND memCategory != 'yearahead') OR (conid = ? AND memCategory = 'yearahead'))
 $where

@@ -445,7 +445,7 @@ SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN $ptable p ON p.id = r.$rfield
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
     AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
@@ -466,7 +466,7 @@ SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.p
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
@@ -475,7 +475,7 @@ SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.p
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
@@ -488,7 +488,7 @@ SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
 WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?) AND n.perid IS NULL
@@ -513,7 +513,7 @@ SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.p
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
 WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 EOS;
@@ -526,7 +526,7 @@ SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 WHERE r.conid IN (?, ?) AND (n.id = ?) AND n.perid IS NULL
 UNION
@@ -534,7 +534,7 @@ SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.p
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
 WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 ORDER BY create_date;

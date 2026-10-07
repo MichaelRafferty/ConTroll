@@ -104,9 +104,9 @@ if ($newtid === false) {
 
 $nQ = <<<EOS
 INSERT INTO reg(conid, perid, oldperid, create_date, change_date, pickup_date, price, couponDiscount, paid,
-                create_trans, complete_trans, create_user, memId, coupon, printable, status, priorRegId, updatedBy)
+                create_trans, complete_trans, create_user, memId, mldId, coupon, printable, status, priorRegId, updatedBy)
 SELECT conid, ?, ?, create_date, CURRENT_TIMESTAMP(), pickup_date, price, couponDiscount, paid, 
-       ?, ?, ?, memId, coupon, printable, status, ?, ?
+       ?, ?, ?, memId, mldId, coupon, printable, status, ?, ?
 FROM reg
 WHERE id = ?;
 EOS;

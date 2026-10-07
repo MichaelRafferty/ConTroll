@@ -65,14 +65,30 @@ if ($master_transid === false) {
     ajaxError('Unable to create master transaction');
     return;
 }
+
+// find the active mldId for this period
+    $dateSQL = <<<EOS
+SELECT id
+FROM memListDates
+WHERE memId = ? AND startDate >= now() AND endDate < now();
+EOS;
+
+$dateR = dbSafeQuery($dateSQL, 'i', array($memId));
+if ($dateR === false) {
+    ajaxError('Unable to create retrive valid rollover volunteer date range, seek assistance');
+    return;
+}
+$dateL = $dateR->fetch_assoc();
+$mldId = $dateL['id'];
+$dateR->free();
 // now insert the rollover membership
 
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,paid,status,create_user,create_trans,complete_trans,memId,create_date)
-VALUES (?,?,0,0,'paid',?,?,?,?,now());
+INSERT INTO reg(conid,perid,price,paid,status,create_user,create_trans,complete_trans,memId,mldId,create_date)
+VALUES (?,?,0,0,'paid',?,?,?,?,?,now());
 EOS;
-$paramarray = array($conid + 1, $member['perid'], $user_id, $master_transid, $master_transid,$memId);
-$typestr = 'iiiii';
+$paramarray = array($conid + 1, $member['perid'], $user_id, $master_transid, $master_transid,$memId,$mldId);
+$typestr = 'iiiiiii';
 $new_regid = dbSafeInsert($insRegSQL, $typestr, $paramarray);
 if ($new_regid === false) {
     ajaxError("Insert of rollover membership failed");

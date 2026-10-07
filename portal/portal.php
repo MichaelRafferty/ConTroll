@@ -194,7 +194,7 @@ if (!$refresh) {
 
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, mc.variablePrice,
+SELECT r.status, r.memId, r.mldId, m.*, mc.variablePrice,
        a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
@@ -269,7 +269,7 @@ SELECT r.status, r.memId, m.*, mc.variablePrice,
         ELSE NULL
     END AS memberId
 FROM reg r
-JOIN memLabel m ON m.id = r.memId
+JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
 JOIN memCategories mc ON m.memCategory = mc.memCategory
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
 LEFT OUTER JOIN transaction t ON r.create_trans = t.id
@@ -431,7 +431,7 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
+        r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
@@ -449,7 +449,7 @@ WITH ppl AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     LEFT OUTER JOIN memCategories mc ON m.memCategory = mc.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
@@ -465,7 +465,7 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
+        r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
         r.create_trans, r.complete_trans,
@@ -483,7 +483,7 @@ WITH ppl AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
@@ -519,7 +519,7 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
+        r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
@@ -538,7 +538,7 @@ WITH ppl AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
@@ -554,7 +554,7 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
+        r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
@@ -573,7 +573,7 @@ WITH ppl AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
-    LEFT OUTER JOIN memLabel m ON m.id = r.memId
+    LEFT OUTER JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id

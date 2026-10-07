@@ -8,6 +8,9 @@ db_connect();
 $con = get_conf('con');
 $conid = $con['id'];
 
+echo "Needs changes for mldId\n";
+exit();
+
 // parameters -
 // -t test mode, just show what it would do, not make any database changes
 // -l life membership memId
@@ -74,8 +77,8 @@ EOS;
 // validate memId and make sure it is for this year
 $memCheckQ = <<<EOS
 SELECT id, conid, price, label
-FROM memList
-WHERE id in (?, ?);
+FROM memListFull
+WHERE id in (?, ?) AND startdate >= NOW() AND enddate < NOW();
 EOS;
 $numRowsExpected = $gohMemId == $lifeMemId ? 1 : 2;
 $numRows = 0;
@@ -157,12 +160,12 @@ EOS;
     }
 
     $insTranQ = <<<EOS
-INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscount, paid, withtax, tax, type)
+INSERT INTO transaction(conid, perid, userid, create_date, complete_date, price, couponDiscountCart, paid, withtax, tax, type)
 VALUES (?,?,1,NOW(),NOW(),0,0,0,0,0,?);
 EOS;
     $insRegQ = <<<EOS
-INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, create_trans, complete_trans, create_user, memId)
-VALUES (?, ?, NOW(), 0, 0, 0, ?, ?, 1, ?);
+INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, create_trans, complete_trans, create_user, memId, mldId)
+VALUES (?, ?, NOW(), 0, 0, 0, ?, ?, 1, ?, ?);
 EOS;
 
 
