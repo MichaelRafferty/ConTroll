@@ -82,7 +82,7 @@ case 'expire':
            DATE_FORMAT(min(m.enddate), '%Y-%m-%d') AS enddate 
     FROM reg r
     JOIN perinfo p ON p.id = r.perid
-    JOIN memLabel m ON m.id = r.memId AND R.mldId = m.mdId
+    JOIN memLabel m ON m.id = r.memId AND r.mldId = m.mdId
     WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(m.enddate, now()) < 35 AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;

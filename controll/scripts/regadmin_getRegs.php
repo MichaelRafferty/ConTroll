@@ -48,7 +48,7 @@ WITH printed AS (
 )
 SELECT r.*, m.label, m.memCategory AS category, m.memType AS type, IFNULL(p.pcount,0) AS pcount
 FROM reg r
-JOIN memLabel m ON r.memId = m.id AND R.mldId = m.mdId
+JOIN memLabel m ON r.memId = m.id AND r.mldId = m.mdId
 LEFT OUTER JOIN printed p ON r.id = p.id
 WHERE r.perid = ? AND r.conid = ?;
 EOS;

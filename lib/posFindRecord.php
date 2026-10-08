@@ -263,7 +263,7 @@ WITH regids AS (
     /* first reg ids for this create transaction as specified as a number */
     SELECT r.id AS regid, create_trans as tid
     FROM reg r
-    JOIN memLabel m ON (r.memId = m.id AND R.mldId = m.mdId)
+    JOIN memLabel m ON (r.memId = m.id AND r.mldId = m.mdId)
     WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
     /* then add in reg ids for this attach transaction */
     UNION SELECT regid, tid
