@@ -1501,12 +1501,12 @@ class consetup {
                 // build the row
                 let datesRow = {};
 
-                datesRow.id = document.getElementById('EMLTS' + row + '_ID').value;
+                datesRow.id = document.getElementById('EMLTS' + row + '_ID').innerHTML;
                 datesRow.idKey = datesRow.id;
                 datesRow.memId = this.#editDataCurrentMemId;
                 datesRow.price = document.getElementById('EMLTS' + row + '_Price').value;
-                datesRow.start = document.getElementById('EMLTS' + row + '_Start').value;
-                datesRow.end = document.getElementById('EMLTS' + row + '_End').value;
+                datesRow.startdate = toDBdate(document.getElementById('EMLTS' + row + '_Start').value);
+                datesRow.enddate = toDBdate(document.getElementById('EMLTS' + row + '_End').value);
                 datesRow.glNum = document.getElementById('EMLTS' + row + '_glNum').value;
                 datesRow.nickName = document.getElementById('EMLTS' + row + '_NickName').value;
                 datesRow.uses = document.getElementById('EMLTS' + row + '_USES').innerHTML;
@@ -1547,6 +1547,15 @@ class consetup {
         }
         this.#editDataCurrentRow.notes = notes;
         this.#editDataCurrentRow.badgeLabel = document.getElementById('editMemListBadgeLabel').value;
+        // now rebuild the prices column
+        let priceRanges = '';
+        for (let i = 0; i < rowListDates.length; i++) {
+            let row = rowListDates[i];
+            if (priceRanges != '')
+                priceRanges += '\n';
+            priceRanges += row.price + ': ' + row.startdate;
+        }
+        this.#editDataCurrentRow.priceRanges = priceRanges;
     }
 
     /*
@@ -1724,7 +1733,8 @@ class consetup {
         this.saveTimeSeries(); // write the data back to the this.#editData array
 
         // copy the edit data back to the main array
-        this.#memtable.updateOrAddData(this.#editDataCurrentRow);
+        let updateData = [this.#editDataCurrentRow];
+        this.#memtable.updateOrAddData(updateData);
         setCellChanged(this.#memtable.getRow(this.#editDataCurrentRow.id));
         this.#memListModal.hide();
 

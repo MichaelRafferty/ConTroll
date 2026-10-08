@@ -250,6 +250,9 @@ function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
 
 // cconvert arbitary js date string to database date format (YYYY-MM-DD HH:MM:SS)
 function toDBdate(datestr) {
+    if (datestr == null || datestr == '')
+        return '';
+
     jsDate = new Date(datestr);
     let newdate = String(jsDate.getFullYear()) + '-' +
         String(jsDate.getMonth() + 1).padStart(2, '0') + '-' +
