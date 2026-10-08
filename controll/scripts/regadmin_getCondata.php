@@ -98,11 +98,12 @@ SELECT m.id, m.id AS memlistkey,
     m.rptGrouping,
     m.badgeLabel,
     c.badgeLabel AS catBadgeLabel,
-    count(r.id) as uses
+    count(r.id) + count (cp.id) as uses
 FROM memList m
 JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
 JOIN memCategories c ON m.memCategory = c.memCategory
 LEFT OUTER JOIN reg r ON (r.memId = m.id)
+LEFT OUTER JOIN coupon cp ON (cp.memId = m.id)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
 GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,shortname,label,m.cartDesc,
 m.notes,m.atcon,m.online,m.rptGrouping,m.badgeLabel,catBadgeLabel
