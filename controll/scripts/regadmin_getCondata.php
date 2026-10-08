@@ -128,11 +128,13 @@ EOS;
 
     // now we need to also add the subtable memListDates
     $memSQL = <<<EOS
-SELECT mld.*, mld.id AS idKey
+SELECT mld.id, mld.id AS idKey, mld.memId, mld.glNum, mld.price, mld.startdate, mld.enddate, mld.nickName, count(r.mldId) as uses
 FROM memList m
 JOIN memCategories c ON m.memCategory = c.memCategory
 JOIN memListDates mld ON (mld.memId = m.id)
+LEFT OUTER JOIN reg r ON (r.memId = mld.memId AND r.mldId = mld.id)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
+GROUP BY mld.id, mld.memId, mld.glNum, mld.price, mld.startdate, mld.enddate, mld.nickName
 ORDER BY mld.memId, mld.startdate, mld.enddate
 EOS;
     $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));
