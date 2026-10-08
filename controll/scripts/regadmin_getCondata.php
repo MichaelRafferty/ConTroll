@@ -77,35 +77,42 @@ EOS;
 
 
 if ($type == 'all' || $type == 'memlist') {
+    // first the memlist proper
     $memSQL = <<<EOS
+WITH priceGroups AS (
+    SELECT memId, startdate, CONCAT(price, ': ', startdate) AS period
+    FROM memListDates
+), mems AS (  
 SELECT m.id, m.id AS memlistkey,
-    m.mdId,
     m.conid,
     m.sort_order,
     m.memCategory,
     m.memType,
     m.memAge,
-    m.shortname,
-    m.label,
+    m.label as shortname,
+    concat(m.label,' [',a.label,']') AS label,
     m.cartDesc,
     m.notes,
-    m.price,
-    m.startdate,
-    m.enddate,
     m.atcon,
     m.online,
     m.rptGrouping,
-    m.glNum,
-    m.glLabel,
     m.badgeLabel,
-    m.catBadgeLabel,
+    c.badgeLabel AS catBadgeLabel,
     count(r.id) as uses
-FROM memLabel m
-LEFT OUTER JOIN reg r ON (r.memId = m.id AND r.mldId = m.mdId)
+FROM memList m
+JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+JOIN memCategories c ON m.memCategory = c.memCategory
+LEFT OUTER JOIN reg r ON (r.memId = m.id)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
-GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.cartDesc,
-         m.price,m.startdate,m.enddate,m.atcon,m.online,m.glNum,m.glLabel,m.rptGrouping
-ORDER BY m.conid, m.sort_order, m.memCategory, m.memType, m.memAge, m.startdate;
+GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,shortname,label,m.cartDesc,
+m.notes,m.atcon,m.online,m.rptGrouping,m.badgeLabel,catBadgeLabel
+)
+SELECT m.*,GROUP_CONCAT(pg.period ORDER BY pg.startdate ASC SEPARATOR '\n') AS priceRanges
+FROM mems m
+LEFT OUTER JOIN priceGroups pg ON (pg.memId = m.id)
+GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,shortname,label,m.cartDesc,
+m.notes,m.atcon,m.online,m.rptGrouping,m.badgeLabel,m.catBadgeLabel
+ORDER BY m.conid, m.sort_order, m.memCategory, m.memType, m.memAge
 EOS;
     $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));
     $memlist = array();

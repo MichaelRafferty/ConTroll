@@ -504,7 +504,7 @@ class consetup {
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
                 {
-                    title: "Sort", field: "sort_order", width: 80, headerSort: true, headerHozAlign: "right", hozAlign: "right", sorter: "number",
+                    title: "Sort", field: "sort_order", width: 75, headerSort: true, headerHozAlign: "right", hozAlign: "right", sorter: "number",
                 },
                 {
                     title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
@@ -529,7 +529,7 @@ class consetup {
                     headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
-                    title: "Label", field: "shortname", width: 200,
+                    title: "Label", field: "shortname", width: 180,
                     tooltip: function (e, cell, onRendered) {
                         return cell.getRow().getCell("label").getValue();
                     },
@@ -538,24 +538,17 @@ class consetup {
                 },
                 {title: "Label", field: "label", visible: false},
                 {
-                    title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
-                },
-                {
-                    title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},
-                },
-                {
-                    title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
-                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},
+                    title: "Prices", field: "priceRanges", width: 230, formatter: "textarea",
+                    headerFilter: "input", headerFilterFunc: priceListHeaderFilter, headerFilterFuncParams: {field: 'priceRanges'},
+
                 },
                 {
                     title: "At", field: "atcon", editor: "list", editorParams: {values: this.#enumYN,},
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+                    headerSort: false, headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
                     title: "On", field: "online", editor: "list", editorParams: {values: this.#enumYN,},
-                    headerFilter: true, headerFilterParams: {values: this.#enumYN,}
+                    headerSort: false, headerFilter: true, headerFilterParams: {values: this.#enumYN,}
                 },
                 {
                     title: "Notes", field: "notes", width: 200,
@@ -571,23 +564,11 @@ class consetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
                 },
                 {
-                    title: "Report Grouping", field: "rptGrouping", width: 200, headerWordWrap: true,
+                    title: "Report Grouping", field: "rptGrouping", width: 140, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, headerFilter: true,
-                }
+                },
+                {field: "to_delete", visible: false,}, {field: "catBadgeLabel", visible: false,}
             ];
-
-            if (config.useGL == 1) {
-                columns.push(
-                    {
-                        title: "GL Num/Label", field: "glNum", width: 320, headerWordWrap: true,
-                        editor: "list", editorParams: {values: glEditorList,},
-                        formatter: "lookup", formatterParams: glEditorList,
-                        headerFilter: true, headerFilterParams: {values: glEditorList},
-                    });
-            } else {
-                columns.push({field: "glNum", visible: false,});
-            }
-            columns.push({field: "to_delete", visible: false,}, {field: "catBadgeLabel", visible: false,});
 
             this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
                 history: true,

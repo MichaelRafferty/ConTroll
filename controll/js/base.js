@@ -278,6 +278,18 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             return rowValue.includes(value);
     }
 }
+// priceListHeaderFilter - loop over all price filter lines and check each date
+function priceListHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    let priceRanges = rowValue.split("\n");
+    for (let priceRange of priceRanges) {
+        let [price, date] = priceRange.split(': ');
+        let intermediate = dateStringHeaderFilter(headerValue, date, rowData, filterParams);
+        if (intermediate)
+            return true;
+    }
+    return false;
+}
+
 
 // fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
 function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {

@@ -279,7 +279,10 @@ ALTER TABLE regHistory ADD COLUMN mldId int DEFAULT NULL AFTER memId;
 
 UPDATE reg
 JOIN memListMap mlm ON reg.memId = mlm.oldMemId
-SET memId = mlm.newMemid, mldId = mlm.newMdId;
+SET memId = mlm.newMemId, mldId = mlm.newMdId;
+UPDATE coupon
+JOIN memListMap mlm ON coupon.memId = mlm.oldMemId
+SET memId = mlm.newMemId;
 
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
@@ -302,7 +305,9 @@ DELIMITER ;
 
 DROP TABLE IF EXISTS memListMap;
 
--- now clean up old fields
+-- now clean up old fields and memList rows with no memListDates
+DELETE FROM memList
+
 ALTER TABLE memList DROP CONSTRAINT memList_ibfk_1;
 ALTER TABLE memList DROP startdate, DROP enddate, DROP glNum, DROP price;
 
