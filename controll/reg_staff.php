@@ -117,7 +117,7 @@ draw_fileManagerModals($authToken);
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editMemListBlockDiv'>
                     <div class='row mt-4'>
-                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and it's time series</h4></div>
+                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and its time series</h4></div>
                     </div>
                     <div class="row">
                         <div class="col-sm-7">
@@ -163,27 +163,6 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'><label for="editMemListPrice">Price:</label></div>
-                                    <div class='col-sm-3'>
-                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name='editMemListPrice' min='0'
-                                               style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
-                                    </div>
-                                    <div class='col-sm-7 text-end'>
-                                        <button class='btn btn-sm btn-primary' onclick='copyCartDesc();'>Copy only Cart Description to Time Series Rows</button>
-                                    </div>
-                                </div>
-                                <div class='row mt-1'>
-                                    <div class='col-sm-2'><label for="editMemListStart">Start Date:</div>
-                                    <div class='col-sm-4'>
-                                        <input type="datetime-local" id='editMemListStart' name='editMemListStart'
-                                               onchange='startdateChange(editListMasterRow)'/>
-                                    </div>
-                                    <div class='col-sm-2'><label for="editMemListEnd">End Date:</label></div>
-                                    <div class='col-sm-4'>
-                                        <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
-                                    </div>
-                                </div>
-                                <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListAtcon">At-Con:</label></div>
                                     <div class='col-sm-auto'>
                                         <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
@@ -213,13 +192,13 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-2'><label for="editMemListBundleContains">Contains:</label></div>
                                     <div class="col-sm-auto">
                                         <button class='btn btn-sm btn-primary' type='button'
-                                                onclick="editBundleContains('editMemListBundleContains', 'editMemListStart', 'editMemListEnd');">
+                                                onclick="editBundleContains('editMemListBundleContains');">
                                             Select Contents
                                         </button>
                                     </div>
                                     <div class='col-sm-7'>
-                                        <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
-                                               onchange='bundleContentsChanged(editListMasterRow);' size='64' maxlength='256'/>
+                                        <input type='text' name='editMemListBundleContains' id='editMemListBundleContains'
+                                               placeholder='List of IDs in bundle' size='64' maxlength='256'/>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -240,18 +219,6 @@ draw_fileManagerModals($authToken);
                                                size='20' maxlength='16' onchange='badgeLabelChange(editListMasterRow);'/>
                                     </div>
                                 </div>
-                                <?php if ($config_vars['useGL'] == 1) { ?>
-                                <div class='row mt-1'>
-                                    <div class='col-sm-2'><label for="editMemListGLNum">Gen. Ledger</label></div>
-                                    <div class='col-sm-auto'>
-                                        <select name='editMemListGLNum' id='editMemListGLNum' onchange='glNumChange(editListMasterRow);'>
-                                            <?php echo $glNumSelect; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <?php } else { ?>
-                                    <input type='hidden' name='editMemListGLNum' id='editMemListGLNum'/>
-                                <?php } ?>
                             </div>
                         </div>
                         <div class="col-sm-5">
@@ -285,37 +252,16 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row mt-4'>
                         <div class='col-sm-auto'><h4>Time Series Data</h4></div>
-                        <div class="col-sm-auto">
-                            <button class="btn btn-sm btn-primary" onclick="copyMemListChanges();">Copy Changes above to Time Series Rows</button>
-                        </div>
-                        <div class='col-sm-auto'>
-                            <button class='btn btn-sm btn-primary' onclick='resetEndDates();'>Align End Date to Next Start Date</button>
-                        </div>
-                        <div class='col-sm-auto'>
-                            <button class='btn btn-sm btn-primary' onclick='reSortTimeSeries();'>Re-sort into Time Series Order</button>
-                        </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1 p-0 m-0">
-                            <div class="container-fluid p-0 m-0">
-                                <div class="row">
-                                    <div class="col-sm-6" style='text-align: center;'>Sort</div>
-                                    <div class="col-sm-6" style='text-align: center;'>ID</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-1" style='text-align: center;'>Price</div>
+                        <div class="col-sm-1" style='text-align: center;'>Del</div>
+                        <div class="col-sm-1" style='text-align: right;'>ID</div>
+                        <div class="col-sm-1" style='text-align: right;'>Price</div>
+                        <div class="col-sm-2">Nick Name</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
-                        <div class="col-sm-1">At-Con ONL</div>
-
                         <?php if ($config_vars['useGL'] == 1) { ?>
-                        <div class='col-sm-1'>O/Ride Label</div>
-                        <div class='col-sm-1'>Rpt Grp</div>
                         <div class="col-sm-2">General Ledger</div>
-                        <?php } else { ?>
-                        <div class='col-sm-2'>O/Ride Label</div>
-                        <div class='col-sm-2'>Rpt Grp</div>
                         <?php } ?>
                     </div>
 <?php
@@ -323,85 +269,31 @@ draw_fileManagerModals($authToken);
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
                     <div class='row mt-1 pt-1 mb-0 pb-1' style="background-color: <?php echo $bgColor;?>">
-                        <div class='col-sm-1 ps-0 pe-0 ms-0 me-0'>
-                            <div class='container-fluid p-0 m-0'>
-                                <div class='row'>
-                                    <div class='col-sm-6' style='text-align: right;'>
-                                        <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i; ?>_Sort'
-                                               style='text-align: right; width: 3em;' min='0'/>
-                                    </div>
-                                    <div class='col-sm-6' id="EMLTS<?php echo $i; ?>_ID" style='text-align: right;'></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class='col-sm-1' style='text-align: right;' id="EMLTS<?php echo $i; ?>_USES"
+                             onclick="tsUsesChange(<?php echo $i;?>)"></div>
+                        <div class='col-sm-1' id="EMLTS<?php echo $i; ?>_ID" style='text-align: right;'></div>
                         <div class='col-sm-1'>
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
-                                   style="text-align: right; width: 6em;" min='0' onchange="tsPriceChange(<?php echo $i;?>)"/>
+                                   style="text-align: right; width: 6em;" min='0' onchange="memListModalDirty = true;"/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange="tsStartChange(<?php echo $i;?>)"/>
+                            <input type='text' id='EMLTS<?php echo $i;?>_NickName' len="16" maxlength="16" onchange='nicknameChanged($i)'/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange="tsEndChange(<?php echo $i;?>)"/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='memListModalDirty = true;'/>
                         </div>
-                        <div class='col-sm-1'>
-                            <select id="EMLTS<?php echo $i;?>_Atcon" onchange="tsAtconChange(<?php echo $i;?>)">
-                                <option value='N'>No</option>
-                                <option value='Y'>Yes</option>
-                            </select>
-                            <select id="EMLTS<?php echo $i;?>_Online" onchange="tsOnlineChange(<?php echo $i;?>)">
-                                <option value='N'>No</option>
-                                <option value='Y'>Yes</option>
-                            </select>
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange='memListModalDirty = true;'/>
                         </div>
                         <?php if ($config_vars['useGL'] == 1) { ?>
-                        <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
-                                   onchange="tsBadgeLabelChange(<?php echo $i;?>)"
-                            />
-                        </div>
-                        <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='12' maxlength='128'
-                                   onchange="tsRptGroupingChange(<?php echo $i;?>)"
-                            />
-                        </div>
                         <div class='col-sm-2'>
-                            <select id='EMLTS<?php echo $i;?>_glNum' onchange="tsGlNumChange(<?php echo $i;?>)"
+                            <select id='EMLTS<?php echo $i;?>_glNum' onchange='memListModalDirty = true;'>
                                 <?php echo $glNumSelect; ?>
                             </select>
                         </div>
-                        <?php } else { ?>
-                        <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
-                                   onchange="tsBadgeLabelChange(<?php echo $i;?>)"
-                            />
-                        </div>
-                        <div class='col-sm-3'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_rptGrouping' placeholder='Rpt Group' size='48' maxlength='128'
-                                   onchange="tsRptGroupingChange(<?php echo $i;?>)"
-                            />
-                        </div>
                         <?php } ?>
                     </div>
-<?php
-        if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
-                    <div class='row pt-1 mt-0 mb-1 pb-1' name='TScontains' style="background-color: <?php echo $bgColor;?>">
-                        <div class="col-sm-2"></div>
-                        <div class='col-sm-auto'>Contains:</div>
-                        <div class='col-sm-auto'>
-                            <button class='btn btn-sm btn-primary' type='button'
-                                    onclick="editBundleContains(<?php
-                                        echo "'EMLTS" . $i . "_contains', 'EMLTS" . $i . "_Start', 'EMLTS" . $i . "_End');";
-                                    ?>">Select This Rows Contents Only</button>
-                        </div>
-                        <div class='col-sm-auto'>
-                            <input type='text' name='editMemListBundleContains' id='EMLTS<?php echo $i;?>_contains' placeholder='List of IDs in bundle'
-                                   onchange=tsBundleContentsChanged(<?php echo $i;?>) size='64' maxlength='256'/>
-                        </div>
-                    </div>
-        <?php }
-    }
-?>
+    <?php } ?>
                 </div>
             </div>
             <div class='modal-footer'>

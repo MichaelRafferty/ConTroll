@@ -273,7 +273,11 @@ EOS;
             }
         }
         $response['success'] = "memList updated: $inserted added, $updated changed, $deleted removed.";
-        //error_log($response['success']);
+
+        if (array_key_exists('memListDates', $_POST)) {
+            // process updates to memListDatss itesm
+            $response['success'] .= "<br/>memListDates not yet processed";
+        }
         break;
 
     default:
