@@ -27,7 +27,7 @@ $query = <<<EOS
 SELECT T.id, P.first_name, P.last_name, P.email_addr, P.address, P.addr_2, P.city, P.state, P.zip, P.country, M.label, R.paid
     , Y.type, Y.description, Y.amount, Y.txn_time, Y.cc_txn_id
 FROM memLabel M
-JOIN reg R ON (R.memId=M.id)
+JOIN reg R ON (R.memId=M.id AND R.mldId=M.mdId)
 JOIN transaction T ON (T.id=R.create_trans)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN payments Y ON (Y.transid=T.id)

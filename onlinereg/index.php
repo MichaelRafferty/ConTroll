@@ -92,7 +92,7 @@ $ageByDate = $startdate->format('F j, Y');
 
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType, conid
+SELECT id, mdId, label, shortname, sort_order, price, memAge, memCategory, memType, conid
 FROM memLabel
 WHERE
     (conid=? OR (conid = ? AND memCategory = 'yearahead')) 

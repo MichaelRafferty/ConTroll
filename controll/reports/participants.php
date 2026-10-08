@@ -31,7 +31,7 @@ $query = <<<EOS
 SELECT DISTINCT P.first_name, P.last_name, P.email_addr, P.id, M.label
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 WHERE R.conid=? AND M.label LIKE '%Participant%' AND M.memAge='all';
 EOS;
 

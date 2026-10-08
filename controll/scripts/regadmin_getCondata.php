@@ -79,6 +79,7 @@ EOS;
 if ($type == 'all' || $type == 'memlist') {
     $memSQL = <<<EOS
 SELECT m.id, m.id AS memlistkey,
+    m.mdId,
     m.conid,
     m.sort_order,
     m.memCategory,
@@ -100,7 +101,7 @@ SELECT m.id, m.id AS memlistkey,
     m.catBadgeLabel,
     count(r.id) as uses
 FROM memLabel m
-LEFT OUTER JOIN reg r ON (r.memId = m.id)
+LEFT OUTER JOIN reg r ON (r.memId = m.id AND r.mldId = m.mdId)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
 GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.cartDesc,
          m.price,m.startdate,m.enddate,m.atcon,m.online,m.glNum,m.glLabel,m.rptGrouping

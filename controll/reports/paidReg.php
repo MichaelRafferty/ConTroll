@@ -27,7 +27,7 @@ header('Content-Disposition: attachment; filename="paidReg.csv"');
 $query = <<<EOS
 SELECT P.first_name, P.last_name, P.email_addr, M.label, R.paid, R.create_trans, T.paid, Y.type, Y.description, Y.amount
 FROM memLabel M
-JOIN reg R ON (R.memId=M.id)
+JOIN reg R ON (R.memId=M.id AND R.mldId=M.mdId)
 JOIN transaction T ON (T.id=R.create_trans)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN payments AS Y ON (Y.transid=T.id)

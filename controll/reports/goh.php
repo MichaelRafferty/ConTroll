@@ -31,7 +31,7 @@ SELECT DISTINCT CONCAT_WS(' ', P.first_name, P.last_name), CONCAT_WS('/', P.badg
 FROM reg R
 JOIN badgeList B ON (B.perid=R.perid)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 WHERE R.conid=? AND ((B.user_perid=? OR M.memCategory='goh') AND B.conid = M.conid)
 ORDER BY M.label, P.last_name, P.first_name;
 EOS;

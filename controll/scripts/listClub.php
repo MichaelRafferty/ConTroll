@@ -54,9 +54,9 @@ if($linkR->num_rows >0) {
 $response['link']=$linId;
 
 $badgeQ = <<<EOS
-SELECT R.id, R.memId, M.label
+SELECT R.id, R.memId, R.mldid, M.label
 FROM reg R
-JOIN memList M ON ( M.id=R.memId)
+JOIN memList M ON (M.id=R.memId AND R.mldId = M.mdId)
 WHERE R.perid=?;
 EOS;
 

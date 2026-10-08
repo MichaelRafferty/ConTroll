@@ -65,7 +65,7 @@
 [T002]
 	name=memLabel
 	alias=m
-	join="m.id = r.memId"
+	join="m.id = r.memId AND m.mdId = r.mldId"
 [T003]
     name=transaction
     alias=t

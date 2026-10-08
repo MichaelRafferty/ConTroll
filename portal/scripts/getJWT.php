@@ -168,7 +168,7 @@ if ($Virtual) {
 
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, m.taxable, m.ageShortName,
+SELECT r.status, r.memId, r.mldId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, m.taxable, m.ageShortName,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -224,7 +224,7 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         ELSE NULL
     END AS memberId
 FROM reg r
-JOIN memLabel m ON m.id = r.memId
+JOIN memLabel m ON m.id = r.memId AND m.id = r.mldId
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
 LEFT OUTER JOIN transaction t ON r.create_trans = t.id
 LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id

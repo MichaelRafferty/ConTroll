@@ -161,7 +161,7 @@ foreach ($cons as $id => $con) {
 $membershipQ = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, n.perid AS nperid, r.conid, m.*
 FROM reg r
-JOIN memLabel m ON r.memId = m.id
+JOIN memLabel m ON r.memId = m.id AND r.mldId = m.id
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON r.newperid = n.id AND n.perid IS NULL
 WHERE (r.status IN  ('unpaid', 'paid', 'plan', 'upgraded') OR r.status = NULL)

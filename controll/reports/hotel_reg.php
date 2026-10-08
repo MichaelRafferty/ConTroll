@@ -34,7 +34,7 @@ SELECT DISTINCT TRIM(CONCAT_WS(' ', P.first_name, P.last_name)), REPLACE(CONCAT_
     , M.label, U.name, U.email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 LEFT OUTER JOIN user U ON (U.id=R.create_user)
 WHERE R.conid=?
 GROUP BY P.last_name, P.first_name

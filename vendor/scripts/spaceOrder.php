@@ -422,11 +422,11 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId, M.memAge,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId, R.mldId, M.memAge,
     M.shortname, M.ageShortName AS ageshortname, M.taxable, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
-JOIN memLabel M ON (M.id = R.memID)
+JOIN memLabel M ON (M.id = R.memID AND R.mldId = M.mdId)
 WHERE NP.transid=?;
 EOS;
 

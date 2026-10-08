@@ -22,7 +22,7 @@ WITH keycounts AS (
         CASE WHEN c.endDate > '2099-01-01' THEN null ELSE c.endDate END AS dispEnd,
         k.keycount
     FROM coupon c
-    LEFT OUTER JOIN memLabel m ON (c.memId = m.id)
+    LEFT OUTER JOIN memLabel m ON (c.memId = m.id AND m.startDate >= now() AND m.endDate < now())
     LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
     LEFT OUTER JOIN keycounts k ON (k.id = c.id)
     WHERE c.conid = ?

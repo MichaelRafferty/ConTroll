@@ -71,7 +71,7 @@ if ($cR !== false) {
     $cR->free();
 }
 $mQ = <<<EOS
-SELECT id, conid, label, memType, memCategory, memAge
+SELECT id, mdId, conid, label, memType, memCategory, memAge
 FROM memLabel
 WHERE price > 0 AND ((memCategory != 'yearahead' AND conid = ?) OR (memCategory = 'yearahead' AND conid = ?))
 ORDER BY conid, sort_order
@@ -85,7 +85,7 @@ if ($mR !== false) {
 
 // for coupons
 $limitSQL = <<<EOS
-SELECT id, label, price, enddate
+SELECT id, mdId, label, price, enddate
 FROM memLabel
 WHERE conid = ? AND price > 0 AND memCategory not in ('freebie', 'rollover', 'cancel', 'addon', 'add-on')
 ORDER BY label, enddate, price

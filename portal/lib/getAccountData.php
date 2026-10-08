@@ -15,7 +15,7 @@ WITH trans AS (
 	FROM transaction
 	WHERE perid = ?
 ), mems AS (
-    SELECT t.id, r.create_date, r.id as regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+    SELECT t.id, r.create_date, r.id as regid, r.memId, r.mldId, r.conid, r.status, r.price, r.paid, r.complete_trans,
         r.couponDiscount, r.perid, r.newperid, r.create_trans, r.planId,      
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.perid AS regPerid, r.newperid AS regNewperid,
@@ -105,7 +105,7 @@ WITH trans AS (
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
-    JOIN memLabel m ON m.id = r.memId
+    JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     LEFT OUTER JOIN perinfo pn ON pn.id = r.perid AND (pn.managedBy = ? OR pn.id = ?)
     LEFT OUTER JOIN newperson nn ON nn.id = r.newperid
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -115,7 +115,7 @@ WITH trans AS (
     JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
     UNION    
-    SELECT t.id, r.create_date, r.id as regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+    SELECT t.id, r.create_date, r.id as regid, r.memId, r.mldId, r.conid, r.status, r.price, r.paid, r.complete_trans,
         r.couponDiscount, r.perid, r.newperid, r.create_trans, r.planId,      
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.perid AS regPerid, r.newperid AS regNewperid,
@@ -142,7 +142,7 @@ WITH trans AS (
     LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
     LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
-    JOIN memLabel m ON m.id = r.memId
+    JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     JOIN newperson nn ON nn.id = r.newperid
     JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ? and nn.perid is null
@@ -156,7 +156,7 @@ EOS;
     } else {
         $membershipsQ = <<<EOS
 WITH mems AS (          
-    SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+    SELECT t.id, r.create_date, r.id AS regid, r.memId, r.mldId, r.conid, r.status, r.price, r.paid, r.complete_trans,
         r.couponDiscount, r.perid, r.newperid,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
         m.ageShortName AS ageshortname, m.shortname, p.first_name AS fname, p.managedBy, p.managedByNew,
@@ -167,7 +167,7 @@ WITH mems AS (
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
-    JOIN memLabel m ON m.id = r.memId
+    JOIN memLabel m ON m.id = r.memId AND m.mdId = r.mldId
     JOIN newperson p ON p.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.newperid = ? OR tp.newperid = ?) AND t.conid = ?
     )

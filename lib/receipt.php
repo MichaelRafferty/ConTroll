@@ -373,7 +373,7 @@ SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS
         ELSE ''
     END AS tablename
 FROM reg r
-JOIN memLabel m ON m.id = r.memId
+JOIN memLabel m ON m.id = r.memId AND R.mldId = m.mdId
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN coupon c ON c.id = r.coupon

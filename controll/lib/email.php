@@ -22,7 +22,7 @@ SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, P.bad
 FROM transaction AS T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId=R.mldId)
 JOIN payments Y ON (Y.transid=T.id)
 WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;
@@ -97,7 +97,7 @@ SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, P.bad
 FROM transaction T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId=R.mldId)
 JOIN payments Y ON (Y.transid=T.id)
 WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;

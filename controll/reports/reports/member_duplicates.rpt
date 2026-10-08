@@ -107,7 +107,7 @@
 [T005]
 	name=memLabel
 	alias=m1
-	join="m1.id = r1.memId"
+	join="m1.id = r1.memId AND m1.mdId=r1.mldId"
 [T006]
 	name=memCategories
 	alias=c1
@@ -119,7 +119,7 @@
 [T015]
 	name=memLabel
 	alias=m2
-	join="m2.id = r2.memId"
+	join="m2.id = r2.memId AND m2.mdId = r2.mldId"
 [T016]
 	name=memCategories
 	alias=c2

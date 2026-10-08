@@ -32,7 +32,7 @@ SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) a
     P.badge_name, P.badgeNameL2, P.email_addr, P.phone, P.active, P.banned, M.label
 FROM perinfo as P
 LEFT OUTER JOIN reg R ON (R.perid = P.id AND R.conid = ?)
-LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
+LEFT OUTER JOIN memLabel M ON (R.memId = M.id AND R.mldId = M.mdId)
 EOQ;
 
 $query .= " WHERE concat_ws(' ', first_name, middle_name, last_name) LIKE ? OR legalName LIKE ?;";

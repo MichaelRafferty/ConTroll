@@ -40,7 +40,7 @@ while ($memArray = $memList->fetch_assoc()) {
 $txnQ = <<<EOS
 SELECT DISTINCT M.label, Y.transid, Y.description, Y.cc_txn_id, Y.amount
 FROM memLabel M
-JOIN reg R ON (R.memId=M.id)
+JOIN reg R ON (R.memId=M.id AND R.mldId=M.mdId)
 JOIN payments Y ON (Y.transid=R.create_trans)
 WHERE M.id=?;
 EOS;
@@ -52,7 +52,7 @@ $badgeQ = <<<EOS
 SELECT R.create_trans, M.label, R.id, p.fullName AS name, P.email_addr, P.phone, P.address, P.addr_2, P.city, P.state, P.zip, P.country
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 WHERE R.create_trans=?;
 EOS;
 

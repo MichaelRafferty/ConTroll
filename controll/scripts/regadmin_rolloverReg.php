@@ -49,7 +49,7 @@ FROM reg r
 LEFT OUTER JOIN regActions h ON h.regid = r.id AND h.action = 'print'
 WHERE r.id = ?
 )
-SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, r.mldId m.label, m.memAge, m.memCategory, m.memType,
+SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, r.mldId, m.label, m.memAge, m.memCategory, m.memType,
                 m.glNum, r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name
 FROM reg r
 JOIN memListFull m ON (r.memId = m.id AND r.mldId = m.mdId)

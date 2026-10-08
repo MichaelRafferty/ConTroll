@@ -162,13 +162,13 @@
 [C001]
     name=datacur
     select="SELECT label, r.conid, count(*) as Count, ROUND(AVG(paid), 2) AS Average, ROUND(SUM(paid),2) AS Revenue"
-    tables="FROM reg r JOIN memLabel m ON r.memid = m.id"
+    tables="FROM reg r JOIN memLabel m ON r.memId = m.id AND r.mldId = m.mdId"
     where="WHERE r.status = 'paid' AND (r.price = 0 OR r.paid > 0) AND r.conid BETWEEN ? - 4 AND ? AND m.memCategory != 'yearahead'
     GROUP BY r.conid, label"
 [C002]
     name=dataya
     select="SELECT CONCAT('Year-Ahead', ' ', label) AS label, r.conid - 1, count(*) as Count, ROUND(AVG(paid), 2) AS Average, ROUND(SUM(paid),2) AS Revenue"
-    tables="FROM reg r JOIN memLabel m ON r.memid = m.id"
+    tables="FROM reg r JOIN memLabel m ON r.memId = m.i AND r.mldId = m.mdId"
     where="WHERE r.status = 'paid' AND (r.price = 0 OR r.paid > 0) AND r.conid BETWEEN ? - 3 AND ? + 1 AND m.memCategory = 'yearahead'
     GROUP BY r.conid, label"
 [C003]

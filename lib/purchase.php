@@ -15,13 +15,13 @@
         // membership information
         if ($planPayment > 0) {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
+SELECT m.id, m.mdId, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
 FROM memLabel m
 WHERE m.conid=? OR m.conid=?;
 EOQ;
         } else {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum, c.variablePrice
+SELECT m.id, mdId, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum, c.variablePrice
 FROM memLabel m
 JOIN memCategories c ON m.memCategory = c.memCategory
 WHERE m.conid=? OR m.conid=?;

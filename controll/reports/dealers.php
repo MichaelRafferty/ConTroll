@@ -30,7 +30,7 @@ SELECT CONCAT_WS(' ', P.first_name, P.last_name) AS name, M.label
 FROM badgeList B
 JOIN perinfo P ON (P.id=B.perid)
 LEFT OUTER JOIN reg R ON (R.perid = P.id)
-LEFT OUTER JOIN memLabel M ON (M.id=R.memId)
+LEFT OUTER JOIN memLabel M ON (M.id=R.memId AND M.mdId=R.mldId)
 WHERE B.conid = ? AND B.user_perid = ?;
 EOS;
 

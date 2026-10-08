@@ -148,7 +148,7 @@ $withClauseUnpaid
     SELECT r.id AS regid, create_trans as tid
     FROM perids p1
     JOIN reg r ON r.perid = p1.perid
-    JOIN memLabel m ON (r.memId = m.id)
+    JOIN memLabel m ON (r.memId = m.id AND m.mdId = r.mldId)
     WHERE (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
 )
 $fieldListM
@@ -156,7 +156,7 @@ FROM perids p1
 JOIN perinfo p ON (p.id = p1.perid)
 JOIN reg r1 ON (r1.perid = p.id)
 JOIN regids rs ON (r1.id = rs.regid)
-JOIN memLabel m ON (r1.memId = m.id)
+JOIN memLabel m ON (r1.memId = m.id AND m.mdId = r1.mldId)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
@@ -263,13 +263,13 @@ WITH regids AS (
     /* first reg ids for this create transaction as specified as a number */
     SELECT r.id AS regid, create_trans as tid
     FROM reg r
-    JOIN memLabel m ON (r.memId = m.id)
+    JOIN memLabel m ON (r.memId = m.id AND R.mldId = m.mdId)
     WHERE create_trans = ? AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r.status IN ('unpaid', 'paid', 'plan')
     /* then add in reg ids for this attach transaction */
     UNION SELECT regid, tid
     FROM regActions h
     JOIN reg r ON (r.id = h.regid)
-    JOIN memLabel m ON (r.memId = m.id)
+    JOIN memLabel m ON (r.memId = m.id AND m.mdId = r.mldId)
     WHERE tid = ? AND h.action = 'attach' AND (r.conid = ? OR (r.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) 
         AND r.status IN ('unpaid', 'paid', 'plan')
 )
@@ -295,7 +295,7 @@ FROM regids rs
 JOIN reg r ON (rs.regid = r.id)
 JOIN perinfo p ON (p.id = r.perid)
 JOIN reg r1 ON (r1.perid = r.perid)
-JOIN memLabel m ON (r1.memId = m.id)
+JOIN memLabel m ON (r1.memId = m.id AND m.mdId = r1.mldId)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
@@ -358,7 +358,7 @@ $managerWith, regids AS (
 FROM regids rs
 JOIN reg r1 ON (rs.regid = r1.id)
 JOIN perinfo p ON (p.id = r1.perid)
-JOIN memLabel m ON (r1.memId = m.id)
+JOIN memLabel m ON (r1.memId = m.id AND m.mdId = r1.mldId)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
@@ -455,7 +455,7 @@ $nameMatchWith, regids AS (
 FROM regids rs
 JOIN reg r1 ON (rs.regid = r1.id)
 JOIN perinfo p ON (p.id = r1.perid)
-JOIN memLabel m ON (r1.memId = m.id)
+JOIN memLabel m ON (r1.memId = m.id AND m.mdId = r1.mldId)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)

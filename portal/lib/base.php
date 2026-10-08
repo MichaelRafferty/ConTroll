@@ -441,11 +441,11 @@ EOS;
             }
            $memberships = [];
            $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN $ptable p ON p.id = r.$rfield
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
     AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
@@ -462,20 +462,20 @@ EOS;
            $allMemberships = [];
            if ($personType == 'p') {
                $mQ = <<<EOS
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 UNION
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
@@ -484,11 +484,11 @@ EOS;
                $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $pmId, $pmId, $conid, $conid + 1, $pmId));
            } else {
                $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
 WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?) AND n.perid IS NULL
@@ -509,11 +509,11 @@ EOS;
                    if ($personType == 'p') {
                        $managerId = $info['managedBy'];
                        $mQ = <<<EOS
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN perinfo p ON p.id = r.perid
 WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 EOS;
@@ -522,19 +522,19 @@ EOS;
                        $managerId = $info['managedBy'];
                        $managerIdNew = $info['managedByNew'];
                        $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
        IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN newperson n ON n.id = r.newperid
 WHERE r.conid IN (?, ?) AND (n.id = ?) AND n.perid IS NULL
 UNION
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.mldId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
        IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
-JOIN memListFull m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND R.mldId = m.mdId
 JOIN perinfo p ON p.id = r.perid
 WHERE r.conid IN (?, ?) AND (p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 ORDER BY create_date;

@@ -187,7 +187,7 @@ if (sizeof($cart) > 0) {
 SELECT r.id, r.perid, r.newperid, r.status, r.price, r.paid, r.couponDiscount, r.create_trans,
        m.price AS memPrice
 FROM reg r
-JOIN memList m ON m.id = r.memId
+JOIN memListFull m ON m.id = r.memId AND r.mldId = m.mdId
 WHERE r.id = ?
 EOS;
             $cR = dbSafeQuery($cQ, 'i', array($cartRow['id']));

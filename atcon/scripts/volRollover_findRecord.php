@@ -53,9 +53,9 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     END AS memCategory
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
-JOIN memLabel m ON (r.memId = m.id)
+JOIN memLabel m ON (r.memId = m.id AND r.mldId = m.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id AND rn.mldId = mn.id)
 WHERE p.id = ? AND r.status IN ('paid', 'unpaid', 'plan')
 ORDER BY r.id;
 EOS;
@@ -81,9 +81,9 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     END AS memCategory
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
-JOIN memLabel m ON (r.memId = m.id)
+JOIN memLabel m ON (r.memId = m.id AND r.mldId = m.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
-LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
+LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id AND rn.mldId = mn.id)
 WHERE r.status IN ('paid', 'unpaid', 'plan') AND (
     LOWER(p.fullName) LIKE ? OR LOWER(TRIM(p.badge_name)) LIKE ? OR LOWER(TRIM(p.badgeNameL2)) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name

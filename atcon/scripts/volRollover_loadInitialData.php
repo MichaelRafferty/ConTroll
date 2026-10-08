@@ -37,7 +37,7 @@ $response['user_id'] = getSessionVar('user');
 
 // get the memId and label for conid + 1, volunteer rollover
 $priceQ = <<<EOS
-SELECT id, label, shortname
+SELECT id, mdId, label, shortname
 FROM memLabel
 WHERE
     conid = ? AND LOWER(shortname) in ('volunteer','rollover-volunteer');
@@ -51,6 +51,7 @@ if ($r->num_rows != 1) {
 }
 $l = $r->fetch_assoc();
 $response['rollover_memId'] = $l['id'];
+$response['rollover_mdId'] = $l['mdId'];
 $response['rollover_label'] = $l['label'];
 $response['rollover_shortname'] = $l['shortname'];
 $r->free();

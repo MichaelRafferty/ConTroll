@@ -58,7 +58,7 @@ switch($_GET['method']) {
         $membershipsQ = <<<EOF
 SELECT R.status, M.memCategory, M.label, M.sort_order, COUNT(R.id) as cnt
 FROM reg R    
-	JOIN memList M ON (M.id=R.memId)    
+JOIN memList M ON (M.id=R.memId)    
 WHERE R.conid=?
 GROUP BY status, memCategory, sort_order, label
 ORDER BY CASE `status`
@@ -99,12 +99,12 @@ EOF;
 	$total = 0;
 
 	$yearaheadQ = <<<EOF
-SELECT R.conid, M.id, M.memCategory, M.shortname as label
+SELECT R.conid, M.id, M.memCategory, M.label
     , count(DISTINCT R.perid) as c 
 FROM reg R
-JOIN memLabel M on M.id=R.memId
+JOIN memList M on M.id=R.memId
 WHERE R.conid=? and M.memCategory in ('yearahead','rollover')
-GROUP BY R.conid, M.id, M.memCategory, M.shortname
+GROUP BY R.conid, M.id, M.memCategory, M.label
 order by M.id;
 EOF;
         $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
@@ -119,10 +119,10 @@ $con['paid_members'] = $currR['c'];
 
         $totalQ = <<<EOF
 SELECT R.conid, COUNT(DISTINCT R.perid) as total,
-        COUNT(DISTINCT CASE WHEN H.action='print' THEN R.perid END) as printed,         LOWER(M.memType) as memType, M.label
+        COUNT(DISTINCT CASE WHEN H.action='print' THEN R.perid END) as printed, LOWER(M.memType) as memType, M.label
 FROM reg R
-        JOIN memList M on M.id=R.memId
-    LEFT OUTER JOIN regActions H on H.regid=R.id
+JOIN memList M on M.id=R.memId
+LEFT OUTER JOIN regActions H on H.regid=R.id
 WHERE R.conid=?
 GROUP BY R.conid, M.memType, M.label
 ORDER BY M.label;
@@ -143,7 +143,7 @@ FROM (SELECT DISTINCT H.regid, H.tid, R.conid, M.memType, FROM_UNIXTIME(FLOOR(UN
 FROM regActions H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
-JOIN memLabel M ON (M.id=R.memId)
+JOIN memLabel M ON (M.id=R.memId AND M.mdId = R.mldId)
 WHERE R.conid=? AND H.action = 'print'
 GROUP BY R.perid, R.conid, M.memType, H.regid, H.tid
 ORDER By time, M.memType) s
@@ -202,7 +202,7 @@ EOF;
         $maxRegQ = <<<EOQ
 SELECT R.conid, COUNT(R.id) cnt_all, COUNT(CASE WHEN paid>0 THEN R.id ELSE null END) as cnt_paid
 FROM reg R
-	JOIN conlist C on R.conid=C.id
+JOIN conlist C on R.conid=C.id
 WHERE R.conid>=? and status in ('paid', 'plan')
 GROUP BY R.conid
 ORDER BY R.conid;
@@ -228,7 +228,7 @@ SELECT R.conid, datediff(C.startdate, R.create_date) as diff, COUNT(R.id) cnt_al
            WHEN status='plan' and paid>0 THEN R.id 
            ELSE null END) as cnt_paid
 FROM reg R
-	JOIN conlist C on R.conid=C.id
+JOIN conlist C on R.conid=C.id
 WHERE R.conid>=?
 GROUP BY conid, diff
 ORDER BY conid, diff;

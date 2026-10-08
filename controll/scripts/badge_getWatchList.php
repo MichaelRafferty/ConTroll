@@ -44,7 +44,8 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ', ') AS memberships, SUM(IF(ra.action='print', 1, 0)) AS printCount, 
     COUNT(IF(m.memCategory = 'freebie', 1, NULL)) AS numFreebie, COUNT(IF(m.memCategory != 'freebie',1, NULL)) AS numNonFreebie,
-    MAX(IF(m.memCategory = 'freebie', r.id, -1)) AS freeRegId, MAX(IF(m.memCategory = 'freebie', r.memId, -1))  AS curFreeId
+    MAX(IF(m.memCategory = 'freebie', r.id, -1)) AS freeRegId, MAX(IF(m.memCategory = 'freebie', r.memId, -1))  AS curFreeId,
+    MAX(IF(m.memCategory = 'freebie', r.mldId, -1))  AS curFreeMldId
 FROM badgeList b
 JOIN perinfo p ON (p.id = b.perid)
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)

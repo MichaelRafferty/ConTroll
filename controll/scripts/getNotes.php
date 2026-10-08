@@ -43,7 +43,7 @@ SELECT m.label, CASE
     ELSE 'Unknown'
 END AS fullName
 FROM reg r
-JOIN memLabel m ON m.id = r.memid
+JOIN memLabel m ON m.id = r.memid AND r.mldId = m.mdId
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON n.id = r.newperid
 WHERE r.id = ?;

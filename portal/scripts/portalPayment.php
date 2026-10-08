@@ -378,7 +378,7 @@ EOS;
     $bQ = <<<EOS
 SELECT r.*, r.id as regid, m.conid AS mConid, m.memCategory, m.memType, m.memAge, m.label, m.price AS mPrice, m.startdate, m.enddate
 FROM reg r
-JOIN memList m ON (m.id = r.memId)
+JOIN memListFull m ON (m.id = r.memId AND m.mdId = r.mldId)
 WHERE planId = ? AND status = 'plan';
 EOS;
     $bR = dbSafeQuery($bQ, 'i', array($existingPlan['id']));
