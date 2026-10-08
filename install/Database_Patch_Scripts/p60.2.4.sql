@@ -283,6 +283,9 @@ SET memId = mlm.newMemId, mldId = mlm.newMdId;
 UPDATE coupon
 JOIN memListMap mlm ON coupon.memId = mlm.oldMemId
 SET memId = mlm.newMemId;
+UPDATE regHistory
+JOIN memListMap mlm ON regHistory.memId = mlm.oldMemId
+SET memId = mlm.newMemId, mldId = mlm.newMdId;
 
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
