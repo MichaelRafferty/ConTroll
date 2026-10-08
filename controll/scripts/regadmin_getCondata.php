@@ -69,7 +69,7 @@ EOS;
     $dateRanges = array();
     if ($result !== false) {
         while($row = $result->fetch_assoc()) {
-            array_push($dateRanges, $row);
+            $dateRanges[] = $row;
         }
     }
     $response['dateRanges'] = $dateRanges;
@@ -119,18 +119,37 @@ EOS;
     $memlist = array();
     if($result->num_rows >= 1) {
         while($memtype = $result->fetch_assoc()) {
-            array_push($memlist, $memtype);
+            $memlist[] = $memtype;
         }
         $response['memlist'] = $memlist;
     } else {
         $response['memlist'] = null;
     }
 
+    // now we need to also add the subtable memListDates
+    $memSQL = <<<EOS
+SELECT mld.*, mld.id AS idKey
+FROM memList m
+JOIN memCategories c ON m.memCategory = c.memCategory
+JOIN memListDates mld ON (mld.memId = m.id)
+WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
+ORDER BY mld.memId, mld.startdate, mld.enddate
+EOS;
+    $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));
+    $memlist = array();
+    while($memtype = $result->fetch_assoc()) {
+        if (!array_key_exists($memtype['memId'], $memlist))
+            $memlist[$memtype['memId']] = array();
+        $memlist[$memtype['memId']][] = $memtype;
+    }
+    $response['memListDates'] = $memlist;
+
+    // now all the filter tables
     $result = dbQuery("SELECT memType FROM memTypes WHERE active = 'Y' ORDER BY sortorder;");
     $memTypes = array();
     if($result->num_rows >= 1) {
         while($memtype = $result->fetch_assoc()) {
-            array_push($memTypes, $memtype['memType']);
+            $memTypes[] = $memtype['memType'];
         }
         $response['memTypes'] = $memTypes;
     } else {
@@ -141,7 +160,7 @@ EOS;
     $memCats = array();
     if($result->num_rows >= 1) {
         while($memcat = $result->fetch_assoc()) {
-            array_push($memCats, $memcat['memCategory']);
+            $memCats[] = $memcat['memCategory'];
         }
         $response['memCats'] = $memCats;
     } else {
@@ -152,7 +171,7 @@ EOS;
     $ageTypes = array();
     if($result->num_rows >= 1) {
         while($agetype = $result->fetch_assoc()) {
-            array_push($ageTypes, $agetype['ageType']);
+            $ageTypes[] = $agetype['ageType'];
         }
         $response['ageTypes'] = $ageTypes;
     } else {
@@ -166,7 +185,7 @@ EOS;
 
         if ($result->num_rows >= 1) {
             while ($yaAgeType = $result->fetch_assoc()) {
-                array_push($yaAgeTypes, $yaAgeType['ageType']);
+                $yaAgeTypes[] = $yaAgeType['ageType'];
             }
             $response['yaAgeTypes'] = $yaAgeTypes;
         } else {
