@@ -215,17 +215,16 @@ EOS;
         }
 
         $addSQL = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,cartDesc,price,startdate,enddate,atcon,online,rptGrouping,glNum,badgeLabel)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,cartDesc,atcon,online,rptGrouping,badgeLabel)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $addtypes = 'iissssssssssssss';
+        $addtypes = 'iissssssssss';
         $updSQL = <<<EOS
 UPDATE memList
-SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?, cartDesc = ?, price = ?,startdate = ?,enddate = ?,
-    atcon = ?,online = ?, rptGrouping = ?, glNum = ?, badgeLabel = ?
+SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?, cartDesc = ?, atcon = ?,online = ?, rptGrouping = ?, badgeLabel = ?
 WHERE id = ?
 EOS;
-        $updtypes = 'issssssssssssssi';
+        $updtypes = 'issssssssssi';
 
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
@@ -259,18 +258,16 @@ EOS;
                 $row['shortname'] = substr($row['shortname'], 0, 64);
             if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'], $rptGrouping,
-                    $glNum,IFNULL($row['badgeLabel'],''));
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['atcon'],$row['online'],
+                    $rptGrouping,IFNULL($row['badgeLabel'],''));
                 //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
                 if ($newid)
                     $inserted++;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$rptGrouping,
-                    $glNum,IFNULL($row['badgeLabel'],''),$row['id']);
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['atcon'],$row['online'],
+                    $rptGrouping,IFNULL($row['badgeLabel'],''),$row['id']);
                 //labeled_error_log("regadmin_updateCondata?update row: /$updSQL/, types = '$updtypes', values paramarray:", $paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
             }

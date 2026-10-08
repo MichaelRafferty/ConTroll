@@ -1155,6 +1155,9 @@ class consetup {
         }
         this.#memlist_savebtn.innerHTML = "Save Changes";
 
+        let message = '';
+        if (data['success'])
+            message = data['success'];
         clear_message();
         clearError();
         let script = "scripts/regadmin_getCondata.php";
@@ -1166,8 +1169,12 @@ class consetup {
                 checkRefresh(data);
                 if (data['year'] == 'current') {
                     current.draw_memlist(data['year'], data, textStatus, jhXHR);
+                    if (message != '')
+                        show_message(message, 'success');
                 } else {
                     next.draw_memlist(data['year'], data, textStatus, jhXHR);
+                    if (message != '')
+                        show_message(message, 'success');
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
