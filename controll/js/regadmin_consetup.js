@@ -76,8 +76,8 @@ class consetup {
     // memListDates items
     #memListDates = null;
     #nicknameSelectOptions = null;
-    #nicknameData = null;
-    #nicknameDataIdx = null;
+    #nickNameData = null;
+    #nickNameDataIdx = null;
     #deleteIcon = String.fromCodePoint(parseInt("1F5D1", 16));
     #deletedIcon = '<span style="color:red;"><b>Del</b></span>';
 
@@ -637,11 +637,16 @@ class consetup {
             ' onclick="' + year + '.editSeries(' + index + ');">Edit</button>';
     }
 
+    // build the edit price break series modal and display it
     editSeries(index) {
         let row = this.#memtable.getRow(index);
         this.#editDataCurrentRow = row.getData();
         this.#editDataCurrentMemId = this.#editDataCurrentRow.id;
-        this.#editData = this.#memListDates[this.#editDataCurrentMemId];
+        if (this.#memListDates.hasOwnProperty(this.#editDataCurrentMemId))
+            this.#editData = this.#memListDates[this.#editDataCurrentMemId];
+        else
+            this.#editData = [];
+        document.getElementById('createSeriesBtn').hidden = this.#editData.length > 0;
 
         // populate the form with the master row (the one with the edit select
         let seriesName = this.#editDataCurrentRow.conid + '/' + this.#editDataCurrentRow.memCategory + '/' +
@@ -740,16 +745,15 @@ class consetup {
         // build the select list for the time series (do it every time because they could have edited it before here
         this.#nicknameSelectOptions = '<option value="">Custom</option>\n';
         if (this.#datetable != null) {
-            this.#nicknameData = this.#datetable.getData();
-            this.#nicknameDataIdx = {};
-            for (let index = 0; index < this.#nicknameData.length; index++) {
-                let nickName = this.#nicknameData[index].nickName;
-                this.#nicknameDataIdx[nickName] = this.#nicknameData[index];
+            this.#nickNameData = this.#datetable.getData();
+            this.#nickNameDataIdx = {};
+            for (let index = 0; index < this.#nickNameData.length; index++) {
+                let nickName = this.#nickNameData[index].nickName;
+                this.#nickNameDataIdx[nickName] = this.#nickNameData[index];
                 this.#nicknameSelectOptions += '<option value="' + nickName + '">' + nickName + '</option>\n';
             }
         }
         // now fill in the time series from the data
-        // fill in the bottom rows from the edit array
         for (let index = 0; index < this.#editData.length; index++) {
             let row = this.#editData[index];
             document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
@@ -785,7 +789,23 @@ class consetup {
                 document.getElementById('EMLTS' + index + '_glNum').value = '';
             }
         }
+    }
 
+    // Create a price break series of starter rows if the list is empty
+    createNewSeries() {
+        if (this.#nickNameData != null) {
+            for (let index = 0; index < this.#nickNameData.length; index++) {
+                let row = this.#nickNameData[index];
+                document.getElementById('EMLTS' + index + '_ID').innerText = 'new';
+                document.getElementById('EMLTS' + index + '_USES').innerText = this.#deleteIcon;
+                document.getElementById('EMLTS' + index + '_NickName').value = row.nickName;
+                document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
+                document.getElementById('EMLTS' + index + '_End').value = row.enddate;
+                document.getElementById('EMLTS' + index + '_to_delete').value = 0;
+            }
+        }
+
+        document.getElementById('createSeriesBtn').hidden = true;
     }
 
     // repopulate the dates if nick name is changed
@@ -795,7 +815,7 @@ class consetup {
             return; // do nothing if the select list is custom, as this means leave it alone as a custom date range
 
         // get the date range
-        let row = this.#nicknameDataIdx[newName];
+        let row = this.#nickNameDataIdx[newName];
         if (row != null) {
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -993,14 +1013,13 @@ class consetup {
             id: -99999,
             conid: this.#conid,
             shortname: 'new-row',
-            price: 0,
+            priceRanges: '',
             atcon: 'N',
             online: 'N',
             sortorder: 0,
             uses: 0,
             label: '',
             notes: '',
-            glNum: '',
             badgeLabel: '',
             catBadgeLabel: '',
         }, false).then(function (row) {
@@ -1009,7 +1028,7 @@ class consetup {
                     setCellChanged(row.getCell("id"));
                     setCellChanged(row.getCell("conid"));
                     setCellChanged(row.getCell("shortname"));
-                    setCellChanged(row.getCell("price"));
+                    setCellChanged(row.getCell("priceRanges"));
                     setCellChanged(row.getCell("atcon"));
                     setCellChanged(row.getCell("online"));
                     _this.checkMemlistUndoRedo();
@@ -1018,7 +1037,7 @@ class consetup {
                 setCellChanged(row.getCell("id"));
                 setCellChanged(row.getCell("conid"));
                 setCellChanged(row.getCell("shortname"));
-                setCellChanged(row.getCell("price"));
+                setCellChanged(row.getCell("priceRanges"));
                 setCellChanged(row.getCell("atcon"));
                 setCellChanged(row.getCell("online"));
                 _this.checkMemlistUndoRedo();
@@ -1878,4 +1897,11 @@ function memListModalMarkDirty(state) {
         return next.memListModalMarkDirty(state);
 
     current.memListModalMarkDirty(state);
+}
+
+function createNewSeries() {
+    if (activeConSetup == 'next')
+        return next.createNewSeries();
+
+    current.createNewSeries();
 }

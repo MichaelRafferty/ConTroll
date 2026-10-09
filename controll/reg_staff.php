@@ -252,9 +252,13 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row mt-4'>
                         <div class='col-sm-auto'><h4>Time Series Data</h4></div>
+                        <div class='col-sm-auto' id="createSeriesBtn"><button class='btn btn-primary btn-sm' type='button' onclick="createNewSeries();">
+                                Create Default Series from Price Break Date Ranges
+                            </button>
+                        </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1" style='text-align: center;'>Del</div>
+                        <div class="col-sm-1" style='text-align: right;'>Del</div>
                         <div class="col-sm-1" style='text-align: right;'>ID</div>
                         <div class="col-sm-1" style='text-align: right;'>Price</div>
                         <div class="col-sm-2">Nick Name</div>
