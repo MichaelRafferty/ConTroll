@@ -736,6 +736,7 @@ class consetup {
                 uses = "Delete";
             }
             document.getElementById('EMLTS' + index + '_USES').innerHTML = uses;
+            document.getElementById('EMLTS' + index + '_NickName').value = row.nickName;
             document.getElementById('EMLTS' + index + '_Price').value = row.price;
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -747,7 +748,8 @@ class consetup {
         // clear the remaining bottom rows
         for (let index = this.#editData.length; index < 10; index++) {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
-            document.getElementById('EMLTS' + index + '_USES').value = '';
+            document.getElementById('EMLTS' + index + '_USES').innerHTML = '';
+            document.getElementById('EMLTS' + index + '_NickName').value = '';
             document.getElementById('EMLTS' + index + '_Price').value = '';
             document.getElementById('EMLTS' + index + '_Start').value = '';
             document.getElementById('EMLTS' + index + '_End').value = '';
@@ -1491,13 +1493,14 @@ class consetup {
             if (shortname.substring(0, 8) != 'Bundle: ')
                 shortname = 'Bundle: ' + shortname.substring(0, 64-8);
         }
-        // recompute the price for each row in the time series
+        // save back each row in the time series
         let rowListDates = [];
         for (let row = 0; row < 10; row++) {
             if (document.getElementById('EMLTS' + row + '_Price').value != '' ||
                 document.getElementById('EMLTS' + row + '_Start').value != '' ||
-                document.getElementById('EMLTS' + row + '_End').value != '') {
-
+                document.getElementById('EMLTS' + row + '_End').value != '' ||
+                document.getElementById('EMLTS' + row + '_ID').innerHTML != ''
+            ) {
                 // build the row
                 let datesRow = {};
 
