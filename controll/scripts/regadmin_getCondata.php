@@ -80,7 +80,7 @@ if ($type == 'all' || $type == 'memlist') {
     // first the memlist proper
     $memSQL = <<<EOS
 WITH priceGroups AS (
-    SELECT memId, startdate, CONCAT(price, ': ', startdate) AS period
+    SELECT memId, startdate, CONCAT(price, ': ', startdate, ' / ', id) AS period
     FROM memListDates
 ), mems AS (  
 SELECT m.id, m.id AS memlistkey,

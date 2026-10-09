@@ -281,9 +281,20 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 // priceListHeaderFilter - loop over all price filter lines and check each date
 function priceListHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     let priceRanges = rowValue.split("\n");
+    let option = headerValue.substring(0,1);
+    let hv = headerValue.substring(1);
+    let intermediate;
     for (let priceRange of priceRanges) {
-        let [price, date] = priceRange.split(': ');
-        let intermediate = dateStringHeaderFilter(headerValue, date, rowData, filterParams);
+        let [price, datepart] = priceRange.split(': ');
+        if (option == 'p') {
+            intermediate = numberHeaderFilter(hv, price, rowData, filterParams);
+        } else {
+            let [date, mldId] = datepart.split(' / ');
+            if (option == 'm')
+                intermediate = numberHeaderFilter(hv, mldId, rowData, filterParams);
+            else
+                intermediate = dateStringHeaderFilter(headerValue, date, rowData, filterParams);
+        }
         if (intermediate)
             return true;
     }

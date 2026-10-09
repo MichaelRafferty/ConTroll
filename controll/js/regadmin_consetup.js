@@ -511,7 +511,7 @@ class consetup {
                 },
                 {title: "Label", field: "label", visible: false},
                 {
-                    title: "Prices", field: "priceRanges", width: 230, formatter: "textarea",
+                    title: "Price Breaks", field: "priceRanges", width: 250, formatter: "textarea",
                     headerFilter: "input", headerFilterFunc: priceListHeaderFilter, headerFilterFuncParams: {field: 'priceRanges'},
 
                 },
@@ -529,7 +529,7 @@ class consetup {
                     headerFilter: true, formatter: "textarea",
                 },
                 {
-                    title: "Cart Desc", field: "cartDesc", width: 300,
+                    title: "Cart Desc", field: "cartDesc", width: 250,
                     headerFilter: true, formatter: "html",
                 },
                 {
