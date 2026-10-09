@@ -12,8 +12,16 @@ While number fields generally support:
 |  =   | equal to                                    |
 |      | no operation is the same as =,  or equal to |
 <br/>
-Start date and end date also support additional filtering shortcuts.
+Price Breaks, Start Date and End Date also support additional filtering shortcuts.
 
+For PriceBreaks: 
+* If the filter string starts with a p, it follows the number search above for the price portion of the price break.
+* If the filter string starts with an m, it follows the number search above for the Membership List Date Id portion of the price break (the part after the /)
+* Otherwise it performs a date string search as described below on the date portion of the price break (the part between the : and the /).
+
+Note: if any line of the price break matches the filter, the entire row is shown.
+
+## Date Filtering Options
 All of the filters for date strings support two methods.
 If a comparision operator character is not provided it treats the filter as if the 
 date string includes the text string typed in the filter field.
