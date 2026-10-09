@@ -108,7 +108,7 @@ WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memC
 GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,shortname,label,m.cartDesc,
 m.notes,m.atcon,m.online,m.rptGrouping,m.badgeLabel,catBadgeLabel
 )
-SELECT m.*,GROUP_CONCAT(pg.period ORDER BY pg.startdate ASC SEPARATOR '\n') AS priceRanges
+SELECT m.*,GROUP_CONCAT(pg.period ORDER BY pg.startdate ASC SEPARATOR '<br/>') AS priceRanges
 FROM mems m
 LEFT OUTER JOIN priceGroups pg ON (pg.memId = m.id)
 GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,shortname,label,m.cartDesc,

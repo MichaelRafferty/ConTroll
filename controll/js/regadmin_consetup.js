@@ -516,7 +516,7 @@ class consetup {
                 },
                 {title: "Label", field: "label", visible: false},
                 {
-                    title: "Price Breaks", field: "priceRanges", width: 250, formatter: "textarea",
+                    title: "Price Breaks", field: "priceRanges", width: 250, formatter: "html",
                     headerFilter: "input", headerFilterFunc: priceListHeaderFilter, headerFilterFuncParams: {field: 'priceRanges'},
 
                 },
@@ -755,7 +755,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
             let uses = row.uses;
             if (uses == 0) {
-                uses = this.#deleteIcon;
+                uses = row.to_delete == 1 ? this.#deletedIcon : this.#deleteIcon;
             }
             document.getElementById('EMLTS' + index + '_USES').innerHTML = uses;
             document.getElementById('EMLTS' + index + '_NickNameSel').innerHTML = "<select id='EMLTS" + index + "_NickName' " +
@@ -1595,9 +1595,12 @@ class consetup {
                 datesRow.enddate = toDBdate(document.getElementById('EMLTS' + row + '_End').value);
                 datesRow.glNum = document.getElementById('EMLTS' + row + '_glNum').value;
                 datesRow.nickName = document.getElementById('EMLTS' + row + '_NickName').value;
-                datesRow.uses = document.getElementById('EMLTS' + row + '_USES').innerHTML;
-                if (datesRow.uses == this.#deleteIcon)
+                let uses = document.getElementById('EMLTS' + row + '_USES').innerHTML;
+                datesRow.to_delete = uses == this.#deletedIcon ? 1 : 0;
+                if (uses == this.#deleteIcon || uses == this.#deletedIcon)
                     datesRow.uses = 0;
+                else
+                    datesRow.uses = uses;
 
                 if (bundle) {
                     // recompute the price for each row in the the bundle.
@@ -1638,8 +1641,12 @@ class consetup {
         for (let i = 0; i < rowListDates.length; i++) {
             let row = rowListDates[i];
             if (priceRanges != '')
-                priceRanges += '\n';
+                priceRanges += '<br/>';
+            if (row.to_delete == 1)
+                priceRanges += '<s>'
             priceRanges += row.price + ': ' + row.startdate;
+            if (row.to_delete == 1)
+                priceRanges += '</s>';
         }
         this.#editDataCurrentRow.priceRanges = priceRanges;
     }
