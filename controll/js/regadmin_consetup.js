@@ -779,7 +779,7 @@ class consetup {
 
     }
 
-    // repopulate the date if nick name is changed
+    // repopulate the dates if nick name is changed
     nickNameChanged(index) {
         let newName = document.getElementById('EMLTS' + index + '_NickName').value;
         if (newName == '')
@@ -791,6 +791,13 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
         }
+        memListModalDirty = true;
+    }
+
+    dateChanged(index) {
+        memListModalDirty = true;
+        // changing the date manually will clear the nickname
+        document.getElementById('EMLTS' + index + '_NickName').value = '';
     }
 
     open() {
@@ -1903,3 +1910,11 @@ function nickNameChanged(index) {
 
     current.nickNameChanged(index);
 }
+
+function dateChanged(index) {
+    if (activeConSetup == 'next')
+        return next.dateChanged(index);
+
+    current.dateChanged(index);
+}
+

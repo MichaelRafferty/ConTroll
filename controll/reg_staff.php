@@ -277,15 +277,15 @@ draw_fileManagerModals($authToken);
                                    style="text-align: right; width: 6em;" min='0' onchange="memListModalDirty = true;"/>
                         </div>
                          <div class='col-sm-2' id="EMLTS<?php echo $i;?>_NickNameSel">
-                            <select id='EMLTS<?php echo $i;?>_NickName' onchange='nickNameChanged($i)'>
+                            <select id='EMLTS<?php echo $i;?>_NickName' onchange='nickNameChanged(<?php echo $i;?>)'>
                                 <option value="">Custom</option>
                             </select>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='memListModalDirty = true;'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='dateChanged(<?php echo $i;?>) = true;'/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange='memListModalDirty = true;'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange='dateChanged(<?php echo $i;?>) = true;'/>
                         </div>
                         <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-2'>
