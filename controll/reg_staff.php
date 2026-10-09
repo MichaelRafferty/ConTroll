@@ -282,10 +282,10 @@ draw_fileManagerModals($authToken);
                             </select>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='dateChanged(<?php echo $i;?>) = true;'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='dateChanged(<?php echo $i;?>);'/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange='dateChanged(<?php echo $i;?>) = true;'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange='dateChanged(<?php echo $i;?>);'/>
                         </div>
                         <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-2'>
