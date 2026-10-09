@@ -78,6 +78,8 @@ class consetup {
     #nicknameSelectOptions = null;
     #nicknameData = null;
     #nicknameDataIdx = null;
+    #deleteIcon = String.fromCodePoint(parseInt("1F5D1", 16));
+    #deletedIcon = '<span style="color:red;"><b>Del</b></span>';
 
     // constants
     #enumYN = ['Y', 'N'];
@@ -436,16 +438,16 @@ class consetup {
 
         if (this.#memtable == null) {
             // build the select lists
-            this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
+            this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalMarkDirty(true);'>";
             for (let index = 0; index < this.#catListData.length; index++) {
                 let cat = this.#catListData[index];
                 this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
             }
-            this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalMarkDirty(true);'>\n" +
                 this.#ageListOptions + "\n</select>";
-            this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalMarkDirty(true);'>\n" +
                 this.#yaAgeListOptions + "\n</select>";
-            this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
+            this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalMarkDirty(true);'>";
             for (let index = 0; index < this.#typeListData.length; index++) {
                 let type = this.#typeListData[index];
                 this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
@@ -651,7 +653,7 @@ class consetup {
         document.getElementById('editMemListAge').innerHTML =
             this.#editDataCurrentRow.conid == this.#conid ? this.#ageListSelect : this.#yaAgeListSelect;
         this.#memListMasterRow= this.#editDataCurrentRow.id;
-        memListModalDirty = false;
+        this.memListModalMarkDirty(false, true);
         this.#memListModal.show();
 
         let bundle = false;
@@ -725,7 +727,12 @@ class consetup {
                 link_default_target: '_blank',
                 content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
                 placeholder: 'Edit the cart item description here...',
-                auto_focus: 'editMemListCartDesc'
+                auto_focus: 'editMemListCartDesc',
+                setup: function(ed) {
+                    ed.on('change', function(e) {
+                        memListModalMarkDirty(true);
+                    });
+                }
             });
             tinyMCEInit = true;
         }
@@ -748,12 +755,13 @@ class consetup {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
             let uses = row.uses;
             if (uses == 0) {
-                uses = "Delete";
+                uses = this.#deleteIcon;
             }
             document.getElementById('EMLTS' + index + '_USES').innerHTML = uses;
             document.getElementById('EMLTS' + index + '_NickNameSel').innerHTML = "<select id='EMLTS" + index + "_NickName' " +
                 "onchange='nickNameChanged(" + index + ")'>\n" + this.#nicknameSelectOptions + "</select>\n";
             document.getElementById('EMLTS' + index + '_NickName').value = row.nickName == null ? '' : row.nickName;
+            document.getElementById('EMLTS' + index + '_to_delete').value = row.to_delete;
             document.getElementById('EMLTS' + index + '_Price').value = row.price;
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -769,6 +777,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_NickNameSel').innerHTML = "<select id='EMLTS" + index + "_NickName' " +
                 "onchange='nickNameChanged(" + index + ")'>\n" + this.#nicknameSelectOptions + "</select>\n";
             document.getElementById('EMLTS' + index + '_NickName').value = '';
+            document.getElementById('EMLTS' + index + '_to_delete').value = 0;
             document.getElementById('EMLTS' + index + '_Price').value = '';
             document.getElementById('EMLTS' + index + '_Start').value = '';
             document.getElementById('EMLTS' + index + '_End').value = '';
@@ -791,13 +800,47 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
         }
-        memListModalDirty = true;
+        memListModalMarkDirty(true);
     }
 
+    // clear the nick name if the a date is changed
     dateChanged(index) {
-        memListModalDirty = true;
+        memListModalMarkDirty(true);
         // changing the date manually will clear the nickname
         document.getElementById('EMLTS' + index + '_NickName').value = '';
+    }
+
+    // set the modal changed and change the save button
+    memListModalMarkDirty(dirty, disable = false) {
+        memListModalDirty = dirty;
+        let saveButton = document.getElementById('editMemListSaveBtn');
+        if (dirty) {
+            saveButton.innerHTML = '*Save Changes';
+            saveButton.disabled = false;
+        } else {
+            saveButton.innerHTML = 'Save Changes';
+            if (disable)
+                saveButton.disabled = true;
+        }
+    }
+
+    // mark the row deleted for saving
+    deleteRowChanged(index) {
+        let usesElement = document.getElementById('EMLTS' + index + '_USES');
+        let todeleteElement = document.getElementById('EMLTS' + index + '_to_delete');
+        let uses = usesElement.innerHTML;
+        if (uses != this.#deleteIcon && uses != this.#deletedIcon)
+            return; // not deletable, just return
+
+        if (uses == this.#deleteIcon) {
+            // mark it deleted
+            usesElement.innerHTML = this.#deletedIcon;
+            todeleteElement.value = 1;
+        } else {
+            usesElement.innerHTML = this.#deleteIcon;
+            todeleteElement.value = 0;
+        }
+        memListModalMarkDirty(true);
     }
 
     open() {
@@ -1518,7 +1561,7 @@ class consetup {
     // placeholder for updating the contents of the entire bundle set for all time series
     bundleContentsChanged(id) {
         document.getElementById('EMLTS' + id + '_contains').value = document.getElementById('editMemListBundleContains').value;
-        memListModalDirty = true;
+        memListModalMarkDirty(true);
     }
 
     // save the time series data back to the edit data array
@@ -1553,7 +1596,7 @@ class consetup {
                 datesRow.glNum = document.getElementById('EMLTS' + row + '_glNum').value;
                 datesRow.nickName = document.getElementById('EMLTS' + row + '_NickName').value;
                 datesRow.uses = document.getElementById('EMLTS' + row + '_USES').innerHTML;
-                if (datesRow.uses == 'Delete')
+                if (datesRow.uses == this.#deleteIcon)
                     datesRow.uses = 0;
 
                 if (bundle) {
@@ -1600,108 +1643,6 @@ class consetup {
         }
         this.#editDataCurrentRow.priceRanges = priceRanges;
     }
-
-    /*
-    reSortTimeSeries(saveFirst = false) {
-        if (saveFirst)
-            this.saveTimeSeries();
-
-        // now sort the rows into date order and display them
-        this.#editData.sort(function (a, b) {
-            if (a.startdate < b.startdate)
-                return -1;
-
-            if (a.enddate < b.enddate)
-                return -1;
-
-            if (a.startdate > b.startdate)
-                return 1;
-
-            if (a.enddate > b.enddate)
-                return 1;
-
-            if (a.price < b.price)
-                return -1;
-
-            if (a.price > b.price)
-                return 1;
-
-            return a.sort_order - b.sort_order;
-        });
-
-        let bundle = false;
-        let bundleList = '';
-        if (this.#memListBundleContains) {
-            if (this.#bundlesEnabled) {
-                bundle = document.getElementById('editMemListBundle').value == 'Y';
-                bundleList = this.#memListBundleContains.value;
-            }
-        }
-
-        // fill in the bottom rows from the edit array
-        for (let index = 0; index < this.#editData.length; index++) {
-            let row = this.#editData[index];
-
-            let label = row.label;
-            let notes = row.notes;
-            let rowBundleList = '';
-            let price = row.price;
-
-            if (bundle) {
-                // prep the fields for the bundle
-                let sep = notes.indexOf('/');
-                if (sep > 0) {
-                    rowBundleList = notes.substring(0, sep);
-                    notes = notes.substring(sep + 1);
-                } else {
-                    let contains = this.computeBundleList(bundleList, row.startdate, row.enddate);
-                    rowBundleList = contains[0];
-                    price = contains[1];
-
-                }
-                document.getElementById('EMLTS' + index + '_contains').value = rowBundleList;
-                document.getElementById('EMLTS' + index + '_Price').value = price;
-            }
-
-            if (this.#memListMasterRow == row.id) {
-                editListMasterRow = index;
-            }
-
-            document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
-            document.getElementById('EMLTS' + index + '_Sort').value = row.sort_order;
-            document.getElementById('EMLTS' + index + '_Price').value = row.price;
-            document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
-            document.getElementById('EMLTS' + index + '_End').value = row.enddate;
-            document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
-            document.getElementById('EMLTS' + index + '_Online').value = row.online;
-            document.getElementById('EMLTS' + index + '_rptGrouping').value = row.rptGrouping;
-            if (config.useGL == 1) {
-                document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
-            }
-            document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
-        }
-
-        // clear the remaining bottom rows
-        for (let index = this.#editData.length; index < 10; index++) {
-            document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
-            document.getElementById('EMLTS' + index + '_Sort').value = '';
-            document.getElementById('EMLTS' + index + '_Price').value = '';
-            document.getElementById('EMLTS' + index + '_Start').value = '';
-            document.getElementById('EMLTS' + index + '_End').value = '';
-            document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
-            document.getElementById('EMLTS' + index + '_Online').value = 'N';
-            document.getElementById('EMLTS' + index + '_rptGrouping').value = '';
-            if (config.useGL == 1) {
-                document.getElementById('EMLTS' + index + '_glNum').value = '';
-            }
-            if (bundle) {
-                document.getElementById('EMLTS' + index + '_contains').value = '';
-            }
-        }
-
-        clear_message('result_message_editMemList');
-    }
-     */
 
     // compute a new bundle list for this row from the start and end dates
     computeBundleList(bundleList, startdate, enddate) {
@@ -1796,7 +1737,7 @@ class consetup {
                 return;
             }
 
-            memListModalDirty = false;
+            memListModalMarkDirty(false);
         }
         this.#memListModal.hide();
     }
@@ -1918,3 +1859,16 @@ function dateChanged(index) {
     current.dateChanged(index);
 }
 
+function deleteRowChanged(index) {
+    if (activeConSetup == 'next')
+        return next.deleteRowChanged(index);
+
+    current.deleteRowChanged(index);
+}
+
+function memListModalMarkDirty(state) {
+    if (activeConSetup == 'next')
+        return next.memListModalMarkDirty(state);
+
+    current.memListModalMarkDirty(state);
+}

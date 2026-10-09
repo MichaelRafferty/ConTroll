@@ -128,7 +128,7 @@ EOS;
 
     // now we need to also add the subtable memListDates
     $memSQL = <<<EOS
-SELECT mld.id, mld.id AS idKey, mld.memId, mld.glNum, mld.price, mld.startdate, mld.enddate, mld.nickName, count(r.mldId) as uses
+SELECT mld.id, mld.id AS idKey, mld.memId, mld.glNum, mld.price, mld.startdate, mld.enddate, mld.nickName, count(r.mldId) as uses, 0 AS to_delete
 FROM memList m
 JOIN memCategories c ON m.memCategory = c.memCategory
 JOIN memListDates mld ON (mld.memId = m.id)

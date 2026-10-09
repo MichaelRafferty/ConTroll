@@ -144,35 +144,35 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-2'><label for="editMemListLabel">Short Label:</label></div>
                                     <div class='col-sm-10'>
                                         <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
-                                               onchange='memListModalDirty = true;' size="64" maxlength="64" />
+                                               onchange='memListModalMarkDirty(true);' size="64" maxlength="64" />
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListRptGrouping">Rpt Grouping:</label></div>
                                     <div class='col-sm-10'>
                                         <input type='text' name='editMemListRptGrouping' id='editMemListRptGrouping' placeholder='Report Grouping'
-                                               onchange='rptGroupingChange(editListMasterRow);' size='64' maxlength='128'/>
+                                               onchange='memListModalMarkDirty(true);' size='64' maxlength='128'/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListCartDesc">Cart Description:</label></div>
                                     <div class='col-sm-10'>
                                         <textarea name='editMemListCartDesc' id='editMemListCartDesc' placeholder='Cart Description'
-                                                  cols='80' rows='5' onchange='memListModalDirty = true;'>
+                                                  cols='80' rows='5' onchange='memListModalMarkDirty(true);'>
                                         </textarea>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListAtcon">At-Con:</label></div>
                                     <div class='col-sm-auto'>
-                                        <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
+                                        <select name="editMemListAtcon" id="editMemListAtcon" onchange='memListModalMarkDirty(true);'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
                                     </div>
                                     <div class='col-sm-auto'><label for="editMemListOnline">OnLine:</label></div>
                                     <div class='col-sm-auto'>
-                                        <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
+                                        <select name='editMemListOnline' id='editMemListOnline' onchange="memListModalMarkDirty(true);">
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
@@ -182,7 +182,7 @@ draw_fileManagerModals($authToken);
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListBundle">Bundle:</label></div>
                                     <div class='col-sm-10'>
-                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged(editListMasterRow);'>
+                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged();'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
@@ -205,7 +205,7 @@ draw_fileManagerModals($authToken);
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="editMemListNotes">Notes:</label></div>
                                     <div class='col-sm-10'>
-                                        <textarea id="editMemListNotes" name="editMemListNotes" cols="80" rows="5" onchange="memListModalDirty = true;">
+                                        <textarea id="editMemListNotes" name="editMemListNotes" cols="80" rows="5" onchange="memListModalMarkDirty(true);">
                                         </textarea>
                                     </div>
                                 </div>
@@ -216,7 +216,7 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-auto'><label for="editMemListBadgeLabel">Override Badge Label:</label></div>
                                     <div class='col-sm-2'>
                                         <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
-                                               size='20' maxlength='16' onchange='badgeLabelChange(editListMasterRow);'/>
+                                               size='20' maxlength='16' onchange='memListModalMarkDirty(true);'/>
                                     </div>
                                 </div>
                             </div>
@@ -270,11 +270,12 @@ draw_fileManagerModals($authToken);
 ?>
                     <div class='row mt-1 pt-1 mb-0 pb-1' style="background-color: <?php echo $bgColor;?>">
                         <div class='col-sm-1' style='text-align: right;' id="EMLTS<?php echo $i; ?>_USES"
-                             onclick="tsUsesChange(<?php echo $i;?>)"></div>
+                             onclick="deleteRowChanged(<?php echo $i;?>)"></div>
                         <div class='col-sm-1' id="EMLTS<?php echo $i; ?>_ID" style='text-align: right;'></div>
                         <div class='col-sm-1'>
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
-                                   style="text-align: right; width: 6em;" min='0' onchange="memListModalDirty = true;"/>
+                                   style="text-align: right; width: 6em;" min='0' onchange="memListModalMarkDirty(true);"/>
+                            <input type='hidden' id='EMLTS<?php echo $i;?>_to_delete' value='0'/>
                         </div>
                          <div class='col-sm-2' id="EMLTS<?php echo $i;?>_NickNameSel">
                             <select id='EMLTS<?php echo $i;?>_NickName' onchange='nickNameChanged(<?php echo $i;?>)'>
@@ -289,7 +290,7 @@ draw_fileManagerModals($authToken);
                         </div>
                         <?php if ($config_vars['useGL'] == 1) { ?>
                         <div class='col-sm-2'>
-                            <select id='EMLTS<?php echo $i;?>_glNum' onchange='memListModalDirty = true;'>
+                            <select id='EMLTS<?php echo $i;?>_glNum' onchange='memListModalMarkDirty(true);'>
                                 <?php echo $glNumSelect; ?>
                             </select>
                         </div>
