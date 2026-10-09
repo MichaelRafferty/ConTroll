@@ -39,6 +39,7 @@ class consetup {
     #memlist_addrowbtn = null;
     #memlist_div = null;
     #memList = null;
+    #memListNewRowNumber = -99999;
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
@@ -1021,7 +1022,7 @@ class consetup {
 
         this.#memtable.clearFilter(true);
         this.#memtable.addRow({
-            id: -99999,
+            id: this.#memListNewRowNumber,
             conid: this.#conid,
             memCategory: '',
             memType: '',
@@ -1059,6 +1060,9 @@ class consetup {
                 _this.checkMemlistUndoRedo();
             }
         });
+        // now open the modal for this row... as it's useless until edited.
+        this.editSeries(this.#memListNewRowNumber);
+        this.#memListNewRowNumber++;
     };
 
     memlist_rowMoved(row) {
