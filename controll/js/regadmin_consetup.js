@@ -1,7 +1,6 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 var activeConSetup = 'none';
-var editListMasterRow = null;
 var memListModalDirty = false;
 var tinyMCEInit = false;
 var currencyFmt = null;
@@ -386,7 +385,6 @@ class consetup {
             this.#datetable.replaceData(data['dateRanges']);
             this.#daterange_dirty = false;
         } else {
-
             this.#datetable = new Tabulator('#' + this.#setup_type + '-daterange', {
                 maxHeight: "400px",
                 history: true,
@@ -900,10 +898,23 @@ class consetup {
             this.#contable.destroy();
             this.#contable = null;
         }
+        if (this.#datetable != null) {
+            this.#datetable.off("dataChanged");
+            this.#datetable.off("cellEdited");
+            this.#datetable.destroy();
+            this.#datetable = null;
+        }
+        if (this.#memListBundleTable != null) {
+            this.#memListBundleTable.off("dataChanged");
+            this.#memListBundleTable.off("cellEdited");
+            this.#memListBundleTable.destroy();
+            this.#memListBundleTable = null;
+        }
 
         this.#conlist_pane.innerHTML = '';
         this.#conlist_dirty = false;
         this.#memlist_dirty = false;
+        memListModalDirty = false;
     };
 
     // conlist functions
@@ -1012,16 +1023,21 @@ class consetup {
         this.#memtable.addRow({
             id: -99999,
             conid: this.#conid,
+            memCategory: '',
+            memType: '',
+            memAge: '',
             shortname: 'new-row',
             priceRanges: '',
             atcon: 'N',
             online: 'N',
-            sortorder: 0,
-            uses: 0,
-            label: '',
             notes: '',
+            cartDesc: '',
             badgeLabel: '',
             catBadgeLabel: '',
+            rptGrouping: '',
+            label: '',
+            uses: 0,
+            sortorder: 0,
         }, false).then(function (row) {
             if (_this.#memTablePagination) {
                 row.getTable().setPageToRow(row).then(function () {
@@ -1432,8 +1448,16 @@ class consetup {
         let curMemList = this.#memList;
         this.#nonBundleList = [];
         // convert the ISO datetimes to database format, for string compare
-        this.#rowStartDate = this.#editData[0].startdate;
-        this.#rowEndDate = this.#editData[this.editSeries.length - 1].enddate;
+        if (this.#editData.length == 0) {
+            this.saveTimeSeries();
+        }
+        if (this.#editData.length > 0) {
+            this.#rowStartDate = this.#editData[0].startdate;
+            this.#rowEndDate = this.#editData[this.#editData.length - 1].enddate;
+        } else {
+            this.#rowStartDate = '2100-01-01 00:00:00';
+            this.#rowEndDate = '2001-01-01 00:00:00';
+        }
         for (let row of curMemList) {
             let rowListData = this.#memListDates[row.id];
             let startok = false;
@@ -1565,7 +1589,7 @@ class consetup {
         //TODO recompute the price
         this.#memListPrice.value = price;
         this.closeBundleSel();
-        this.bundleContentsChanged(editListMasterRow);
+        emListModalMarkDirty(true);
     }
 
     // bundleChanged - the bundle flag changes from yes/no
@@ -1575,12 +1599,6 @@ class consetup {
             $('div[name="TScontains"]').show();
         else
             $('div[name="TScontains"]').hide();
-    }
-
-    // placeholder for updating the contents of the entire bundle set for all time series
-    bundleContentsChanged(id) {
-        document.getElementById('EMLTS' + id + '_contains').value = document.getElementById('editMemListBundleContains').value;
-        memListModalMarkDirty(true);
     }
 
     // save the time series data back to the edit data array
@@ -1622,6 +1640,7 @@ class consetup {
                     datesRow.uses = uses;
 
                 if (bundle) {
+                    //TODO
                     // recompute the price for each row in the the bundle.
                     /* need to rewrite
                     let price = 0;
@@ -1639,6 +1658,7 @@ class consetup {
                 rowListDates.push(datesRow);
             }
         }
+        this.#editData = rowListDates;
         this.#memListDates[this.#editDataCurrentMemId] = rowListDates;
         this.#editDataCurrentMemId = null;
         // now copy the main row data into editData
@@ -1827,13 +1847,6 @@ function bundleChanged(id) {
         next.setBundleSelbundleChanged(id);
     else
         current.bundleChanged(id);
-}
-
-function bundleContentsChanged(id) {
-    if (activeConSetup == 'next')
-        next.bundleContentsChanged(id);
-    else
-        current.bundleContentsChanged(id);
 }
 
 function applyBundleSel() {
