@@ -1455,18 +1455,37 @@ class consetup {
         if (this.#editData.length == 0) {
             this.saveTimeSeries();
         }
+        this.#rowStartDate = null;
+        this.#rowEndDate = null;
         if (this.#editData.length > 0) {
-            this.#rowStartDate = this.#editData[0].startdate;
-            this.#rowEndDate = this.#editData[this.#editData.length - 1].enddate;
-        } else {
+            // find first range not deleted
+            for (let i = 0; i < this.#editData.length; i++) {
+                let row = this.#editData[i];
+                if (row.to_delete == 0) {
+                    this.#rowStartDate = row.startdate;
+                    break;
+                }
+            }
+            // find last non deleted range for end date
+            for (let i = this.#editData.length - 1; i >= 0; i--) {
+                let row = this.#editData[i];
+                if (row.to_delete == 0) {
+                    this.#rowEndDate = row.startdate;
+                    break;
+                }
+            }
+        }
+        if (this.#rowStartDate == null) {
             this.#rowStartDate = '2100-01-01 00:00:00';
             this.#rowEndDate = '2001-01-01 00:00:00';
         }
         for (let row of curMemList) {
             let rowListData = this.#memListDates[row.id];
+            if (rowListData == undefined)
+                rowListData = [];
             let startok = false;
             let endok = false;
-            // if it's a bundle, and the periods overlap (mem start <= bund end and mem end > bundle start
+            // if it's a bundle, and the periods overlap (mem start <= bundle end and mem end > bundle start
             if (row.label.substring(0, 8) != 'Bundle: ') {
                 for (let i = 0; i < rowListData.length; i++) {
                     let rowdate = rowListData[i];
@@ -1591,7 +1610,7 @@ class consetup {
 
         containsField.value = val;
         //TODO recompute the price
-        this.#memListPrice.value = price;
+        //this.#memListPrice.value = price;
         this.closeBundleSel();
         emListModalMarkDirty(true);
     }
