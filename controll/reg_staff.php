@@ -276,8 +276,10 @@ draw_fileManagerModals($authToken);
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
                                    style="text-align: right; width: 6em;" min='0' onchange="memListModalDirty = true;"/>
                         </div>
-                        <div class='col-sm-2'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_NickName' len="16" maxlength="16" onchange='nicknameChanged($i)'/>
+                         <div class='col-sm-2' id="EMLTS<?php echo $i;?>_NickNameSel">
+                            <select id='EMLTS<?php echo $i;?>_NickName' onchange='nickNameChanged($i)'>
+                                <option value="">Custom</option>
+                            </select>
                         </div>
                         <div class='col-sm-2'>
                             <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange='memListModalDirty = true;'/>

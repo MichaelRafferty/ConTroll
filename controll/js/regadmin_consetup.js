@@ -75,6 +75,9 @@ class consetup {
     #memTablePagination = false;
     // memListDates items
     #memListDates = null;
+    #nicknameSelectOptions = null;
+    #nicknameData = null;
+    #nicknameDataIdx = null;
 
     // constants
     #enumYN = ['Y', 'N'];
@@ -208,7 +211,7 @@ class consetup {
     <div class="row">
         <div class="col-sm-5"><h5><strong>` + this.#setup_title + ` Convention Data:</strong></h5></div>
         <div class="col-sm-1"></div>
-        <div class="col-sm-6"><h5><strong>` + this.#setup_title + ` Convention Date Range Data:</strong></h5></div>
+        <div class="col-sm-6"><h5><strong>` + this.#setup_title + ` Convention Price Break Date Ranges:</strong></h5></div>
     </div>
     <div class="row">
         <div class="col-sm-5">
@@ -726,6 +729,18 @@ class consetup {
             });
             tinyMCEInit = true;
         }
+
+        // build the select list for the time series (do it every time because they could have edited it before here
+        this.#nicknameSelectOptions = '<option value="">Custom</option>\n';
+        if (this.#datetable != null) {
+            this.#nicknameData = this.#datetable.getData();
+            this.#nicknameDataIdx = {};
+            for (let index = 0; index < this.#nicknameData.length; index++) {
+                let nickName = this.#nicknameData[index].nickName;
+                this.#nicknameDataIdx[nickName] = this.#nicknameData[index];
+                this.#nicknameSelectOptions += '<option value="' + nickName + '">' + nickName + '</option>\n';
+            }
+        }
         // now fill in the time series from the data
         // fill in the bottom rows from the edit array
         for (let index = 0; index < this.#editData.length; index++) {
@@ -736,7 +751,9 @@ class consetup {
                 uses = "Delete";
             }
             document.getElementById('EMLTS' + index + '_USES').innerHTML = uses;
-            document.getElementById('EMLTS' + index + '_NickName').value = row.nickName;
+            document.getElementById('EMLTS' + index + '_NickNameSel').innerHTML = "<select id='EMLTS" + index + "_NickName' " +
+                "onchange='nickNameChanged(" + index + ")'>\n" + this.#nicknameSelectOptions + "</select>\n";
+            document.getElementById('EMLTS' + index + '_NickName').value = row.nickName == null ? '' : row.nickName;
             document.getElementById('EMLTS' + index + '_Price').value = row.price;
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -749,6 +766,8 @@ class consetup {
         for (let index = this.#editData.length; index < 10; index++) {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
             document.getElementById('EMLTS' + index + '_USES').innerHTML = '';
+            document.getElementById('EMLTS' + index + '_NickNameSel').innerHTML = "<select id='EMLTS" + index + "_NickName' " +
+                "onchange='nickNameChanged(" + index + ")'>\n" + this.#nicknameSelectOptions + "</select>\n";
             document.getElementById('EMLTS' + index + '_NickName').value = '';
             document.getElementById('EMLTS' + index + '_Price').value = '';
             document.getElementById('EMLTS' + index + '_Start').value = '';
@@ -758,6 +777,20 @@ class consetup {
             }
         }
 
+    }
+
+    // repopulate the date if nick name is changed
+    nickNameChanged(index) {
+        let newName = document.getElementById('EMLTS' + index + '_NickName').value;
+        if (newName == '')
+            return; // do nothing if the select list is custom, as this means leave it alone as a custom date range
+
+        // get the date range
+        let row = this.#nicknameDataIdx[newName];
+        if (row != null) {
+            document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
+            document.getElementById('EMLTS' + index + '_End').value = row.enddate;
+        }
     }
 
     open() {
@@ -1862,4 +1895,11 @@ function memListCellChanged(cell) {
         return next.memListCellChanged(cell);
 
     current.memListCellChanged(cell);
+}
+
+function nickNameChanged(index) {
+    if (activeConSetup == 'next')
+        return next.nickNameChanged(index);
+
+    current.nickNameChanged(index);
 }
