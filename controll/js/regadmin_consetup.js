@@ -647,6 +647,7 @@ class consetup {
 
     // build the edit price break series modal and display it
     editSeries(index) {
+        clear_message('result_message_editMemList');
         let row = this.#memtable.getRow(index);
         this.#editDataCurrentRow = row.getData();
         this.#editDataCurrentMemId = this.#editDataCurrentRow.id;
@@ -1840,8 +1841,8 @@ class consetup {
         }
 
         let len = 0;
-        if (this.#memListDates.hasOwnProperty(this.#editDataCurrentMemId))
-            len = this.#memListDates[this.#editDataCurrentMemId].length;
+        if (this.#memListDates.hasOwnProperty(this.#editDataCurrentRow.id))
+            len = this.#memListDates[this.#editDataCurrentRow.id].length;
 
         if (len == undefined || len <= 0) {
             message += 'No Time Series Data rows</br>'

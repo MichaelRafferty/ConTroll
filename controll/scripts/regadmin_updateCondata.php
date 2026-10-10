@@ -165,6 +165,7 @@ EOS;
         $delete_keys = array();
         $delete_keys[$conid] = '';
         $delete_keys[$nextconid] = '';
+        $delete_keys['all'] = [];
         $first = array();
         $first[$conid] = true;
         $first[$nextconid] = true;
@@ -175,6 +176,7 @@ EOS;
             //$cidfound[$row['conid']] = true;
             if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
                 $cid = $row['conid'];
+                $delete_keys['all'][] = sql_safe($row['memlistkey']);
                 if (array_key_exists($cid, $first)) {
                     $delete_keys[$cid] .= ($first[$cid] ? "'" : ",'") . sql_safe($row['memlistkey']) . "'";
                     $first[$cid] = false;
@@ -203,7 +205,12 @@ EOS;
         $deleted = 0;
         $inserted = 0;
         $updated = 0;
+        $deletedMLD = 0;
+        $memidMap = [];
         if ($delete_keys[$conid] != '') {
+            $delSQL = 'DELETE FROM memListDates WHERE memId IN (' . $delete_keys[$conid] . ');';
+            $deletedMLD += dbCmd($delSQL);
+            web_error_log("conid: $conid, delSQL = /$delSQL/");
             $delSQL = "DELETE FROM memList WHERE conid = ? AND id IN (" . $delete_keys[$conid] . ");";
             web_error_log("conid: $conid, delSQL = /$delSQL/");
             $deleted += dbSafeCmd($delSQL,  'i', array($conid));
@@ -262,8 +269,10 @@ EOS;
                     $rptGrouping,IFNULL($row['badgeLabel'],''));
                 //labeled_error_log("regadmin_updateConData/add row: /$addSQL/, types '$addtypes-values", $paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
-                if ($newid)
+                if ($newid) {
                     $inserted++;
+                    $memidMap[$row['id']] = $newid;
+                }
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['atcon'],$row['online'],
@@ -275,8 +284,60 @@ EOS;
         $response['success'] = "memList updated: $inserted added, $updated changed, $deleted removed.";
 
         if (array_key_exists('memListDates', $_POST)) {
-            // process updates to memListDatss itesm
-            $response['success'] .= "<br/>memListDates not yet processed";
+            // process updates to memListDatss items
+            $insMLD = <<<EOS
+INSERT INTO memListDates(memId, glNum, price, startdate, enddate, nickName)
+VALUES(?, ?, ?, ?, ?, ?);
+EOS;
+            $insDT = 'isdsss';
+            $updMLD = <<<EOS
+UPDATE memListDates SET glNum=?, price=?, startdate=?, enddate=?, nickName=?
+WHERE memId=? AND id=?;
+EOS;
+            $updDT = 'sdsssii';
+            $delMLD = <<<EOS
+DELETE FROM memListDates WHERE memId=? AND id=?;
+EOS;
+            $delDT = 'ii';
+
+            $inserted = 0;
+            $updated = 0;
+
+            try {
+                $memListDates = json_decode($_POST['memListDates'], true, 512, JSON_THROW_ON_ERROR);
+            }
+            catch (Exception $e) {
+                $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+                $response['error'] = $msg;
+                error_log($msg);
+                ajaxSuccess($response);
+                exit();
+            }
+            foreach ($memListDates as $memId => $dates) {
+                // if its deleted, don't try to delete the rows, it was handled above already.
+                if (in_array($memId, $delete_keys['all'])) {
+                    continue;
+                }
+
+                foreach ($dates AS $row) {
+                    if (array_key_exists('to_delete', $row) && $row['to_delete'] == '1') {
+                        $paramarray = array($memId, $row['id']);
+                        $deletedMLD += dbSafeCmd($delMLD, $delDT, $paramarray);
+                    } else if (!array_key_exists('id', $row) || $row['id'] == '' || $row['id'] == 'new' || $row['id'] < 0) {
+                        if ($memId < 0)
+                            $memId = $memidMap[$memId];
+
+                        $paramarray = array($memId, $row['glNum'], $row['price'], $row['startdate'], $row['enddate'], $row['nickName']);
+                        $inskey = dbSafeInsert($insMLD, $insDT, $paramarray);
+                        if ($inskey)
+                            $inserted++;
+                    } else {
+                        $paramarray = array($row['glNum'], $row['price'], $row['startdate'], $row['enddate'], $row['nickName'], $memId, $row['id']);
+                        $updated += dbSafeCmd($updMLD, $updDT, $paramarray);
+                    }
+                }
+            }
+            $response['success'] .= "<br/>memListDates updated (Price Breaks): inserted: $inserted, updated: $updated, deleted: $deletedMLD";
         }
         break;
 
