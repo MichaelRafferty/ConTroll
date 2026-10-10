@@ -61,7 +61,7 @@ class consetup {
     #editDataCurrentMemId = null;
     #paginationDiv = null;
     // edit bundle items
-    #memListBundleContainsDiv = null;
+    #editMemListBundleContainsRow = null;
     #memListBundleContains = null;
     #memListBundleTable = null;
     #memListPrice = null;
@@ -116,12 +116,12 @@ class consetup {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
         this.#memListBundleContains = document.getElementById('editMemListBundleContains');
-        this.#memListBundleContainsDiv = document.getElementById('editMemListBundleContainsDiv');
+        this.#editMemListBundleContainsRow = document.getElementById('editMemListBundleContainsRow');
         this.#memListPrice = document.getElementById('editMemListPrice');
         this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
         if (this.#editMemListBundleDiv) {
             this.#editMemListBundleDiv.hidden = true;
-            this.#memListBundleContainsDiv.hidden = true;
+            this.#editMemListBundleContainsRow.hidden = true;
         }
     };
 
@@ -700,8 +700,8 @@ class consetup {
         if (this.#memListBundleContains) {
             this.#memListBundleContains.value = bundleList;
             document.getElementById('editMemListBundle').value = bundle ? 'Y' : 'N';
-            if (this.#memListBundleContainsDiv) {
-                this.#memListBundleContainsDiv.hidden = !bundle;
+            if (this.#editMemListBundleContainsRow) {
+                this.#editMemListBundleContainsRow.hidden = !bundle;
             }
         }
 
@@ -1620,8 +1620,8 @@ class consetup {
     // bundleChanged - the bundle flag changes from yes/no
     bundleChanged(id) {
         let bundle = document.getElementById('editMemListBundle').value;
-        if (this.#memListBundleContainsDiv) {
-            this.#memListBundleContainsDiv.hidden = bundle;
+        if (this.#editMemListBundleContainsRow) {
+            this.#editMemListBundleContainsRow.hidden = bundle != 'Y';
         }
     }
 

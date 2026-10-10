@@ -188,7 +188,7 @@ draw_fileManagerModals($authToken);
                                         </select>
                                     </div>
                                 </div>
-                                <div class='row mt-1 id='editMemListBundleContainsRow'>
+                                <div class='row mt-1' id='editMemListBundleContainsRow'>
                                     <div class='col-sm-2'><label for="editMemListBundleContains">Contains:</label></div>
                                     <div class="col-sm-auto">
                                         <button class='btn btn-sm btn-primary' type='button'
