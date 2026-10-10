@@ -102,7 +102,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.paid A
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, null as rstid,
     CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable, m.ageShortName, m.badgeLabel
 FROM reg r1
-JOIN memLabelFull m ON (r1.memId = m.id AND r1.mldId = m.mdId)
+JOIN memLabel m ON (r1.memId = m.id AND r1.mldId = m.mdId)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
@@ -367,7 +367,7 @@ EOS;
                     $mbr['perid'] = $cartrow['perid'];
                 }
                 $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
-                    $mbr['paid'], $user_perid, $user_perid, $master_transid, $mbr['memId'], $mbr['mldId'], $mbr['coupon'],
+                    $mbr['paid'], $user_perid, $user_perid, $master_transid, $mbr['memId'], $mbr['mdId'], $mbr['coupon'],
                     $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
                     $mbr['price'] > $mbr['paid'] ? null : $master_transid);
                 $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);
