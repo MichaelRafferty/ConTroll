@@ -470,6 +470,21 @@ function blankIfNull(value) {
     return value;
 }
 
+// handle clicking on the delete icon position in tabulator tables
+function deleterow(e, row) {
+    let count = row.getCell("uses").getValue();
+    let nonnum = isNaN(Number(count));
+    if (nonnum || count == 0) {
+        if (row.getCell("to_delete").getValue() != 1) {
+            row.getCell("to_delete").setValue(1);
+            row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+        } else {
+            row.getCell("to_delete").setValue(0);
+            row.getCell("uses").setValue(0);
+        }
+    }
+}
+
 // pass object to a window.open via a post with json data
 function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
     // if the data is too big, deny using this download method for now

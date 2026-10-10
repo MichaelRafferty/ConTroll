@@ -1319,15 +1319,24 @@ function deleteicon(cell, formatParams, onRendered) {
 
 // process the row deletion (clicking on the trashcan).
 function deleterow(e, row) {
-    let count = row.getCell("uses").getValue();
     let status = row.getCell("status").getValue();
-    if (count == null && status == 'Entered') {
+    if (status != 'Entered')
+        return;
+
+    let count = row.getCell("uses").getValue();
+    if (count == null) {
         row.delete();
         return;
     }
-    if (count == 0 && status == 'Entered') {
-        row.getCell("to_delete").setValue(1);
-        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    let nonnum = isNaN(Number(count));
+    if (nonnum || count == 0) {
+        if (row.getCell("to_delete").getValue() != 1) {
+            row.getCell("to_delete").setValue(1);
+            row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+        } else {
+            row.getCell("to_delete").setValue(0);
+            row.getCell("uses").setValue(0);
+        }
     }
 }
 

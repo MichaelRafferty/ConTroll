@@ -486,14 +486,6 @@ function deleteicon(cell, formattParams, onRendered) {
     return value;
 }
 
-function deleterow(e, row) {
-    let count = row.getCell("uses").getValue();
-    if (count == 0) {
-        row.getCell("to_delete").setValue(1);
-        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
-    }
-}
-
 // menu tab items
 function getMenu() {
     script = 'scripts/admin_getMenu.php';
