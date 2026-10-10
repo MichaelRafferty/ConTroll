@@ -84,6 +84,12 @@ class consetup {
 
     // constants
     #enumYN = ['Y', 'N'];
+    #validateFields = [
+        { field: 'memListCategorySelect', message: "Category is required" },
+        { field: 'memListTypeSelect', message: "Type is required" },
+        { field: 'memListAgeSelect', message: "Age is required" },
+        { field: 'editMemListLabel', message: "Label is required, must be less than 64 characters, and cannot be new-row", len: 64, not: "new-row" },
+    ];
 
     constructor(setup_type) {
         this.#debug = Number(config.debug);
@@ -824,12 +830,12 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
         }
-        memListModalMarkDirty(true);
+        this.memListModalMarkDirty(true);
     }
 
     // clear the nick name if the a date is changed
     dateChanged(index) {
-        memListModalMarkDirty(true);
+        this.memListModalMarkDirty(true);
         // changing the date manually will clear the nickname
         document.getElementById('EMLTS' + index + '_NickName').value = '';
     }
@@ -864,7 +870,7 @@ class consetup {
             usesElement.innerHTML = this.#deleteIcon;
             todeleteElement.value = 0;
         }
-        memListModalMarkDirty(true);
+        this.memListModalMarkDirty(true);
     }
 
     open() {
@@ -1067,6 +1073,7 @@ class consetup {
         });
         // now open the modal for this row... as it's useless until edited.
         this.editSeries(this.#memListNewRowNumber);
+        this.memListModalMarkDirty(true);
         this.#memListNewRowNumber++;
     };
 
@@ -1618,7 +1625,7 @@ class consetup {
         this.closeBundleSel();
         if (!this.recomputeBundlePrice())
             return;
-        memListModalMarkDirty(true);
+        this.memListModalMarkDirty(true);
     }
 
     // bundleChanged - the bundle flag changes from yes/no
@@ -1627,6 +1634,7 @@ class consetup {
         if (this.#editMemListBundleContainsRow) {
             this.#editMemListBundleContainsRow.hidden = bundle != 'Y';
         }
+        this.memListModalMarkDirty(true);
     }
 
     // save the time series data back to the edit data array
@@ -1773,7 +1781,7 @@ class consetup {
             return false;
         }
         if (numReprice > 0) {
-            memListModalMarkDirty(true);
+            this.memListModalMarkDirty(true);
             show_message('Reprice of bundle items completed, ' + numReprice + ' item(s) repriced.', 'success', 'result_message_editMemList');
         }
         return true;
@@ -1783,8 +1791,6 @@ class consetup {
     editMemListSave() {
         if (this.#memListBundleContains) {
             // check if bundle is Yes
-            let valid = true;
-            let message = '';
             let bundle = false
             if (this.#bundlesEnabled)
                 bundle = document.getElementById('editMemListBundle').value == 'Y';
@@ -1801,6 +1807,51 @@ class consetup {
         // write the data back to the this.#editData array
         if (!this.saveTimeSeries())
             return;
+
+        // now validate the remaining data, bundle has already been validated above
+        let valid = true;
+        let message = '';
+
+        for (let fields of this.#validateFields) {
+            let element = document.getElementById(fields.field);
+            let value = element.value;
+            let fieldValid = true;
+            if (value == null || value == '') {
+                fieldValid = false;
+            }
+            if (fields.hasOwnProperty("len")) {
+                if (value.length > fields.len) {
+                    fieldValid = false;
+                }
+            }
+            if (fields.hasOwnProperty("not")) {
+                if (value == fields.not) {
+                    fieldValid = false;
+                }
+            }
+
+            if (!fieldValid) {
+                message += fields.message + '<br/>';
+                valid = false;
+                addFieldClass(element, 'need');
+            } else {
+                element.classList.remove('need');
+            }
+        }
+
+        let len = 0;
+        if (this.#memListDates.hasOwnProperty(this.#editDataCurrentMemId))
+            len = this.#memListDates[this.#editDataCurrentMemId].length;
+
+        if (len == undefined || len <= 0) {
+            message += 'No Time Series Data rows</br>'
+            valid = false;
+        }
+
+        if (!valid) {
+            show_message('Error: Some fields are missing or incorrect<br>' + message, 'error',  'result_message_editMemList');
+            return;
+        }
 
         // copy the edit data back to the main array
         let updateData = [this.#editDataCurrentRow];
@@ -1823,7 +1874,7 @@ class consetup {
                 return;
             }
 
-            memListModalMarkDirty(false);
+            this.memListModalMarkDirty(false);
         }
         this.#memListModal.hide();
     }
