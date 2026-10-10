@@ -198,6 +198,7 @@ draw_fileManagerModals($authToken);
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains'
+                                               onchange="recomputeBundlePrice()",
                                                placeholder='List of IDs in bundle' size='64' maxlength='256'/>
                                     </div>
                                 </div>

@@ -790,6 +790,9 @@ class consetup {
                 document.getElementById('EMLTS' + index + '_glNum').value = '';
             }
         }
+
+        if (bundle)
+            this.recomputeBundlePrice();
     }
 
     // Create a price break series of starter rows if the list is empty
@@ -1455,7 +1458,8 @@ class consetup {
         this.#nonBundleList = [];
         // convert the ISO datetimes to database format, for string compare
         if (this.#editData.length == 0) {
-            this.saveTimeSeries();
+            if (!this.saveTimeSeries())
+                return;
         }
         this.#rowStartDate = null;
         this.#rowEndDate = null;
@@ -1611,10 +1615,10 @@ class consetup {
         price = price.toFixed(2);
 
         containsField.value = val;
-        //TODO recompute the price
-        //this.#memListPrice.value = price;
         this.closeBundleSel();
-        emListModalMarkDirty(true);
+        if (!this.recomputeBundlePrice())
+            return;
+        memListModalMarkDirty(true);
     }
 
     // bundleChanged - the bundle flag changes from yes/no
@@ -1636,6 +1640,8 @@ class consetup {
         if (bundle) {
             if (shortname.substring(0, 8) != 'Bundle: ')
                 shortname = 'Bundle: ' + shortname.substring(0, 64-8);
+                if (!this.recomputeBundlePrice())
+                    return false;
         }
         // save back each row in the time series
         let rowListDates = [];
@@ -1663,25 +1669,10 @@ class consetup {
                 else
                     datesRow.uses = uses;
 
-                if (bundle) {
-                    //TODO
-                    // recompute the price for each row in the the bundle.
-                    /* need to rewrite
-                    let price = 0;
-                    let contains = document.getElementById('EMLTS' + row + '_contains').value.replace(/ /g, '');
-                    if (contains == undefined || contains == '') {
-                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value.replace(/ /g, ''),
-                            document.getElementById('EMLTS' + row + '_Start').value,
-                            document.getElementById('EMLTS' + row + '_End').value);
-                        document.getElementById('EMLTS' + row + '_contains').value = contains[0].replace(/ /g, '');
-                        document.getElementById('EMLTS' + row + '_Price').value = contains[1];
-                    }
-
-                     */
-                }
                 rowListDates.push(datesRow);
+                }
             }
-        }
+
         this.#editData = rowListDates;
         this.#memListDates[this.#editDataCurrentMemId] = rowListDates;
         this.#editDataCurrentMemId = null;
@@ -1712,58 +1703,80 @@ class consetup {
                 priceRanges += '</s>';
         }
         this.#editDataCurrentRow.priceRanges = priceRanges;
+        return true;
     }
 
-    // compute a new bundle list for this row from the start and end dates
-    computeBundleList(bundleList, startdate, enddate) {
-        let newBundleList = '';
-        let oldList = bundleList.split(',');
-        let memTableData = null;
-        let price = 0;
+    // compute price for each item in the time series for this bundle
+    recomputeBundlePrice() {
+        let numReprice = 0;
+        clear_message('result_message_editMemList');
+        // get the memIds in the bundle
+        let bundleContents = this.#memListBundleContains.value.split(',');
+        for (let i = 0; i < bundleContents.length; i++) {
+            bundleContents[i] = bundleContents[i].trim();
+            if (!this.#memListDates.hasOwnProperty(bundleContents[i])) {
+                show_message("Error: Bundle item " + bundleContents[i] + " does not have the time series data", 'error', 'result_message_editMemList');
+                return false;
+            }
+        }
+        let message = '';
+        // now loop over each time series item and compute the price
+        for (let index = 0; index < 10; index++) {
+            if (document.getElementById('EMLTS' + index + '_to_delete').value == 1) {
+                document.getElementById('EMLTS' + index + '_Price').value = '';
+                continue; // skip over items to delete
+            }
+            let startdate = document.getElementById('EMLTS' + index + '_Start').value.trim();
+            let enddate = document.getElementById('EMLTS' + index + '_End').value.trim();
+            if (startdate == '' || enddate == '') {
+                // no date range set, clear the field
+                document.getElementById('EMLTS' + index + '_Price').value = '';
+                continue; // skip over items to delete
+            }
 
-        if (startdate.indexOf('T') >= 0)
-            startdate = toDBdate(startdate);
-        if (enddate.indexOf('T') >= 0)
-            enddate = toDBdate(enddate);
-        for (let id of oldList) {
-            id = id.trim();
-            let memRow = this.#memtable.getRow(id).getData();
-            if (memRow.startdate <= startdate && memRow.enddate >= enddate && memRow.shortname.substring(0, 8) != 'Bundle: ') {
-                newBundleList += ',' + id;
-                price += Number(memRow.price);
-            } else {
-                // now look for new matches as if the dates changed
-                if (memTableData == null)
-                    memTableData = this.#memtable.getData();
-                let foundRow = null;
-                for (let row of memTableData) {
-                    // check for a new match in category, type, age, label, as well as date range
-                    if (row.memCategory != memRow.memCategory)
-                        continue;
-                    if (row.memType != memRow.memType)
-                        continue;
-                    if (row.memAge != memRow.memAge)
-                        continue;
-                    if (row.startdate > startdate || row.enddate < enddate)
-                        continue;
+            // make a comparable database string
+            if (startdate.indexOf('T') >= 0)
+                startdate = toDBdate(startdate);
+            if (enddate.indexOf('T') >= 0)
+                enddate = toDBdate(enddate);
 
-                    if (row.shortname.substring(0, 8) == 'Bundle: ')
-                        continue;
-
-                    foundRow = row;
-                    break;
+            // loop of the items in the bundle list computing a price
+            let newprice = 0;
+            for (let i = 0; i < bundleContents.length; i++) {
+                let item = this.#memListDates[bundleContents[i]];
+                // find a matching date range in this bundle item
+                let found = false;
+                for (let m = 0; m < item.length; m++) {
+                    // a match is if the item being matched is valie for this start and end dates
+                    // so valid is if the item starts on or before this bundle item and ends on or after this bundle item
+                    if (startdate >= item[m].startdate && enddate <= item[m].enddate) {
+                        newprice += Number(item[m].price);
+                        found = true;
+                        break;
+                    }
                 }
-                if (foundRow != null) {
-                    newBundleList += ',' + foundRow.id;
-                    price += Number(foundRow.price);
+                if (!found)
+                    message += `No matching date range found for bundle item ${bundleContents[i]} for ${startdate} to ${enddate}<br/>`;
+            }
+
+            if (message == '') {
+                newprice = newprice.toFixed(2);
+                let element = document.getElementById('EMLTS' + index + '_Price');
+                if (Number(element.value) != Number(newprice)) {
+                    document.getElementById('EMLTS' + index + '_Price').value = newprice;
+                    numReprice++;
                 }
             }
         }
-
-        if (newBundleList != '')
-            newBundleList = newBundleList.substring(1).replace(/ /g, '');
-
-        return [newBundleList, price];
+        if (message != '') {
+            show_message(message, 'error', 'result_message_editMemList');
+            return false;
+        }
+        if (numReprice > 0) {
+            memListModalMarkDirty(true);
+            show_message('Reprice of bundle items completed, ' + numReprice + ' item(s) repriced.', 'success', 'result_message_editMemList');
+        }
+        return true;
     }
 
     // save the modal data back to the table and close the modal
@@ -1784,7 +1797,10 @@ class consetup {
                 labelEl.value = label;
             }
         }
-        this.saveTimeSeries(); // write the data back to the this.#editData array
+
+        // write the data back to the this.#editData array
+        if (!this.saveTimeSeries())
+            return;
 
         // copy the edit data back to the main array
         let updateData = [this.#editDataCurrentRow];
@@ -1941,4 +1957,11 @@ function createNewSeries() {
         return next.createNewSeries();
 
     current.createNewSeries();
+}
+
+function recomputeBundlePrice() {
+    if (activeConSetup == 'next')
+        return next.recomputeBundlePrice();
+
+    current.recomputeBundlePrice();
 }
