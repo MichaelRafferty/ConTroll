@@ -257,7 +257,7 @@ EOS;
                 $nQ = <<<EOS
 SELECT id, conid, price
 FROM memListFull
-WHERE id = ? AND startdate >= NOW() AND enddate < NOW();
+WHERE id = ? AND startdate <= NOW() AND enddate > NOW();
 EOS;
 
                 $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));

@@ -78,7 +78,7 @@ EOS;
 $memCheckQ = <<<EOS
 SELECT id, conid, price, label
 FROM memListFull
-WHERE id in (?, ?) AND startdate >= NOW() AND enddate < NOW();
+WHERE id in (?, ?) AND startdate <= NOW() AND enddate > NOW();
 EOS;
 $numRowsExpected = $gohMemId == $lifeMemId ? 1 : 2;
 $numRows = 0;

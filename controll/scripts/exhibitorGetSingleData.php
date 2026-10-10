@@ -40,8 +40,8 @@ mi.price AS includedMemPrice, ma.price AS additionalMemPrice
 FROM exhibitsRegionTypes ert
 JOIN exhibitsRegions er ON er.regionType = ert.regionType
 JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
-JOIN memList mi ON (ery.includedMemId = mi.id)
-JOIN memList ma ON (ery.additionalMemId = ma.id)
+JOIN memListFull mi ON (ery.includedMemId = mi.id)
+JOIN memListFull ma ON (ery.additionalMemId = ma.id)
 WHERE ery.conid = ? AND er.id = ?
 ORDER BY er.sortorder;
 EOS;

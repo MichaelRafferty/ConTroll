@@ -280,7 +280,7 @@ foreach ($data as $index => $row) {
 
 $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
 
-logWrite('updateGetItems-response: '. $response);
+labeled_logWrite('updateGetItems-response:', $response);
 logWrite("updateGetItems: End of changes made by exhibitor $vendor for year $vendor_year");
 
 $itemQ = <<<EOS

@@ -333,8 +333,8 @@ SELECT ert.portalType, ert.requestApprovalRequired, ert.purchaseApprovalRequired
 FROM exhibitsRegionTypes ert
 JOIN exhibitsRegions er ON er.regionType = ert.regionType
 JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
-LEFT OUTER JOIN memList mi ON (ery.includedMemId = mi.id)
-LEFT OUTER JOIN memList ma ON (ery.additionalMemId = ma.id)
+LEFT OUTER JOIN memListFull mi ON (ery.includedMemId = mi.id)
+LEFT OUTER JOIN memListFull ma ON (ery.additionalMemId = ma.id)
 WHERE ery.conid = ? AND ert.portalType = ? AND ert.active = 'Y'
 ORDER BY er.sortorder;
 EOS;

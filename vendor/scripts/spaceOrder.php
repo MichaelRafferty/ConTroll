@@ -91,14 +91,14 @@ $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, 
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, mi.mdId AS includedMdId, additionalMemId, ma.mdId AS additionalMdId,
        mi.price AS includedPrice, mi.glNum AS includedGLNum, mi.label AS includedLabel, mi.notes AS includedNotes,
        ma.price AS additionalPrice, ma.glNum AS additionalGLNum, ma.label AS additionalLabel, ma.notes AS additionalNotes,
        ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId, ery.mailinGLNum
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
-LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
-LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
+LEFT OUTER JOIN memListFull mi ON ery.includedMemId = mi.id
+LEFT OUTER JOIN memListFull ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
 $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
@@ -526,14 +526,15 @@ if ($totprice > 0) {
 ajaxSuccess($response);
 return;
 
+// build the list of memberships decoded for include and additional
 function buildMlist($region, $label, $type) {
     $numSplit = 0;
     $Mlist = [];
     if (str_starts_with($label, 'Bundle: ')) {
         $bQ = <<<EOS
-SELECT id, price, glNum, label
+SELECT id, mdId, price, glNum, label
 FROM memListFull
-WHERE id = ? AND startdate >= NOW() and enddate < NOW();;
+WHERE id = ? AND startdate <= NOW() and enddate > NOW();;
 EOS;
         $bundleId = $type == 'included' ? $region['includedMemId'] : $region['additionalMemId'];
         $notes = $type == 'included' ? $region['includedNotes'] : $region['additionalNotes'];
@@ -554,6 +555,7 @@ EOS;
             $bL = $bR->fetch_assoc();
             $mitem = [];
             $mitem['id'] = $bL['id'];
+            $mitem['mdId'] = $bL['mdId'];
             $mitem['label'] = $bL['label'];
             $mitem['price'] = $bL['price'];
             $mitem['glNum'] = $bL['glNum'];
@@ -564,6 +566,7 @@ EOS;
         // its a direct membership, build the value directly
         $mitem = [];
         $mitem['id'] = $type == 'included' ? $region['includedMemId'] : $region['additionalMemId'];
+        $mitem['mdId'] = $type == 'included' ? $region['includedMdId'] : $region['additionalMdId'];
         $mitem['label'] = $type == 'included' ? $region['includedLabel'] : $region['additionalLabel'];
         $mitem['price'] = $type == 'included' ? $region['includedPrice'] : $region['additionalPrice'];
         $mitem['glNum'] = $type == 'included' ? $region['includedGLNum'] : $region['additionalGLNum'];

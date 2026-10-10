@@ -82,7 +82,7 @@ if ($numPrimary > 0 && !$foundFreeId) {
 $dateSQL = <<<EOS
 SELECT id
 FROM memListDates
-WHERE memId = ? AND startDate >= now() AND endDate < now();
+WHERE memId = ? AND startDate <= now() AND endDate > now();
 EOS;
 
 $dateR = dbSafeQuery($dateSQL, 'i', array($memId));

@@ -52,7 +52,7 @@ SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.mem
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end,
        k.id as keyId, k.guid, k.usedBy
 FROM coupon c
-LEFT OUTER JOIN memLabel m ON (c.memId = m.id AND m.startDate >= now() AND m.endDate < now())
+LEFT OUTER JOIN memLabel m ON (c.memId = m.id AND m.startDate <= now() AND m.endDate > now())
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
 LEFT OUTER JOIN couponKeys k ON (k.couponId = c.id and (IFNULL(k.guid,'---') = ? || IFNULL(k.guid,'---') = ?))
 WHERE  c.conid = ? AND ((c.code = ?) || (IFNULL(k.guid,'---') = ?))
@@ -139,7 +139,7 @@ SELECT c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.mem
        CASE WHEN c.startDate > now() THEN 'early' ELSE null END as start, 
        CASE WHEN c.endDate <= now() THEN 'expired' ELSE null END as end
 FROM coupon c
-LEFT OUTER JOIN memLabel m ON (c.memId = m.id AND m.startDate >= now() AND m.endDate < now())
+LEFT OUTER JOIN memLabel m ON (c.memId = m.id AND m.startDate <= now() AND m.endDate > now())
 LEFT OUTER JOIN transaction t ON (t.coupon = c.id and t.complete_date is not null)
 WHERE c.conid = ? AND c.id = ?
 GROUP BY c.id, c.oneUse, c.code, c.name, c.couponType, c.discount, c.oneUse, c.memId, c.minMemberships, c.maxMemberships,
