@@ -770,7 +770,7 @@ if ($gettype == 'all') {
 // mow the memList items for the pulldown of membership types
     $memListQ = <<<EOS
 SELECT * 
-FROM memList
+FROM memListFull
 WHERE conid = ?
 AND memCategory IN ('artist','dealer','exhibits','fan','virtual')
 ORDER BY sort_order;
