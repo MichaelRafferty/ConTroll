@@ -61,6 +61,7 @@ class consetup {
     #editDataCurrentMemId = null;
     #paginationDiv = null;
     // edit bundle items
+    #memListBundleContainsDiv = null;
     #memListBundleContains = null;
     #memListBundleTable = null;
     #memListPrice = null;
@@ -115,11 +116,13 @@ class consetup {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
         this.#memListBundleContains = document.getElementById('editMemListBundleContains');
+        this.#memListBundleContainsDiv = document.getElementById('editMemListBundleContainsDiv');
         this.#memListPrice = document.getElementById('editMemListPrice');
         this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
-        if (this.#editMemListBundleDiv)
+        if (this.#editMemListBundleDiv) {
             this.#editMemListBundleDiv.hidden = true;
-        $('div[name="TScontains"]').hide();
+            this.#memListBundleContainsDiv.hidden = true;
+        }
     };
 
     // set undo / redo status for conlist (convention data)
@@ -697,10 +700,9 @@ class consetup {
         if (this.#memListBundleContains) {
             this.#memListBundleContains.value = bundleList;
             document.getElementById('editMemListBundle').value = bundle ? 'Y' : 'N';
-            if (bundle)
-                $('div[name="TScontains"]').show();
-            else
-                $('div[name="TScontains"]').hide();
+            if (this.#memListBundleContainsDiv) {
+                this.#memListBundleContainsDiv.hidden = !bundle;
+            }
         }
 
         // set up to edit the cart description
@@ -1618,10 +1620,9 @@ class consetup {
     // bundleChanged - the bundle flag changes from yes/no
     bundleChanged(id) {
         let bundle = document.getElementById('editMemListBundle').value;
-        if (bundle == 'Y')
-            $('div[name="TScontains"]').show();
-        else
-            $('div[name="TScontains"]').hide();
+        if (this.#memListBundleContainsDiv) {
+            this.#memListBundleContainsDiv.hidden = bundle;
+        }
     }
 
     // save the time series data back to the edit data array
