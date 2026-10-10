@@ -202,9 +202,14 @@ function membershipFormatter(cell, formatterParams, onRendered) {
             ((curMembership.includes(option.label) || (curMembership.length == 0 && option.value < 0)) ? "selected='true' " : '' ) +
             "value='" + option.value + "'>" + option.label + "</option>\n";
     }
-    html += '</select><br/>' +
-        '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-        data.id + ',' + data.curFreeId + ',' + data.freeRegId + ')">Assign Badge</button>';
+    if (curMembership.length == 0)
+        html += '</select><br/>' +
+            '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+            data.id + ',' + data.curFreeId + ',' + data.freeRegId + ')">Assign Badge</button>';
+    else
+        html += '</select><br/>' +
+            '&nbsp;<button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+            data.id + ',' + data.curFreeId + ',' + data.freeRegId + ')">Assign Different Badge</button>';
     return html;
 }
 

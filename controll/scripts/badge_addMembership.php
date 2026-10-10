@@ -45,7 +45,7 @@ $regId = $_POST['regId'];
 $iQ = <<<EOS
 SELECT r.id, r.memId, r.mldId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
 FROM reg r
-JOIN memList m ON r.memId = m.id AND r.memId = m.id AND m.memType in ('full', 'oneday', 'virtual')
+JOIN memListFull m ON r.memId = m.id AND r.memId = m.id AND m.memType in ('full', 'oneday', 'virtual')
 WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
 EOS;
 $typeStr = 'ii';
@@ -86,8 +86,8 @@ WHERE memId = ? AND startDate <= now() AND endDate > now();
 EOS;
 
 $dateR = dbSafeQuery($dateSQL, 'i', array($memId));
-if ($dateR === false) {
-    ajaxError('Unable to create retrive valid rollover volunteer date range, seek assistance');
+if ($dateR === false || $dateR->num_rows == 0) {
+    ajaxError("Unable to create retrive valid free membership date range for $memId, seek assistance");
     return;
 }
 $dateL = $dateR->fetch_assoc();
