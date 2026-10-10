@@ -54,13 +54,13 @@ function amountModalHiddenHelper(event) {
 
 // items for registration not in base
 // findMembership - find matching memRow in memList
-function findMembership(id) {
+function findMembership(id, mdId) {
     if (!memList)
         return null; // no list to search
 
     for (var row in memList) {
         var memrow = memList[row];
-        if (id != memrow.id)
+        if (id != memrow.id || mdId != memrow.mdId)
             continue;
         return memrow;  // return matching entry
     }

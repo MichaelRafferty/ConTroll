@@ -783,7 +783,8 @@ class PosCart {
                 rowColor = !rowColor
                 html += `<div class="row pt-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
     <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
-        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` + ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + `)">
+        <button id="memBtn-` + mem.id + '-' + mem.mdId + '" class="btn btn-sm btn-primary h-100 w-100"' +
+                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "','" + mem.mdId + "'" + `)">
             Add
         </button>
     </div>
@@ -809,8 +810,9 @@ class PosCart {
                      memLabel += '<br/>' + mem.startdate.slice(0, mem.startdate.indexOf(' ')) +
                          '&mdash;' + mem.enddate.slice(0, mem.enddate.indexOf(' '));
                  }
-                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
-                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
+                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '-' + mem.mdId +
+                    '" class="btn btn-sm btn-primary w-100 h-100"' +
+                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "','" + mem.mdId + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
         }
@@ -896,9 +898,9 @@ class PosCart {
     }
 
     // add to cart
-    regItemAdd(id) {
+    regItemAdd(id, mdId) {
         clear_message('aeMessageDiv');
-        let memrow = findMembership(id);
+        let memrow = findMembership(id, mdId);
         if (memrow == null)
             return;
 
@@ -908,6 +910,7 @@ class PosCart {
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
         newMembership.memId = id;
+        newMembership.mdId = mdId;
         newMembership.conid = memrow.conid;
         newMembership.status = 'in-cart';
         newMembership.price = memrow.price;
