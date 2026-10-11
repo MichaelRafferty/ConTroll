@@ -67,9 +67,10 @@ $upQ = "UPDATE reg SET ";
 $typeStr = '';
 $valuearr = [];
 if ($changedMemId) {
-    $upQ .= 'memId = ?, ';
-    $typeStr .= 'i';
+    $upQ .= 'memId = ?, mldId = ?, ';
+    $typeStr .= 'ii';
     $valuearr[] = (int) $new['memId'];
+    $valuearr[] = (int) $new['mdId'];
     $recast = true;
 }
 

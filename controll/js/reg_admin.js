@@ -1341,8 +1341,8 @@ function changeRollover() {
 
         // now check the category
 
-        memCat = memLabelsIdx[changeItem.memId].memCategory;
-        memAge = memLabelsIdx[changeItem.memId].memAge;
+        memCat = memLabelsIdx[changeItem.memId + '-' + changeItem.mdId].memCategory;
+        memAge = memLabelsIdx[changeItem.memId + '-' + changeItem.mdId].memAge;
 
         if (allowRolloverCategories.indexOf(memCat) == -1) {
             message += "Cannot change " + changeItem.id + " as category " + memCat + " is not allowed to be rolled over<br/>";
@@ -1613,18 +1613,23 @@ function changeEdit(badgeId) {
 
     currentIndex = badgeId;
     currentRow = registrationtable.getRow(badgeId).getData();
-    let curMemId = currentRow.memId;
-    ageList[memLabelsIdx[curMemId].memAge] = 1;
-
+    let curMemId = currentRow.memId.split('/');
+    let curMdId = null;
+    if (curMemId.length > 1)
+        curMdId = curMemId[1];
+    curMemId = curMemId[0];
+    ageList[memLabelsIdx[curMemId + '-' + curMdId].memAge] = 1;
 
     // build the select list, first the ones for this mem Age and All
     let memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
     for (let i = 0; i < memLabels.length; i++) {
         let memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
-            memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
+            memOptionList += '   <option value="' + memItem.id + '-' + memItem.mdId +  '"' +
+                ((curMemId == memItem.id && curMdId == memItem.mdId) ? ' selected' : '') + '>' +
             memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
-                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname + "</option>\n";
+                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname +
+                ' (' + memItem.startdate + ")</option>\n";
         }
     }
     // now the rest of them
@@ -1671,14 +1676,15 @@ function changeEdit(badgeId) {
 function changeEditRegChange() {
     let regItemId = document.getElementById("newMemId").value;
     if (regItemId != '') {
-        let newMemItem = memLabelsIdx[regItemId];
+        let regidparts = regItemId.split('-');
+        let newMemItem = memLabelsIdx[regidparts[0] + '-' + regidparts[1]];
         editNewRegPrice.innerHTML = newMemItem.price;
     }
 }
 
 // changeEditSave - validate the changes and save them
 function changeEditSave(override) {
-    let newMemId = document.getElementById("newMemId").value;
+    let newMemId = document.getElementById("newMemId").value.split('-');
     let newPrice = editNewPrice.value;
     let newPaid = null;
     let newCoupon = editNewCoupon.value;
@@ -1694,7 +1700,12 @@ function changeEditSave(override) {
         newPaid = editNewPaid.value;
 
     if (newMemId == '')
-        newMemId = currentRow.memId;
+        newMemId = currentRow.memId.split('/');
+
+    newMdId = null;
+    if (newMemId.length > 1)
+        newMdId = newMemId[1];
+    newMemId = newMemId[0];
 
     editSaveOverride.hidden = true;
     if (override > 0) {
@@ -1713,8 +1724,8 @@ function changeEditSave(override) {
             }
         }
 
-        if (newPrice != Number(memLabelsIdx[newMemId].price)) {
-            warnings += 'Price of ' + newPrice + ' does not equal the registration item price of ' + memLabelsIdx[newMemId].price + '<br/>';
+        if (newPrice != Number(memLabelsIdx[newMemId + '-' + newMdId].price)) {
+            warnings += 'Price of ' + newPrice + ' does not equal the registration item price of ' + memLabelsIdx[newMemId + '-' + newMdId].price + '<br/>';
             numWarnings++;
         }
 
@@ -1752,6 +1763,7 @@ function changeEditSave(override) {
         id: currentRow.badgeId,
         new: {
             memId: newMemId,
+            mdId: newMdId,
             price: newPrice,
             paid: newPaid,
             coupon: newCoupon,
@@ -1760,6 +1772,14 @@ function changeEditSave(override) {
         },
         source: config.source,
     };
+    // update current row memId to memId, mdId
+    let curMemId = currentRow.memId.split('/');
+    let curMdId = null;
+    if (curMemId.length > 1)
+        curMdId = curMemId[1];
+    curMemId = curMemId[0];
+    data.old.memId = curMemId;
+    data.old.mldId = curMdId;
     let script = 'scripts/regadmin_editReg.php';
     $.ajax({
         method: "POST",
@@ -1931,10 +1951,10 @@ function draw(data, textStatus, jqXHR) {
     memLabelsIdx = {};
     memLabelsNextIdx = {};
     for (i = 0; i < memLabels.length; i++) {
-        memLabelsIdx[memLabels[i].id] = memLabels[i];
+        memLabelsIdx[memLabels[i].id + '-' + memLabels[i].mdId] = memLabels[i];
     }
     for (i = 0; i < memLabelsNext.length; i++) {
-        memLabelsNextIdx[memLabelsNext[i].id] = memLabelsNext[i];
+        memLabelsNextIdx[memLabelsNext[i].id + '-' + memLabelsNext[i].mdId] = memLabelsNext[i];
     }
     draw_stats(data);
     draw_registrations(data);
