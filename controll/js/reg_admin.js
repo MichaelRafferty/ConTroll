@@ -553,12 +553,12 @@ function actionbuttons(cell, formatterParams, onRendered) {
 
     // notes button
     if (ncount != null && ncount > 0)
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="showRegNotes(' + index + ', true)">N</button>';
 
     // edit person button
     if (perid != null && perid > 0)
-        btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="editPerson(' + perid + ')">P</button>';
     else if (npid != null && npid > 0) {
         let nmgrNpid = 0;

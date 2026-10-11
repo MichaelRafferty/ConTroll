@@ -143,6 +143,7 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+$info['this-user'] = true;
 $manager = $info['managedByName'] == null;
 $managerId = null;
 $managerType = null;

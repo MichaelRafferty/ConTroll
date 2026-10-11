@@ -32,10 +32,10 @@ class Settings {
 // associate / disassociate a person from this account, by the account holders requests
     // disassociate - remove control of a person from this account
     disassociate(idstr) {
-        var type = idstr.substring(0,1);
-        var id = Number(idstr.substring(1));
-        var script = 'scripts/processDisassociate.php';
-        var data = {
+        let type = idstr.substring(0,1);
+        let id = Number(idstr.substring(1));
+        let script = 'scripts/processDisassociate.php';
+        let data = {
             loginId: config['id'],
             loginType: config['idType'],
             managedBy: 'client',
@@ -65,12 +65,12 @@ class Settings {
 
     // attach - request (or if emails match, directly attach) a person to this account
     attach() {
-        var id = document.getElementById('acctId');
+        let id = document.getElementById('acctId');
         if (id == null)
             return; // the form is not loaded
 
-        var acctId = Number(id.value);
-        var email = document.getElementById('emailAddr').value;
+        let acctId = Number(id.value);
+        let email = document.getElementById('emailAddr').value;
 
         if  (acctId == null || acctId <= 0) {
             show_message("Account Id is required", "error");
@@ -93,8 +93,8 @@ class Settings {
         }
 
         document.getElementById('attachBtn').disabled = true;
-        var script = 'scripts/requestAssociate.php';
-        var data = {
+        let script = 'scripts/requestAssociate.php';
+        let data = {
             loginId: config['id'],
             loginType: config['idType'],
             acctId: acctId,
@@ -128,9 +128,9 @@ class Settings {
 
     // deleteIdentity/newIdentity add/remove identities
     deleteIdentity(idstr) {
-        var keys = idstr.split('~');
-        var script = 'scripts/processIdentityDelete.php';
-        var data = {
+        let keys = idstr.split('~');
+        let script = 'scripts/processIdentityDelete.php';
+        let data = {
             loginId: config['id'],
             loginType: config['idType'],
             action: 'delete',
@@ -160,12 +160,12 @@ class Settings {
 
     // newidentity - add new identity
     newIdentity() {
-        var id = document.getElementById('provider');
+        let id = document.getElementById('provider');
         if (id == null)
             return; // the form is not loaded
 
-        var provider = id.value;
-        var email = document.getElementById('identityEmailAddr').value;
+        let provider = id.value;
+        let email = document.getElementById('identityEmailAddr').value;
 
         if (provider == null || provider == '')
             provider = 'token';
@@ -175,8 +175,8 @@ class Settings {
             return;
         }
 
-        for (var row in identities) {
-            var identity = identities[row];
+        for (let row in identities) {
+            let identity = identities[row];
             if (identity.provide == provider && identity.email_addr) {
                 show_message("This entry is already in your list", "error");
                 return;
@@ -184,8 +184,8 @@ class Settings {
         }
 
         document.getElementById('newIdentity').disabled = true;
-        var script = 'scripts/addIdentity.php';
-        var data = {
+        let script = 'scripts/addIdentity.php';
+        let data = {
             loginId: config['id'],
             loginType: config['idType'],
             provider: provider,
@@ -223,7 +223,7 @@ class Settings {
         if (this.#newPasskeyBtn)
             this.#newPasskeyBtn.disabled = true;
 
-        var displayName = document.getElementById('userDisplayName').value;
+        let displayName = document.getElementById('userDisplayName').value;
 
         if (displayName.length == 0) {
             if (config.badgeName.length > 0)

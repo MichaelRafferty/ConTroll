@@ -295,11 +295,16 @@ class Portal {
     }
 
     // disassociate: remove the managed by link for this logged in person
-    disassociate() {
+    disassociate(who, id, idtype) {
         let data = {
-            'managedBy': 'disassociate',
+            managedBy: 'disassociate',
             loginId: config.id,
             loginType: config.idType,
+        }
+        if (who != null) {
+            data.idNum = id;
+            data.idType = idtype;
+            data.who = who;
         }
         let script = 'scripts/processDisassociate.php';
         $.ajax({
@@ -318,7 +323,11 @@ class Portal {
                     let divElement = document.getElementById('managedByDiv');
                     if (divElement)
                         divElement.style.display = 'none';
-                    show_message("You have been disassociated from that manager.");
+                    if (who == undefined || who == null)
+                        show_message("You have been disassociated from that manager.");
+                    else {
+                        window.location.href ="/portal.php?messageFwd=" + encodeURI('You have unmanaged ' + who);
+                    }
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -564,7 +573,7 @@ class Portal {
 
     // start the process to add an identity
     addIdentity(mode) {
-        window.location.href = "accountSettings.php?identity&address=" + encodeURIComponent(this.#changeEmailNewEmailAddr.value);
+        window.location.href = "/accountSettings.php?identity&address=" + encodeURIComponent(this.#changeEmailNewEmailAddr.value);
     }
 
     // countryChange - if USPS and USA, then change button

@@ -308,11 +308,12 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
     $badgename = $person['badgename'];
     $fn = '';
     if ($person['first_name'] != '') {
-        $fn = $person['first_name'] . "'s ";
+        $fn = $person['first_name'];
     }
     else if ($person['last_name'] != '') {
-        $fn = $person['last_name'] . "'s ";
+        $fn = $person['last_name'];
     }
+    $fns = $fn . ($fn != '' ? "'s" : '');
     if (array_key_exists('missingPolicies', $person) && $person['missingPolicies'] == 0) {
         $profileClass = 'btn-primary';
     } else {
@@ -375,7 +376,7 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
             </button>
         </div>
         <div class="col-sm-auto">
-            <span class="h2">$fn Purchases</span>
+            <span class="h2">$fns Purchases</span>
         </div>
     </div>        
 EOS;
@@ -499,29 +500,38 @@ $hr
 <div class="row mt-1">
     <div class="col-sm-2">
         <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.editPerson($id, '$personType');">
-            Edit $fn Profile
+            Edit $fns Profile
         </button>
     </div>
     <div class="col-sm-auto">
         <span class="h4">Age category of $fullName as of $ageByDate: $ageLabel</span>
     </div>
 </div>
+<div class="row mt-1">
+    <div class="col-sm-2">
+EOS;
+    if (!array_key_exists('this-user', $person))
+        echo <<<EOS
+        <button class='btn btn-sm btn-secondary mt-2 p-1' onclick="portal.disassociate('$fn', $id, '$personType');">
+            Unmanage $fn
+        </button>
 EOS;
     if ($privacyLink != '' && $privacyText == '')
         $privacyText = 'See our privacy policy for how we use and share information';
     if ($privacyLink != '') {
         echo <<<EOS
-<div class="row mt-1">
-    <div class="col-sm-2"></div>
+    </div>
     <div class="col-sm-10">
             (<a href="$privacyLink" target="_blank">$privacyText</a>).
     </div>
-</div>
 EOS;
+    } else {
+        echo "\t</div>\n";
     }
 
 // draw non editable profile
     echo <<<EOS
+</div>
 <div class='row mt-2'>
     <div class="col-sm-2">$label:</div>
     <div class="col-sm-auto"><b>$id</b></div>
@@ -561,7 +571,7 @@ EOS;
 <div class='row'>
     <div class="col-sm-2">
         <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.changeEmail('$personArgs');">  
-            Change $fn Email
+            Change $fns Email
         </button>
     </div>
     <div class="col-sm-auto"><b>$email</b></div>
@@ -585,7 +595,7 @@ EOS;
 $hr
 <div class='row mt-1'>
     <div class="col-sm-2">
-        <button class='btn btn-sm, btn-primary p-1' onclick="portal.editInterests($id, '$personType');">Edit $fn Interests</button>
+        <button class='btn btn-sm, btn-primary p-1' onclick="portal.editInterests($id, '$personType');">Edit $fns Interests</button>
     </div>
     <div class="col-sm-auto"><span class="h3">Additional Interests or Needs</span></div>
 </div>
