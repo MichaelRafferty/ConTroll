@@ -74,7 +74,7 @@ WHERE memId = ? AND startDate <= now() AND endDate > now();
 EOS;
 
 $dateR = dbSafeQuery($dateSQL, 'i', array($memId));
-if ($dateR === false) {
+if ($dateR === false || $dateR->num_rows == 0) {
     ajaxError('Unable to create retrive valid rollover volunteer date range, seek assistance');
     return;
 }

@@ -326,13 +326,19 @@ EOS;
                     } else if (!array_key_exists('id', $row) || $row['id'] == '' || $row['id'] == 'new' || $row['id'] < 0) {
                         if ($memId < 0)
                             $memId = $memidMap[$memId];
+                        $glNum = $row['glNum'];
+                        if ($glNum == '')
+                            $glNum = null;
 
-                        $paramarray = array($memId, $row['glNum'], $row['price'], $row['startdate'], $row['enddate'], $row['nickName']);
+                        $paramarray = array($memId, $glNum, $row['price'], $row['startdate'], $row['enddate'], $row['nickName']);
                         $inskey = dbSafeInsert($insMLD, $insDT, $paramarray);
                         if ($inskey)
                             $inserted++;
                     } else {
-                        $paramarray = array($row['glNum'], $row['price'], $row['startdate'], $row['enddate'], $row['nickName'], $memId, $row['id']);
+                        $glNum = $row['glNum'];
+                        if ($glNum == '')
+                            $glNum = null;
+                        $paramarray = array($glNum, $row['price'], $row['startdate'], $row['enddate'], $row['nickName'], $memId, $row['id']);
                         $updated += dbSafeCmd($updMLD, $updDT, $paramarray);
                     }
                 }
