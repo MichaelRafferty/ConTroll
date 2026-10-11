@@ -133,7 +133,8 @@ class Cart {
                 html += `
 <div class="row mt-1">
     <div class="col-sm-1" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">
-        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` + ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + `)">
+        <button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` +
+            ' onclick="cart.membershipAdd(' + "'" + mem.id + "','" + mem.mdId + "'" + `)">
             Add
         </button>
     </div> 
@@ -270,6 +271,7 @@ class Cart {
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
         newMembership.memId = id;
+        newMembership.mdId = mdId;
         newMembership.conid = memrow.conid;
         newMembership.status = 'in-cart';
         newMembership.price = memrow.price;

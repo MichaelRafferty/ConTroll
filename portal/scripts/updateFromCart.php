@@ -234,9 +234,9 @@ SELECT ?, IFNULL(p.id, n.perid) AS perid, n.id AS newperid, ?, ?, ?, ?, ?, m.id,
 FROM memListFull m
 LEFT OUTER JOIN perinfo p ON p.id = ?
 LEFT OUTER JOIN newperson n ON n.id = ?
-WHERE m.id = ?;
+WHERE m.id = ? and m.mdId = ?;
 EOS;
-            $typeStr = 'iiidsiiii';
+            $typeStr = 'iiidsiiiii';
             // check if this is a bundle, if so loop over the bundle items
             if (str_starts_with($cartRow['label'], 'Bundle: ')) {
                 // get the notes to find the contents of the bundle
@@ -255,7 +255,7 @@ EOS;
                 $bundle = $nR->fetch_row()[0];
                 $nR->free();
                 $nQ = <<<EOS
-SELECT id, conid, price
+SELECT id, mdId, conid, price
 FROM memListFull
 WHERE id = ? AND startdate <= NOW() AND enddate > NOW();
 EOS;
@@ -278,7 +278,8 @@ EOS;
                         $loginId,
                         $personType == 'p' ? $personId : -1,
                         $personType == 'n' ? $personId : -1,
-                        $nL['id']
+                        $nL['id'],
+                        $nL['mdId']
                     );
                     $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
                     if ($new_cartid === false || $new_cartid < 0) {
@@ -300,7 +301,8 @@ EOS;
                     $loginId,
                     $personType == 'p' ? $personId : -1,
                     $personType == 'n' ? $personId : -1,
-                    $cartRow['memId']
+                    $cartRow['memId'],
+                    $cartRow['mdId']
                 );
                 $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
                 if ($new_cartid === false || $new_cartid < 0) {

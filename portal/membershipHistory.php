@@ -164,7 +164,7 @@ FROM reg r
 JOIN memLabel m ON r.memId = m.id AND r.mldId = m.mdId
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON r.newperid = n.id AND n.perid IS NULL
-WHERE (r.status IN  ('unpaid', 'paid', 'plan', 'upgraded') OR r.status = NULL)
+WHERE (r.status IN  ('paid', 'upgraded') OR r.status = NULL)
 AND r.conid >= ? AND r.conid <= ?
 AND ((p.managedBy = ? OR p.id = ?) OR (n.perid IS NULL AND n.managedBy = ?))
 ORDER BY n.id, p.id, r.conid DESC, r.create_date ASC
