@@ -106,7 +106,9 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
         WHEN P.managedBy IS NOT NULL THEN 'p'
         ELSE null
     END AS managedByType,
-    M.label, CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    CASE WHEN M.conid = ? THEN M.label ELSE CONCAT(M.conid, ' ', M.label) END AS label, 
+    CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, M.conid,
+    R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
@@ -120,9 +122,9 @@ LEFT OUTER JOIN history H on H.id = R.id
 WHERE R.conid=? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ? OR R.newperid = ?)
 ORDER BY R.create_date DESC;
 EOS;
-    $typeString = 'iiiiiiiiiiiiiiiii';
+    $typeString = 'iiiiiiiiiiiiiiiiii';
     $params = array($limitConid, $search, $search, $search, $limitConid, $search, $search, $search, $limitConid, $search, $search, $search,
-        $limitConid, $search, $search, $search, $search);
+        $limitConid, $limitConid, $search, $search, $search, $search);
 } else {
     if ($search != '%')
         $search = '%' . str_replace(' ', '%', $search) . '%';
@@ -176,7 +178,9 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
         WHEN R.perid IS NOT NULL AND P.manager IS NOT NULL THEN 'p'
         ELSE null
     END AS managedByType,
-    M.label, CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    CASE WHEN M.conid = ? THEN M.label ELSE CONCAT(M.conid, ' ', M.label) END AS label, 
+    CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, M.conid, 
+    R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
@@ -192,9 +196,9 @@ LEFT OUTER JOIN history H on H.id = R.id
 WHERE R.conid=? AND (P.perid IS NOT NULL OR NP.newperson_id IS NOT NULL)
 ORDER BY R.create_date DESC;
 EOS;
-    $typeString = 'iiissssssssssi';
-    $params = array($limitConid, $limitConid, $limitConid, $search, $search, $search, $search, $search, $search, $search, $search, $search,
-        $search, $limitConid);
+    $typeString = 'iiiissssssssssi';
+    $params = array($limitConid, $limitConid, $limitConid, $limitConid, $search, $search, $search, $search, $search, $search, $search, $search,
+    $search,  $search, $limitConid);
 }
 
 $response['query'] = $badgeQ;
