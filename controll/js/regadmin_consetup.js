@@ -125,10 +125,10 @@ class consetup {
         this.#editMemListBundleContainsRow = document.getElementById('editMemListBundleContainsRow');
         this.#memListPrice = document.getElementById('editMemListPrice');
         this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
-        if (this.#editMemListBundleDiv) {
+        if (this.#editMemListBundleDiv)
             this.#editMemListBundleDiv.hidden = true;
+        if (this.#editMemListBundleContainsRow)
             this.#editMemListBundleContainsRow.hidden = true;
-        }
     };
 
     // set undo / redo status for conlist (convention data)
