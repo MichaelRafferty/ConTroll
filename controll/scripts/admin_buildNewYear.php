@@ -135,7 +135,7 @@ if ($maxArtItemsHistoryYears < 99999) {
 DELETE FROM artItemsHistory
 WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
 EOS;
-    $numRdel = dbSafeCmd($delQ, 'ii', array($maxArtItemsHistoryYears, $maxArtItemsHistoryYears));
+    $numRdel = dbSafeCmd($delQ, 'i', array($maxArtItemsHistoryYears));
     $message .= "$numRdel artItemsHistory rows deleted for delete older than $maxArtItemsHistoryYears year(s).<br/>\n";
 }
 
@@ -145,7 +145,7 @@ if ($maxExhibitorHistoryYears < 99999) {
 DELETE FROM exhibitorsHistory
 WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
 EOS;
-    $numRdel = dbSafeCmd($delQ, 'ii', array($maxExhibitorHistoryYears, $maxExhibitorHistoryYears));
+    $numRdel = dbSafeCmd($delQ, 'i', array($maxExhibitorHistoryYears));
     $message .= "$numRdel exhibitorsHistory rows deleted for delete older than $maxExhibitorHistoryYears year(s).<br/>\n";
 }
 
@@ -155,7 +155,7 @@ if ($maxPerinfoHistoryYears < 99999) {
 DELETE FROM perinfoHistory
 WHERE historyDate < DATE_SUB(NOW(), INTERVAL ? YEAR);
 EOS;
-    $numRdel = dbSafeCmd($delQ, 'ii', array($maxPerinfoHistoryYears, $maxPerinfoHistoryYears));
+    $numRdel = dbSafeCmd($delQ, 'i', array($maxPerinfoHistoryYears));
     $message .= "$numRdel perinfoHistory rows deleted for delete older than $maxPerinfoHistoryYears year(s).<br/>\n";
 }
 
@@ -245,7 +245,7 @@ EOS;
 $checkMLQ3 = <<<EOS
 SELECT id, conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online
 FROM memList
-WHERE conid = ? AND substring(notes, 1, 24) != 'Auto created by rollover' AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
+WHERE conid = ? AND substring(IFNULL(notes, ''), 1, 24) != 'Auto created by rollover' AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
 EOS;
 $insML = <<<EOS
 INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online)
@@ -276,7 +276,7 @@ if ($numFound == 0) {
             $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
             $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdssss', $valueArr);
         if ($newMemId !== false) {
             $memIdMap[$row['id']] = $newMemId;
             $numRows++;
@@ -307,7 +307,7 @@ if ($numFound == 0) {
             $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
             $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdssss', $valueArr);
         if ($newMemId !== false) {
             $memIdMap[$row['id']] = $newMemId;
             $numRows++;
@@ -338,7 +338,7 @@ if ($numFound == 0) {
             $conid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
             $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdssss', $valueArr);
         if ($newMemId !== false) {
             $memIdMap[$row['id']] = $newMemId;
             $numRows++;
@@ -376,7 +376,7 @@ EOS;
     foreach ($dr AS $row) {
         $newStartDate =  startEndDateToNextYear($row['startdate']);
         $newEndDate = startEndDateToNextYear($row['enddate']);
-        $numRows += dbSafeCmd($insDRQ, 'issssi', array($conid, $row['nickname'], $newStartDate, $newEndDate, $row['sortorder']));
+        $numRows += dbSafeCmd($insDRQ, 'isssi', array($conid, $row['nickname'], $newStartDate, $newEndDate, $row['sortorder']));
     }
 
     $message .= "$numRows Price Break Date Range entries inserted for $year<br/>\n";
@@ -385,16 +385,16 @@ EOS;
 // ok, memList now created, need to do everything in the memIdMapfor the memListDates entries
 if (count($memIdMap) > 0) {
     $mldQ = <<<EOS
-SELECT id, memId, glNum, price, startdate, enddate, nickname
+SELECT id, memId, glNum, price, startdate, enddate, nickName
 FROM memListDates
 WHERE memId = ?;
 EOS;
     $insMLD = <<<EOS
-INSERT INTO memListDates(memId, glNum, price, startdate, enddate, nickname)
+INSERT INTO memListDates(memId, glNum, price, startdate, enddate, nickName)
 VALUES (?, ?, ?, ?, ?, ?);
 EOS;
 
-    $numRows = 9;
+    $numRows = 0;
     // the map has the old to new memId's we need to copy over
     foreach ($memIdMap AS $oldMemId => $newMemId) {
         // get the memListdates for this memId and make new ones
@@ -402,7 +402,7 @@ EOS;
         while ($row = $getMLD->fetch_assoc()) {
             $newStartDate = startEndDateToNextYear($row['startdate']);
             $newEndDate = startEndDateToNextYear($row['enddate']);
-            $numRows += dbSafeCmd($insMLD, 'isdss', array($newMemId, $row['glNum'], $row['price'], $newStartDate, $newEndDate));
+            $numRows += dbSafeCmd($insMLD, 'isdsss', array($newMemId, $row['glNum'], $row['price'], $newStartDate, $newEndDate, $row['nickName']));
         }
         $getMLD->free();
     }
@@ -416,7 +416,7 @@ if (str_starts_with($msg, 'Error: ') ) {
 }
 $message .= "$msg";
 // check if the current exhibits year exists and if not, try to build it from last year
-$msg = exhibitorCheckOrBuildYear($conid);
+$msg = exhibitorCheckOrBuildYear($conid, $memIdMap);
 if (str_starts_with($msg, 'Error: ') ) {
     error_log("exhibitorCheckOrBuildYear returned $msg");
 }

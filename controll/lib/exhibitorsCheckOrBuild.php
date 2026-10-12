@@ -1,7 +1,7 @@
 <?php
 // check if the current year exists for exhibitor setuo, or try to build it from last year if it doesn't.
 
-function exhibitorCheckOrBuildYear($conid) : string {
+function exhibitorCheckOrBuildYear($conid, $memIdMap) : string {
     // check to see if this conid exists in the exhibitor setup tables
 
     $checkQ = <<<EOS
@@ -81,10 +81,12 @@ EOS;
         $newIncludedMemId = null;
         $newAdditionalMemId = null;
         if ($eryRow['includedMemId'] > 0) {
-            $newIncludedMemId = findOrBuild($eryRow['includedMemId'], $conid);
+            if (array_key_exists($eryRow['includedMemId'], $memIdMap))
+                $newIncludedMemId = $memIdMap[$eryRow['includedMemId']];
         }
         if ($eryRow['additionalMemId'] > 0) {
-            $newAdditionalMemId = findOrBuild($eryRow['additionalMemId'], $conid);
+            if (array_key_exists($eryRow['additionalMemId'], $memIdMap))
+                $newAdditionalMemId = $memIdMap[$eryRow['additionalMemId']];
         }
         
         $eryRow['conid'] = $conid;
@@ -142,54 +144,4 @@ EOS;
     $eRYR->free();
 
     return "Built exhibits configuration for $conid";
-}
-
-function findOrBuild($memId, $conId) : int | null {
-    if ($memId == null) // no current one to match
-        return null;
-
-    $priorMemQ = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, 
-       DATE_ADD(startdate, INTERVAL 1 YEAR) AS startdate, DATE_ADD(enddate, INTERVAL 1 YEAR) AS enddate, atcon, online, glNum
-FROM memList
-WHERE id = ? and conid = ?;
-EOS;
-    $curMemQ = <<<EOS
-SELECT id
-FROM memList
-WHERE conid = ? AND memCategory = ? AND memType = ? AND memAge = ? AND label = ?;
-EOS;
-
-    // get the prior value
-    $priorMemR = dbSafeQuery($priorMemQ, 'ii', array($memId, $conId - 1));
-    if ($priorMemR ===  false || $priorMemR->num_rows != 1)
-        return null;    // no prior value found
-    $priorMem = $priorMemR->fetch_assoc();
-    $priorMemR->free();
-
-    $curMemR = dbSafeQuery($curMemQ, 'issss', array($conId, $priorMem['memCategory'], $priorMem['memType'], $priorMem['memAge'], $priorMem['label']));
-    if ($curMemR === false)
-        return null;    // query error, see logs
-
-    if ($curMemR->num_rows > 0) {
-        $newMemId = $curMemR->fetch_row()[0];
-        $curMemR->free();
-        return $newMemId;
-    }
-
-    // non exists, add it
-    $memI = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);
-EOS;
-    $valueArray = array($conId,
-        $priorMem['sort_order'], $priorMem['memCategory'], $priorMem['memType'], $priorMem['memAge'], $priorMem['label'],
-        $priorMem['notes'], $priorMem['price'], $priorMem['startdate'], $priorMem['enddate'], $priorMem['atcon'], $priorMem['online'],
-        $priorMem['glNum']
-    );
-
-    $newId = dbSafeInsert($memI, 'iisssssdsssss', $valueArray);
-    if ($newId === false)
-        return null;
-    return $newId;
 }
