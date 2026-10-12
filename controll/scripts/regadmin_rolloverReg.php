@@ -61,10 +61,11 @@ WHERE r.conid = ? AND r.id = ?;
 EOS;
 
 $matchMem = <<<EOS
-SELECT CASE WHEN m.price = ? THEN 1 ELSE 999 END AS priceMatch, m.price, m.id, m.mdId, m.glNum
+SELECT m.price, m.id, m.mdId, m.glNum
 FROM memListFull m
-WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ?
-ORDER BY 1,2,3;
+WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ? AND m.price = 0
+AND SUBSTRING(m.notes, 1, 24) = 'Auto created by rollover'
+ORDER BY 2,3;
 EOS;
 
 $newMemI = <<<EOS
@@ -74,7 +75,7 @@ EOS;
 
 $newMemD = <<<EOS
 INSERT INTO memListDates(memId, price, startdate, enddate)
-VALUES(?, ?, ?, ?);
+VALUES(?, 0, ?, ?);
 EOS;
 
 
@@ -157,7 +158,7 @@ foreach ($rolloverList as $badgeId => $rollover) {
             }
             // now we need a memListDate entry for it.
             //memid, price,startdate, enddate
-            $newMdId = dbSafeInsert($newMemD, 'idss', array($newId, $price, $nextYear . '/01/01 00:00', $nextYear . '/01/01 00:00'));
+            $newMdId = dbSafeInsert($newMemD, 'iss', array($newId, $nextYear . '/01/01 00:00', $nextYear . '/01/01 00:00'));
             if ($newMdId === false) {
                 $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create memListDates insert failure";
                 ajaxSuccess($response);
