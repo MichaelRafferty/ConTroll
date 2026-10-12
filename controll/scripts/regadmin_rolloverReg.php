@@ -50,7 +50,7 @@ LEFT OUTER JOIN regActions h ON h.regid = r.id AND h.action = 'print'
 WHERE r.id = ?
 )
 SELECT DISTINCT r.id, r.perid, r.price, r.couponDiscount, r.paid, r.status, r.memId, r.mldId, m.label, m.memAge, m.memCategory, m.memType,
-                m.glNum, r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name
+                m.glNum, r1.id AS nextid, r1.status as nextstatus, m1.label as nextlabel, h.printCnt, p.first_name, p.last_name, m.startdate, m.enddate
 FROM reg r
 JOIN memListFull m ON (r.memId = m.id AND r.mldId = m.mdId)
 JOIN perinfo p ON (r.perid = p.id)
@@ -66,15 +66,17 @@ FROM memListFull m
 WHERE m.memCategory = ? AND m.memType = ? AND m.memAge = ? AND m.label = ? AND m.conid = ?
 ORDER BY 1,2,3;
 EOS;
-// TODO: make it follow new date structure for the rolled over membership using memListDates
-$response['error'] = 'ERROR: reached TODO: need memList and memListDates rollover';
-ajaxSuccess($response);
-exit();
 
 $newMemI = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, atcon, online)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
+
+$newMemD = <<<EOS
+INSERT INTO memListDates(memId, price, startdate, enddate)
+VALUES(?, ?, ?, ?);
+EOS;
+
 
 foreach ($rolloverList as $badgeId => $rollover) {
     $result = dbSafeQuery($validateSQL, 'iiii', array($badgeId, $nextcon, $conid, $badgeId));
@@ -137,20 +139,32 @@ foreach ($rolloverList as $badgeId => $rollover) {
             // a match is found, the matching price is the best choice, but if not, it will use the lowest price/memId
             $matchL = $matchR->fetch_assoc();
             $rolloverList[$badgeId]['newid'] = $matchL['id'];
+            $rolloverList[$badgeId]['newMdId'] = $matchL['mdId'];
             $matchR->free();
         } else {
             $matchR->free();
-            // none found, create one
-            //conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
+            // compute next year, can't depend on nextcon
             $nextYear = substr(startEndDateToNextYear($startdate), 0, 4);
-            $newId = dbSafeInsert($newMemI, 'iisssssdsssss', array($nextcon, 999999, $memCategory, $memType, $memAge, $label,
-                "Auto created by rollover", $price, $nextYear . "/01/01 00:00", $nextYear . '/01/01 00:00', 'N', 'N', $glNum));
+            // none found, create one
+            // ok we know none exist as a memList, so first create the memlist entry
+            $newId = dbSafeInsert($newMemI, 'iisssssss', array ($nextcon, 90000, $memCategory, $memType, $memAge, $label,
+                'Auto created by rollover', 'N', 'N'));
+
             if ($newId === false) {
-                $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create insert failure";
+                $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create of memList insert failure";
+                ajaxSuccess($response);
+                return false;
+            }
+            // now we need a memListDate entry for it.
+            //memid, price,startdate, enddate
+            $newMdId = dbSafeInsert($newMemD, 'idss', array($newId, $price, $nextYear . '/01/01 00:00', $nextYear . '/01/01 00:00'));
+            if ($newMdId === false) {
+                $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create memListDates insert failure";
                 ajaxSuccess($response);
                 return false;
             }
             $rolloverList[$badgeId]['newid'] = $newId;
+            $rolloverList[$badgeId]['newMdId'] = $newMdId;
         }
     }
 }
@@ -190,6 +204,7 @@ EOS;
 foreach ($rolloverList as $basdgeId => $rollover) {
     // mark prior membership as rolled-over
     $newMemId = $rollover['newid'];
+    $newMdId = $rollover['newMdId'];
 
     // update old reg as rolled over
     $numrows = dbSafeCmd($upgsql, 'iii', array ($user_perid, $badgeId, $conid));

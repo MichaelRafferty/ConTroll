@@ -1341,8 +1341,8 @@ function changeRollover() {
 
         // now check the category
 
-        memCat = memLabelsIdx[changeItem.memId + '-' + changeItem.mdId].memCategory;
-        memAge = memLabelsIdx[changeItem.memId + '-' + changeItem.mdId].memAge;
+        memCat = memLabelsIdx[changeItem.memId + '-' + changeItem.mldId].memCategory;
+        memAge = memLabelsIdx[changeItem.memId + '-' + changeItem.mldId].memAge;
 
         if (allowRolloverCategories.indexOf(memCat) == -1) {
             message += "Cannot change " + changeItem.id + " as category " + memCat + " is not allowed to be rolled over<br/>";
@@ -1384,7 +1384,7 @@ function changeRollover() {
     for (let i = 0; i < memLabelsNext.length; i++) {
         let memItem = memLabelsNext[i];
         if (ageList[memItem.memAge]) {
-            if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
+            if (memItem.memCategory == memCat) {
                 memListSelect.push(memItem);
             }
         }
@@ -1394,9 +1394,11 @@ function changeRollover() {
     let optionList =  "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
 
     for (let i = 0; i < memListSelect.length; i++) {
-        optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
+        optionList += '   <option value="' + memListSelect[i].id + '-' + memListSelect[i].mdId + '">' +
+            memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
             memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' ' +
-            currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname + "</option>\n";
+            currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname +
+            ' (' + memListSelect[i].startdate + ")</option>\n";
     }
     optionList += "    <option value=''>Do Not Create New Registration for this row</option>\n</select>\n";
     let html = ''
@@ -1432,7 +1434,7 @@ function changeRolloverExecute() {
     }
 
     if (numIds == 0) {
-        show_message('At least one membership needs to have a "Do Not Create" selection', 'error', 'changeMessageDiv');
+        show_message('At least one membership needs to have a non "Do Not Create" selection', 'error', 'changeMessageDiv');
         return;
     }
 
@@ -1888,6 +1890,7 @@ function draw_registrations(data) {
             { field: "age", visible: false },
             { field: "type", visible: false },
             { field: "badgeId", visible: false },
+            { field: "conid", visible: false },
             { field: "perid", visible: false },
             { field: "create_trans", visible: false },
             { field: "complete_trans", visible: false },
