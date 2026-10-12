@@ -139,6 +139,7 @@ vendors=0 ; to enable vendor and artist admin tab debug statement (currently bit
 ;       cancel: actions related to a cancelled convention
 ;       controll: the controll back end
 ;       db: Items that are 'rollback' related, to undo change sets.  Used by merge and clean operations
+;       javascript: Any errors detected by the client javascript and sent to logError.php
 ;       reg: Items dealing with membership registrations across any section of the system
 ;       term: Items related to credit card processing (terminal mangement, order management, payment processing)
 ;       vendors: Exhibitor Space Payment related items (both controll and exhibitor portals)
@@ -150,6 +151,7 @@ artshow='/...PathtoLogDirectory.../artshowReg'
 cancel='/...PathtoLogDirectory.../cancel'
 controll='/...PathtoLogDirectory.../controll'
 db='/...PathtoLogDirectory.../db'
+javascript='/...PathtoLogDirectory.../javascript'
 logins='/...PathtoLogDirectory.../logins'
 reg='/...PathtoLogDirectory.../onlineReg'
 term='/...PathtoLogDirectory.../term'

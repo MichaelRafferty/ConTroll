@@ -12,6 +12,7 @@
 * New/Changed/Deleted Config File Entries: 
   * reg_admin.ini:
     * cashRounding: in base currency units, what amount to round to.  For USD, currency unit is 100, so rounding would be 5 for $0.05.
+    * javascript: in [log], new log file entry for errors captured from the client side javascript
   * reg_secret.ini:
     * lumiSalt: salt to use for computing LUMI password for busines meeting login
   * reg_conf.ini:
