@@ -4,6 +4,14 @@
 
 // main screen
 var message_div = null;
+var configTable = null;
+
+var configTable_dirty = false;
+var configTable_savebtn = null;
+var configTable_undobtn = null;
+var configTable_redobtn = null;
+var configTable_addbtn = null;
+
 
 conid = null
 // debug meaning
@@ -34,6 +42,12 @@ window.onload = function initpage() {
     addTitle = document.getElementById('addTitle');
     addName = document.getElementById('addName');
   }
+
+  configTable_savebtn = document.getElementById('clubTypes-save');
+  configTable_undobtn = document.getElementById('clubTypes-undo');
+  configTable_redobtn = document.getElementById('clubTypes-redo');
+  configTable_addbtn = document.getElementById('clubTypes-add');
+
   if (config.hasOwnProperty('msg')) {
     show_message(config.msg, 'success');
   }
@@ -107,6 +121,10 @@ function settab(tabname) {
   }
 }
 
+function cellChanged(cell) {
+  dirty = true;
+  cell.getElement().style.backgroundColor = "#fff3cd";
+}
 function getClubConfig() {
   var url = 'scripts/club_getClubConfig.php';
   clearError();
@@ -133,7 +151,7 @@ function openClubConfig(data) {
     return;
   }
 
-  if(data.clubTypes) {
+  if(configTable == null) {
     configTable = new Tabulator('#clubTypesTableDiv', {
       moveableRows: true,
       history: true,
@@ -142,17 +160,110 @@ function openClubConfig(data) {
       columns: [
         { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
         { field: "id", visible: debug > 0 },
-        { title: "Type", field: "clubMemType" },
-        { title: "Description", field: "description" },
+        { title: "Type", field: "clubMemType", editor: "input",
+          editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ] },
+        { title: "Description", field: "description", editor: "input",
+          editorParams: { elementAttributes: { maxlength: "1024" } } },
         { title: "Expires?", field: "expires", editor:"list", editorParams:{values: ["No", "Years"]}},
         { title: "Number of Years", field: "nYears", editor:"number"},
-        { title: "Badgename Flag", field: "flag" },
+        { title: "Badge Flag", field: "flag", editor: "input",
+          editorParams: { elementAttributes: { maxlength: "2" } }},
         { field: "sortOrder", visible: debug > 0 },
       ]
     })
   }
+  configTable.on("dataChanged", function (data) {
+    clubConfig_dataChanged(data);
+  });
+  configTable.on("rowMoved", function (row) {
+    clubConfig_rowMoved(row)
+  });
+  configTable.on("cellEdited", cellChanged);
+
+
+}
+function clubConfig_dataChanged(data) {
+  //data - the updated table data
+  if (!configTable_dirty) {
+    configTable_savebtn.innerHTML = "Save Changes*";
+    configTable_savebtn.disabled = false;
+    configTable_dirty = true;
+  }
+  checkConfigTableUndoRedo();
+};
+
+function undoConfigTable() {
+  if (configTable != null) {
+    configTable.undo();
+
+    if (checkConfigTableUndoRedo() <= 0) {
+      configTable_dirty = false;
+      configTable_savebtn.innerHTML = "Save Changes";
+      configTable_savebtn.disabled = true;
+    }
+  }
 }
 
+function redoConfigTable() {
+  if (configTable != null) {
+    configTable.redo();
+
+    if (checkConfigTableUndoRedo() > 0) {
+      configTable_dirty = true;
+      configTable_savebtn.innerHTML = "Save Changes*";
+      configTable_savebtn.disabled = false;
+    }
+  }
+}
+function checkConfigTableUndoRedo() {
+  var undosize = configTable.getHistoryUndoSize();
+  configTable_undobtn.disabled = undosize <= 0;
+  configTable_redobtn.disabled = configTable.getHistoryRedoSize() <= 0;
+  return undosize;
+}
+
+function clubConfig_rowMoved(row) {
+  let sortValue = undefined;
+  let sortCell = undefined;
+  let copyRow = row.getPrevRow();
+  if (copyRow !== false) {
+    sortCell = copyRow.getCell('sort_order');
+    sortValue = sortCell.getValue() + 1;
+  } else {
+    copyRow = row.getNextRow();
+    if (copyRow !== false) {
+      sortCell = copyRow.getCell('sort_order');
+      sortValue = sortCell.getValue() - 1;
+    }
+  }
+  if (sortValue !== undefined) {
+    sortCell = row.getCell('sort_order');
+    sortCell.setValue(sortValue);
+  }
+  configTable_savebtn.innerHTML = "Save Changes*";
+  configTable_savebtn.disabled = false;
+  configTable_dirty = true;
+  checkConfigTableUndoRedo();
+}
+
+function addClubTypes() {
+  configTable.addRow({
+    clubMemType: 'new-row',
+    expires: "Years",
+    nYears: 0
+  }, false).then(function (row) {
+    row.getTable().setPageToRow(row).then(function () {
+      row.getCell("clubMemType").getElement().style.backgroundColor = "#fff3cd";
+      row.getCell("expires").getElement().style.backgroundColor = "#fff3cd";
+      row.getCell("nYears").getElement().style.backgroundColor = "#fff3cd";
+      checkConfigTableUndoRedo();
+    });
+  });
+}
+
+function saveClubTypes() {
+
+}
 function getList() {
   var formUrl = 'scripts/getClubList.php';
   $.ajax({

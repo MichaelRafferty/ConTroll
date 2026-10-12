@@ -111,6 +111,7 @@ if (array_key_exists('msg', $_REQUEST)) {
                     </div>
                     <div class='row mt-2 mb-3 '>
                         <div class='col-sm-auto'>
+                            <button id='clubList-add' type='button' class='btn btn-primary btn-sm' onclick='addClubList(); return false;' disabled>Add New</button>
                             <button id='clubList-undo' type='button' class='btn btn-secondary btn-sm' onclick='undoClubList(); return false;' disabled>Undo</button>
                             <button id='clubList-redo' type='button' class='btn btn-secondary btn-sm' onclick='redoClubList(); return false;' disabled>Redo</button>
                             <button id='clubList-save' type='button' class='btn btn-primary btn-sm' onclick='saveClubList(); return false;' disabled>Save Changes</button>
@@ -130,8 +131,9 @@ if (array_key_exists('msg', $_REQUEST)) {
                     </div>
                     <div class='row mt-2 mb-3 '>
                         <div class='col-sm-auto'>
-                            <button id='clubTypes-undo' type='button' class='btn btn-secondary btn-sm' onclick='undoClubTypes(); return false;' disabled>Undo</button>
-                            <button id='clubTypes-redo' type='button' class='btn btn-secondary btn-sm' onclick='redoClubTypes(); return false;' disabled>Redo</button>
+                            <button id='clubTypes-add' type='button' class='btn btn-primary btn-sm' onclick='addClubTypes(); return false;'>Add New</button>
+                            <button id='clubTypes-undo' type='button' class='btn btn-secondary btn-sm' onclick='undoConfigTable(); return false;' disabled>Undo</button>
+                            <button id='clubTypes-redo' type='button' class='btn btn-secondary btn-sm' onclick='redoConfigTable(); return false;' disabled>Redo</button>
                             <button id='clubTypes-save' type='button' class='btn btn-primary btn-sm' onclick='saveClubTypes(); return false;' disabled>Save Changes</button>
                         </div>
                     </div>
