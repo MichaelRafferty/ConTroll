@@ -90,6 +90,18 @@ EOS;
             $clearCount = clearAbandonedSale($item[1], $item[0]);
             if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
+        case 'Add Location':
+            $location = $action['value'];
+            $addLocationQ = <<<EOS
+UPDATE exhibitorRegionYears ery
+    JOIN exhibitorYears eY on eY.id=ery.exhibitorYearId
+SET ery.locations=CONCAT(ery.locations,',',?)
+WHERE eY.conid=? and ery.exhibitorNumber=?;
+EOS;
+            $addLocationR=dbSafeCmd($addLocationQ, 'sii', array($location, $conid, $item[0]));
+
+            $log .= " added Location $location";
+            break;
         case 'Set Location':
             $location = $action['value'];
             if ($location == null)

@@ -297,6 +297,8 @@ function remove_from_cart(index) {
     for (action in actionlist) {
         while((actionlist.length>0) && actionlist[action].item == key) {
             switch(actionlist[action].action) {
+            case 'Add Location':
+                break; //TODO clean up list of locations?
             case 'Set Location':
                 cart[index].location=cart[index].prev_loc;
                 break;
@@ -421,8 +423,10 @@ function draw_cart_row(rownum) {
                 if (show_location) {
                   if (item.need_location) {
                     action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                      action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
                   } else {
                     action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                      action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
                   }
                 }
                 action_html += '<br/>';
@@ -437,9 +441,11 @@ function draw_cart_row(rownum) {
               if (item.need_location) {
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id +
                     `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
               } else {
                 action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id +
                     `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
               }
             }
             action_html += '<br/>';
@@ -501,8 +507,10 @@ function draw_cart_row(rownum) {
             if (show_location) {
               if (item.need_location) {
                 action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
-                } else {
+                  action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
+              } else {
                 action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_add_loc" onclick="add_loc(`+rownum+`);">New Loc</button>`;
               }
             }
             action_html += '<br/>';
@@ -580,6 +588,31 @@ function update_bid(row, to_auction=false, close=false) {
     draw_cart();
 }
 
+function add_loc(row, redraw=true) {
+    var loc = prompt("Please enter the Location:");
+
+    let item = cart[row].id;
+    console.log("Shift " + item + " to " + loc);
+
+    if (!locations[cart[row].exhibitorNumber].includes(loc)) {
+        console.log("Adding New Location " + loc + " for exhibitor " + cart[row].exhibitorNumber);
+        actionlist.push(create_action('Add Location', cart[row].exhibitorNumber, loc));
+        locations[cart[row].exhibitorNumber].push(loc);
+
+        document.getElementById('loc_' + item).value = loc;
+    }
+
+    actionlist.push(create_action('Set Location', item, loc));
+
+    cart[row].location=loc;
+
+    if (cart[row].need_location) {
+        cart[row].need_location=false;
+        need_location--;
+    }
+
+    if (redraw) { draw_cart(); }
+}
 function update_loc(row, loc, redraw=true) {
     let item = cart[row].id;
     if (loc == undefined) { loc = document.getElementById('loc_' + item).value; }
@@ -633,7 +666,10 @@ function draw_notes() {
     for (action in actionlist) {
         html += "<li>" + actionlist[action].action + " " + actionlist[action].item 
         switch(actionlist[action].action){
-            case "Set Location": 
+            case "Add Location":
+                html += " with " + actionlist[action].value
+                break;
+            case "Set Location":
             case "Set Bidder":
             case "Set Bid":
                 html += " to " + actionlist[action].value
