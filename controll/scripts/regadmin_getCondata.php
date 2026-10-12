@@ -98,7 +98,7 @@ SELECT m.id, m.id AS memlistkey,
     m.rptGrouping,
     m.badgeLabel,
     c.badgeLabel AS catBadgeLabel,
-    count(r.id) + count (cp.id) as uses
+    count(r.id) + count(cp.id) as uses
 FROM memList m
 JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
 JOIN memCategories c ON m.memCategory = c.memCategory
