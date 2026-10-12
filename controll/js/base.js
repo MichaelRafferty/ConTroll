@@ -280,6 +280,10 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
 }
 // priceListHeaderFilter - loop over all price filter lines and check each date
 function priceListHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    if (rowValue == null) {
+        // hide row with missing price header data.
+        return true;
+    }
     let priceRanges = rowValue.split("\n");
     let option = headerValue.substring(0,1);
     let hv = headerValue.substring(1);
