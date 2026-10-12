@@ -262,3 +262,50 @@ function toDBdate(datestr) {
         String(jsDate.getSeconds()).padStart(2, '0');
     return newdate;
 }
+
+
+window.onerror = (message, source, lineno, colno, error) => {
+    logConTrollJSError({
+        type: 'error',
+        message: message,
+        source: source,
+        lineno: lineno,
+        colno: colno,
+        stack: error?.stack,
+    });
+    return true;
+};
+
+// Resource loading errors and cross-origin script errors
+window.addEventListener('error', (event) => {
+    if (event instanceof ErrorEvent) {
+        // Handled by window.onerror above; skip duplicate
+        return;
+    }
+    logConTrollJSError({
+        type: 'resource',
+        message: `Failed to load ${event.target.tagName}: ${event.target.src}`,
+        stack: null,
+    });
+});
+
+// Unhandled Promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    logConTrollJSError({
+        type: 'unhandledRejection',
+        message: typeof event.reason === 'string'
+            ? event.reason
+            : event.reason?.message || 'Unknown rejection',
+        stack: event.reason?.stack,
+    });
+    event.preventDefault();
+});
+
+function logConTrollJSError(info) {
+    console.error(info);
+    $.ajax({
+        url: "scripts/logError.php",
+        data: info,
+        method: "POST"
+    })
+}
