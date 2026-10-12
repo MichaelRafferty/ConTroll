@@ -309,9 +309,13 @@ DELIMITER ;
 DROP TABLE IF EXISTS memListMap;
 
 -- now clean up old fields and memList rows with no memListDates
-DELETE FROM memList
+DELETE memList
+FROM memList
+LEFT OUTER JOIN memListDates ON memList.id = memListDates.memId
+WHERE memListDates.memId is null;
 
-ALTER TABLE memList DROP CONSTRAINT memList_ibfk_1;
+ALTER TABLE memList DROP CONSTRAINT memList_gl;
+DROP INDEX memList_dups ON memList;
 ALTER TABLE memList DROP startdate, DROP enddate, DROP glNum, DROP price;
 
 /*
