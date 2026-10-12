@@ -148,7 +148,7 @@ foreach ($rolloverList as $badgeId => $rollover) {
             // none found, create one
             // ok we know none exist as a memList, so first create the memlist entry
             $newId = dbSafeInsert($newMemI, 'iisssssss', array ($nextcon, 90000, $memCategory, $memType, $memAge, $label,
-                'Auto created by rollover', 'N', 'N'));
+                'Auto created by rollover (Do not change this note)', 'N', 'N'));
 
             if ($newId === false) {
                 $response['error'] = "Cannot rollover $badgeId ($perid: $first_name $last_name) due to auto create of memList insert failure";

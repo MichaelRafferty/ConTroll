@@ -1,9 +1,15 @@
 <?php
 // build the missing current year and the required new year items for ConTroll setup
-// registration items next year
+// validation:
+//  if conlist for this year doesn't exist:
+//      if one for last year, build this years from that, if not give an error
+// registration items for this year (new year)
+//      first build the agelist for this year if empty (from prior year)
+//      second build the price break dates for this year if empty and prior year exists
+// registration items next year (new year + 1)
 //      first check for conlist entries and build conid + 1 if not found
 //      second build the agelist for the new year if empty
-//      build yearahead and volunteer rollover memlist entries for the new year if empty
+//      build yearahead and volunteer rollover memlist entries for the next year if empty
 //
 // build membership rules for this year if missing and last year exists
 // build exhibits config for this year if missing and last year exists
@@ -35,6 +41,7 @@ if ((!array_key_exists('action', $_POST)) && $_POST['action'] != 'build') {
 
 $con=get_conf('con');
 $conid= $con['id'];
+$lastConid = $conid - 1;
 $nextConid = $conid + 1;
 $response['conid'] = $conid;
 
@@ -42,29 +49,68 @@ $response['conid'] = $conid;
 $conlQ = <<<EOS
 SELECT id, name, label, startdate, enddate
 FROM conlist
-WHERE id in (?, ?);
+WHERE id between ? and ?
+ORDER BY id;
 EOS;
 
-$conlR = dbSafeQuery($conlQ, 'ii', array($conid, $nextConid));
+$conlR = dbSafeQuery($conlQ, 'ii', array($lastConid, $nextConid));
 if ($conlR === false) {
     $response['error'] = 'Con List Query Failed';
     ajaxSuccess($response);
     exit();
 }
+$lastYear = null;
 $thisYear = null;
 $nextYear = null;
 while ($row = $conlR->fetch_assoc()) {
-    if ($row['id'] == $conid)
-        $thisYear = $row;
-    else
-        $nextYear = $row;
+    switch ($row['id']) {
+        case $lastConid:
+            $lastYear = $row;
+            break;
+        case $conid:
+            $thisYear = $row;
+            break;
+        case $nextConid:
+            $nextYear = $row;
+            break;
+        default:
+            $response['error'] = "An invalid conid was returned for the three year period of $lastConid through $nextConid of " . $row['id'] .
+                "<br/>There is a data error in the ConTroll database, please contact the system administrator";
+            ajaxSuccess($response);
+            exit();
+    }
 }
 $conlR->free();
+$message = '';
+    $insQ = <<<EOS
+INSERT INTO conlist(id, name, label, startdate, enddate)
+VALUES (?,?,?,?,?);
+EOS;
 if ($thisYear == null) {
-    $response['error'] = "$conid is not yet set up, cannot set up next year, please use Current Convention Setup to set up this year";
-    ajaxSuccess($response);
-    exit();
+    if ($lastYear == null) {
+        $response['error'] = "$conid is not yet set up, cannot set up next year, please use Current Convention Setup to set up this year";
+        ajaxSuccess($response);
+        exit();
+    }
+    // ok build this year from last year
+    // need to create the next year conlist entry
+    $typestr = 'issss';
+    $valArray = array($nextConid,
+        str_replace(strval($lastConid), strval($conid), $lastYear['name']),
+        str_replace(strval($lastConid), strval($conid), $lastYear['label']),
+        startEndDateToNextYear($lastYear['startdate']),
+        startEndDateToNextYear($lastYear['enddate'])
+    );
+    $newId = dbSafeInsert($insQ, $typestr, $valArray);
+    if ($newId === false) {
+        $response['error'] = "Insert of $nextConid conlist entry failed";
+        ajaxSuccess($response);
+        exit();
+    }
+
+    $message .= "Added conlist entry for $nextConid as $newId<br/>\n";
 }
+
 
 // ok, we have the conid, and the rest will run anyway on a re-do, so do the history table truncates now
 $maxHistoryYears = getConfValue('con', 'maxHistoryYears', 99999);
@@ -73,7 +119,6 @@ $maxRegHistoryYears = getConfValue('con', 'maxRegHistoryYears', $maxHistoryYears
 $maxExhibitorHistoryYears = getConfValue('con', 'maxExhibitorHistoryYears', $maxHistoryYears);
 $maxArtItemsHistoryYears = getConfValue('con', 'maxArtItemsHistoryYears', $maxHistoryYears);
 
-$message = '';
 if ($maxRegHistoryYears < 99999) {
     // truncate the reg history
     $delQ = <<<EOS
@@ -116,10 +161,6 @@ EOS;
 
 if ($nextYear == null) {
     // need to create the next year conlist entry
-    $insQ = <<<EOS
-INSERT INTO conlist(id, name, label, startdate, enddate)
-VALUES (?,?,?,?,?);
-EOS;
     $typestr = 'issss';
     $valArray = array($nextConid,
                       str_replace(strval($conid), strval($nextConid), $thisYear['name']),
@@ -137,97 +178,82 @@ EOS;
     $message .= "Added conlist entry for $nextConid as $newId<br/>\n";
 }
 
-// build the taxList
+// build the taxList for this if needed and for next
+for ($year = $conid; $year <= $nextConid; $year++) {
+    /// taxlist
     $checkTaxQ = <<<EOS
-SELECT count(*) FROM taxList WHERE conid = ?;
+SELECT COUNT(*) FROM taxList WHERE conid = ?;
 EOS;
-    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array($nextConid));
+    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array ($year));
     $taxCount = $checkTaxR->fetch_row()[0];
     $checkTaxR->free();
     if ($taxCount == 0) {
         $taxInsQ = <<<EOS
 INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
-SELECT ?, taxField, label, rate, active, now(), NULL
+SELECT ?, taxField, label, rate, active, NOW(), NULL
 FROM taxList
 WHERE conid = ?;
 EOS;
-        $numRows = dbSafeCmd($taxInsQ, 'ii', array($nextConid, $conid));
-        $message .= "$numRows taxList entries inserted for $nextConid<br/>\n";
-// build taxable items
+        $numRows = dbSafeCmd($taxInsQ, 'ii', array ($year, $year - 1));
+        $message .= "$numRows taxList entries inserted for $year<br/>\n";
+        // build taxable items
         $taxInsQ = <<<EOS
-INSERT INTO taxItems(conid, item, taxable, lastUpdate, updatedBy, sortorder)
-SELECT ?, item, taxable, now(), NULL, sortorder
+INSERT INTO taxItems(conid, item, taxField, taxable, lastUpdate, updatedBy, sortorder)
+SELECT ?, item, taxField, taxable, NOW(), NULL, sortorder
 FROM taxItems
 WHERE conid = ?;
 EOS;
-        $numRows = dbSafeCmd($taxInsQ, 'ii', array($nextConid, $conid));
-        $message .= "$numRows taxItems entries inserted for $nextConid<br/>\n";
-    }
-// now check if they are useing the older config file variables and replace it with the tax list items instead
-    $checkTaxQ = <<<EOS
-SELECT COUNT(*) FROM taxList WHERE conid = ?;
-EOS;
-    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array ($nextConid));
-    $taxCount = $checkTaxR->fetch_row()[0];
-    $checkTaxR->free();
-    if ($taxCount == 0) {
-        $taxRate = getConfValue('con', 'taxRate', null);
-        $taxLabel = getConfValue('con', 'taxLabel', null);
-        if ($taxRate != null && $taxLabel != null) {
-            $insQ = <<<EOS
-            INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
-            VALUES(?, 'tax1', ?, ?, 'Y', NOW(), NULL);
-EOS;
-            $numRows = dbSafeCmd($insQ, 'issd', array ($nextConid, $taxLabel, $taxRate));
-            if ($numRows > 0) {
-                $message .= 'converted obsolete configuration tax rate variables to taxList;';
-            }
-        }
+        $numRows = dbSafeCmd($taxInsQ, 'ii', array ($year, $year - 1));
+        $message .= "$numRows taxItems entries inserted for $year<br/>\n";
     }
 
-// build the agelist if needed
-$checkAgeQ = <<<EOS
-SELECT count(*) FROM ageList WHERE conid = ?;
-EOS;
-$checkAgeR = dbSafeQuery($checkAgeQ, 'i', array($nextConid));
-$ageCount = $checkAgeR->fetch_row()[0];
-$checkAgeR->free();
-if ($ageCount == 0) {
-    $ageInsQ = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, verify)
-SELECT ?, ageType, label, shortname, sortorder, badgeFlag, verify
-FROM ageList
-WHERE conid = ?;
-EOS;
-    $numRows = dbSafeCmd($ageInsQ, 'ii', array($nextConid, $conid));
-    $message .= "$numRows ageList entries inserted for $nextConid<br/>\n";
+    // build the agelist if needed
+    $checkAgeQ = <<<EOS
+    SELECT COUNT(*) FROM ageList WHERE conid = ?;
+    EOS;
+    $checkAgeR = dbSafeQuery($checkAgeQ, 'i', array ($year));
+    $ageCount = $checkAgeR->fetch_row()[0];
+    $checkAgeR->free();
+    if ($ageCount == 0) {
+        $ageInsQ = <<<EOS
+    INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, verify)
+    SELECT ?, ageType, label, shortname, sortorder, badgeFlag, verify
+    FROM ageList
+    WHERE conid = ?;
+    EOS;
+        $numRows = dbSafeCmd($ageInsQ, 'ii', array ($year, $year-1));
+        $message .= "$numRows ageList entries inserted for $nextConid<br/>\n";
+    }
 }
 
-// build the memList entries for this year (non uearahead and non rollover) and year + 1 for volunteer rollover and yearahead
+// build the memList entries for this year (non yearahead and non rollover) and year + 1 for volunteer rollover and yearahead
 
 // year + 1 volunteer rollover
 $checkMLQ1 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum
+SELECT id, conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online
 FROM memList
 WHERE label = ? AND conid = ?;
 EOS;
 // year + 1 yearahead
 $checkMLQ2 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum
+SELECT id, conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online
 FROM memList
 WHERE memCategory = ? AND conid = ?;
 EOS;
-// this year others (note startdate == enddate is for the pushed rollover types we don;t want to auto carry forward,
+// this year others (notes 'auto created by rollover' is for the pushed rollover types we don't want to auto carry forward,
 // as they might conflict with ones pushed by rollovers automatically.
 $checkMLQ3 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum
+SELECT id, conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online
 FROM memList
-WHERE conid = ? AND startdate != enddate AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
+WHERE conid = ? AND substring(notes, 1, 24) != 'Auto created by rollover' AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
 EOS;
 $insML = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
+
+// memid Map maps existing memId's to new memId's for build price breaks.
+$memIdMap = [];
 
 // next year rollover volunteer
 $checkMLR = dbSafeQuery($checkMLQ1, 'si', array ('Rollover-volunteer', $nextConid));
@@ -245,12 +271,18 @@ if ($numFound == 0) {
     // now insert the new ones
     $numRows = 0;
     foreach ($rows as $row) {
+        //conid, sort_order, memCategory, memType, memAge, label, cartDesc, notes, rptGrouping, badgeLabel, atcon, online
         $valueArr = array(
-            $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
-            startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online'], $row['glNum']
+            $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
+            $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdsssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        if ($newMemId !== false) {
+            $memIdMap[$row['id']] = $newMemId;
+            $numRows++;
+        } else {
+            $message .= 'Failed to insert rollover-volunteer memList entry for ' . $row['id'] . "<br/>\n";
+        }
     }
     $message .= "$numRows Rollover-volunteer memList entries added for $nextConid<br/>\n";
 }
@@ -272,11 +304,16 @@ if ($numFound == 0) {
     $numRows = 0;
     foreach ($rows as $row) {
         $valueArr = array(
-            $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
-            startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online'], $row['glNum']
+            $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
+            $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdsssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        if ($newMemId !== false) {
+            $memIdMap[$row['id']] = $newMemId;
+            $numRows++;
+        } else {
+            $message .= "Failed to insert yearahead memList entry for " . $row['id'] . "<br/>\n";
+        }
     }
     $message .= "$numRows yearahead memList entries added for $nextConid<br/>\n";
 }
@@ -297,17 +334,83 @@ if ($numFound == 0) {
     // now insert the new ones
     $numRows = 0;
     foreach ($rows as $row) {
-        $valueArr = array(
-            $conid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
-            startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online'], $row['glNum']
+        $valueArr = array (
+            $conid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['cartDesc'],
+            $row['notes'], $row['rptGrouping'], $row['badgeLabel'], $row['atcon'], $row['online']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdssss', $valueArr);
+        $newMemId = dbSafeInsert($insML, 'iisssssdsssss', $valueArr);
+        if ($newMemId !== false) {
+            $memIdMap[$row['id']] = $newMemId;
+            $numRows++;
+        } else {
+            $message .= 'Failed to insert current year memList entry for ' . $row['id'] . "<br/>\n";
+        }
     }
-    $message .= "$numRows normal memList entries added for $conid<br/>\n";
+    $message .= "$numRows normal memLis entries added for $conid<br/>\n";
 }
 
-$msg = updateRules($conid);
+// build the price break list (dateRanges) for this year from last year
+$checkDRQ = <<<EOS
+SELECT id, conid, nickname, startdate, enddate, nickname, sortorder
+FROM  dateRanges
+WHERE conid = ?;
+EOS;
+
+$checkDR = dbSafeQuery($checkDRQ, 'i', array($conid));
+$numFound = $checkDR->num_rows;
+$checkDR->free();
+
+if ($numFound == 0) {
+    $numRows = 0;
+    $insDRQ = <<<EOS
+INSERT INTO dateRanges(conid, nickname, startdate, enddate, sortorder)
+VALUES (?, ?, ?, ?, ?);
+EOS;
+    $dr = [];
+    $getDR = dbSafeQuery($checkDRQ, 'i', array($lastConid));
+    while ($row = $getDR->fetch_assoc()) {
+        $dr[] = $row;
+    }
+    $getDR->free();
+    // now loop over them updating start and end dates
+    foreach ($dr AS $row) {
+        $newStartDate =  startEndDateToNextYear($row['startdate']);
+        $newEndDate = startEndDateToNextYear($row['enddate']);
+        $numRows += dbSafeCmd($insDRQ, 'issssi', array($conid, $row['nickname'], $newStartDate, $newEndDate, $row['sortorder']));
+    }
+
+    $message .= "$numRows Price Break Date Range entries inserted for $year<br/>\n";
+}
+
+// ok, memList now created, need to do everything in the memIdMapfor the memListDates entries
+if (count($memIdMap) > 0) {
+    $mldQ = <<<EOS
+SELECT id, memId, glNum, price, startdate, enddate, nickname
+FROM memListDates
+WHERE memId = ?;
+EOS;
+    $insMLD = <<<EOS
+INSERT INTO memListDates(memId, glNum, price, startdate, enddate, nickname)
+VALUES (?, ?, ?, ?, ?, ?);
+EOS;
+
+    $numRows = 9;
+    // the map has the old to new memId's we need to copy over
+    foreach ($memIdMap AS $oldMemId => $newMemId) {
+        // get the memListdates for this memId and make new ones
+        $getMLD = dbSafeQuery($mldQ, 'i', array($oldMemId));
+        while ($row = $getMLD->fetch_assoc()) {
+            $newStartDate = startEndDateToNextYear($row['startdate']);
+            $newEndDate = startEndDateToNextYear($row['enddate']);
+            $numRows += dbSafeCmd($insMLD, 'isdss', array($newMemId, $row['glNum'], $row['price'], $newStartDate, $newEndDate));
+        }
+        $getMLD->free();
+    }
+    $message .= "$numRows memListDates entries inserted for $year<br/>\n";
+}
+
+// Membership Rules
+$msg = updateRules($conid, $memIdMap);
 if (str_starts_with($msg, 'Error: ') ) {
     error_log("updateRules returned $msg");
 }
@@ -321,7 +424,7 @@ $message .= "$msg<br/>\n<br/>NOTE: Check the current and next year's configurati
 $response['success'] = $message;
 ajaxSuccess($response);
 
-function updateRules($conid) {
+function updateRules($conid, $memIdMap) {
     $msg = '';
 
     $getRQ = <<<EOS
@@ -379,7 +482,7 @@ EOS;
     $numRulesUpd = 0;
     foreach ($rules as $rule) {
         if (array_key_exists('memList', $rule) && $rule['memList'] != null)
-            $rule['memList'] = updateRuleMemlist($conid, $rule['memList']);
+            $rule['memList'] = updateRuleMemlist($conid, $rule['memList'], $memIdMap);
         else
             $rule['memList'] = null;
 
@@ -394,7 +497,7 @@ EOS;
     $numStepsUpd = 0;
     foreach ($steps as $step) {
         if (array_key_exists('memList', $step) && $step['memList'] != null)
-            $step['memList'] = updateRuleMemlist($conid, $step['memList']);
+            $step['memList'] = updateRuleMemlist($conid, $step['memList'], $memIdMap);
         else
             $step['memList'] = null;
 
@@ -409,43 +512,14 @@ EOS;
     return $msg;
 }
 
-function updateRuleMemList($conid, $list) {
+function updateRuleMemList($conid, $list, $memIdMap) {
     $listItems = explode(',', $list);
     $newListItems = [];
 
-    $getQ = <<<EOS
-SELECT startdate, enddate
-FROM memList
-WHERE id = ?;
-EOS;
-    $getRQ = <<<EOS
-SELECT mn.id
-FROM memList mn
-JOIN memList mp ON (mp.sort_order = mn.sort_order AND mp.memCategory = mn.memCategory AND mp.memType = mn.memType AND mp.memAge = mn.memAge
-    AND mp.label = mn.label AND mp.price = mn.price AND mp.atcon = mn.atcon AND mp.online = mn.online)
-WHERE mn.startdate = ? AND mn.enddate = ? AND mp.id = ?;
-EOS;
-
     // loop over list looking up new item to replace old one
     foreach ($listItems as $item) {
-        $mR = dbSafeQuery($getQ,'i', array($item));
-        if ($mR === false || $mR->num_rows != 1) {
-            error_log("bad memList query in updateRuleMemList");
-            continue;
-        }
-        [$startdate, $enddate] = $mR->fetch_row();
-        $mR->free();
-        $startdate = startEndDateTimeToNextYear($startdate);
-        $enddate = startEndDateTimeToNextYear($enddate);
-
-        $mR = dbSafeQuery($getRQ, 'ssi', array($startdate, $enddate, $item));
-        if ($mR === false || $mR->num_rows != 1) {
-            error_log('bad memList replacement query in updateRuleMemList');
-            continue;
-        }
-        $newItem = $mR->fetch_row()[0];
-        $mR->free();
-        $newListItems[] = $newItem;
+        if (array_key_exists($item, $memIdMap))
+            $newListItems[] = $memIdMap[$item];
     }
 
     if (count($newListItems) == 0)
