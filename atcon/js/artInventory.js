@@ -589,7 +589,7 @@ function update_bid(row, to_auction=false, close=false) {
 }
 
 function add_loc(row, redraw=true) {
-    var loc = prompt("Please enter the Location:");
+    var loc = prompt("Please enter the Location:").trim();
 
     let item = cart[row].id;
     console.log("Shift " + item + " to " + loc);
