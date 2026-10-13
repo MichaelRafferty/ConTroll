@@ -181,51 +181,33 @@ ALTER TABLE memListDates ADD CONSTRAINT FOREIGN KEY mldate_glt(glNum) REFERENCES
 -- now select what goes into it
 INSERT INTO memListDates(memid, glNum, price, startdate, enddate)
 WITH lowestdates AS (
-    SELECT conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel, min(startdate) as startdate
+    SELECT conid, memCategory, memType, memAge, label, REGEXP_REPLACE(notes, '^[0-9, ]+/', '') AS newnotes,
+           `online`, atcon, badgeLabel, min(startdate) as startdate
     FROM memList
-    GROUP by conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel
+    GROUP by conid, memCategory, memType, memAge, label, newnotes,
+             `online`, atcon, badgeLabel
 ), mastermids AS (
-    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel, m.startdate
+    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label,
+           REGEXP_REPLACE(m.notes, '^[0-9, ]+/', '') AS newnotes, m.online, m.atcon, m.badgeLabel, m.startdate
     FROM memList m
-    JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
-        m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
-        m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
+             JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+                                    m.memAge = md.memAge AND m.label = md.label AND md.newnotes = REGEXP_REPLACE(m.notes, '^[0-9, ]+/', '')
+        AND m.online = md.online AND
+                                    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
 )
 SELECT md.id, m.glNum, m.price, m.startdate, m.enddate
 FROM memList m
-JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
-    m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
-    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel;
+         JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+                               m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+                               m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND
+                               REGEXP_REPLACE(m.notes, '^[0-9, ]+/', '') = md.newnotes
+ORDER BY id, startdate, enddate;
 
 UPDATE memListDates m
 JOIN memList ml ON ml.id = m.memId
 JOIN dateRanges d ON m.startdate = d.startdate and m.enddate = d.enddate and ml.conid = d.conid
 SET m.nickName = d.nickName
 WHERE d.nickName IS NOT NULL AND d.nickName != '';
-
-DROP VIEW IF EXISTS memLabel;
-CREATE ALGORITHM=UNDEFINED
-    SQL SECURITY INVOKER
-    VIEW memLabel AS SELECT
-         m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,
-         a.shortname AS ageShortName, m.label AS shortname, concat(m.label,' [',a.label,']') AS label,
-         m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
-         md.price, md.startdate, md.enddate, md.nickName, md.glNum,
-         c.taxable, c.badgeLabel AS catBadgeLabel
-    FROM memList m
-    JOIN memListDates md ON m.id = md.memId
-    JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
-    JOIN memCategories c ON m.memCategory = c.memCategory;
-
-DROP VIEW IF EXISTS memListFull;
-CREATE ALGORITHM=UNDEFINED
-    SQL SECURITY INVOKER
-    VIEW memListFull AS SELECT
-         m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,	m.label,
-         m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
-         md.price, md.startdate, md.enddate, md.nickName, md.glNum
-    FROM memList m
-    JOIN memListDates md ON m.id = md.memId;
 
 -- now update the existing regs and old rows
 DROP TABLE IF EXISTS memListMap;
@@ -237,22 +219,34 @@ CREATE TABLE memListMap (
 
 INSERT INTO memListMap(oldMemId, newMemId, newMdId)
 WITH lowestdates AS (
-    SELECT conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel, min(startdate) as startdate
+    SELECT conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel,
+           min(startdate) as startdate, REGEXP_REPLACE(notes, '^[0-9, ]+/', '') AS newnotes
     FROM memList
-    GROUP by conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel
-), mastermids AS (
-    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel, m.startdate, m.enddate
+    GROUP by conid, memCategory, memType, memAge, label, `online`, atcon, badgeLabel, newnotes
+), memListcomp AS (
+    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel,
+           REGEXP_REPLACE(m.notes, '^[0-9, ]+/', '') AS newnotes, m.startdate, m.enddate
     FROM memList m
-    JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
-        m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
-        m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
+), mastermids AS (
+    SELECT m.id, m.conid, m.memCategory, m.memType, m.memAge, m.label, m.online, m.atcon, m.badgeLabel,
+           m.newnotes, m.startdate, m.enddate
+    FROM memListComp m
+             JOIN lowestdates md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+                                    m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+                                    m.newnotes = md.newnotes AND
+                                    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND m.startdate = md.startdate
+), full AS (
+    SELECT m.id AS oldMemId, md.id AS newMemId, mld.id AS newMdId, md.newnotes
+    FROM memList m
+             JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
+                                   m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
+                                   m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel AND
+                                   REGEXP_REPLACE(m.notes, '^[0-9, ]+/', '') = md.newnotes
+             JOIN memListDates mld WHERE md.id = mld.memId AND mld.startDate = md.startDate AND mld.enddate = md.enddate
 )
-SELECT m.id, md.id, mld.id
-FROM memList m
-JOIN mastermids md ON md.conid = m.conid AND md.memCategory = m.memCategory AND m.memType = md.memType AND
-    m.memAge = md.memAge AND m.label = md.label AND m.online = md.online AND
-    m.atcon = md.atcon AND m.badgeLabel = md.badgeLabel
-JOIN memListDates mld WHERE md.id = mld.memId AND mld.startDate = md.startDate AND mld.enddate = md.enddate;
+SELECT oldMemId, newMemId, newMdId
+FROM full m
+ORDER BY 1,2,3;
 
 -- now rebuild reg and exhibitsRegionYears
 DROP TRIGGER IF EXISTS reg_update;
@@ -300,6 +294,31 @@ WHERE memListDates.memId is null;
 ALTER TABLE memList DROP CONSTRAINT memList_gl;
 DROP INDEX memList_dups ON memList;
 ALTER TABLE memList DROP startdate, DROP enddate, DROP glNum, DROP price;
+
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY INVOKER
+VIEW memLabel AS
+SELECT
+    m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,
+    a.shortname AS ageShortName, m.label AS shortname, concat(m.label,' [',a.label,']') AS label,
+    m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
+    md.price, md.startdate, md.enddate, md.nickName, md.glNum,
+    c.taxable, c.badgeLabel AS catBadgeLabel
+FROM memList m
+JOIN memListDates md ON m.id = md.memId
+JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+JOIN memCategories c ON m.memCategory = c.memCategory;
+
+DROP VIEW IF EXISTS memListFull;
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY INVOKER
+VIEW memListFull AS SELECT
+    m.id, md.id AS mdId, m.conid, m.sort_order, m.memCategory, m.memType, m.memAge,	m.label,
+    m.cartDesc, m.notes, m.rptGrouping, m.badgeLabel, m.atcon, m.online,
+    md.price, md.startdate, md.enddate, md.nickName, md.glNum
+FROM memList m
+JOIN memListDates md ON m.id = md.memId;
 
 /*
  * new custom text items
