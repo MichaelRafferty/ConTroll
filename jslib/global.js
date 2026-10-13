@@ -265,6 +265,10 @@ function toDBdate(datestr) {
 
 
 window.onerror = (message, source, lineno, colno, error) => {
+    if (lineno == 0 && colno == 0) {
+        console.error(type + ': ' + message + ' from ' + source);
+        return true;
+    }
     logConTrollJSError({
         type: 'error',
         message: message,
