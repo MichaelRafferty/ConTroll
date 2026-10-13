@@ -105,23 +105,6 @@ ALTER TABLE memList ADD CONSTRAINT FOREIGN KEY memList_gl(glNum) REFERENCES gl(g
 ALTER TABLE taxList ADD CONSTRAINT FOREIGN KEY taxList_gl(glNum) REFERENCES gl(glNum) ON UPDATE CASCADE;
 
 /*
- * now fix the memLabel view
- */
-DROP VIEW IF EXISTS `memLabel`;
-CREATE ALGORITHM=UNDEFINED
-SQL SECURITY INVOKER
-VIEW memLabel AS SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,
-    m.memAge AS memAge,a.shortname AS ageShortName,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
-    m.cartDesc AS cartDesc,m.notes AS notes,m.rptGrouping AS rptGrouping,m.price AS price,m.badgeLabel AS badgeLabel,
-    m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS `online`,
-    m.glNum AS glNum,g.glLabel AS glLabel,
-    c.taxable AS taxable,c.badgeLabel AS catBadgeLabel
-FROM memList m
-JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
-JOIN memCategories c ON m.memCategory = c.memCategory
-LEFT OUTER JOIN gl g ON g.glNum = m.glNum;
-
-/*
  * add optional textedit field emergencyContact to perinfo, newperson
  */
 
