@@ -188,7 +188,7 @@ if ($activePaymentPlans > 0) {
         <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
     </div>
     <?php
-    outputCustomText('main/plan');
+    outputCustomText('main/plans');
     drawPaymentPlans($info, $paymentPlansData, false);
 ?>
     <div class='row mt-4'>

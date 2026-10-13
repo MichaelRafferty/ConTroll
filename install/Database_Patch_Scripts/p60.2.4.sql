@@ -337,7 +337,9 @@ INSERT INTO `controllAppSections` VALUES
 INSERT INTO `controllAppItems` VALUES
     ('profile', 'profile', 'profile', 'emergencyContact', 'Info block for emergency Contact'),
     ('portal', 'email', 'donation', 'html', 'HTML portion of Donation acknowledgement Email'),
-    ('portal', 'email', 'donation', 'text', 'Text portion of Donation acknowledgement Email');
+    ('portal', 'email', 'donation', 'text', 'Text portion of Donation acknowledgement Email'),
+    ('portal', 'paymentHistory', 'main', 'plans', 'Directly below the payment plans, if any');
+
 
 INSERT INTO `controllTxtItems` VALUES
     ('portal','email','donation','html', '<p>Dear [[FirstName]] [[LastName]],</p>
