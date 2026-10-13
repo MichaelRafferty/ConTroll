@@ -326,11 +326,13 @@ JOIN memListDates md ON m.id = md.memId;
 
 INSERT INTO `controllAppPages` VALUES
     ('profile', 'profile', 'Profile modal / section on any page'),
-    ('portal', 'email', 'Custom Emails sent by Portal');
+    ('portal', 'email', 'Custom Emails sent by Portal'),
+    ('portal', 'paymentHistory', 'Page showing payment history for the account');
 
 INSERT INTO `controllAppSections` VALUES
     ('profile', 'profile', 'profile', 'Information Block for Profile Fields'),
-    ('portal', 'email', 'donation', 'Donation Thank you Email');
+    ('portal', 'email', 'donation', 'Donation Thank you Email'),
+    ('portal', 'paymentHistory', 'main', 'Only Page Section');
 
 INSERT INTO `controllAppItems` VALUES
     ('profile', 'profile', 'profile', 'emergencyContact', 'Info block for emergency Contact'),
@@ -379,5 +381,7 @@ WHERE t.contents is NULL;
 UPDATE controllAppItems SET txtItemDescription = 'Custom Text for the html enter your item registration reminder email'
 WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder' and txtItem = 'html';
 
+UPDATE controllAppItems SET txtItemDescription = 'Just after the purchased header', appPage= 'paymentHistory'
+WHERE appName = 'portal' AND appPage = 'portal' AND appSection = 'main' and txtItem = 'purchased';
 
 INSERT INTO patchLog(id, name) VALUES(x60, 'Release 2.4');
