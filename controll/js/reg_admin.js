@@ -1635,6 +1635,9 @@ function changeEdit(badgeId) {
     let memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
     for (let i = 0; i < memLabels.length; i++) {
         let memItem = memLabels[i];
+        // lock bundles out, they are not able to be expanded here
+        if (memItem.label.substring(0, 8) == 'Bundle: ')
+            continue;
         if (ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '-' + memItem.mdId +  '"' +
                 ((curMemId == memItem.id && curMdId == memItem.mdId) ? ' selected' : '') + '>' +
@@ -1646,6 +1649,9 @@ function changeEdit(badgeId) {
     // now the rest of them
     for (let i = 0; i < memLabels.length; i++) {
         let memItem = memLabels[i];
+        // lock bundles out, they are not able to be expanded here
+        if (memItem.label.substring(0, 8) == 'Bundle: ')
+            continue;
         if (!ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
             memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
