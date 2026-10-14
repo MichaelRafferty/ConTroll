@@ -762,6 +762,25 @@ EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'dsi', array($change, $orderId, $master_tid));
 }
 
+// now if worldcon, clear the wsfsNOM's for WSFS paid
+$worldcon = getConfValue('portal', 'worldcon', 0) == 1;
+if ($worldcon) {
+    $wsfs = getConfValue('portal', 'wsfsCategory', 'wsfs');
+    $wsfsNom = getConfValue('portal', 'wsfsnomCategory', 'wsfsNom');
+
+    // faster to clear everything as would have to walk every perid/newperid in the transaction
+    $wfQ = <<<EOS
+UPDATE reg rn
+JOIN memList mn ON rn.memId = mn.id
+JOIN reg rw ON (rn.perid IS NOT NULL AND rn.perid = rw.perid) OR (rn.perid IS NULL AND rn.newperid = rw.newperid)
+JOIN memList mw ON rw.memId = mw.id
+SET rn.status = 'cancelled'
+WHERE rn.status = 'paid' AND rw.status = 'paid' AND mn.memCategory = ? AND mw.memCategory = ?;
+EOS;
+
+    $canUpd = dbSafeCmd($wfQ, 'ss', array($wsfsNom, $wsfs));
+}
+
 $response['pay_amt'] = $new_payment['amt'];
 $response['taxAmt'] = $taxAmt;
 $response['preTaxAmt'] = $preTaxAmt;
