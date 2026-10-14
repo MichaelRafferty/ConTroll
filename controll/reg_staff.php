@@ -117,7 +117,7 @@ draw_fileManagerModals($authToken);
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editMemListBlockDiv'>
                     <div class='row mt-4'>
-                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and its time series</h4></div>
+                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and its price break time series</h4></div>
                     </div>
                     <div class="row">
                         <div class="col-sm-7">
@@ -252,7 +252,7 @@ draw_fileManagerModals($authToken);
                         </div>
                     </div>
                     <div class='row mt-4'>
-                        <div class='col-sm-auto'><h4>Time Series Data</h4></div>
+                        <div class='col-sm-auto'><h4>Price Break Time Series Data</h4></div>
                         <div class='col-sm-auto' id="createSeriesBtn"><button class='btn btn-primary btn-sm' type='button' onclick="createNewSeries();">
                                 Create Default Series from Price Break Date Ranges
                             </button>
