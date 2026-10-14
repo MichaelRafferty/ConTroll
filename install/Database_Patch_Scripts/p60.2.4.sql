@@ -387,3 +387,5 @@ UPDATE controllAppItems SET txtItemDescription = 'Just after the purchased heade
 WHERE appName = 'portal' AND appPage = 'portal' AND appSection = 'main' and txtItem = 'purchased';
 
 INSERT INTO patchLog(id, name) VALUES(x60, 'Release 2.4');
+
+SELECT 'Now run the memMapCleanup.php script in the install directory'
