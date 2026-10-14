@@ -644,7 +644,35 @@ class PosCart {
 
 // saveMembershipChange: save the changes to the perid's memberships back to the cart perinfo record
     saveMembershipChange() {
-        this.#cartPerinfo[this.#currentPerIdx].memberships = make_copy(this.#memberships);
+        // first copy this.memberships and deal with bundles
+        let newMemberships = [];
+        for (let row in this.#memberships) {
+            let membershipRec = this.#memberships[row];
+            if (membershipRec.label.substring(0,8) == 'Bundle: ') {
+                let membership = memListIdx[membershipRec.memId];
+                let notes = membership.notes.split('/', 2);
+                let bundleIds = notes[0].split(',');
+                console.log(bundleIds);
+                for (let bundleItem of bundleIds) {
+                    let bundleRec = memListIdx[bundleItem];
+                    membershipRec.glNum = bundleRec.glNum;
+                    membershipRec.label = bundleRec.label;
+                    membershipRec.memId = bundleRec.memId;
+                    membershipRec.mldId = bundleRec.mldid;
+                    membershipRec.memCategory = bundleRec.memCategory;
+                    membershipRec.memAge = bundleRec.memAge;
+                    membershipRec.memType = bundleRec.memType;
+                    membershipRec.price = bundleRec.price;
+
+                    newMemberships.push(make_copy(membershipRec));
+                }
+            } else {
+                newMemberships.push(membershipRec);
+            }
+
+        }
+
+        this.#cartPerinfo[this.#currentPerIdx].memberships = newMemberships;
 
         if ((!this.#cartPerinfo[this.#currentPerIdx].currentAgeType) || this.#cartPerinfo[this.#currentPerIdx].currentAgeType == '') {
             this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#memberAge;
