@@ -254,6 +254,10 @@ oauthhrs=8
 ;   1: this is a worldcon require wsfs for attending status
 ;   0: this is not a worldcon, ignore wsfs memberships
 ; worldcon=
+;;; if Worldcon is a 1, for cancelling a WSFSnom when you buy a WSFS, you need the wsfsCategory and wsfsnomCategory.  These default to wsfs and wsfsnom if
+omitted
+; wsfsCategory=wsfs
+; wsfsnomCategory=wsfsnom
 ;;; nomdate: cutoff for WSFS nominations memberships, memberships purchased before this date can nominate for the Hugos
 ; nomdate="YYYY/MM/DD"
 ;;; nomnom items: NomNom is the program used for voting.  It requires several values for communications.
