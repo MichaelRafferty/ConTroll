@@ -158,6 +158,15 @@ window.onload = function initpage() {
         });
     }
     fileManager = new FileManager();
+
+    // get listeners for price break time series key press
+    for (let i = 0; i < 9; i++) {
+        let cell = document.getElementById("EMLTS" + i + "_Price");
+        if (cell)
+            cell.addEventListener("keydown", enterPressedPrice);
+        else
+            console.log("Cell not found: EMLTS" + i + "_Price");
+    }
 }
 
 // filters for RegistrationList

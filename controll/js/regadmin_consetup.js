@@ -2017,3 +2017,17 @@ function recomputeBundlePrice() {
 
     current.recomputeBundlePrice();
 }
+
+function enterPressedPrice(event) {
+    if (event.key === 'Enter') {
+        let field = event.target.id;
+        let index = field.substring(5, 6);
+        let newIndex = "EMLTS" + (Number(index) + 1) + "_Price";
+        let newFocus = document.getElementById(newIndex);
+        if (newFocus) {
+            newFocus.focus()
+        } else {
+            console.log("No next field to focus on, but enter key pressed on " + event.target.id + " for " + newIndex)
+        };
+    }
+}
