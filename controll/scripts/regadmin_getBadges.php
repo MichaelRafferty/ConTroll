@@ -22,6 +22,11 @@ $con=get_conf('con');
 $conid= $con['id'];
 $response['conid'] = $conid;
 
+$hrtime = getConfValue('controll', 'hrtime', 0);
+
+if ($hrtime)
+    $startHRtime = hrtime(true);
+
 $action = $_POST['action'];
 if ($action == 'download') {
     // this is a download, get the format,
@@ -405,6 +410,13 @@ while ($memLabel = $memLabelA->fetch_assoc()) {
 }
 $response['memLabelsNext'] = $memLabels;
 if ($format == '') {
+    if ($hrtime) {
+        $endHRtime = hrtime(true);
+        $intervalTime = $endHRtime - $startHRtime;
+        $secs = intval($intervalTime / 1000000000);
+        $ns = $intervalTime % 1000000000;
+        $response['success'] = sprintf('Call took %d.%09d seconds', $secs, $ns);
+    }
     ajaxSuccess($response);
     exit();
 }
