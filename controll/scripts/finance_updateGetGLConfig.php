@@ -180,7 +180,7 @@ EOS;
 // now get the current list
 $selSQL = <<<EOS
 WITH cnt AS (
-    SELECT glNum, count(*) cnt FROM memList GROUP BY glNum
+    SELECT glNum, count(*) cnt FROM memListFull GROUP BY glNum
     UNION
     SELECT glNum, count(*) cnt FROM taxList GROUP BY glNum
     UNION
