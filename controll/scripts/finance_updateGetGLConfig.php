@@ -72,7 +72,7 @@ if ($tablename != 'none') {
             $error .= "For the field $glNum cannot be empty.<br/>";
         }
         if (!array_key_exists('glLabel', $row)) {
-            $error .= "For the entry $glNum The tax rate cannot be empty.<br/>";
+            $error .= "For the entry $glNum The GL Label field cannot be empty.<br/>";
         } else if ($row['glLabel'] == '') {
             $error .= "For the entry $glNum The GL Label field cannot be empty.<br/>";
         }

@@ -8,6 +8,8 @@ var plans = null;
 var payors = null;
 var tax = null;
 var gl = null;
+var mbr = null;
+var exh = null;
 
 // finance class - functions for finance page including payment plans and money related transactions
 class Finance {
@@ -31,6 +33,8 @@ class Finance {
         this.#financeTabs['overview'] = document.getElementById('overview-content');
         this.#financeTabs['taxConfig'] = document.getElementById('taxConfig-pane');
         this.#financeTabs['glConfig'] = document.getElementById('glConfig-pane');
+        this.#financeTabs['mbrConfig'] = document.getElementById('mbrConfig-pane');
+        this.#financeTabs['exhConfig'] = document.getElementById('exhConfig-pane');
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
         this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
         this.#financeTabs['coupon'] = document.getElementById('coupon-pane');
@@ -79,6 +83,14 @@ class Finance {
             gl.close();
             gl = null;
         }
+        if (mbr) {
+            mbr.close();
+            mbr = null;
+        }
+        if (exh) {
+            exh.close();
+            exh = null;
+        }
 
         this.#currentPane.hidden = false;
 
@@ -93,6 +105,18 @@ class Finance {
                 if (gl == null)
                     gl = new glConfig(config['conid'], config['debug']);
                 gl.open();
+                break;
+
+            case 'mbrConfig':
+                if (mbr == null)
+                    mbr = new glMbrConfig(config['conid'], config['debug']);
+                mbr.open();
+                break;
+
+            case 'exhConfig':
+                if (exh == null)
+                    exh = new glExhConfig(config['conid'], config['debug']);
+                exh.open();
                 break;
 
             case 'paymentPlans':

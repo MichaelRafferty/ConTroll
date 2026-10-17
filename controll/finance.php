@@ -37,6 +37,8 @@ page_init($page,
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
                     'js/glConfig.js',
+                    'js/glMbrConfig.js',
+                    'js/glExhConfig.js',
                     'js/taxConfig.js',
                     'js/finance.js',
                     'js/planSetup.js',
@@ -673,7 +675,19 @@ EOS;
         <li>
             <button class='nav-link' id='glConfig-tab' data-bs-toggle='pill' data-bs-target='#glConfig-pane' type='button' role='tab'
                     aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('glConfig-pane');">
-                General Ledger Configuration
+                GL Configuration
+            </button>
+        </li>
+        <li>
+            <button class='nav-link' id='mbrConfig-tab' data-bs-toggle='pill' data-bs-target='#mbrConfig-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('mbrConfig-pane');">
+                Membership GL Configuration
+            </button>
+        </li>
+        <li>
+            <button class='nav-link' id='exhConfig-tab' data-bs-toggle='pill' data-bs-target='#exhConfig-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('exhConfig-pane');">
+                Exhibitors GL Configuration
             </button>
         </li>
         <?php } ?>
@@ -726,7 +740,9 @@ EOS;
                     <ol>
                         <li>Sales Tax Configuration - set tax rates for this convention year</li>
     <?php if ($config_vars['useGL'] == 1) { ?>
-                        <li>General Ledger Configuration – Set up GL Numbers and Labels for this convention</li>
+                        <li>GL Configuration – Set up General Ledger Numbers and Labels for this convention</li>
+                        <li>Membership GL Configuration – Set up General Ledger Numbers for the memberships for this convention</li>
+                        <li>Exhibitors GL Configuration – Set up General Ledger Numbers for the Artists and Dealers for this convention</li>
     <?php } ?>
                         <li>Payment Plan Configuration – Set up payment plans for this convention year</li>
                         <li>Payor Plans – Display/(future)Change payor plans</li>
@@ -765,6 +781,7 @@ EOS;
                 <div class='col-sm-12' id='glConfigTable'></div>
             </div>
             <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='glPaginationDiv'></div>
                 <div class='col-sm-auto'>
                     <button id='gl-undo' type='button' class='btn btn-secondary btn-sm' onclick='gl.undo(); return false;' disabled>Undo</button>
                     <button id='gl-redo' type='button' class='btn btn-secondary btn-sm' onclick='gl.redo(); return false;' disabled>Redo</button>
@@ -781,6 +798,71 @@ EOS;
                 <div class='col-sm-auto'>
                     <button id='gl-xlsx' type='button' class='btn btn-info btn-sm'
                             onclick=gl.downloadGLs('xlsx'); return false;
+                    ">Download Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='mbrConfig-pane' role='tabpanel' aria-labelledby='mbrConfig-tab' tabindex='0' hidden>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-6' id='mbrConfigDiv'><H1 class='h3'><b>Membership General Ledger Configuration:</b></H1></div>
+                <div class='col-sm-5 text-end'>
+                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_new'>How to filter on the Start/End Date column</a></strong>
+                </div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='mbrConfigTable'></div>
+            </div>
+            <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='mbrPaginationDiv'></div>
+                <div class='col-sm-auto'>
+                    <button id='mbr-undo' type='button' class='btn btn-secondary btn-sm' onclick='mbr.undo(); return false;' disabled>Undo</button>
+                    <button id='mbr-redo' type='button' class='btn btn-secondary btn-sm' onclick='mbr.redo(); return false;' disabled>Redo</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id='mbrSaveBtn' onclick='mbr.save();' disabled>Save Changes</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='mbr-csv' type='button' class='btn btn-info btn-sm'
+                            onclick=mbr.downloadGLs('csv'); return false;
+                    ">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='mbr-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=mbr.downloadGLs('xlsx'); return false;
+                    ">Download Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='exhConfig-pane' role='tabpanel' aria-labelledby='exhConfig-tab' tabindex='0' hidden>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-6' id='exhConfigDiv'><H1 class='h3'><b>Exhibitors General Ledger Configuration:</b></H1></div>
+                <div class='col-sm-5 text-end'>
+                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_new'>How to filter on the Start/End Date column</a></strong>
+                </div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='exhConfigTable'></div>
+            </div>
+            <div class='row mt-2 mb-2'>
+                <div class='col-sm-auto'>
+                    <button id='exh-undo' type='button' class='btn btn-secondary btn-sm' onclick='exh.undo(); return false;' disabled>Undo</button>
+                    <button id='exh-redo' type='button' class='btn btn-secondary btn-sm' onclick='exh.redo(); return false;' disabled>Redo</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id='exhSaveBtn' onclick='exh.save();' disabled>Save Changes</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='exh-csv' type='button' class='btn btn-info btn-sm'
+                            onclick=exh.downloadGLs('csv'); return false;
+                    ">Download CSV</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button id='br-xlsx' type='button' class='btn btn-info btn-sm'
+                            onclick=exh.downloadGLs('xlsx'); return false;
                     ">Download Excel</button>
                 </div>
             </div>

@@ -11,23 +11,17 @@ class glConfig {
     #glUndoBTN = null;
     #glRedoBTN = null;
     #glList = null;
-
+    #glPaginationDiv = null;
 
     // edit modal fields
     #glEditModal = null;
-    #glTitle = null;
-    #glHeading = null;
-    #glField = null;
     #glLabel = null;
-    #glRate = null;
     #glGLNum = null;
     #glGLLabel = null;
     #glItemsDiv = null;
     #glActive = null;
-    #glItemsTable = null;
     #editFieldsDirty = false;
     #glSaveRowBtn = null;
-    #glRowBeforeEdit = null;
 
     #dirty = false;
 
@@ -45,9 +39,6 @@ class glConfig {
         let id = document.getElementById('editGL');
         if (id) {
             this.#glEditModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
-            this.#glTitle = document.getElementById('gl-title');
-            this.#glHeading = document.getElementById('gl-heading');
-            this.#glRate = document.getElementById('glRate');
             this.#glLabel = document.getElementById('glLabel');
             this.#glActive = document.getElementById('glActive');
             this.#glGLNum = document.getElementById('glGLNum');
@@ -90,6 +81,10 @@ class glConfig {
     drawGLTable(list) {
         let _this = this;
         this.#glTablePagination = list.length > 25;
+        this.#glPaginationDiv = this.#glPaginationDiv = document.getElementById('glPaginationDiv');
+        this.#glPaginationDiv.innerHTML = '';
+        this.#glPaginationDiv.hidden = list.length <= 25;
+
         this.#glTable = new Tabulator('#glConfigTable', {
             data: list,
             layout: "fitDataTable",
@@ -97,6 +92,7 @@ class glConfig {
             pagination: this.#glTablePagination,
             paginationSize: 25,
             paginationAddRow:"table",
+            paginationElement: this.#glPaginationDiv,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             index: "glNum",
             columns: [
@@ -135,6 +131,7 @@ class glConfig {
     cellChanged(cell) {
         this.#dirty = true;
         cellChanged(cell);
+        this.checkUndoRedo();
     }
 
     addNew() {
@@ -160,7 +157,7 @@ class glConfig {
                 setCellChanged(row.getCell("glNum"));
                 setCellChanged(row.getCell("glLabel"));
                 setCellChanged(row.getCell("description"));
-                _this.checkUndoRedo();
+                this.checkUndoRedo();
             }
         });
     };
@@ -202,108 +199,6 @@ class glConfig {
         cellChanged(cell);
         this.#glSaveRowBtn.disabled = false;
         this.#glSaveRowBtn.innerHTML = "Save Changes*";
-    }
-    
-    saveEdit() {
-        clear_message('gl_message_div');
-
-        // build the current values to update the table, only use the changed values
-        let active = this.#glActive.value;
-        let label = this.#glLabel.value.trim();
-        let rate = this.#glRate.value;
-        let glNum = this.#glGLNum.value.trim();
-        let glLabel = this.#glGLLabel.value;
-        let glItemsData = this.#glItemsTable.getData();
-        let glItems = {};
-        for (let i = 0; i < glItemsData.length; i++) {
-            let item = glItemsData[i];
-            glItems[item.item] = item;
-        }
-        let oldItemsData = this.#glRowBeforeEdit.glItems;
-        if (oldItemsData == undefined)
-            oldItemsData = [];
-        let oldItems = {};
-        for (let i = 0; i < oldItemsData.length; i++) {
-            let item = oldItemsData[i];
-            oldItems[item.item] = item;
-        }
-
-        let valid = true;
-        let message = '';
-        // some validation
-        if (label.trim() == '') {
-            message += "Receipt Label cannot be empty<br/>";
-            valid = false;;
-        }
-        if (rate <= 0 || rate >= 100) {
-            message += "Rate must be greather than 0 and less than 100<br/>";
-            valid = false;
-        }
-
-        if (!valid) {
-            show_message(message, 'error', 'gl_message_div');
-            return;
-        }
-
-        if (glNum == '') {
-            glNum = null;
-        }
-
-        if (glLabel == '') {
-            glLabel = null;
-        }
-
-        //console.log("oldItems: " + JSON.stringify(oldItems));
-        //console.log("glItems: " + JSON.stringify(glItems));
-
-        let update = {};
-        update.glField = this.#glField;
-        if (this.#glRowBeforeEdit.active != active)
-            update.active = active;
-        if (this.#glRowBeforeEdit.label != label)
-            update.label = label;
-        if (this.#glRowBeforeEdit.rate != rate)
-            update.rate = rate;
-        if (this.#glRowBeforeEdit.glNum != glNum)
-            update.glNum = glNum;
-        if (this.#glRowBeforeEdit.glLabel != glLabel)
-            update.glLabel = glLabel;
-
-        // now build the glItems[] and glItemsDisplay
-        let newItems = [];
-        let changed = false;
-        let sortOrder = 10;
-        let glItemsDisplay = '';
-        for (let i = 0; i < this.#glLabel.length; i++) {
-            let item = this.#glLabel[i];
-           //console.log("item: " + JSON.stringify(item));
-            let newItem = glItems[item.item].glLabel
-            let oldItem = '-';
-            if (oldItems.hasOwnProperty(item.item)) {
-                oldItem = oldItems[item.item].glLabel;
-            }
-            if (newItem != oldItem)
-                changed = true;
-            if (newItem != '-') {
-                glItemsDisplay += ',\n' + item.item + '=' + newItem;
-                newItems.push({conid: this.#conid, glField: this.#glField, item: item.item, glLabel: newItem, sortOrder: sortOrder});
-            }
-            sortOrder += 10;
-        }
-        update.glItems = newItems;
-        update.glItemsDisplay = glItemsDisplay.substring(2);
-        let updates = [];
-        updates.push(update);
-        //console.log("update: " + JSON.stringify(update));
-        this.#glTable.updateData(updates);
-        this.#glEditModal.hide();
-        // rebuild the table because it may have changed size
-        let glData = this.#glTable.getData();
-        this.#glTable.off("dataChanged");
-        this.#glTable.off("cellEdited");
-        this.#glTable.destroy();
-        this.#glTable = null;
-        this.drawglTable(glData);
     }
 
     close() {
