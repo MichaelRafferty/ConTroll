@@ -162,7 +162,7 @@ class glExhConfig {
             let postdata = {
                 ajax_request_action: 'updateExhgl',
                 tabledata: JSON.stringify(this.#glTable.getData()),
-                tablename: 'memListDates ',
+                tablename: 'exhibitors ',
             };
             clear_message();
             clearError();

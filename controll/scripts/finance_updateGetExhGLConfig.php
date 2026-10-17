@@ -55,8 +55,6 @@ $data = [];
 $response['success'] = '';
 
 if ($tablename != 'none') {
-    echo "not yet";
-    exit(0);
     try {
         $data = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
     }
@@ -69,18 +67,18 @@ if ($tablename != 'none') {
     }
     $error = '';
     foreach ($data as $index => $row) {
+      // 'exhibitsRegionYears' AS tableName, 'glnum' AS fieldName, IFNULL(glNum, '') AS glNum, ery.id AS id, er.shortname,
+        //       'Space' as title, 'Year Default' AS label
+        $tableName = $row['tableName'];
+        $fieldName = $row['fieldName'];
         $glNum = $row['glNum'];
-        $mdId = $row['mdId'];
-        $memId = $row['memId'];
+        $id = $row['id'];
+        $shortname = $row['shortname'];
+        $title = $row['title'];
         $label = $row['label'];
-        $startdate = $row['startdate'];
-        $enddate = $row['enddate'];
         // validate the fields
-        if ($glNum === null || $glNum == '') {
-            $error .= "For the row $memId:$label:$startdate:$enddate, $glNum cannot be empty.<br/>";
-        }
-        if ($mdId == null || !is_numeric($mdId)) {
-            $error .= "For the row $memId:$label:$startdate:$enddate, $mdId cannot be empty or non numeric.<br/>";
+        if ($id == null) {
+            $error .= "For the row $tableName:$fieldName:$shortname:$title:$label, id cannot be empty or non numeric.<br/>";
         }
     }
     if ($error != '') {
@@ -90,31 +88,78 @@ if ($tablename != 'none') {
         exit();
     }
 
-    foreach ($data as $index => $row ) {
+    $updERYglNum = <<<EOS
+UPDATE exhibitsRegionYears SET glNum = ?
+WHERE id = ?;
+EOS;
 
-    }
+    $updERYRev = <<<EOS
+UPDATE exhibitsRegionYears SET revenueGLNum = ?
+WHERE id = ?;
+EOS;
 
-    $updateSQL = <<<EOS
-UPDATE memListDates SET glNum = ?
+    $updERYFee = <<<EOS
+UPDATE exhibitsRegionYears SET mailinGLnum = ?
+WHERE id = ?;
+EOS;
+
+    $updES = <<<EOS
+UPDATE exhibitsSpaces
+SET glNum = ?
+WHERE id = ?;
+EOS;
+
+    $updESP = <<<EOS
+UPDATE exhibitsSpacePrices
+SET glNum = ?
 WHERE id = ?;
 EOS;
 
     // now the updates
     foreach ($data as $row) {
-        $numrows = dbSafeCmd($updateSQL, 'ii',
-            array ($row['glNum'], $row['mdId']));
-        $updated += $numrows;
+        switch ($row['tableName']) {
+            case 'exhibitsRegionYears':
+                switch ($row['fieldName']) {
+                    case 'glnum':
+                        $updateSQL = $updERYglNum;
+                        break;
+                    case 'revenueGLNum':
+                        $updateSQL = $updERYRev;
+                        break;
+                    case 'mailinGLnum':
+                        $updateSQL = $updERYFee;
+                        break;
+                    default:
+                        error_log("finance_updateGetMbrGLConfig: Unknown field name: " . $row['fieldName']);
+                        $updateSQL = null;
+                }
+                break;
+            case 'exhibitsSpaces':
+                $updateSQL = $updES;
+                break;
+            case 'exhibitsSpacePrices':
+                $updateSQL = $updESP;
+                break;
+            default:
+                error_log("finance_updateGetMbrGLConfig: Unknown table name: " . $row['tableName']);
+                $updateSQL = null;
+        }
+        if ($updateSQL != null) {
+            $glNum = $row['glNum'];
+            if ($glNum == '')
+                $glNum = null;
+            $numrows = dbSafeCmd($updateSQL, 'ss', array ($glNum, $row['id']));
+            $updated += $numrows;
+        }
     }
 
-    $response['success'] .= "$tablename updated: $updated gl numbers changed.<br/>";
+    $response['success'] .= "Exhibitors: $updated gl numbers changed.<br/>";
 }
 
 // now get the current list
-// now get the current list
     $selSQL = <<<EOS
 SELECT 'exhibitsRegionYears' AS tableName, 'glnum' AS fieldName, IFNULL(glNum, '') AS glNum, ery.id AS id, er.shortname, 
-       'Space' as title, 'Year Default' AS 
-label
+       'Space' as title, 'Year Default' AS label
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 WHERE conid = ?
@@ -134,7 +179,7 @@ UNION
 SELECT 'exhibitsSpaces' AS tableName, 'glNum' AS fieldName, IFNULL(es.glNum, '') AS glNum, es.id AS id, er.shortname,
        'Spaces' as title, 'Default' AS label
 FROM exhibitsSpaces es
-JOIn exhibitsRegionYears ery ON ery.id = es.exhibitsRegionYear
+JOIN exhibitsRegionYears ery ON ery.id = es.exhibitsRegionYear
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 WHERE conid = ?
 UNION

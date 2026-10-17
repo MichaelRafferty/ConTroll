@@ -75,7 +75,7 @@ if ($tablename != 'none') {
         $enddate = $row['enddate'];
         // validate the fields
         if ($mdId == null || !is_numeric($mdId)) {
-            $error .= "For the row $memId:$label:$startdate:$enddate, $mdId cannot be empty or non numeric.<br/>";
+            $error .= "For the row $memId:$label:$startdate:$enddate, id cannot be empty or non numeric.<br/>";
         }
     }
     if ($error != '') {
