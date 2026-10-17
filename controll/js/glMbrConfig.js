@@ -1,6 +1,6 @@
 // globals for Membership General Ledger Setup configuration pane
 
-// gl class - functions for finance page configuring gl accounts
+// glMbrConfig class - functions for finance page configuring membership gl accounts
 class glMbrConfig {
     #glTable = null;
     #glTablePagination = false;
