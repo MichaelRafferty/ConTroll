@@ -107,10 +107,12 @@ EOS;
 // now get the current list
 $selSQL = <<<EOS
 SELECT id AS memId, mdId, memType, memCategory, memAge, label, startdate, enddate, IFNULL(glNum, '') AS glNum
-FROM memListFull 
+FROM memListFull
+WHERE ((conid = ? and memCategory != 'yearahead') OR (conid = ? AND memCategory in ('rollover', 'yearahead')))
+OR ((conid = ? and memCategory != 'yearahead') OR (conid = ? AND memCategory in ('rollover', 'yearahead')))
 ORDER BY memType, memCategory, memAge, label, startdate, enddate
 EOS;
-$glQ = dbQuery($selSQL);
+$glQ = dbSafeQuery($selSQL, 'iiii', array($conid, $conid + 1, $conid + 1, $conid + 2));
 if ($glQ === false) {
     $response['error'] = 'Select query failed, get help';
     ajaxSuccess($response);
