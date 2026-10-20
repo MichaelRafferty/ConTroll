@@ -305,15 +305,15 @@ class Notes {
                             data: postData,
                             success: function (data, textstatus, jqxhr) {
                                 if (data.error !== undefined) {
-                                    show_message(data.error, 'error');
+                                    show_message(data.error, 'error', 'noteModalMessageDiv');
                                     _this.#closeNotesBTN.disabled = false;
                                     return;
                                 }
                                 if (data.success !== undefined) {
-                                    show_message(data.success, 'success');
+                                    show_message(data.success, 'success', 'changeMessageDiv');
                                 }
                                 if (data.warn !== undefined) {
-                                    show_message(data.warn, 'warn');
+                                    show_message(data.warn, 'warn', changeMessageDiv);
                                 }
                             },
                             error: function (jqXHR, textstatus, errorThrown) {
