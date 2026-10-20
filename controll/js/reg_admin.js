@@ -1936,9 +1936,9 @@ function idStatus(cell, formatterParams, onRendered) {
     let value = cell.getValue();
     let row = cell.getRow();
     let element = row.getElement();
-    if (deceased == 'Y') {
+    if (banned == 'Y') {
         element.style.backgroundColor = '#FFC0C0'
-    } else if (banned == 'Y') {
+    } else if (deceased == 'Y') {
         element.style.backgroundColor = '#FCFCC0';
     } else {
         element.style.backgroundColor = '';
