@@ -380,6 +380,13 @@ FROM controllAppItems a
 LEFT OUTER JOIN controllTxtItems t on (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection and a.txtItem = t.txtItem)
 WHERE t.contents is NULL;
 
+-- this is obsolete, and should not use the ## notation for screen item.
+UPDATE controllTxtItems
+SET contents = CONCAT('Controll-Default: This is exhibitor-index-invoice-afterPrice',
+                      '<br/>Custom HTML that can replaced with a custom value in the Controll Admin App under Edit Custom Text.<br/>',
+                      ' Default text can be suppressed in the configuration file.')
+WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'invoice' AND txtItem = 'afterPrice' AND contents LIKE '%#portalType#%';
+
 UPDATE controllAppItems SET txtItemDescription = 'Custom Text for the html enter your item registration reminder email'
 WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder' and txtItem = 'html';
 
