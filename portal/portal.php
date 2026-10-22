@@ -183,6 +183,7 @@ $allowPasskey = getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
 // define these before check, as they are set in the sql that may or may not be run
 $holderMembership = [];
 $allMemberships = [];
+$membershipIssues = 0;
 
 if (!$refresh) {
     $numPrimary = 0;
@@ -260,8 +261,8 @@ SELECT r.status, r.memId, r.mldId, m.*, mc.variablePrice,
         ELSE NULL
     END AS fname,
     CASE
-        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
-        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
+        WHEN rp.id IS NOT NULL THEN rp.fullName
+        WHEN rn.id IS NOT NULL THEN rn.fullName
         ELSE NULL
     END AS fullName,
     CASE
@@ -408,6 +409,7 @@ EOS;
                     $item['badgename'] = $m['badgename'];
                     $item['fullName'] = $m['fullName'];
                     $item['memberId'] = $m['memberId'];
+                    $item['issue'] = 'N';
                     $allMemberships[] = $item;
                 }
                 if (isPrimary($m, $conid)) {
@@ -430,9 +432,8 @@ EOS;
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
-        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
-        p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+        p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
+        p.managedBy, NULL AS managedByNew, p.fullName, p.banned, p.deceased,
         r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
@@ -464,9 +465,8 @@ WITH ppl AS (
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
-        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
-        p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+        NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
+        p.managedBy, p.managedByNew, p.fullName, 'N' AS banned, 'N' AS deceased,
         r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
@@ -518,9 +518,8 @@ EOS;
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
-        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
-        p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+        p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
+        p.managedBy, NULL AS managedByNew, p.fullName, p.banned, p.deceased,
         r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
@@ -553,9 +552,8 @@ WITH ppl AS (
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.emergencyContact, 
-        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
-        p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+        NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
+        p.managedBy, p.managedByNew, p.fullName, 'N' AS banned, 'N' AS deceased,
         r.conid, r.status, r.memId, r.mldId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
@@ -644,6 +642,10 @@ EOS;
 
             // all memberships, not just other
             if ($p['regid'] != null) {
+                $issue = ($p['banned'] == 'Y' || $p['deceased'] == 'Y') ? 'Y' : 'N';
+                if ($issue == 'Y')
+                    $membershipIssues++;
+
                 $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
                         'memAge' => $p['memAge'], 'memType' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
                         'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
@@ -655,7 +657,7 @@ EOS;
                         'price' => $p['price'], 'paid' => $p['paid'], 'couponDiscount' => $p['couponDiscount'],
                         'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
                         'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
-                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'],
+                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'], 'issue' => $issue,
                 );
 
                 if (array_key_exists('expired', $p))
@@ -748,6 +750,9 @@ $numExpired = 0;
 $disablePay = '';
 
 foreach ($allMemberships as $key => $membership) {
+    if ($membership['issue'] == 'Y')
+        continue;
+
     $status = $membership['status'];
     if ($membership['completePerid'] != null) {
         $compareId = $membership['completePerid'];
@@ -1027,6 +1032,15 @@ if ($allowedPayment) {
     </div>
 EOS;
         outputCustomText('main/afterPayment');
+    } else if ($membershipIssues > 0) {
+        echo <<<EOS
+    <div class='row mt-4'>
+        <div class="col-sm-12">
+            <b>Note:</b> Some memberships are hidden and not available for payment.  They belong to people you manage whose tabs have a pale red background color.<br/>
+            Contact the registration team for further details about the issue with those members.
+        </div>
+    </div>
+EOS;
     }
 
     // create a div and bg color it to separate it logically from the other parts
@@ -1098,6 +1112,13 @@ EOS;
         $mPrimary = $m['primary'];
         $mAge = $m['memAge'];
         $mAgeType = $p['currentAgeType'];
+        if ($p['banned'] == 'Y')
+            $bgColor = "background-color: rgb(255, 192, 192);";
+        else if ($p['deceased'] == 'Y')
+            $bgColor = "background-color: rgb(255, 192, 192);";
+        else
+            $bgColor = "";
+
 // find memberAge and primary membership, only output agetype if no membership
         if ($mAgeType == '') {
             if ($mAge != '')
@@ -1116,7 +1137,7 @@ EOS;
         <button class='nav-link ps-4 pe-4' id='$mid-tab' data-bs-toggle='pill' data-bs-target='#$mid-pane' type='button'
                 role='tab' aria-controls='nav-alexia' aria-selected='false'
                 style="border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;"
-                onclick="portal.settab('$mid');"><b>$mFullName</b>$mAgeLabel<br/>$mPrimaryMembership
+                onclick="portal.settab('$mid');"><span style="$bgColor"><b>$mFullName</b>$mAgeLabel<br/>$mPrimaryMembership
         </button>
     </li>
 EOS;

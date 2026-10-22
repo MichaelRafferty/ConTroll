@@ -92,9 +92,9 @@
         $cancelOrderId = null;
     }
 
-    if (array_key_exists('otherMemberships', $_POST)) {
+    if (array_key_exists('orderMemberships', $_POST)) {
         try {
-            $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
+            $orderMemberships = json_decode($_POST['orderMemberships'], true, 512, JSON_THROW_ON_ERROR);
         }
         catch (Exception $e) {
             $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
@@ -104,7 +104,7 @@
             exit();
         }
     } else {
-        $otherMemberships = [];
+        $orderMemberships = [];
     }
 
 // and the coupon values
@@ -153,7 +153,7 @@
         // load the badge array to mark what is being paid for
         $totalDiscount = 0;
         $badges = [];
-        foreach ($otherMemberships as $key => $mem) {
+        foreach ($orderMemberships as $key => $mem) {
             if (!array_key_exists('payThis', $mem))
                 continue;
             //if ($mem['payThis'] != 1)

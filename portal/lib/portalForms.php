@@ -59,6 +59,7 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $country
 
                         <div class='row'>
                             <div class="col-sm-12" id='epMessageDiv'></div>
+                            <div class="col-sm-12" id='epMessageDiv'></div>
                         </div>
                     </div>
                 </div>
@@ -305,6 +306,8 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         error_log("Mismatch between $personId and $personType:" . $person['id'] . ', ' . $person['personType']);
     }
 
+    $banned = $person['banned'];
+    $deceased = $person['deceased'];
     $badgename = $person['badgename'];
     $fn = '';
     if ($person['first_name'] != '') {
@@ -368,10 +371,24 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
     }
 
     $mpbId = 'mpBtn' . $personType . $id;
+    if ($deceased == "Y" || $banned == "Y") {
+        $regadminemail = getConfValue('con', 'regadminemail');
+        echo <<<EOS
+    <div class="row mt-1 mb-2">
+        <div class="col-sm-12">
+             <span class="h3">There is an issue with this account, please contact registration at $regadminemail for assistance.</span>
+        </div>
+    </div>
+EOS;
+        $buttonDisable = 'disabled';
+        $mpbDisabled = 'disabled';
+    } else {
+        $buttonDisable = '';
+    }
     echo <<<EOS
     <div class="row mt-1">
         <div class="col-sm-2">
-            <button class='btn btn-sm $mpbColor p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
+            <button class='btn btn-sm $mpbColor p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');" $mpbDisabled>
             Add Items to Cart$mpbSuffix
             </button>
         </div>
@@ -499,7 +516,7 @@ EOS;
 $hr
 <div class="row mt-1">
     <div class="col-sm-2">
-        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.editPerson($id, '$personType');">
+        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.editPerson($id, '$personType');" $buttonDisable>
             Edit $fns Profile
         </button>
     </div>
@@ -570,7 +587,7 @@ EOS;
 </div>
 <div class='row'>
     <div class="col-sm-2">
-        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.changeEmail('$personArgs');">  
+        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.changeEmail('$personArgs');" $buttonDisable>  
             Change $fns Email
         </button>
     </div>
@@ -595,7 +612,7 @@ EOS;
 $hr
 <div class='row mt-1'>
     <div class="col-sm-2">
-        <button class='btn btn-sm, btn-primary p-1' onclick="portal.editInterests($id, '$personType');">Edit $fns Interests</button>
+        <button class='btn btn-sm, btn-primary p-1' onclick="portal.editInterests($id, '$personType');" $buttonDisable>Edit $fns Interests</button>
     </div>
     <div class="col-sm-auto"><span class="h3">Additional Interests or Needs</span></div>
 </div>

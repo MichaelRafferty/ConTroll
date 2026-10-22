@@ -853,6 +853,7 @@ class Portal {
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
         this.#planAllorPartial = null;
+        let issues = 0;
         let html = `
         <div class="row mt-3">
             <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
@@ -887,7 +888,10 @@ class Portal {
         // first compute num taxable
         for (let i = 0; i < membershipsPurchased.length; i++) {
             let mem = membershipsPurchased[i];
-            if (mem.status != 'unpaid')
+            if (mem.issue == 'Y')
+                issues++;
+
+            if (mem.status != 'unpaid' || mem.issue == 'Y')
                 continue;
 
             if (mem.taxable == 'N' && nonTaxMemTaxable) numTaxable++;
@@ -898,7 +902,7 @@ class Portal {
 
         for (let i = 0; i < membershipsPurchased.length; i++) {
             let mem = membershipsPurchased[i];
-            if (mem.status != 'unpaid')
+            if (mem.status != 'unpaid' || mem.issue == 'Y')
                 continue;
 
             unpaids++;
@@ -968,6 +972,16 @@ class Portal {
         </div>
     </div>
 `;
+        if (issues > 0) {
+            html += `
+    <div class="row mt-1 mb-2">
+        <div class="col-sm-12">
+            <b>Note:</b> Some memberships are hidden and not available for payment.  They belong to people you manage whose tabs have a pale red background color.<br/>
+            Contact the registration team for further details about the issue with those members.
+        </div>
+    </div>
+`;
+        }
         this.#paymentDueBody.innerHTML = html;
         this.#paymentDueModal.show();
         this.#selectIdKeys = Object.keys(this.#selectIds);
@@ -1161,7 +1175,7 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherMemberships: JSON.stringify(this.#orderMemberships),
+            orderMemberships: JSON.stringify(this.#orderMemberships),
             amount: this.#paymentAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
@@ -1345,7 +1359,7 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherMemberships: JSON.stringify(this.#orderMemberships),
+            orderMemberships: JSON.stringify(this.#orderMemberships),
             nonce: nonce,
             amount: this.#paymentAmount,
             totalAmountDue: this.#paymentAmount,

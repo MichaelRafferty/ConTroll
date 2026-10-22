@@ -120,7 +120,7 @@ EOS;
 
 // ok, if you get here, you're a 'p', check for Banned and if so, clear the associations, and the session
     $checkQ = <<<EOS
-SELECT banned, managedBy
+SELECT banned, managedBy, deceased
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -130,17 +130,19 @@ EOS;
 
     $checkL = $checkR->fetch_assoc();
     $checkR->free();
-    if ($checkL['banned'] != 'Y')
-        return null;    // not banned nothing to do.
+    if ($checkL['banned'] != 'Y' && $checkL['deceased'] != 'Y')
+        return null;    // not banned or deceased nothing to do.
 
-    $updates = [];
-    // ok, banned, disassociate them from anyone they manage and clear their managed flag, and themselves from anyone managing them
-    $uQ = <<<EOS
+    if ($checkL['banned'] == 'Y') {
+        $updates = [];
+        // ok, banned, disassociate them from anyone they manage and clear their managed flag, and themselves from anyone managing them
+        $uQ = <<<EOS
 UPDATE perinfo
-SET managedBy = null
+SET managedBy = NULL
 WHERE managedBy = ? OR id = ?;
 EOS;
-    $updates['man'] = dbSafeCmd($uQ, 'ii', array($loginId, $loginId));
+        $updates['man'] = dbSafeCmd($uQ, 'ii', array ($loginId, $loginId));
+    }
 
     // now log them out and return same
     $updates['logout'] = 1;

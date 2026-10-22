@@ -471,9 +471,28 @@ EOS;
         if (stripos($ageRestriction, $age) !== false) {
             // one of the restricted ages
             outputCustomText('main/notloggedin');
-            draw_login($config_vars, null, null, 'the portal using the managers account.<br/>' .
+            draw_login($config_vars, null, null,
                     'This user is restricted from logging into the Registration Portal due to their age.<br/>'.
                     '&nbsp;<br/>Login to the portal with the managers account');
+            exit();
+        }
+    }
+}
+// check for deceased or banned and prevent going to protal
+if ($loginType == 'p') {
+    $rQ = <<<EOS
+SELECT banned, deceased
+FROM perinfo
+WHERE id = ?;
+EOS;
+    $rR = dbSafeQuery($rQ, 'i', array ($loginId));
+    if ($rR !== false && $rR->num_rows == 1) {
+        $rl = $rR->fetch_assoc();
+        $rR->free();
+        if ($rl['banned'] != 'N' || $rl['deceased'] == 'Y') {
+            outputCustomText('main/notloggedin');
+            draw_login($config_vars, null, null,
+                    'There is an issue with your account, please contact registration at ' . $con['regadminemail'] . ' for assistance.');
             exit();
         }
     }
