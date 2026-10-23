@@ -4,7 +4,13 @@
 // uses config variables:
 // [cc]
 // type=stripe - selects that reg is to use stripe for credit cards
-// needs to be developed for stripe terminals, not part of the original stripe release
+
+// Stripe uses a connection token to talk to the terminal, this can be scoped by location (??)
+// Create a reader returns a registration code to attach a reader to the location and the account, this is similar a pair operation in square
+//      The reader object can be used to retrueve a reader by id, and to update it, delete it, retrieve it (status), delete it,
+//      cancel an action, collect information from the customer (unused by ConTroll), confirm a payment intent (pay an order),
+//      hand off a payment intent to a reader to get card detils, hand off a payment intent to a reader, print to a reader (not all readers have printer),
+//      set reader sidplay (show cart details)
 
 require_once("global.php");
 
@@ -42,44 +48,89 @@ function term_createLocation($name, $address, $city, $state, $postalcode) {
     return $location['id'];
 }
 
-function term_createDeviceCode($name, $locationId, $readerCode, $label, $useLogWrite = false) : array | null {
+function term_createDeviceCode($name, $locationId, $readerCode, $useLogWrite = false) : array | null {
     $stripeDebug = getConfValue('debug', 'stripe', 0);
     $useLogWrite = $stripeDebug > 0;
 
-    $readerCreate = [
+    // first try to see if it exists, if so, return it's data.
+    // This is because if it goes into updates forever, you'll have to ask to re-create it to add it to our database.
+    $readerList = [
+        'limit' => 999,
         'location' => $locationId,
-        'label' => $label,
-        'registration_code' => $readerCode
     ];
 
+    try {
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->all', $readerList, $useLogWrite);
+        // get a client reference
+        $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $reader = $client->terminal->readers->all($readerList);
+        $readerPHP = json_decode(json_encode($reader), true);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->all response', $reader, $useLogWrite);
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('term_createLocation', $e, 'Invalid Request Exception',
+            'Invalid data for list terminals, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('term_createLocation', $e, 'other api error',
+            'Unable to list terminals, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+
+    if (array_key_exists('data', $readerPHP)) {
+        $readers = $readerPHP['data'];
+        if (count($readers) > 0) {
+            // search for a match
+            foreach ($readers as $item) {
+                if ($item['label'] == $name)
+                    return $item;
+            }
+        }
+    }
+
+    // not found, try adding it.
+
+    $readerCreate = [
+        'location' => $locationId,
+        'label' => $name,
+        'registration_code' => $readerCode,
+        'metadata' => array('Name' => $name, 'Label' => $name),
+    ];
 
     try {
         if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->create', $readerCreate, $useLogWrite);
         // get a client reference
         $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
         $reader = $client->terminal->readers->create($readerCreate);
+        $readerPHP = json_decode(json_encode($reader), true);
         if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->create response', $reader, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
-        stcc_logException('term_createLocation', $e, 'Invalid Request Exception', 'Invalid Location data for create location, seek assistance.',
-            $useLogWrite);;
+        stcc_logException('term_createLocation', $e, 'Invalid Request Exception',
+            'Invalid data for create terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
     }
     catch (\Stripe\Exception\ApiErrorException $e) {
-        stcc_logException('term_createLocation', $e, 'other api error', 'Unable to create location, seek assistance.',
+        stcc_logException('term_createLocation', $e, 'other api error',
+            'Unable to create terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
             $useLogWrite);
     }
     catch (Exception $e) {
         error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
     }
-    return $reader['id'];
+    return $readerPHP;
 }
 
 function term_getDevice($name, $useLogWrite = false) : array | null {
-    return array ('Error' => "Stripe Terminals not yet supported");
+    return array ('Warning' => "Stripe Terminals not yet supported");
 }
 
 function term_getStatus($name, $useLogWrite = false) : array | null {
-     return array ('Error' => 'Stripe Terminals not yet supported');
+     return array ('Warning' => 'Stripe Terminals not yet supported');
 }
 
 function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : array | null {

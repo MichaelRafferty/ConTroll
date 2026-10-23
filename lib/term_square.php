@@ -20,7 +20,7 @@ use Square\Types\DeviceCode;
 use Square\Types\Money;
 use Square\Types\CreateTerminalCheckoutResponse;
 
-function term_createDeviceCode($name, $locationId, $useLogWrite = false) : array | null {
+function term_createDeviceCode($name, $locationId, $regCode = null, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $squareDebug = getConfValue('debug', 'square', 0);
 

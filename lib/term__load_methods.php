@@ -97,12 +97,12 @@ function updateTerminal($terminal): string {
     $name = $terminal['name'];
     $createAt = date('Y-m-d H:i:s', strtotime($terminal['created_at']));
     $changedAt = date('Y-m-d H:i:s', strtotime($terminal['status_changed_at']));
-    if (array_key_exists('pairBy', $terminal)) {
+    if (array_key_exists('pairBy', $terminal) && $terminal['pair_by'] !== null) {
         $pairBy = date('Y-m-d H:i:s', strtotime($terminal['pair_by']));
     } else {
         $pairBy = null;
     }
-    if (array_key_exists('paired_at', $terminal)) {
+    if (array_key_exists('paired_at', $terminal) && $terminal['paired_at'] !== null) {
         $pairedAt = date('Y-m-d H:i:s', strtotime($terminal['paired_at']));
     } else {
         $pairedAt = null;

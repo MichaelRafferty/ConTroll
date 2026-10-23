@@ -38,5 +38,9 @@ $terminal = $_POST['terminal'];
 load_term_procs();
 // get the status from the terminal
 $response = term_getStatus($terminal);
+// temp row for now
+if (!array_key_exists('updCnt', $response)) {
+    $response['updCnt'] = 0;
+}
 $response['message'] = "$terminal status updated, " . $response['updCnt'] . " row(s) updated";
 ajaxSuccess($response);

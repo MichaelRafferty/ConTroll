@@ -393,6 +393,10 @@ WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder
 UPDATE controllAppItems SET txtItemDescription = 'Just after the purchased header', appPage= 'paymentHistory'
 WHERE appName = 'portal' AND appPage = 'portal' AND appSection = 'main' and txtItem = 'purchased';
 
+// stripe terminal changes
+ALTER TABLE terminals MODIFY COLUMN locationId varchar(64) DEFAULT NULL;
+ALTER TABLE terminals MODIFY COLUMN squareCode varchar(64) DEFAULT NULL;
+
 INSERT INTO patchLog(id, name) VALUES(x60, 'Release 2.4');
 
 SELECT 'Now run the memMapCleanup.php script in the install directory'

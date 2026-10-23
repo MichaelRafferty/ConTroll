@@ -5,6 +5,7 @@
 // call API create terminal and show the details and add it to the database
 
 require_once('../lib/base.php');
+require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
 require_once('../../lib/log.php');
 
@@ -37,8 +38,17 @@ if (!(array_key_exists('terminal', $_POST) && array_key_exists('location', $_POS
     exit();
 }
 
+$ccType = getConfValue('cc', 'type', '');
+if ($ccType != 'square' && $ccType != 'stripe') {
+    ajaxSuccess(array('error' => "Terminals not supported for credit provider $ccType"));
+    exit();
+}
+
 $newName = $_POST['terminal'];
 $location = $_POST['location'];
+$regCode = null;
+if ($ccType == 'stripe')
+    $regCode = $_POST['regCode'];
 
 // check if its in the database
 if (getTerminal($newName)) {
@@ -46,27 +56,45 @@ if (getTerminal($newName)) {
     exit();
 }
 // now call API to create the terminal
+load_cc_procs(); // needed for log code
 load_term_procs();
-$data = term_createDeviceCode($newName, $location, true);
+$data = term_createDeviceCode($newName, $location, $regCode, true);
 
+// common values
 $id = $data['id'];
-$name = $data['name'];
-$code = $data['code'];
-$product_type = $data['product_type'];
-$locationId = $data['location_id'];
 
-$dateTime = new DateTime($data['created_at']);
-$dateTime->setTimezone(new DateTimeZone('UTC'));
-$created_at = $dateTime->format('Y-m-d H:i:s');
 
-$dateTime = new DateTime($data['pair_by']);
-$dateTime->setTimezone(new DateTimeZone('UTC'));
-$pair_by = $dateTime->format('Y-m-d H:i:s');
 $status = $data['status'];
+$pair_by = null;
 
-$dateTime = new DateTime($data['status_changed_at']);
-$dateTime->setTimezone(new DateTimeZone('UTC'));
-$status_changed_at = $dateTime->format('Y-m-d H:i:s');
+// square only items
+if ($ccType == 'square') {
+    $code = $data['code'];
+    $locationId = $data['location_id'];
+    $name = $data['name'];
+    $product_type = $data['product_type'];
+    $createdAt = new DateTime($data['created_at']);
+    $statusChangedAt = new DateTime($data['status_changed_at']);
+    $dateTime = new DateTime($data['pair_by']);
+    $dateTime->setTimezone(new DateTimeZone('UTC'));
+    $pair_by = $dateTime->format('Y-m-d H:i:s');
+}
+// stripe only itemns
+if ($ccType == 'stripe') {
+    $code = '';
+    $createdAt = new DateTime();
+    $statusChangedAt = new DateTime();
+    $name = $data['label'];
+    $locationId = $data['location'];
+    $product_type = $data['object'];
+    $pair_by = null;
+}
+
+$createdAt->setTimezone(new DateTimeZone('UTC'));
+$created_at = $createdAt->format('Y-m-d H:i:s');
+
+$statusChangedAt->setTimezone(new DateTimeZone('UTC'));
+$status_changed_at = $statusChangedAt->format('Y-m-d H:i:s');
 
 $insQ = <<<EOS
 INSERT INTO terminals(name, productType, locationId, squareId, squareCode, createDate, pairBy, status, statusChanged)
@@ -80,6 +108,21 @@ if ($newKey === false) {
 }
 
 $response['name'] = $newKey;
+if ($ccType == 'square')
+    $response['message'] = "Terminal $name created, pair with code $code before $pair_by";
+else {
+    $data['created_at'] = $created_at;
+    $data['status_changed_at'] = $status_changed_at;
+    $data['pair_by'] = null;
+    $data['paired_at'] = null;
+    $data['product_type'] = $data['device_type'];
+    $data['code'] = $regCode;
+    $data['device_id'] = $data['serial_number'];
+    $data['name'] = $data['label'];
+    $data['location_id'] = $data['location'];
+    updateTerminal($data);
+    $response['message'] = "Terminal $name created";
+}
 $response['terminal'] = $data;
-$response['message'] = "Terminal $name created, pair with code $code before $pair_by";
+
 ajaxSuccess($response);

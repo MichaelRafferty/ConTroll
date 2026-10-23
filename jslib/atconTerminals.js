@@ -12,6 +12,7 @@ class Terminals {
     #statusDetailsBody = null;
     #newTerminalName = null;
     #newTerminalLocation = null;
+    #newTerminalRegCode = null;
     #pairBlock = null;
     #addName = null;
     #addId = null;
@@ -22,7 +23,7 @@ class Terminals {
 
         // Users HTML elements
         this.#addbtn = document.getElementById('terminals_add_btn');
-        var id = document.getElementById('statusDetails');
+        let id = document.getElementById('statusDetails');
         if (id) {
             statusDetailsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#statusDetailsTitle = document.getElementById('statusDetailsTitle');
@@ -33,6 +34,7 @@ class Terminals {
             addTerminalModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#newTerminalName = document.getElementById('newTerminalName');
             this.#newTerminalLocation = document.getElementById('newTerminalLocation');
+            this.#newTerminalRegCode = document.getElementById('regCode');
             this.#pairBlock = document.getElementById('pairBlock');
         }
         
@@ -40,7 +42,7 @@ class Terminals {
         if (id) {
             this.loadTerminals(terminals);
             // refresh the table
-            for (var i = 0; i < terminals.length; i++) {
+            for (let i = 0; i < terminals.length; i++) {
                 this.refreshStatus(terminals[i].name, true);
             }
             this.dirty = false;
@@ -81,8 +83,8 @@ class Terminals {
 // tabulator formatter for the actions column, displays the update badge, remove, and edit person buttons
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
     termActions(cell, formatterParams, onRendered) { //plain text value
-        var data = cell.getData();
-        var btns = "";
+        let data = cell.getData();
+        let btns = "";
         btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             ' onclick="terminals.details(\'' + data.name + '\')">Details</button>';
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -101,6 +103,9 @@ class Terminals {
         // clear the fields
         this.#newTerminalName.value = '';
         this.#newTerminalLocation.value = '';
+        if (this.#newTerminalRegCode)
+            this.#newTerminalRegCode.value = '';
+
         this.#pairBlock.hidden = true;
         this.#terminalList.clearFilter(true);
         document.getElementById('AddTerminalCreate').disabled = false;
@@ -117,8 +122,11 @@ class Terminals {
 
     createTerminal() {
         clear_message('add_result_message');
-        var name = document.getElementById('newTerminalName').value;
-        var location = document.getElementById('newTerminalLocation').value;
+        let name = this.#newTerminalName.value;
+        let location = this.#newTerminalLocation.value;
+        let regCode = null;
+        if (this.#newTerminalRegCode)
+            regCode = this.#newTerminalRegCode.value;
 
         if (name == undefined || name == null || name == '') {
             show_message('New terminal name required', 'error', 'add_result_message');
@@ -134,11 +142,18 @@ class Terminals {
             show_message('You must select a location', 'error', 'add_result_message');
             return;
         }
+
+        if (config.ccType == 'stripe' && (regCode == undefined || regCode == null || regCode == '')) {
+            show_message('You must enter the registration code displayed on the Strip Reader', 'error', 'add_result_message');
+            return;
+        }
+
         show_message("Creating the new terminal: " + name + " at location " + location, 'add_result_message');
-        var postData = {
+        let postData = {
             ajax_request_action: 'create',
             terminal: name,
             location: location,
+            regCode: regCode,
         };
         $.ajax({
             method: "POST",
@@ -157,10 +172,22 @@ class Terminals {
             show_message(data['error'], 'error', 'add_result_message');
             return;
         }
+        let msg = '';
+        if (data['status'] == 'error') {
+            if (data.hasOwnProperty('message'))
+                msg = message;
+            else if (data.hasOwnProperty('data'))
+                msg = data.data;
+            else
+                msg = data;
+            show_message(msg, 'error', 'add_result_message');
+            return;
+        }
+
         if (data['message'] !== undefined) {
             show_message(data['message'], 'success', 'add_result_message');
         }
-        var terminal = data.terminal;
+        let terminal = data.terminal;
         this.#addName = terminal.name;
         this.#addId = terminal.id;
         document.getElementById('createName').innerHTML = terminal.name;
@@ -178,7 +205,7 @@ class Terminals {
     // in theory it's now paired, get the device id by calling get device code
     createProceed() {
         show_message("Getting the new terminals details: " + this.#addName, 'add_result_message');
-        var postData = {
+        let postData = {
             ajax_request_action: 'codeStatus',
             terminal: this.#addName,
             id: this.#addId,
@@ -220,7 +247,7 @@ class Terminals {
             "using the three dots to the right and the 'delete' action?"))
             return;
 
-        var postData = {
+        let postData = {
             ajax_request_action: 'delete',
             terminal: name,
         };
@@ -246,11 +273,11 @@ class Terminals {
     // show details
     details(terminal) {
         // load fields from terminal row
-        var data = this.#terminalList.getRow(terminal).getData();
-        var keys = Object.keys(data);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            var field = 'details' + String(key[0]).toUpperCase() + String(key).slice(1);
+        let data = this.#terminalList.getRow(terminal).getData();
+        let keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let field = 'details' + String(key[0]).toUpperCase() + String(key).slice(1);
             document.getElementById(field).innerHTML = data[key];
         }
         statusDetailsModal.show();
@@ -258,7 +285,7 @@ class Terminals {
 
     // refresh the status, use the status call to fetch the non controll status, and then fetch the database item
     refreshStatus(terminal, silent = false) {
-        var postData = {
+        let postData = {
             ajax_request_action: 'refreshStatus',
             terminal: terminal,
         };
