@@ -60,7 +60,7 @@ function term_createDeviceCode($name, $locationId, $regCode = null, $useLogWrite
     return null;
 }
 
-function term_getDevice($name, $useLogWrite = false) : array | null {
+function term_getDevice($name, $id = null, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $squareDebug = getConfValue('debug', 'square', 0);
 
@@ -97,7 +97,7 @@ function term_getDevice($name, $useLogWrite = false) : array | null {
     return null;
 }
 
-function term_getStatus($name, $useLogWrite = false) : array | null {
+function term_getStatus($name, $id = null, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $squareDebug = getConfValue('debug', 'square', 0);
 

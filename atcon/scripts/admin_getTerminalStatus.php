@@ -5,6 +5,7 @@
 // refresh the status of a single terminal
 
 require_once('../lib/base.php');
+require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
@@ -34,10 +35,29 @@ if (!array_key_exists('terminal', $_POST)) {
     exit();
 }
 
+$ccType = getConfValue('cc', 'type', 'offline');
 $terminal = $_POST['terminal'];
+if ($ccType == 'stripe') {
+    // get the id from the database
+    $idSQL = <<<EOS
+SELECT squareId
+FROM terminals
+WHERE name = ?;
+EOS;
+    $idR = dbSafeQuery($idSQL, 's', array($terminal));
+    if ($idR === false || $idR->num_rows != 1) {
+        RenderErrorAjax('Invalid calling sequence.');
+        exit();
+    }
+    $id = $idR->fetch_assoc()['squareId'];
+    $idR->free();
+} else
+    $id = null;
+
+load_cc_procs(); // for exception processing
 load_term_procs();
 // get the status from the terminal
-$response = term_getStatus($terminal);
+$response = term_getStatus($terminal, $id);
 // temp row for now
 if (!array_key_exists('updCnt', $response)) {
     $response['updCnt'] = 0;

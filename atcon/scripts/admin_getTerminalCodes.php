@@ -1,9 +1,11 @@
 <?php
 // ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: admin_getTerminalCodes.php
-// Author: Syd Weinsteinretrieve the details on a terminal after it's been paired
+// Author: Syd Weinstein
+// retrieve the details on a terminal after it's been paired
 
 require_once('../lib/base.php');
+require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
 require_once('../../lib/log.php');
 
@@ -37,53 +39,61 @@ if (!(array_key_exists('terminal', $_POST) && array_key_exists('id', $_POST))) {
     exit();
 }
 
+
+$ccType = getConfValue('cc', 'type', 'offline');
+
 $name = $_POST['terminal'];
 $id = $_POST['id'];
 // now call API to create the terminal
+load_cc_procs(); // need the exception processing
 load_term_procs();
-$data = term_getDevice($name, true);
 
-$id = $data['id'];
-$name = $data['name'];
-$code = $data['code'];
-$product_type = $data['product_type'];
-$locationId = $data['location_id'];
-$created_at = $data['created_at'];
-if (array_key_exists('pair_by', $data)) {
-    $dateTime = new DateTime($data['pair_by']);
+if ($ccType == 'square') {
+    $data = term_getDevice($name, $id, true);
+
+    $id = $data['id'];
+    $name = $data['name'];
+    $code = $data['code'];
+    $product_type = $data['product_type'];
+    $locationId = $data['location_id'];
+    $created_at = $data['created_at'];
+    if (array_key_exists('pair_by', $data)) {
+        $dateTime = new DateTime($data['pair_by']);
+        $dateTime->setTimezone(new DateTimeZone('UTC'));
+        $pair_by = $dateTime->format('Y-m-d H:i:s');
+    } else {
+        $pair_by = null;
+    }
+    if (array_key_exists('paired_at', $data)) {
+        $dateTime = new DateTime($data['paired_at']);
+        $dateTime->setTimezone(new DateTimeZone('UTC'));
+        $paired_at = $dateTime->format('Y-m-d H:i:s');
+    } else {
+        $paired_at = null;
+    }
+    if (array_key_exists('device_id', $data)) {
+        $device_id = $data['device_id'];
+    } else {
+        $device_id = null;
+    }
+    $status = $data['status'];
+
+    $dateTime = new DateTime($data['status_changed_at']);
     $dateTime->setTimezone(new DateTimeZone('UTC'));
-    $pair_by = $dateTime->format('Y-m-d H:i:s');
-} else {
-    $pair_by = null;
-}
-if (array_key_exists('paired_at', $data)) {
-    $dateTime = new DateTime($data['paired_at']);
-    $dateTime->setTimezone(new DateTimeZone('UTC'));
-    $paired_at = $dateTime->format('Y-m-d H:i:s');
-} else {
-    $paired_at = null;
-}
-if (array_key_exists('device_id', $data)) {
-    $device_id = $data['device_id'];
-} else {
-    $device_id = null;
-}
-$status = $data['status'];
+    $status_changed_at = $dateTime->format('Y-m-d H:i:s');
 
-$dateTime = new DateTime($data['status_changed_at']);
-$dateTime->setTimezone(new DateTimeZone('UTC'));
-$status_changed_at = $dateTime->format('Y-m-d H:i:s');
-
-$updQ = <<<EOS
+    $updQ = <<<EOS
 UPDATE terminals
 SET deviceId = ?, pairBy = ?, pairedAt = ?, status = ?, statusChanged = ?
 WHERE name = ?;
 EOS;
-$dt = 'ssssss';
-$numRows = dbSafeCmd($updQ, $dt, array($device_id, $pair_by, $paired_at,  $status, $status_changed_at, $name));
-if ($numRows === false) {
-    ajaxSuccess(array('error'=>'Error updatingterminal in database, seek assistance'));
-    exit();
+    $dt = 'ssssss';
+    $numRows = dbSafeCmd($updQ, $dt, array ($device_id, $pair_by, $paired_at, $status, $status_changed_at, $name));
+    if ($numRows === false) {
+        ajaxSuccess(array ('error' => 'Error updatingterminal in database, seek assistance'));
+        exit();
+    }
+    $response['terminal'] = $data;
 }
 
 $terminalSQL = <<<EOS
@@ -99,8 +109,10 @@ $response['terminals'] = $terminals;
 $terminalQ->free();
 
 $response['name'] = $name;
-$response['terminal'] = $data;
-if ($paired_at !== null && $paired_at != '') {
+if ($ccType == 'stripe') {
+    $response['message'] = "Terminal $name updated";
+    $response['ok'] = 1;
+} else if ($paired_at !== null && $paired_at != '') {
     $response['message'] = "Terminal $name updated, now paired with status $status";
     $response['ok'] = 1;
 } else {

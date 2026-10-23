@@ -9,14 +9,14 @@
 
 require_once("global.php");
 
-function createDeviceCode($name, $locationId, $useLogWrite = false) : array {
+function term_createDeviceCode($name, $locationId, $regCode = null, $useLogWrite = false) : array {
     $term = array('name' => $name, 'location_id' => $locationId, 'product_type' => 'Test_Terminal', 'code' => $name,
         'id' => 'id_' . $name, 'pair_by' => '2040-12-31 23:59:59', 'created_at' => date_create('now')->format('Y-m-d H:i:s'),
         'status' => 'UNPAIRED', 'status_changed_at' => date_create('now')->format('Y-m-d H:i:s'));
     return $term;
 }
 
-function term_getStatus($name, $useLogWrite = false) : array | null {
+function term_getStatus($name, $id = null, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
 
     // get the device name

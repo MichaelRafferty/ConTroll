@@ -125,13 +125,83 @@ function term_createDeviceCode($name, $locationId, $readerCode, $useLogWrite = f
     return $readerPHP;
 }
 
-function term_getDevice($name, $useLogWrite = false) : array | null {
-    return array ('Warning' => "Stripe Terminals not yet supported");
+function term_getDevice($name, $id, $useLogWrite = false) : array | null {
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
+    try {
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->retrieve', $id, $useLogWrite);
+        // get a client reference
+        $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $reader = $client->terminal->readers->retrieve($id);
+        $data = json_decode(json_encode($reader), true);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->retrieve response', $reader, $useLogWrite);
+        return $data;
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('term_retrieve', $e, 'Invalid Request Exception',
+            'Invalid data for retrieve terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('term_retrieve', $e, 'other api error',
+            'Unable to retrieve terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+    return null;
 }
 
-function term_getStatus($name, $useLogWrite = false) : array | null {
-     return array ('Warning' => 'Stripe Terminals not yet supported');
+function term_getStatus($name, $id, $useLogWrite = false) : array | null {
+     $apiResult = term_getDevice($name, $id, $useLogWrite);
+     if ($apiResult == null)
+         return null;
+
+    // update the database
+    $upSQL = <<<EOS
+UPDATE terminals
+SET
+    productType = ?,
+    squareName = ?,
+    squareModel = ?,
+    version = ?,
+    terminalAPIVersion = ?,
+    wifiIPAddressV4 = ?,
+    status = ?,
+    statusChanged = now()
+WHERE name = ?;
+EOS;
+    $productType = $apiResult['object'];
+    $squareName = $apiResult['label'];
+    $squareModel = $apiResult['device_type'];
+    $version = $apiResult['device_sw_version'];
+    $wifiIPAddressV4 = $apiResult['ip_address'];
+    $terminalAPIVersion = $apiResult['device_sw_version'];
+    $status = $apiResult['status'];
+
+    $arrVals = array($productType, $squareName, $squareModel, $version, $terminalAPIVersion, $wifiIPAddressV4, $status, $name);
+    $datatypes = 'ssssssss';
+    $response = [];
+    $response['updCnt'] = dbSafeCmd($upSQL, $datatypes, $arrVals);
+
+
+// fetch the updated terminal record
+    $terminalSQL = <<<EOS
+SELECT *
+FROM terminals
+WHERE name = ?;
+EOS;
+    $terminalQ = dbSafeQuery($terminalSQL, 's', array($name));
+    if ($terminalQ === false || $terminalQ->num_rows != 1) {
+        RenderErrorAjax("Cannot fetch terminal $name status.");
+        exit();
+    }
+    $updatedRow = $terminalQ->fetch_assoc();
+    $response['updatedRow'] = $updatedRow;
+    $terminalQ->free();
+    return $response;
 }
+
 
 function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : array | null {
      return array ('Error' => 'Stripe Terminals not yet supported');

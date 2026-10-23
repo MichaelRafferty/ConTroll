@@ -57,6 +57,27 @@ class Terminals {
             this.#terminalList = null;
         }
 
+        let columns = [
+            { title: "Actions", minWidth: 230, formatter: this.termActions, },
+            { title: "Name", field: "name", minWidth: 150, headerSort: true, headerFilter: true },
+            { title: "Status", field: "status", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
+            { title: "Status Updated", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, }
+        ];
+        if (config.ccType == 'square') {
+            columns.push(
+                {title: "Square Code", field: "squareCode", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true,},
+                {
+                    title: "Battery Level", field: "batteryLevel", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true,
+                    formatter: "progress", formatterParams: {min: 0, max: 100, color: ["red", "yellow", "green"], legend: true,},
+                },
+                {title: "External Power", field: "externalPower", minWidth: 100, headerSort: true, headerFilter: true, headerWordWrap: true,}
+            );
+        }
+        columns.push(
+            { title: "Current Order", field: "currentOrder", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
+            { title: "Current Payment", field: "currentPayment", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
+        );
+
         this.#terminalList = new Tabulator ('#terminalsTable', {
             data: terminals,
             layout: "fitData",
@@ -64,19 +85,7 @@ class Terminals {
             movableRows: false,
             history: true,
             index: 'name',
-            columns: [
-                { title: "Actions", minWidth: 230, formatter: this.termActions, },
-                { title: "Name", field: "name", minWidth: 150, headerSort: true, headerFilter: true },
-                { title: "Status", field: "status", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Status Updated", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Square Code", field: "squareCode", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Battery Level", field: "batteryLevel", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true,
-                    formatter: "progress", formatterParams: { min: 0, max: 100, color: ["red", "yellow", "green"], legend: true, },
-                },
-                { title: "External Power", field: "externalPower", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Current Order", field: "currentOrder", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Current Payment", field: "currentPayment", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
-            ],
+            columns: columns,
         });
     }
 
@@ -198,8 +207,11 @@ class Terminals {
         document.getElementById('createPairBy').innerHTML = terminal.pair_by;
         document.getElementById('createStatus').innerHTML = terminal.status;
         document.getElementById('createStatusChanged').innerHTML = terminal.status_changed_at;
-        this.#pairBlock.hidden = false;
+        if (config.ccType == 'square')
+            this.#pairBlock.hidden = false;
         document.getElementById('AddTerminalCreate').disabled = true;
+        if (config.ccType == 'stripe')
+            this.createProceed();
     }
 
     // in theory it's now paired, get the device id by calling get device code
@@ -277,8 +289,9 @@ class Terminals {
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
-            let field = 'details' + String(key[0]).toUpperCase() + String(key).slice(1);
-            document.getElementById(field).innerHTML = data[key];
+            let field = document.getElementById('details' + String(key[0]).toUpperCase() + String(key).slice(1));
+            if (field)
+                field.innerHTML = data[key];
         }
         statusDetailsModal.show();
     }
