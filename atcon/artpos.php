@@ -96,12 +96,6 @@ $config_vars['inlineInventory'] = $inlineInventory;
 $config_vars['useBarcode'] =
         (getConfValue('vendor', 'artistBidSheetBarcode', 0) == 1 ||
                 getConfValue('vendor', 'artistPriceTagBarcode', 0) == 1) ? 1 : 0;
-
-$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
-$config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
-$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
-$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
-
 if (isSessionVar('terminal'))
     $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
 else
@@ -114,6 +108,13 @@ if (isSessionVar('genericPrinter'))
     $config_vars['generic'] = getSessionVar('genericPrinter')['name'] != 'None' ? 1 : 0;
 else
     $config_vars['generic'] = 0;
+$config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+if ($config_vars['creditProcessor'] != 'strip' || $config_vars['terminal'] == 0)
+        $config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
+    else
+        $config_vars['creditonline'] = 0;
+$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
+$config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;

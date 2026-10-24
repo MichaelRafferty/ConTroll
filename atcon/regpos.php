@@ -89,9 +89,24 @@ $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['posType'] = 'a';
-$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
-$config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
 $config_vars['creditProcessor'] = getConfValue('cc','type', 'none');
+$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
+if (isSessionVar('terminal'))
+    $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['terminal'] = 0;
+if (isSessionVar('receiptPrinter'))
+    $config_vars['receipt'] = getSessionVar('receiptPrinter')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['receipt'] = 0;
+if (isSessionVar('genericPrinter'))
+    $config_vars['generic'] = getSessionVar('genericPrinter')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['generic'] = 0;
+if ($config_vars['creditProcessor'] != 'stripe' || $config_vars['terminal'] == 0)
+    $config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
+else
+    $config_vars['creditonline'] = 0;
 $config_vars['allowedCCBrands'] = explode(',', getConfValue('cc', 'allowedCCBrands', ''));
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];

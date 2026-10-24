@@ -521,10 +521,12 @@ EOS;
         $html .= '<input type="hidden" name="generic_printer" id="generic_printer" value=""/>';
 
     if (count($terminals) > 0) {
+        $ccType = getConfValue('cc', 'type', 'offline');
+        $ccName = $ccType == 'stripe' ? 'Stripe' : 'Square';
         $html .= <<<EOS
         <div class='row mt-2'>
             <div class='col-sm-$col1width'>
-                <label for='square_terminal'>Square Terminal:</label>
+                <label for='square_terminal'>$ccName Terminal:</label>
             </div>
             <div class='col-sm-auto'>
                 <select name='square_terminal' id='square_terminal'>
