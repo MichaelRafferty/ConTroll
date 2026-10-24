@@ -1548,7 +1548,8 @@ function setPayType(ptype) {
             pay_button_pay.disabled = false;
         }
     } else {
-        resetCCPay(paymentElementDiv);
+        if (config.creditonline == 1)
+            resetCCPay(paymentElementDiv);
         ccOnlineStarted = false;
     }
     if (ptype == 'terminal') {

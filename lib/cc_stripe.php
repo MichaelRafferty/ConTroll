@@ -383,15 +383,6 @@ EOS;
         }
     }
 
-
-
-    //TODO stripe locations appear to apply to devices, not api online???
-    /*
-    if ($locationId == null) {
-        $locationId = getConfValue('cc', 'location', null);
-    }
-    */
-
     // stripe customer/invoice/paymentintent api steps
 
     // 1. build the payment intent and add line items to it
@@ -877,15 +868,26 @@ EOS;
     $orderFields = [
         'amount' => round($orderValue * $currencyMultiplier) + $orderTax,
         'currency' => $currency,
-        'automatic_payment_methods' => [
-            'enabled' => true,
-        ],
         'confirm' => false,
         'amount_details' => $amountDetails,
         'description' => $con['conname'] . '-' . $source,
         'metadata' => $orderMetadata,
         //'setup_future_usage' => 'off_session',
     ];
+
+    // check to see if we are a terminal and get it's parameters for payment intent
+    $terminal = getSessionVar('terminal');
+    if ($terminal == null) {
+        $orderFields['automatic_payment_methods'] = ['enabled' => true,];
+    } else {
+        $ccCountry = getConfValue('cc', 'country', 'US');
+        if ($ccCountry == 'CA')
+            $orderFields['payment_method_types'] = ['card_present','interac_present'];
+        else
+            $orderFields['payment_method_types'] = ['card_present'];
+        $orderFields['capture_method'] = 'manual';
+    }
+
     if ($customerId != '')
         $orderFields['customer'] = $customerId;
 

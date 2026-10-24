@@ -2069,6 +2069,7 @@ class Pos {
 // no changes button pressed:
 // if everything is put up next customer
     reviewNoChanges() {
+        clear_message();
         // first check to see if any required fields still exist
         if (this.#reviewMissingItems > 0) {
             if (!confirm("Proceed ignoring check for " + this.#reviewMissingItems.toString() + " missing data items (shown in yellow)?")) {
@@ -2305,7 +2306,8 @@ class Pos {
                 this.#ccOnlineStarted = true;
             }
         } else {
-            resetCCPay(this.#paymentElementDiv);
+            if (config.creditonline == 1)
+                resetCCPay(this.#paymentElementDiv);
             this.#ccOnlineStarted = false;
         }
         if (ptype == 'terminal') {

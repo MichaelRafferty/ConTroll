@@ -162,7 +162,8 @@ if ($new_payment['type'] == 'terminal') {
     load_term_procs();
     $terminal = getSessionVar('terminal');
     $name = $terminal['name'];
-    $statusResponse = term_getStatus($name);
+    $id = $terminal['squareId'];
+    $statusResponse = term_getStatus($name, $id);
     $termStatus = $statusResponse['updatedRow'];
 
     if ($override == 1) {  // force the operation to continue, try to cancel anything in progress
@@ -179,7 +180,8 @@ if ($new_payment['type'] == 'terminal') {
         $controllStatus = $termStatus['controllStatus'];
         $currentOrder = $termStatus['currentOrder'];
         $currentPayment = $termStatus['currentPayment'];
-        if ($status != 'AVAILABLE' || ($inUseBy > 0 && ($inUseBy != $user_id || $poll == 0))) {
+
+        if (($status != 'AVAILABLE' && strtolower($status) != 'online') || ($inUseBy > 0 && ($inUseBy != $user_id || $poll == 0))) {
             $msg = "Terminal $name is not available, it's status is $status";
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
