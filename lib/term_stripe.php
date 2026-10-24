@@ -210,12 +210,13 @@ function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : a
         ajaxSuccess(['error' => "Terminal not selected in Printer Selection"]);
         exit();
     }
-    $process = array($tid, ['payment_intent' => $orderId]);
+    $termid = $terminal['squareId'];
+    $params = array('payment_intent' => $orderId);
     try {
-        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->payOrder->handoff', $process, $useLogWrite);
+        if ($stripeDebug & 32) stcc_logObject("cc_stripe/terminal->payOrder->handoff to $termid", $params, $useLogWrite);
         // get a client reference
         $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
-        $reader = $client->terminal->readers->processPaymentIntent($process);
+        $reader = $client->terminal->readers->processPaymentIntent($termid, $params);
         $data = json_decode(json_encode($reader), true);
         if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->readers->handoff response', $reader, $useLogWrite);
         return $data;

@@ -522,14 +522,21 @@ EOS;
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
             $checkout = term_payOrder($name, $orderId, $master_tid, $amt, true);
-            $status = $checkout['status'];
-            if ($status == 'PENDING') {
+            // square and stripe differ, if it's stripe it has an action, if it's squaure it has a status directly
+            if (array_key_exists('action', $checkout)) {
+                $status = $checkout['action']['status'];
+                $paymentId = $checkout['action']['process_payment_intent']['payment_intent'];
+            } else {
+                $status = $checkout['status'];
+                $paymentId = $checkout['id'];
+            }
+            if ($status == 'PENDING' || $status == 'in_progress') {
                 $updQ = <<<EOS
 UPDATE terminals
 SET currentOperator = ?, currentOrder = ?, currentPayment = ?, controllStatus = ?, controllStatusChanged = NOW()
 WHERE name = ?;
 EOS;
-                $upd = dbSafeCmd($updQ, 'issss', array ($user_id, $orderId, $checkout['id'], $status, $name));
+                $upd = dbSafeCmd($updQ, 'issss', array ($user_id, $orderId, $paymentId, $status, $name));
                 if ($upd === false) {
                     ajaxSuccess(array ('error' => "Unable to update terminal ($name) status"));
                     exit();
@@ -552,11 +559,11 @@ UPDATE transaction
 SET paymentStatus = ?, checkoutId = ?, paymentInfo = ?
 WHERE id = ?;
 EOS;
-                $updcnt = dbSafeCmd($updTranStatusSQL, 'sssi', array($status, $checkout['id'], $paymentInfoJSON, $master_tid));
+                $updcnt = dbSafeCmd($updTranStatusSQL, 'sssi', array($status, $paymentId, $paymentInfoJSON, $master_tid));
 
                 $response['status'] = 'success';
                 $response['poll'] = 1;
-                $response['id'] = $checkout['id'];
+                $response['id'] = $paymentId;
                 $response['message'] = "Payment request sent to terminal $name,<br/>" .
                     'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.';
                 ajaxSuccess($response);
