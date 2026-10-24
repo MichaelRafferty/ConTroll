@@ -408,6 +408,7 @@ EOS;
                         'please click "Confirm Pay" again to start a new payment session with the terminal'));
                     exit();
 
+                case 'requires_payment_method':
                 case 'IN_PROGRESS':
                 case 'PENDING':
                     if ($poll == 2)
