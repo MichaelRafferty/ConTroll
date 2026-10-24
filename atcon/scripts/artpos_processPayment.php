@@ -322,7 +322,6 @@ if ($amt > 0) {
         //log requested payment
         labeled_logWrite('artpos_processPayment-request',
             array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
-        load_cc_procs();
         if ($ajax_request_action == 'processPayment')
             $rtn = cc_payOrder($ccParam, $buyer, true);
         else

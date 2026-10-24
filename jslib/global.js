@@ -108,7 +108,7 @@ function validateAddress(addr) {
     return false;
 }
 
-// convert a form post string to an arrray
+// convert a form post string to an array
 // convert url parameters to associative array
 function URLparamsToArray(urlargs, doTrim = false) {
     const params = new URLSearchParams(urlargs);

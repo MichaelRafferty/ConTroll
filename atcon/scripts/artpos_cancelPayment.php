@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
@@ -46,6 +47,7 @@ if (!array_key_exists('requestId', $_POST) || empty($_POST['requestId'])) {
 
 $requestId = $_POST['requestId'];
 
+load_cc_procs(); // for the exception processing
 load_term_procs();
 
 $terminal = getSessionVar('terminal');
@@ -65,7 +67,11 @@ $name = $terminal['name'];
  switch ($status) {
      case 'CANCELED':
          resetTerminalStatus($name);
-         ajaxSuccess(array ('success' => 'The terminal cancelled the payment due to ' . $checkout['cancel_reason']));
+         if (array_key_exists('cancel_reason', $checkout))
+             $reason = $checkout['cancel_reason'];
+         else
+             $reason = 'at user request';
+         ajaxSuccess(array ('success' => "The terminal cancelled the payment due to $reason"));
          exit();
 
      case 'CANCEL_REQUESTED':
@@ -83,7 +89,7 @@ $response = [];
 $response['status'] = 'success';
 $status = $checkout['status'];
 $response['message'] = 'Payment $requestId cancelled.';
-if ($status == 'CANCEL_REQUESTED') {
+if ($status == 'CANCEL_REQUESTED' || $status == 'online') {
     resetTerminalStatus($name);
     $response['message'] = "Payment $requestId cancelled.";
 }

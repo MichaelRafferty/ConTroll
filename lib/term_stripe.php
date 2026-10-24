@@ -238,11 +238,70 @@ function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : a
 }
 
 function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null {
-     return array ('Error' => 'Stripe Terminals not yet supported');
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
+    $terminal = getSessionVar('terminal');
+    if ($terminal == null) {
+        ajaxSuccess(['error' => 'Terminal not selected in Printer Selection']);
+        exit();
+    }
+    $termid = $terminal['squareId'];
+    try {
+        if ($stripeDebug & 32) stcc_logObject("cc_stripe/terminal->cancel to $termid", array(), $useLogWrite);
+        // get a client reference
+        $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $reader = $client->terminal->readers->cancelAction($termid);
+        $data = json_decode(json_encode($reader), true);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->cancel response', $reader, $useLogWrite);
+        return $data;
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('term_retrieve', $e, 'Invalid Request Exception',
+            'Invalid data for hand off payment to terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('term_retrieve', $e, 'other api error',
+            'Unable to hand off payment to terminal, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+    return null;
 }
 
 function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null {
-     return array ('Error' => 'Stripe Terminals not yet supported');
+    $stripeDebug = getConfValue('debug', 'stripe', 0);
+    $terminal = getSessionVar('terminal');
+    if ($terminal == null) {
+        ajaxSuccess(['error' => 'Terminal not selected in Printer Selection']);
+        exit();
+    }
+    $termid = $terminal['squareId'];
+
+    try {
+        if ($stripeDebug & 32) stcc_logObject("cc_stripe/terminal->getPayStatus", array(), $useLogWrite);
+        // get a client reference
+        $client = new \Stripe\StripeClient(getConfValue('cc', 'key'));
+        $reader = $client->paymentIntents->retrieve($payRef);
+        $data = json_decode(json_encode($reader), true);
+        if ($stripeDebug & 32) stcc_logObject('cc_stripe/terminal->getPayStatus responsese', $reader, $useLogWrite);
+        return $data;
+    }
+    catch (\Stripe\Exception\InvalidRequestException $e) {
+        stcc_logException('term_retrieve', $e, 'Invalid Request Exception',
+            'Invalid data for get payment Intent, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (\Stripe\Exception\ApiErrorException $e) {
+        stcc_logException('term_retrieve', $e, 'other api error',
+            'Unable to get payment intent, seek assistance.<br/>Stripe Error: ' . $e->getMessage(),
+            $useLogWrite);
+    }
+    catch (Exception $e) {
+        error_log('Another problem occurred, maybe unrelated to Stripe, seek assistance.');
+    }
+    return null;
 }
 
 function term_printReceipt($name, $paymentId, $useLogWrite = false) : null | array {
