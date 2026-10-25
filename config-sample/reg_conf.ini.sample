@@ -95,6 +95,15 @@ orgabv="Club"
 ;; H+If empty it is omitted from the receipt.
 ;; D:s80
 ;; B:O
+;; N:showReceiptYear
+;; R:H,reg_admin
+;; H:Shows Con ID (con.id) before the transaction number as the receipt number
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if for just the transaction number or 1 to prepend year-
+;; D:l:0,1
+;; B:O
+; showReceiptYear - Show con id as part of the receipt number
+;     set to 0 for just transaction number, 1 for con.id - transaction number
+showReceiptYear=0
 ;;;;; HR Policy Related Fields
 ;;; policy related fields
 ;; N:policy

@@ -27,6 +27,11 @@
     * vendorLogo, vendorLogoAlt, vendorLogoText: overrides of the logos for the Vendor Portal
     * exhibitorLogo, exhibitorLogoAlt, exhibitorLogoText: overrides of the logos for the Exhibitor Portal
     * fanLogo, fanLogoAlt, fanLogoText: overrides of the logos for the Fan Portal
+    * Receipt formatting items: 
+      * sellerName: Name as to appear on receipts
+      * sellerContactInfo: address or email address if desired
+      * sellerTaxID: VAT/GST tax id line, if needed
+      * showReceiptYear: include the con id in the receipt number
 
 * New Scripts: None
 
