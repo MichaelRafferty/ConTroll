@@ -1,8 +1,7 @@
 <?php
-    require_once("../../lib/paymentPlans.php");
-    require_once("../../lib/tax.php");
-
 //  receipt.php - library of modules related building receipts
+require_once("../../lib/paymentPlans.php");
+require_once("../../lib/tax.php");
 
 // spaceGetPaymentTrans
 //      from space lists, given a exhibitorId and a regionYearId, return the transactions(s) for those spaces
@@ -490,34 +489,89 @@ function regFormatReceipt($data) : array {
 
     $response = $data;
     $master_transaction = $data['transaction'];
+    // receipt format:
+    //      Header Lines:
+    //      Sold by Name (con.sellerName, default con.label)
+    //      Seller Contact (skip if blank)
+    //      Seller License # (skip if blank)
+    //      Receipt # and date (Receipt # line: Receipt #[id-]transid completed/created date)
+    //      Sold to: Buyers Name
+    //          Optional address
+    //
+    //      Item lines
+
     // top lines of receipt - needs conlabel
     $condata = get_con();
     $conlabel = $condata['label'];
     $receipt_date = $master_transaction['complete_date'] ? "Completed on " . $master_transaction['complete_date_str'] : "Created on " . $master_transaction['create_date_str'];
     // Receipt Title:
-    $receipt = "Receipt for payment to $conlabel\n$receipt_date\n";
+    $sellerName = getConfValue('con', 'sellerName', $conlabel);
+    $sellerContactInfo = getConfValue('con', 'sellerContactInfo', '');
+    $master_tid = $master_transaction['id'];
+    // Sold By
+    $receipt = "$sellerName\n";
     $receipt_html = <<<EOS
 <div class="container-fluid border border-primary border-4">
     <div class="row">
         <div class="col-sm-12">
-            <h1 class="size-h2"><strong>Receipt for payment to $conlabel</strong></h1>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            $receipt_date
+            <h1 class="size-h2 text-center"><strong>$sellerName</strong></h1>
         </div>
     </div>
 EOS;
     $receipt_tables = <<<EOS
 <table>
-<tr><td colspan="3"><h1 class="size-h2"><strong>Receipt for payment to $conlabel</strong></h1></td></tr>
-<tr><td colspan="3">$receipt_date</td></tr>
+<tr><td colspan="3" style="text-align: center;"><strong>$sellerName</strong></td></tr>    
+EOS;
+    if ($sellerContactInfo != '') {
+        $receipt .= "$sellerContactInfo\n";
+        $shtml = str_replace("\n", "<br/>\n", $sellerContactInfo);
+        $receipt_html .= <<<EOS
+    <div class="row mt-0 pt-0">
+        <div class="col-sm-12 mt-0 pt-0">
+            <h1 class="size-h3 text-center"><strong>$shtml</strong></h1>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3" style="text-align: center;"><strong>$shtml</strong></td></tr>   
+EOS;
+    }
+
+    $sellerTaxID = getConfValue('con', 'sellerTaxID', '');
+    if ($sellerTaxID != '') {
+        $receipt .= "$sellerTaxID\n";
+        $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            <h1 class="size-h3 text-center"><strong>$sellerTaxID</strong></h1>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3" style="text-align: center;"><strong>$sellerTaxID</strong></td></tr>   
+EOS;
+    }
+    $showReceiptYear = getConfValue('con', 'showReceiptYear', '0');
+    if ($showReceiptYear == 1)
+        $receiptNum = $condata['id'] . "-$master_tid";
+    else
+        $receiptNum = $master_tid;
+    // Receipt Date
+    $receipt .= "Receipt Number $receiptNum $receipt_date\n";
+    $receipt_html .= <<<EOS
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            <strong>Receipt Number $receiptNum $receipt_date</strong>
+        </div>
+    </div>
+EOS;
+    $receipt_tables = <<<EOS
+<tr><td colspan="3"><strong>Receipt Number $receiptNum $receipt_date</strong></td></tr>
 EOS;
 
     // Payor Info
     $type = $data['type'];
-    $master_tid = $master_transaction['id'];
+
     $title_payor_name = $master_transaction['fullName'];
     $title_payor_badge = strip_tags(str_replace('<br/>', '/', $master_transaction['badgename']));
     $title_email = $master_transaction['email_addr'];
@@ -527,75 +581,75 @@ EOS;
 
     switch ($type) {
         case 'website':
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid\n";
+            $receipt .= "Sold to: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid
+            Sold to: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">Sold to: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'regportal':
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid\n";
+            $receipt .= "Sold to: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid
+            Sold to: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">Sold to: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'vendor':
         case 'artist':
         case 'exhibitor':
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid\n";
+            $receipt .= "Sold to: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid
+            Sold to: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">Sold to: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'atcon':
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid\n";
+            $receipt .= "Sold to: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
+            Sold to: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">Sold to: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid</td></tr>
 EOS;
             break;
         default: // reg_control receipts (registration, badgelist, people, etc.)
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name ($title_payor_badge),\nVia: Registration Staff Member: $cashier, Transaction: $master_tid\n";
+            $receipt .= "Sold to: $title_payor_name ($title_payor_badge),\nVia: Registration Staff Member: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid
+            Sold to: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid
         </div>
     </div>
  EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">Sold to: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
 EOS;
             break;
     }
@@ -1062,6 +1116,20 @@ EOS;
     $first = "mt-2";
     $rows = 0;
     if ($master_transaction['tax'] > 0) {
+        // subtotal before taxes
+        $subtotals = $memberSubtotal + $artSubtotal + $spaceSubtotal;
+        $subtotal = $dolfmt->formatCurrency((float)$subtotals, $currency);
+        $receipt .= "Subtotal before taxes: $subtotal\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-8'><strong>Subtotal before taxes:</strong></div>
+        <div class='col-sm-2' style="text-align: right;"><strong>$subtotal</strong></div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td></td><td><strong>Subtotal before taxes:</strong></td><td style="text-align: right;"><strong>$subtotal</strong></td></tr>
+EOS;
         foreach ($taxList as $taxLine) {
             if ($taxLine['rate'] > 0) {
                 $taxAmt = $master_transaction[$taxLine['taxField']];
@@ -1102,6 +1170,19 @@ EOS;
 <tr><td colspan="2">$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
 EOS;
         }
+        if ($master_transaction['tax'] > 1) {
+            $receipt .= "Total taxes: $subtotal\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-8'><strong>Total taxes:</strong></div>
+        <div class='col-sm-2' style="text-align: right;"><strong>$subtotal</strong></div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td></td><td><strong>Total taxes:</strong></td><td style="text-align: right;"><strong>$subtotal</strong></td></tr>
+EOS;
+        }
     }
     $total = $memberSubtotal + $spaceSubtotal + $artSubtotal + $tax;
 
@@ -1110,6 +1191,7 @@ EOS;
         $rounding = $master_transaction['rounding'];
         if ($rounding !== null && $rounding != 0) {
             $roundfmt = $dolfmt->formatCurrency((float)$rounding, $currency);
+            $receipt .= "Cash Rounding: $roundfmt\n";
             $receipt_html .= <<<EOS
     <div class="row mt-2">
         <div class="col-sm-9">Cash Rounding:</div>
@@ -1128,12 +1210,12 @@ EOS;
     $receipt .= "\nTotal Due: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
-        <div class="col-sm-9">Total Due:</div>
-        <div class="col-sm-2" style="text-align: right;">$price</div>
+        <div class="col-sm-9"><strong>Total Due:</strong></div>
+        <div class="col-sm-2" style="text-align: right;"><strong>$price</strong></div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Due:</td><td style="text-align: right;">$price</td></tr>
+<tr><td colspan="2"><strong>Total Due:</strong></td><td style="text-align: right;"><strong>$price</strong></td></tr>
 EOS;
 
     // now for the payments/coupon section
@@ -1239,12 +1321,12 @@ EOS;
         $receipt .= "\nTotal Payments: $paymentTotalFmt\n";
         $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-9'>Total Payments</div>
-        <div class="col-sm-2" style="text-align: right;">$paymentTotalFmt</div>
+        <div class='col-sm-9'><strong>Total Payments</strong></div>
+        <div class="col-sm-2" style="text-align: right;"><strong>$paymentTotalFmt</strong></div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Payments:</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
+<tr><td colspan="2"><strong>Total Payments:</strong></td><td style="text-align: right;"><strong>$paymentTotalFmt</strong></td></tr>
 EOS;
     }
 
