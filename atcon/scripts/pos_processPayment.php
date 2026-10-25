@@ -427,7 +427,7 @@ EOS;
                         'please click "Confirm Pay" again to start a new payment session with the terminal'));
                     exit();
             }
-            if ($status != 'COMPLETED') {
+            if ($status != 'COMPLETED' && $status != 'succeeded') {
                 ajaxSuccess(array ('error' => "Terminal returned  an unknown payment status of '$status', please seek assistance"));
                 exit();
             }
