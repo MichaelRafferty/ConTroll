@@ -428,7 +428,7 @@ logoalt="logo image alternate text"
 ;; D:s256
 ;; B:O
 ;;; logotext = tagline HTML to display next to or below the logo, optional
-;logotext="Tagline not alt=text"
+;logotext="Tagline not alt-text"
 ;;;;; HR Online Reg Misc Fields
 ;;; Online Reg misc fields
 ;; N:onsiteopen
@@ -603,6 +603,103 @@ exhibitOpen=0
 ;; B:M
 ;;; fanOpen
 fanOpen=0
+;;; local logo/logo alt entries for each portal, overrides the global logo
+;;; Artist Portal logo/heading related
+;; N:artistLogoImage
+;; R:H,exhibitor
+;; P:Artist Portal Logo file name
+;; H:File name in the vendor/images directory that is the logo for the artist portal site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
+;artistLogoImage="conname.png"
+;; N:artistLogoAlt
+;; R:H,exhibitor
+;; P:Artist Portal Logo alternate text
+;; H:Alternate text describing the Artist Portal logo for screen readers
+;; D:s256
+;; B:O
+;artistLogoAlt="logo image alternate text"
+;; N:artistLogoText
+;; R:H,exhibitor
+;; P:Artist Portal Tagline HTML
+;; H:tagline HTML to display next to or below the artist portal logo, optional
+;; H+This is not the alt text for the artist portal logo for screen readers
+;; D:s256
+;; B:O
+;artistLogoText="Tagline not alt-text"
+;;; Vendor Portal logo/heading related
+;; N:vendorLogoImage
+;; R:H,exhibitor
+;; P:Vendor Portal Logo file name
+;; H:File name in the vendor/images directory that is the logo for the vendor portal site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
+;vendorLogoImage="conname.png"
+;; N:vendorLogoAlt
+;; R:H,exhibitor
+;; P:Vendor Portal Logo alternate text
+;; H:Alternate text describing the Vendor Portal logo for screen readers
+;; D:s256
+;; B:O
+;vendorLogoAlt="logo image alternate text"
+;; N:vendorLogoText
+;; R:H,exhibitor
+;; P:Vendor Portal Tagline HTML
+;; H:tagline HTML to display next to or below the vendor portal logo, optional
+;; H+This is not the alt text for the vendor portal logo for screen readers
+;; D:s256
+;; B:O
+;vendorLogoText="Tagline not alt-text"
+;;; Exhibitor Portal logo/heading related
+;; N:exhibitorLogoImage
+;; R:H,exhibitor
+;; P:Exhibitor Portal Logo file name
+;; H:File name in the vendor/images directory that is the logo for the exhibitor portal site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
+;exhibitorLogoImage="conname.png"
+;; N:exhibitorLogoAlt
+;; R:H,exhibitor
+;; P:Exhibitor Portal Logo alternate text
+;; H:Alternate text describing the Exhibitor Portal logo for screen readers
+;; D:s256
+;; B:O
+;exhibitorLogoAlt="logo image alternate text"
+;; N:exhibitorLogoText
+;; R:H,exhibitor
+;; P:Exhibitor Portal Tagline HTML
+;; H:tagline HTML to display next to or below the exhibitor portal logo, optional
+;; H+This is not the alt text for the exhibitor portal logo for screen readers
+;; D:s256
+;; B:O
+;exhibitorLogoText="Tagline not alt-text"
+;;; Fan Portal logo/heading related
+;; N:fanLogoImage
+;; R:H,exhibitor
+;; P:Fan Portal Logo file name
+;; H:File name in the vendor/images directory that is the logo for the fan portal site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
+;fanLogoImage="conname.png"
+;; N:fanLogoAlt
+;; R:H,exhibitor
+;; P:Fan Portal Logo alternate text
+;; H:Alternate text describing the Fan Portal logo for screen readers
+;; D:s256
+;; B:O
+;fanLogoAlt="logo image alternate text"
+;; N:fanLogoText
+;; R:H,exhibitor
+;; P:Fan Portal Tagline HTML
+;; H:tagline HTML to display next to or below the fan portal logo, optional
+;; H+This is not the alt text for the fan portal logo for screen readers
+;; D:s256
+;; B:O
+;fanLogoText="Tagline not alt-text"
 ;;; overrides
 ;; N:customtext
 ;; R:H,exhibitor

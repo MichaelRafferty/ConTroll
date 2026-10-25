@@ -103,14 +103,28 @@ $config_vars['defaultCountry'] = $defaultCountry;
     <div class="row">
         <div class="col-sm-12 p-0">
 <?php
-$logoImage = getConfValue('reg', 'logoimage');
+$logoImage = getConfValue('vendor', $portalType . 'LogoImage', '');
 if ($logoImage != '') {
-    $altString = getConfValue('reg', 'logoalt', 'Logo');
-    ?>
-                <img class="img-fluid" src="images/<?php echo $logoImage; ?>" alt="<?php echo $altString; ?>"/>
+    $altString = getConfValue('vendor', $portalType . 'Logoalt', 'Logo');
+}
+$logoText = getConfValue('vendor', $portalType . 'LogoText', null);
+if ($logoImage == '') {
+    // get the default for the system if not overridden
+
+    $logoImage = getConfValue('reg', 'logoimage');
+    if ($logoImage != '') {
+        $altString = getConfValue('reg', 'logoalt', 'Logo');
+    }
+}
+if ($logoText == null)
+    $logoText = getConfValue('reg', 'logotext', null);
+if ($logoImage != '') {
+?>
+            <img class="img-fluid" src="images/<?php echo $logoImage; ?>" alt="<?php echo $altString; ?>"/>
 <?php
 }
-echo getConfValue('reg', 'logotext');
+if ($logoText !== null)
+    echo $logoText;
 ?>
         </div>
     </div>
