@@ -23,6 +23,10 @@
     * agePurchaseRestriction: ages not allowed to pay for memberships in the portal
     * ageRestriocton: ages not allowed to login to the portal
     * pastdueDaysNext: When to include next payment in past due payments on plans
+    * artistLogo, artistLogoAlt, artistLogoText: overrides of the logos for the Artist Portal
+    * vendorLogo, vendorLogoAlt, vendorLogoText: overrides of the logos for the Vendor Portal
+    * exhibitorLogo, exhibitorLogoAlt, exhibitorLogoText: overrides of the logos for the Exhibitor Portal
+    * fanLogo, fanLogoAlt, fanLogoText: overrides of the logos for the Fan Portal
 
 * New Scripts: None
 
@@ -50,8 +54,8 @@
    * Payment is the actual amount paid
 * Support for auto polling the terminal for completion
 
-## Exhibitor (Vendor Portals)
-* 
+## Exhibitor (Artist/Vendor/Exhibitor/Fan Portals)
+* Addition of overrides of the logos on a per portal basis
 
 # Wrike Items Closed:
 * 
