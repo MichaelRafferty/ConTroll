@@ -1720,6 +1720,8 @@ function cancelSuccess(data) {
     // and things that continue
     if (data.message !== undefined) {
         show_message(data.message, 'success');
+    } else if (data.success !== undefined) {
+        show_message(data.success, 'success');
     }
 
     document.getElementById('pollRow').hidden = true;
