@@ -72,6 +72,29 @@ org="The ConTroll Development Consortium"
 ;; D:s16
 ;; B:M
 orgabv="Club"
+;; N:sellerName
+;; R:V,reg_admin
+;; P:Receipt Seller Name
+;; H:For the receipt, this is the seller name for the items sold via ConTroll.
+;; H+If empty or missing it defaults to con.label
+;; D:s80
+;; B:O
+; sellerName="Receipt Seller Name"
+;; N:sellerContactInfo
+;; R:V,reg_admin
+;; P:Receipt Seller Contact Info
+;; H:For the receipt, this is the seller's contact info.  It is usually an address, be it email or postal.
+;; H+If empty it is omitted from the receipt.
+;; D:t80,4
+;; B:O
+; sellerInfo="Receipt Seler Info"
+;; N:sellerTaxID
+;; R:V,reg_admin
+;; P:Receipt Seller VAT/GST tax id nunmber
+;; H:For the receipt, this is the seller's sales tax id number, if required for receipts.
+;; H+If empty it is omitted from the receipt.
+;; D:s80
+;; B:O
 ;;;;; HR Policy Related Fields
 ;;; policy related fields
 ;; N:policy
