@@ -112,7 +112,7 @@ ALTER TABLE perinfo ADD column emergencyContact varchar(2048) DEFAULT '' NOT NUL
 ALTER TABLE perinfoHistory ADD column emergencyContact varchar(2048) AFTER pronouns;
 ALTER TABLE newperson ADD column emergencyContact varchar(2048) DEFAULT '' NOT NULL AFTER pronouns;
 
-DROP TRIGGER perinfo_update;
+DROP TRIGGER IF EXISTS perinfo_update;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo` FOR EACH ROW BEGIN
     IF (OLD.id != NEW.id OR OLD.currentAgeConId != NEW.currentAgeConId OR OLD.currentAgeType != NEW.currentAgeType
@@ -264,25 +264,6 @@ UPDATE regHistory
 JOIN memListMap mlm ON regHistory.memId = mlm.oldMemId
 SET memId = mlm.newMemId, mldId = mlm.newMdId;
 
-DELIMITER ;;
-CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
-    IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
-        OR OLD.oldperid != NEW.oldperid OR OLD.priorRegId != NEW.priorRegId OR OLD.create_date != NEW.create_date
-        OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price
-        OR OLD.couponDiscount != NEW.couponDiscount OR OLD.paid != NEW.paid OR OLD.create_trans != NEW.create_trans
-        OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
-        OR OLD.memId != NEW.memId OR OLD.mldId != NEW.mldId OR OLD.coupon != NEW.coupon OR OLD.planId != NEW.planId
-        OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
-    THEN
-        INSERT INTO regHistory(id, conid, perid, newperid, oldperid, create_date, change_date, pickup_date, price, couponDiscount,
-                               paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, mldId, coupon, planId, printable, status)
-        VALUES (OLD.id, OLD.conid, OLD.perid, OLD.newperid, OLD.oldperid, OLD.create_date, OLD.change_date, OLD.pickup_date,
-                OLD.price, OLD.couponDiscount, OLD.paid, OLD.create_trans, OLD.complete_trans, OLD.locked, OLD.create_user,
-                OLD.updatedBy, OLD.memId, OLD.mldId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
-    END IF;
-END;;
-DELIMITER ;
-
 DROP TABLE IF EXISTS memListMap;
 
 -- now clean up old fields and memList rows with no memListDates
@@ -393,9 +374,47 @@ WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder
 UPDATE controllAppItems SET txtItemDescription = 'Just after the purchased header', appPage= 'paymentHistory'
 WHERE appName = 'portal' AND appPage = 'portal' AND appSection = 'main' and txtItem = 'purchased';
 
-// stripe terminal changes
+-- stripe terminal changes
 ALTER TABLE terminals MODIFY COLUMN locationId varchar(64) DEFAULT NULL;
 ALTER TABLE terminals MODIFY COLUMN squareCode varchar(64) DEFAULT NULL;
+
+/*
+ *  items for inclusive taxes and accounting for same
+ */
+
+ALTER TABLE reg ADD COLUMN netPrice decimal(8,2) DEFAULT NULL COMMENT 'price net of inclusive and exclusive taxes' AFTER price;
+ALTER TABLE reg ADD COLUMN totalTax decimal(8,2) DEFAUlT NULL COMMENT 'netPrice plus all taxes, set with the reg is marked paid/plan' AFTER netPrice;
+ALTER TABLE regHistory ADD COLUMN netPrice decimal(8,2) DEFAULT NULL COMMENT 'price net of inclusive and exclusive taxes' AFTER price;
+ALTER TABLE regHistory ADD COLUMN totalTax decimal(8,2) DEFAUlT NULL COMMENT 'netPrice plus all taxes, set with the reg is marked paid/plan'
+    AFTER netPrice;
+ALTER TABLE exhibitorSpaces ADD COLUMN netPrice decimal(8,2) DEFAULT NULL COMMENT 'price net of inclusive and exclusive taxes' AFTER price;
+ALTER TABLE exhibitorSpaces ADD COLUMN totalTax decimal(8,2) DEFAUlT NULL COMMENT 'netPrice plus all taxes, set with the space is marked paid/plan'
+    AFTER netPrice;
+ALTER TABLE artSales ADD COLUMN netAmount decimal(8,2) DEFAULT NULL COMMENT 'amount net of inclusive and exclusive taxes' AFTER amount;
+ALTER TABLE artSales ADD COLUMN totalTax decimal(8,2) DEFAUlT NULL COMMENT 'netAmount plus all taxes, set with the sale is marked paid/plan'
+    AFTER netAmount;
+ALTER TABLE payments ADD COLUMN netAmount decimal(8,2) DEFAULT NULL COMMENT 'amount net of inclusive and exclusive taxes' AFTER amount;
+ALTER TABLE transaction ADD COLUMN netPrice decimal(8,2) DEFAULT NULL COMMENT 'price net of inclusive and exclusive taxes' AFTER price;
+
+DROP TRIGGER IF EXISTS reg_update;
+DELIMITER ;;
+CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
+    IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
+        OR OLD.oldperid != NEW.oldperid OR OLD.priorRegId != NEW.priorRegId OR OLD.create_date != NEW.create_date
+        OR OLD.pickup_date != NEW.pickup_date OR OLD.price != NEW.price OR OLD.netPrice != NEW.netPrice OR OLD.totalTax != NEW.totalTax
+        OR OLD.couponDiscount != NEW.couponDiscount OR OLD.paid != NEW.paid OR OLD.create_trans != NEW.create_trans
+        OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
+        OR OLD.memId != NEW.memId OR OLD.mldId != NEW.mldId OR OLD.coupon != NEW.coupon OR OLD.planId != NEW.planId
+        OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
+    THEN
+        INSERT INTO regHistory(id, conid, perid, newperid, oldperid, create_date, change_date, pickup_date, price, netPrice, totalTax,
+           couponDiscount, paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, mldId, coupon, planId, printable, status)
+        VALUES (OLD.id, OLD.conid, OLD.perid, OLD.newperid, OLD.oldperid, OLD.create_date, OLD.change_date, OLD.pickup_date,
+                OLD.price, OLD.netPrice, OLD.totalTax, OLD.couponDiscount, OLD.paid, OLD.create_trans, OLD.complete_trans, OLD.locked,
+                OLD.create_user, OLD.updatedBy, OLD.memId, OLD.mldId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
+    END IF;
+END;;
+DELIMITER ;
 
 INSERT INTO patchLog(id, name) VALUES(x60, 'Release 2.4');
 
