@@ -395,6 +395,8 @@ ALTER TABLE artSales ADD COLUMN totalTax decimal(8,2) DEFAUlT NULL COMMENT 'netA
     AFTER netAmount;
 ALTER TABLE payments ADD COLUMN netAmount decimal(8,2) DEFAULT NULL COMMENT 'amount net of inclusive and exclusive taxes' AFTER amount;
 ALTER TABLE transaction ADD COLUMN netPrice decimal(8,2) DEFAULT NULL COMMENT 'price net of inclusive and exclusive taxes' AFTER price;
+ALTER TABLE taxList ADD COLUMN taxType enum('I', 'E') NOT NULL DEFAULT 'E' COMMENT 'Inclusive (in price) or Exclusive tax (adds to price)'
+    AFTER rate;
 
 DROP TRIGGER IF EXISTS reg_update;
 DELIMITER ;;
