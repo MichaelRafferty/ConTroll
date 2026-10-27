@@ -260,6 +260,7 @@ function bo_ajax_success(data, textStatus, jqXHR) {
             return;
         }
         if (nextStep == 'payment') {
+            curntOrder = data.orderRtn;
             currentOrderId = data.results.orderId;
             currentOrderBadges = data.results.badges;
             currentTransId = data.results.transid;

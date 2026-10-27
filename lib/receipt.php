@@ -1114,20 +1114,21 @@ EOS;
     $tax = 0;
     $first = "mt-2";
     $rows = 0;
-    if ($master_transaction['tax'] > 0) {
+    $tax = $master_transaction['tax'];
+    if ($tax > 0) {
         // subtotal before taxes
         $subtotals = $memberSubtotal + $artSubtotal + $spaceSubtotal;
         $subtotal = $dolfmt->formatCurrency((float)$subtotals, $currency);
-        $receipt .= "Subtotal before taxes: $subtotal\n";
+        $receipt .= "Subtotal Before Taxes: $subtotal\n";
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'></div>
-        <div class='col-sm-8'><strong>Subtotal before taxes:</strong></div>
+        <div class='col-sm-8'><strong>Subtotal Before Taxes:</strong></div>
         <div class='col-sm-2' style="text-align: right;"><strong>$subtotal</strong></div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td></td><td><strong>Subtotal before taxes:</strong></td><td style="text-align: right;"><strong>$subtotal</strong></td></tr>
+<tr><td></td><td><strong>Subtotal Before Taxes:</strong></td><td style="text-align: right;"><strong>$subtotal</strong></td></tr>
 EOS;
         foreach ($taxList as $taxLine) {
             if ($taxLine['rate'] > 0) {
@@ -1139,29 +1140,29 @@ EOS;
                 $receipt .= "\n$taxLabel: $taxfmt";
                 $receipt_html .= <<<EOS
     <div class="row $first">
-        <div class="col-sm-9">$taxLabel:</div>
+        <div class='col-sm-1'></div>
+        <div class="col-sm-8">$taxLabel</div>
         <div class="col-sm-2" style="text-align: right;">$taxfmt</div>
     </div>
 EOS;
                 $receipt_tables .= <<<EOS
-<tr><td colspan="2">$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
+<tr><td></td></td><td>$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
 EOS;
                 $first = '';
                 $rows++;
             }
         }
-        $tax = $master_transaction['tax'];
-        if ($rows == 0 && $tax > 0) {
+        if ($rows == 0) {
             $taxLabel = getConfValue('con', 'taxLabel', 'Sales Tax');
         } else {
             $taxLabel = "Total Sales Tax";
         }
-        if ($rows > 1 || ($rows == 0 && $tax > 0)) {
+        if ($rows == 0) {
             $taxfmt = $dolfmt->formatCurrency((float)$tax, $currency);
             $receipt .= "\n$taxLabel: $taxfmt\n";
             $receipt_html .= <<<EOS
     <div class="row mt-2">
-        <div class="col-sm-9">$taxLabel:</div>
+        <div class="col-sm-9">$taxLabel</div>
         <div class="col-sm-2" style="text-align: right;">$taxfmt</div>
     </div>
 EOS;
@@ -1169,17 +1170,18 @@ EOS;
 <tr><td colspan="2">$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
 EOS;
         }
-        if ($master_transaction['tax'] > 1) {
-            $receipt .= "Total taxes: $subtotal\n";
+        if ($rows > 1) {
+            $taxfmt = $dolfmt->formatCurrency((float)$tax, $currency);
+            $receipt .= "Total Taxes: $taxfmt\n";
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'></div>
         <div class='col-sm-8'><strong>Total taxes:</strong></div>
-        <div class='col-sm-2' style="text-align: right;"><strong>$subtotal</strong></div>
+        <div class='col-sm-2' style="text-align: right;"><strong>$taxfmt</strong></div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td></td><td><strong>Total taxes:</strong></td><td style="text-align: right;"><strong>$subtotal</strong></td></tr>
+<tr><td></td><td><strong>Total taxes:</strong></td><td style="text-align: right;"><strong>$taxfmt</strong></td></tr>
 EOS;
         }
     }

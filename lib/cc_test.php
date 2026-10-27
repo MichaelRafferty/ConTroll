@@ -176,6 +176,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
+    $preTaxAmt = 0;
     $planName = '';
     $planId = '';
     $downPmt = '';
@@ -249,6 +250,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         ];
         $orderLineItems[] = $item;
         $orderValue = $results['total'];
+        $preTaxAmt = $results['total'];
         $itemsBuilt = true;
     }
 
@@ -292,6 +294,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $orderLineItems[] = $item;
                 $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         } else {
@@ -423,11 +426,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderLineItems[] = $item;
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
-                } else if (array_key_exists('paid', $badge)) {
+                    $preTaxAmt += $badge['balDue'];
+                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
                     //TODO: is this line correct?
                     $orderValue += $badge['price'] - $badge['paid'];
+                    $preTaxAmt += $badge['price'] - $badge['paid'];
                 } else {
                     $orderValue += $netAmount;
+                    $preTaxAmt += $badge['price'];
                 }
                 $lineid++;
                 $rowno++;
@@ -445,6 +451,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $discountRemaining = $totalDiscount;
                 $orderValue -= $totalDiscount;
+                $preTaxAmt -= $totalDiscount;
                 $lastItemNo = -1;
                 $maxAmt = -1;
                 for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
@@ -497,10 +504,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
+                $amount = $space['approved_price'];
                 if ($hasTax)
                     $netAmount = taxInclusiveAdjust($spaceType, $amount);
                 else
-                    $netAmount = $space['approved_price'];
+                    $netAmount = $amount;
                 }
                 $item = [
                     'uid' => 'space-' . $spaceId,
@@ -524,6 +532,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $orderLineItems[] = $item;
                 $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         }
@@ -537,7 +546,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
                 if ($hasTax)
-                    $netAmount = taxInclusiveAdjust('artShipping', $amount);
+                    $netAmount = taxInclusiveAdjust('artShipping', $itemPrice);
                 else
                     $netAmount = $itemPrice;
 
@@ -561,9 +570,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 }
 
-
                 $orderLineItems[] = $item;
                 $orderValue += $netAmount;
+                $preTaxAmt += $itemPrice;
                 $lineid++;
             }
         }
@@ -621,7 +630,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
     $rtn['items'] = $orderLineItems;
-    $rtn['preTaxAmt'] = $orderValue;
+    $rtn['preTaxAmt'] = $preTaxAmt;
     $rtn['netAmount'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / $currencyMultiplier;
 
@@ -632,10 +641,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $taxAmount += $tax['tax'];
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['taxAmt'] = $taxAmount / $currencyMultiplier;
-    $rtn['taxAmount'] = $taxAmount / $currencyMultiplier;
-    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
-    $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier);
+    $rtn['taxAmt'] = round($taxAmount / $currencyMultiplier, 2);
+    $rtn['taxAmount'] = round($taxAmount / $currencyMultiplier, 2);
+    $rtn['totalAmountDue'] = round($orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier), 2);
+    $rtn['totalAmt'] = round($orderValue + (($taxAmount - $discountAmt) / $currencyMultiplier), 2);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
     $rtn['source'] = $source;
@@ -816,11 +825,12 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $total = $ccParams['total'];
 
     $rtn = array();
-    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'netAmount', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId', 'cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 'd',
         's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $total,
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'],
+        $ccParams['netAmount'], $ccParams['taxAmt'], $total,
         $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $id, $loginPerid);
     $rtn['results'] = $ccParams;
     $rtn['url'] = 'no test receipt';
@@ -829,6 +839,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['payment'] = null;
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['netAmount'] = $ccParams['netAmount'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;

@@ -33,6 +33,7 @@ try {
 }
 
 $orderResults = $data['results'];
+$orderRtn = $data['orderRtn'];
 $rtn = $data['orderRtn'];
 load_cc_procs();
 load_email_procs();
@@ -66,6 +67,7 @@ $results = array(
     'transid' => $transId,
     'preTaxAmt' => $orderResults['preTaxAmt'],
     'taxAmt' => $orderResults['taxAmt'],
+    'netAmount' => $orderResults['netAmount'],
     'total' => $orderResults['totalAmt'],
     'taxList' => $orderResults['taxList'],
     'taxes' => $taxes,
@@ -126,8 +128,12 @@ else
 $txnU = dbSafeCmd($txnUpdate, 'ddissi',
     array($approved_amt, $totalDiscount, $couponId, $ccrtn['paymentId'], $ccrtn['status'], $transId));
 
-$regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
-dbSafeCmd($regQ, "ii", array($transId, $transId));
+$regQ = "UPDATE reg SET paid=price-couponDiscount, netPrice = ?, totalTax = ?, complete_trans = ?, status = 'paid' WHERE id=?;";
+foreach ($orderRtn['items'] AS $item) {
+    dbSafeCmd($regQ, 'ddii', array (round($item['basePriceMoney'] / 100.0, 2),
+        round($item['taxAmounts']['totalTax'] / 100.0, 2),
+        $transId, $item['metadata']['regId']));
+}
 
 // mark coupon used
 if ($coupon !== null && $coupon['keyId'] !== null) {

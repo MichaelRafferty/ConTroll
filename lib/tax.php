@@ -273,14 +273,13 @@ function computeTax($item) : array {
     // item has taxable Y/N and taxes for each tax rage
     $taxes = array();
     $taxes['totalTax'] = 0;
-    $taxes['totalTax_base'] = 0;
+    $taxes['totalTax_base'] = $item['basePriceMoney'];
     foreach ($item['taxes'] as $tax) {
         $taxField  = $tax['taxUid'];
         $amt = round($item['basePriceMoney'] * $tax['percentage'] / 100.0, 0);
         $taxes[$taxField] = $amt;
         $taxes[$taxField . '_base'] = $item['basePriceMoney'];
         $taxes['totalTax'] += $amt;
-        $taxes['totalTax_base'] += $item['basePriceMoney'];
     }
 
     return $taxes;
@@ -299,9 +298,9 @@ function taxInclusiveAdjust($type, $amount) {
         if ($tax['taxItems'][$type]['taxable'] == 'N')
             continue;   // tax does not apply to this item, no amount to reduce
 
-        $reduction += round($amount - ($amount / (1 + $tax['rate'])), 2);
+        $reduction += round($amount - ($amount / (1 + ($tax['rate']/100))), 2);
     }
-    return $amount - $reduction;
+    return round($amount - $reduction, 2);
 }
 
 function computeTotalTax(&$items) {
