@@ -399,6 +399,15 @@ ALTER TABLE taxList ADD COLUMN taxType enum('I', 'E') NOT NULL DEFAULT 'E' COMME
     AFTER rate;
 
 DROP TRIGGER IF EXISTS reg_update;
+-- catch up the existing all exclusive tax processing
+UPDATE reg SET netPrice = price WHERE netPrice IS NULL;
+UPDATE transaction SET netPrice = price WHERE netPrice IS NULL;
+UPDATE exhibitorSpaces SET netPrice = price WHERE price IS NULL;
+UPDATE artSales SET netAmount = amount WHERE netAmount IS NULL;
+UPDATE payments SET netAmount = amount WHERE netAmount IS NULL;
+
+-- now rebuild the trigger
+
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
     IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
