@@ -314,7 +314,8 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
                             class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
             <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="max-width:90%;" tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php foreach ($membershipTypes as $memType) { ?>
-                    <option value='<?php echo $memType['id']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)</option>
+                    <option value='<?php echo $memType['id'] . ':' . $memType['mdId']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)
+                    </option>
                 <?php } ?>
             </select>
         </div>

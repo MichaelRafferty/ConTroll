@@ -6,6 +6,9 @@ $taxRates = null;
 function getTaxRates() : array {
     global $taxRates;
 
+    if ($taxRates !== null)
+        return $taxRates;
+
     $conid = getConfValue('con', 'id');
 // get tax rates
     $taxRates = array();
@@ -48,9 +51,8 @@ EOS;
 function hasTaxRates() {
     global $taxRates;
 
-    if ($taxRates == null) {
-        getTaxRates();
-    }
+    getTaxRates();
+
     foreach ($taxRates as $tax) {
         if ($tax['rate'] > 0) {
             foreach ($tax['taxItems'] as $taxItemName => $taxItem) {
@@ -68,9 +70,7 @@ function hasTaxRates() {
 function buildTaxUpdate($taxes) : array {
     global $taxRates;
 
-    if ($taxRates == null) {
-        getTaxRates();
-    }
+    getTaxRates();
 
     $taxFields = array('tax1','tax2','tax3','tax4','tax5');
     $valStr = 'ddddd';
@@ -94,6 +94,9 @@ function buildTaxUpdate($taxes) : array {
 // item applied tax
 function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     global $taxRates;
+
+    getTaxRates();
+
     $taxArray = array();
     $prefix = $taxitem;
     if ($prefix != '')
@@ -113,6 +116,9 @@ function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
 
 function buildCCAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     global $taxRates;
+
+    getTaxRates();
+
     $taxArray = array();
     $prefix = $taxitem;
     if ($prefix != '')
@@ -133,6 +139,9 @@ function buildCCAppliedTaxArray($taxitem = '', $lineid = 0) : array {
 
 function buildSquareOrderTaxArray() : array {
     global $taxRates;
+
+    getTaxRates();
+
     $taxArray = array();
 
     foreach ($taxRates as $tax) {
@@ -153,6 +162,9 @@ function buildSquareOrderTaxArray() : array {
 
 function buildCCOrderTaxArray() : array {
     global $taxRates;
+
+    getTaxRates();
+
     $taxArray = array();
 
     foreach ($taxRates as $tax) {
@@ -173,9 +185,7 @@ function buildCCOrderTaxArray() : array {
 function buildTaxInsert($taxes) : array {
     global $taxRates;
 
-    if ($taxRates == null) {
-        getTaxRates();
-    }
+    getTaxRates();
 
     $taxFields = array('tax1','tax2','tax3','tax4','tax5');
     $valStr = 'ddddd';
@@ -274,6 +284,24 @@ function computeTax($item) : array {
     }
 
     return $taxes;
+}
+
+// compute the net amount of the line item, based on removing inclusive taxes
+function taxInclusiveAdjust($type, $amount) {
+    global $taxRates;
+
+    getTaxRates();
+    $reduction = 0;
+
+    foreach ($taxRates as $tax) {
+        if ($tax['taxType'] == 'E' || $tax['rate'] == 0)
+            continue;   // no net amount to reduce
+        if ($tax['taxItems'][$type]['taxable'] == 'N')
+            continue;   // tax does not apply to this item, no amount to reduce
+
+        $reduction += round($amount - ($amount / (1 + $tax['rate'])), 2);
+    }
+    return $amount - $reduction;
 }
 
 function computeTotalTax(&$items) {

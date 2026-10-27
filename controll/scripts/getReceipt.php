@@ -1,5 +1,7 @@
 <?php
 require_once "../lib/base.php";
+require_once('../../lib/paymentPlans.php');
+require_once('../../lib/tax.php');
 require_once "../../lib/receipt.php";
 require_once '../lib/sessionAuth.php';
 

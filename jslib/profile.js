@@ -442,6 +442,12 @@ class Profile {
         if (this.#memIdField) {
             if (this.#memIdField.value != '') {
                 let memId = this.#memIdField.value;
+                let mldId = null;
+                if (memId.indexOf(':') > -1) {
+                    let parts = memId.split(':');
+                    memId = parts[0];
+                    mldId = parts[1];
+                }
                 for (let i = 0; i < membershipTypes.length; i++) {
                     let mtype = membershipTypes[i];
                     if (mtype.id == memId) {

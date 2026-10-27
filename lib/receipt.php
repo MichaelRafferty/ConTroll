@@ -1,8 +1,5 @@
 <?php
 //  receipt.php - library of modules related building receipts
-require_once("../../lib/paymentPlans.php");
-require_once("../../lib/tax.php");
-
 // spaceGetPaymentTrans
 //      from space lists, given a exhibitorId and a regionYearId, return the transactions(s) for those spaces
 function spaceGetPaymentTrans($exhid, $regionYearId) : array {
@@ -304,7 +301,8 @@ EOS;
 
     //      memberships (online reg, portal, controll/registration, atcon)
     $regQ = <<<EOS
-SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice, m.taxable, m.conid AS memConid,
+SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice, IFNULL(r.netPrice, r.price) AS netPrice, 
+       m.taxable, m.conid AS memConid,
     c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
         WHEN p.id IS NOT NULL THEN p.fullName
@@ -395,14 +393,15 @@ EOS;
 
     //      space payments including fees (exhibitor portals, controll/exhibitors)
     $spaceQ = <<<EOS
-SELECT S.id, S.time_purchased, S.item_purchased, S.price, S.paid,  sp.code, sp.description, sp.units, sp.price AS spacePrice,
-       sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
-       er.name AS regionName, er.description AS regionDescription, ert.portalType, RY.exhibitorNumber, Y.exhibitorId,
-       CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
-       Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr
-        AS address,
-       E.addr2 AS addr_2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename,
-       E.artistName, E.exhibitorName
+SELECT S.id, S.time_purchased, S.item_purchased, S.price AS fullPrice, IFNULL(S.netPrice, S.price) AS netPrice, S.paid, 
+    sp.code, sp.description, sp.units, sp.price AS spacePrice,
+    sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
+    er.name AS regionName, er.description AS regionDescription, ert.portalType, RY.exhibitorNumber, Y.exhibitorId,
+    CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
+    Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr
+    AS address,
+    E.addr2 AS addr_2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename,
+    E.artistName, E.exhibitorName
 FROM exhibitorSpaces S
 JOIN exhibitsSpacePrices sp ON sp.id = S.item_purchased
 JOIN exhibitsSpaces s ON s.id = S.spaceId
@@ -565,7 +564,7 @@ EOS;
         </div>
     </div>
 EOS;
-    $receipt_tables = <<<EOS
+    $receipt_tables .= <<<EOS
 <tr><td colspan="3"><strong>Receipt Number $receiptNum $receipt_date</strong></td></tr>
 EOS;
 
@@ -811,7 +810,7 @@ EOS;
                     break;
                 case 'unpaid':
                 case 'plan':
-                    $bal = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
+                    $bal = $membership['netPrice'] - ($membership['paid'] + $membership['couponDiscount']);
                     $statusField = "Balance due: " . $dolfmt->formatCurrency((float)$bal, $currency);
                     break;
                 default:
@@ -863,8 +862,8 @@ EOS;
         // now the actual row
         $spaceName = $space['name'];
         $spacePriceName = $space['description'];
-        $spaceSubtotal += (float) $space['price'];
-        $price = $dolfmt->formatCurrency((float)$space['price'], $currency);
+        $spaceSubtotal += (float) $space['netPrice'];
+        $price = $dolfmt->formatCurrency((float)$space['netPrice'], $currency);
         $receipt .= "$spaceName    $spacePriceName    $price\n";
         $receipt_html .= <<<EOS
     <div class='row'>
@@ -914,7 +913,7 @@ EOS;
     if (count($data['planPayments']) == 0) {
         // if its not a payment on a plan, show the memberships here
         if (count($data['memberships']) > 0) {
-            $receipt .= "\nMemberships:\nRegID    Membership Name    Status    Price\n";
+            $receipt .= "\nMemberships:\nRegID    Membership Name    Status    Net Price\n";
             $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
@@ -925,13 +924,13 @@ EOS;
         <div class='col-sm-1'>RegId</div>
         <div class='col-sm-6'>Membership Name</div>
         <div class='col-sm-2'>Status</div>
-        <div class='col-sm-2' style="text-align: right;">Price</div>
+        <div class='col-sm-2' style="text-align: right;">Net Price</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h2 class="size-h3">Memberships:</h2></td></tr>
-<tr><td>RegId</td><td>Membership Name/Status</td><td style="text-align: right;">Price</td></tr>
+<tr><td>RegId</td><td>Membership Name/Status</td><td style="text-align: right;">Net Price</td></tr>
 EOS;
 
             // first output the payor
@@ -1307,7 +1306,7 @@ EOS;
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'></div>
-        <div class="col-sm-auto"><a href="$url" target="_blank">$shortURL</a></div>
+        <div class="col-sm-8"><a href="$url" target="_blank">$shortURL</a></div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
@@ -1418,10 +1417,10 @@ EOS;
     }
     $id = $membership['id'];
     $label = $membership['label'];
-    $price = $membership['price'];
+    $price = $membership['netPrice'];
     $status = $membership['status'];
     if ($status != 'paid') {
-        $due = $membership['price'] - ($membership['couponDiscount'] + $membership['paid']);
+        $due = $price - ($membership['couponDiscount'] + $membership['paid']);
         $status .= ", Cur Bal Due: " . $dolfmt->formatCurrency((float) $due, $currency);
     }
     $pricefmt = $dolfmt->formatCurrency((float) $price, $currency);

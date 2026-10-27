@@ -1,5 +1,8 @@
 <?php
 require_once("lib/base.php");
+require_once('../lib/paymentPlans.php');
+require_once('../lib/tax.php');
+require_once("../lib/receipt.php");
 
 $condata = get_con();
 $con = get_conf('con');
@@ -78,48 +81,23 @@ ol_page_init($condata['label'] . ' Registration Complete', $js);
         </p>
 
         <?php } else {
-      if ($owner['payid'] != null) { ?>
-Your transaction number is <?php echo $transid; ?> and receipt number is
-        <?php echo $owner['payid']; if ($owner['url'] != '') echo ' (<a href="' . escape_quotes($owner['url']) . '">' . $owner['url'] . "</a>)";
-      } else {
-          ?>
-          Your transaction number is <?php echo $transid; ?> and as this transaction has no charge, your receipt has been emailed to you. <?php
-          } ?>.<br />
+
+      $receipts = trans_receipt($transid);
+
+      if ($owner['url'] != '') { ?>
         <p>
-            In response to your request memberships have been created for <ul>
-                <?php
-
-$badgeQ = <<<EOS
-SELECT NP.first_name, NP.last_name, M.label
-FROM transaction T
-JOIN reg R ON  (R.create_trans=T.id)
-JOIN newperson NP ON (NP.id = R.newperid)
-JOIN memLabel M ON (R.memID = M.id AND R.mldId = M.mdId)
-WHERE  T.id= ?
-EOS;
-
-$badgeR = dbSafeQuery($badgeQ, 'i', array($transid));
-
-while($badge = $badgeR->fetch_assoc()) {
-                ?>
-                <li>
-                    <?php echo $badge['first_name'] . " " . $badge['last_name']
-    . " (" . $badge['label'] . ")"; ?>
-                </li>
-                <?php
-}
-                ?>
-            </ul>
-        </p>
-        <?php if ($owner['url'] != '') { ?>
-        <p>
-            You should have an email from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt url and details of the memberships listed above. If you haven't received it in a few minutes please check your spam folder.
+            You should have an email from <?php echo $con['regadminemail']; ?> containing the credit card transaction receipt url and details of the
+            memberships purchased as shown in your receipt below.
         </p>
         <?php } else { ?>
         <p>
-            You should have an email from <?php echo $con['regadminemail']; ?> containing the transaction receipt and details of the memberships listed above. If you haven't received them in a few minutes please check your spam folder.
+            You should have an email from <?php echo $con['regadminemail']; ?> containing the transaction receipt and details of the memberships in the
+            receipt below.
         </p>
         <?php } ?>
+        <p>
+          If you haven't received the email in a few minutes please check your spam folder.
+        </p>
         <p>
             Please contact <a href="mailto:<?php echo escape_quotes($con['regadminemail']); ?>">
                 <?php echo $con['regadminemail']; ?>
@@ -127,12 +105,16 @@ while($badge = $badgeR->fetch_assoc()) {
                 <?php echo $con['regadminemail']; ?>
             </a><?php }?> with any questions and we look forward to seeing you at <?php echo $condata['label']; ?>
         </p>
-        <?php } ?>
+
     </div>
     For hotel information and directions please see <a href="<?php echo escape_quotes($con['hotelwebsite']); ?>">
         the <?php echo $con['conname']; ?> hotel page
     </a>
-
+    <?php
+        echo "<p></p></p><p>This is your receipt:</p>\n";
+        echo $receipts['receipt_html'] . "\n</div>\n";
+    }
+    ?>
     <br />
     <hr />
     <a href="<?php echo escape_quotes($con['policy']);?>" target="_blank">

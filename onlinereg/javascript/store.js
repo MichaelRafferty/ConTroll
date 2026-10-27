@@ -105,6 +105,14 @@ function addMembership(formData) {
         formData.legalName = name;
     }
 
+    let memId = formData.memId;
+    if (memId.indexOf(':') > -1) {
+        let parts = memId.split(':');
+        memId = parts[0];
+        formData.memId = memId;
+        formData.mldId = parts[1];
+    }
+
     badges.count +=  1;
     if (badges.memTypeCount[formData.memId] == null)
         badges.memTypeCount[formData.memId] = 0;
@@ -127,7 +135,6 @@ function addMembership(formData) {
     }
 
     // build badge block in Badges list
-    let memId = formData.memId;
     // find matching mtype in array
     let found = false;
     let mtype = null;

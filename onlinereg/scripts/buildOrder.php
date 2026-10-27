@@ -1,6 +1,8 @@
 <?php
+// ConTroll - Online Registration - Transactional Purchase Memberships
 
-/* split of the old make Purchase into two parts, so square and stripe can re-do credit card auth issues
+/*
+ * split of the old make Purchase into two parts, so square and stripe can re-do credit card auth issues
  */
 require_once('../lib/base.php');
 require_once("../../lib/log.php");
@@ -188,6 +190,7 @@ foreach ($badges as $badge) {
             'info' => $badge,
             'price' => $prices[$badge['memId']],
             'memId' => $badge['memId'],
+            'mldId' => $badge['mldId'],
             'coupon' => $coupon,
             'discount' => $discount,
         );
@@ -273,10 +276,10 @@ $person_update = "UPDATE newperson SET transid=? WHERE id = ?;";
 $numupd = dbSafeCmd($person_update, 'is', array($transId, $newid));
 
 $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, create_trans, status, price, couponDiscount, coupon, memID)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, status, price, couponDiscount, coupon, memID, mldId)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$badge_types = "iiisddii";
+$badge_types = "iiisddiii";
 
 foreach($people as $person) {
     $badge_data = array(
@@ -288,6 +291,7 @@ foreach($people as $person) {
       $person['discount'],
       $cid,
       $person['memId'],
+      $person['mldId']
       );
 
   $badgeId=dbSafeInsert($badgeQ, $badge_types, $badge_data);
@@ -361,6 +365,7 @@ if ($total > 0) {
     else
         $taxes = [];
     $withTax = $rtn['totalAmt'];
+    $netAmount = $rtn['netAmount'];
 
     $results = array (
         'source' => $source,
@@ -372,6 +377,7 @@ if ($total > 0) {
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $preTaxAmt,
+        'netAmount' => $netAmount,
         'taxAmt' => $taxAmt,
         'total' => $withTax,
         'taxList' => $taxList,
@@ -382,12 +388,13 @@ if ($total > 0) {
     );
     $response['results'] = $results;
 
-    $typeStr = 'dddds';
-    $valArray = array ($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId']);
+    $typeStr = 'ddddds';
+    $valArray = array ($preTaxAmt, $netAmount, $taxAmt, $withTax, 0, $rtn['orderId']);
     [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
+SET price = ?, netPrice=?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), 
+$taxSql
 WHERE id = ?;
 EOS;
     $typeStr .= $taxStr . 'i';
@@ -411,11 +418,11 @@ $ccrtn = array('url' => '');
 if ($totalDiscount > 0) {
     // Insert the payment record for the coupon
     $ipQ = <<<EOS
-INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
-VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, netAmount, time, status) 
+VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, ?, now(), 'APPLIED');
 EOS;
     $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
-    $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $totalDiscount, $totalDiscount));
+    $cpmtID = dbSafeInsert($ipQ, 'isddd', array($transId, $couponDesc, $totalDiscount, $totalDiscount, $totalDiscount));
     $coupon['totalDiscount'] = $totalDiscount;
 }
 
@@ -433,6 +440,8 @@ else
 $txnU = dbSafeCmd($txnUpdate, 'ddissi',
     array($approved_amt, $totalDiscount, $couponId, $ccrtn['paymentId'], $ccrtn['status'], $transId));
 
+
+// TODO: need badge array back with the per reg total tax item, and it's net price to update the reg.
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transId, $transId));
 
@@ -443,15 +452,16 @@ if ($coupon !== null && $coupon['keyId'] !== null) {
 }
 
 if ($total > 0) {
-    $body = getEmailBody($transId, $totalDiscount);
+    [$body, $bodyhtml] = getEmailBody($transId);
 }
 else {
     $body = getNoChargeEmailBody($results, $totalDiscount);
+    $bodyhtml = null;
 }
 
 $return_arr = send_email(getConfValue('con', 'regadminemail'),
     trim($purchaseform['cc_email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
-    /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
+    /* subject */ $condata['label']. " Online Registration Receipt",  $body, $bodyhtml);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

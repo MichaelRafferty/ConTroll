@@ -6,6 +6,8 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/paymentPlans.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/receipt.php');
 require_once('../../lib/email__load_methods.php');
 require_once '../lib/sessionAuth.php';

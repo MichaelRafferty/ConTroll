@@ -135,12 +135,12 @@ if ($coupon !== null && $coupon['keyId'] !== null) {
     dbSafeCmd($cupQ, 'ii', array($transId, $coupon['keyId']));
 }
 
-$body = getEmailBody($transId, $totalDiscount);
+[$body, $bodyhtml] = getEmailBody($transId);
 
 
 $return_arr = send_email(getConfValue('con', 'regadminemail'),
     trim($buyer['email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
-    /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
+    /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ $bodyhtml);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

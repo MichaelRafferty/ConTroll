@@ -141,6 +141,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //      ii. add taxes
     //  b. add line items
     //      i. assign which tax line items to ignore
+    //      ii. adjust net price for each line if the tax is inclusive
     //      ii. assign which discount line items to ignore
     //      iii. skip over already complete items and not add them to the square order
     //  c. create order
@@ -267,6 +268,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $priceType = $artItem['priceType'];
                 $quantity = $artItem['artSalesQuantity'];
                 $amount = $artItem['amount'];
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artSales', $amount);
+                else
+                    $netAmount = $amount;
                 $notesData = cc_artSalesNotes($artItem, $results['payorId'], $results['transid']);
 
                 $item = [
@@ -275,7 +280,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => $quantity,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($amount * $currencyMultiplier),
+                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
@@ -286,7 +291,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $needTaxes = count($taxArray) > 0;
                 }
                 $orderLineItems[] = $item;
-                $orderValue += $artItem['amount'];
+                $orderValue += $netAmount;
                 $lineid++;
             }
         } else {
@@ -371,21 +376,24 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
                 $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
                     ($addMbr ? ' Mbr ' : ' ') . '/ ' . $fullname;
-                $item = [
-                    'uid' => 'badge' . ($lineid + 1),
-                    'name' => mb_substr($itemName, 0, 128),
-                    'quantity' => 1,
-                    'note' => $notesData['note'],
-                    'basePriceMoney' => round($amount * $currencyMultiplier),
-                    'metadata' => $notesData['metadata'],
-                ];
-                if ($hasTax)  {
+                if ($hasTax) {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
                         $badgeTaxable = 'nontaxMem';
                     }
-
+                    $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                } else
+                    $netAmount = $amount;
+                $item = [
+                    'uid' => 'badge' . ($lineid + 1),
+                    'name' => mb_substr($itemName, 0, 128),
+                    'quantity' => 1,
+                    'note' => $notesData['note'],
+                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
+                    'metadata' => $notesData['metadata'],
+                ];
+                if ($hasTax)  {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
@@ -416,9 +424,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
                 } else if (array_key_exists('paid', $badge)) {
+                    //TODO: is this line correct?
                     $orderValue += $badge['price'] - $badge['paid'];
                 } else {
-                    $orderValue += $badge['price'];
+                    $orderValue += $netAmount;
                 }
                 $lineid++;
                 $rowno++;
@@ -488,13 +497,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust($spaceType, $amount);
+                else
+                    $netAmount = $space['approved_price'];
+                }
                 $item = [
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($space['approved_price'] * $currencyMultiplier),
+                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
                 ];
 
                 // apply taxes to spaces based on the space taxable flag
@@ -509,7 +523,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 $orderLineItems[] = $item;
-                $orderValue += $space['approved_price'];
+                $orderValue += $netAmount;
                 $lineid++;
             }
         }
@@ -522,6 +536,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artShipping', $amount);
+                else
+                    $netAmount = $itemPrice;
 
                 $item = [
                     'uid' => 'region-' . $fee['name'],
@@ -529,7 +547,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => 1,
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($itemPrice * $currencyMultiplier),
+                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
                 ];
 
                 // apply taxes to mail in fees based on the artShipping flag
@@ -545,7 +563,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
 
                 $orderLineItems[] = $item;
-                $orderValue += $itemPrice;
+                $orderValue += $netAmount;
                 $lineid++;
             }
         }
@@ -567,7 +585,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             $discountAmt += $item['amountMoney'];
             $orderDiscounts[] = $item;
         }
-    }
+
 
     if ($locationId == null) {
         $locationId = getConfValue('cc', 'location', null);
@@ -604,6 +622,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['order'] = $order;
     $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
+    $rtn['netAmount'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / $currencyMultiplier;
 
     $rtnTaxes = [];
