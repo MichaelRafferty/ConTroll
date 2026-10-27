@@ -1,6 +1,6 @@
 <?php
+// ConTroll Back End: Free Badges page
 require_once "lib/base.php";
-//require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once 'lib/sessionAuth.php';
 
@@ -27,11 +27,25 @@ $ageByDate = $startdate->format('F j, Y');
 $freeSQL = <<<EOS
 SELECT M.id, M.label
 FROM memList M
-WHERE M.conid = ? and M.memCategory in ('freebie', 'goh') AND M.memType in ('full', 'oneday', 'virtual');
+WHERE M.conid = ? and M.memCategory in ('freebie', 'goh') AND M.memType in ('full', 'oneday', 'virtual')
 EOS;
 
+if ($regAdmin) {
+    $freeSQL .= <<<EOS
+UNION SELECT M.id, M.label
+FROM memList M
+WHERE M.conid = ? AND LOWER(M.label) in ('volunteer','rollover-volunteer');
+EOS;
+    $typestr = 'ii';
+    $params = array($conid, $conid);
+} else {
+    $freeSQL .= ';';
+    $typestr = 'i';
+    $params = array($conid);
+}
+
 $freeMems = [];
-$freeR = dbSafeQuery($freeSQL, 'i', array($conid));
+$freeR = dbSafeQuery($freeSQL, $typestr, $params);
 if ($freeR == false) {
     header("Location: $url?msg=Error%20Loading%20memList");
     exit();
