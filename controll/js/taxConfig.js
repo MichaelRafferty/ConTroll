@@ -30,6 +30,7 @@ class taxConfig {
     // constants
     #taxFields = ['tax1', 'tax2', 'tax3', 'tax4', 'tax5'];
     #enumYN = ['Y', 'N'];
+    #enumEI = {'E': 'Excl', 'I': 'Incl'};
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -95,9 +96,13 @@ class taxConfig {
                 {title: "taxField", field: "taxField", headerSort:false , },
                 {title: "Receipt Label", field: "label", width: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
                 {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, hozAlign: "right", },
+                {title: "Tax Type", field: "taxType", editor: 'list', headerWordWrap: true, editorParams: { values: this.#enumEI, },
+                    headerSort:false, headerFilter: true, headerFilterParams: { values: this.#enumEI, },
+                    formatter: 'lookup', formatterParams: this.#enumEI, width: 70,
+                },
                 {title: "Taxable Overrides", field: "taxItemsDisplay", headerSort:false, width: 300, formatter: 'textarea', },
                 {
-                    title: "GL Num/Label", field: "glNum", width: 420, headerWordWrap: true,
+                    title: "GL Num/Label", field: "glNum", width: 380, headerWordWrap: true,
                     editor: "list", editorParams: {values: glEditorList,},
                     formatter: "lookup", formatterParams: glEditorList,
                     headerFilter: true, headerFilterParams: {values: glEditorList},

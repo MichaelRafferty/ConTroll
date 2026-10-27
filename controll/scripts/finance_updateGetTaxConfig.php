@@ -91,9 +91,9 @@ if ($tablename != 'none') {
     }
 
     $insupdsql = <<<EOS
-INSERT INTO taxList(conid, taxField, label, rate, active, glNum, lastUpdate, updatedBy)
-VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
-ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, updatedBy = ?;
+INSERT INTO taxList(conid, taxField, label, rate, taxType, active, glNum, lastUpdate, updatedBy)
+VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+ON DUPLICATE KEY UPDATE label = ?, rate = ?, taxType = ?, active = ?, glNum = ?, updatedBy = ?;
 EOS;
     $insItemsql = <<<EOS
 INSERT INTO taxItems(conid, taxField, item, taxable, lastUpdate, updatedBy, sortorder)
@@ -107,9 +107,9 @@ EOS;
 
     // now the updates, do the updates first in case we need to insert a new row with the same older key
     foreach ($data as $row) {
-        $numrows = dbSafeCmd($insupdsql, 'issdssisdssi',
-            array ($conid, $row['taxField'], $row['label'], $row['rate'], $row['active'], $row['glNum'],  $user_perid,
-                $row['label'], $row['rate'], $row['active'], $row['glNum'], $user_perid));
+        $numrows = dbSafeCmd($insupdsql, 'issdsssisdsssi',
+            array ($conid, $row['taxField'], $row['label'], $row['rate'], $row['taxType'], $row['active'], $row['glNum'],  $user_perid,
+                $row['label'], $row['rate'], $row['taxType'], $row['active'], $row['glNum'], $user_perid));
         $updated += $numrows;
 
         // now rebuild the tax items from what was passed
@@ -148,7 +148,7 @@ EOS;
 }
 
 // now get the current list
-    [$taxList, $taxable] = getTaxConfig();
+[$taxList, $taxable] = getTaxConfig();
 $response['taxList'] = $taxList;
 $response['taxable'] = $taxable;
 
