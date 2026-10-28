@@ -34,7 +34,6 @@ try {
 
 $orderResults = $data['results'];
 $orderRtn = $data['orderRtn'];
-$rtn = $data['orderRtn'];
 load_cc_procs();
 load_email_procs();
 
@@ -88,7 +87,7 @@ if ($ccrtn === null) {
     exit();
 }
 
-labeled_logWrite('o/makePurchase-pay succeeded', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+labeled_logWrite('o/makePurchase-pay succeeded', array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$orderRtn));
 $num_fields = sizeof($ccrtn['txnfields']);
 $val = array_fill(0, $num_fields, '?');
 [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
@@ -129,10 +128,21 @@ $txnU = dbSafeCmd($txnUpdate, 'ddissi',
     array($approved_amt, $totalDiscount, $couponId, $ccrtn['paymentId'], $ccrtn['status'], $transId));
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, netPrice = ?, totalTax = ?, complete_trans = ?, status = 'paid' WHERE id=?;";
+$lineno = 0;
 foreach ($orderRtn['items'] AS $item) {
-    dbSafeCmd($regQ, 'ddii', array (round($item['basePriceMoney'] / 100.0, 2),
-        round($item['taxAmounts']['totalTax'] / 100.0, 2),
-        $transId, $item['metadata']['regId']));
+    $lineno++;
+    // need to handle stripe vs square
+    if (array_key_exists('unit_cost', $item)) {
+        $amount = $item['unit_cost'];
+        $totalTax = $item['tax']['total_tax_amount'];
+        $metadata = json_decode($orderRtn['order']['metadata']['im' . $lineno], true, 512);
+        $regid = $metadata['regId'];
+    } else {
+        $amount = $item['basePriceMoney'];
+        $totalTax = $item['taxAmounts']['totalTax'];
+        $regid = $item['metadata']['regId'];
+    }
+    dbSafeCmd($regQ, 'ddii', array (round($amount / 100.0, 2), round($totalTax / 100.0, 2), $transId, $regid));
 }
 
 // mark coupon used

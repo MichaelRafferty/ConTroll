@@ -409,6 +409,7 @@ EOS;
     $orderDiscount = 0;
     $lineid = 0;
     $orderValue = 0;
+    $preTaxAmt = 0;
     $planName = '';
     $planId = '';
     $downPmt = '';
@@ -484,6 +485,7 @@ EOS;
         $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
         $orderTaxLineItems[] = $item;
         $orderValue = $results['total'];
+        $preTaxAmt = $results['total'];
         $orderMetadata['in' . $itemNumber] = $notesData['note'];
         $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
         $itemsBuilt = true;
@@ -506,6 +508,10 @@ EOS;
                 $priceType = $art['priceType'];
                 $quantity = $art['purQuantity'];
                 $amount = $art['amount'];
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artSales', $amount);
+                else
+                    $netAmount = $amount;
                 $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $itemNumber++;
@@ -513,7 +519,7 @@ EOS;
                     'product_code' => 'art-' . $artId,
                     'product_name' => mb_substr($artistName . ' / ' . $title, 0, 1024),
                     'quantity' => $quantity,
-                    'unit_cost' => round($amount * $currencyMultiplier / $quantity),
+                    'unit_cost' => round($netAmount * $currencyMultiplier / $quantity),
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for tax until computed later
                 ];
                 $orderLineItems[] = $item;
@@ -529,7 +535,8 @@ EOS;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
-                $orderValue += $art['amount'];
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         } else {
@@ -602,10 +609,8 @@ EOS;
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = round($badge['balDue'] * $currencyMultiplier);
-                } else if (array_key_exists('paid', $badge)) {
-                    $amount = round(($badge['price']-$badge['paid']) * $currencyMultiplier);
                 } else {
-                    $amount = round($badge['price'] * $currencyMultiplier);
+                    $amount = round(($badge['price'] - $badge['paid']) * $currencyMultiplier);
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
@@ -617,11 +622,22 @@ EOS;
                     ($addMbr ? ' Mbr ' : ' ') . 'for ' . $fullname;
 
                 $itemNumber++;
+                $amount = $badge['price'];
+                if ($hasTax) {
+                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                        $badgeTaxable = 'taxableMem';
+                    } else {
+                        $badgeTaxable = 'nontaxMem';
+                    }
+                    $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                } else {
+                    $netAmount = $amount;
+                }
                 $item = [
                     'product_code' => 'badge-' . $badge['memId'],
                     'product_name' => mb_substr($itemName, 0, 1024),
                     'quantity' => 1,
-                    'unit_cost' => $amount,
+                    'unit_cost' => round($netAmount * $currencyMultiplier),
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for after tax computation
                 ];
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -659,31 +675,28 @@ EOS;
                 }
 
                 $orderLineItems[] = $item;
-                if ($hasTax)  {
-                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
-                        $badgeTaxable = 'taxableMem';
-                    } else {
-                        $badgeTaxable = 'nontaxMem';
-                    }
-                    $item['basePriceMoney'] = $item['unit_cost']; // convert to common name for tax comps
 
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
-                    if ($needTaxes == false)
-                        $needTaxes = count($taxArray) > 0;
-                    $item['taxes'] = $taxArray;
-                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
-                }
+                // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                $item['basePriceMoney'] = round($netAmount * $currencyMultiplier);
+                $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
+
+                if ($needTaxes == false)
+                    $needTaxes = count($taxArray) > 0;
+                $item['taxes'] = $taxArray;
+                $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                 $orderTaxLineItems[] = $item;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
 
                 if (array_key_exists('balDue', $badge)) {
                     $orderValue += $badge['balDue'];
-                } else if (array_key_exists('paid', $badge)) {
+                    $preTaxAmt += $badge['balDue'];
+                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
                     $orderValue += $badge['price'] - $badge['paid'];
+                    $preTaxAmt += $badge['price'] - $badge['paid'];
                 } else {
-                    $orderValue += $badge['price'];
+                    $orderValue += $netAmount;
+                    $preTaxAmt += $amount;
                 }
                 $lineid++;
                 $rowno++;
@@ -701,6 +714,7 @@ EOS;
                 }
                 $discountRemaining = $totalDiscount;
                 $orderValue -= $totalDiscount / $currencyMultiplier;
+                $preTaxAmt -= $totalDiscount / $currencyMultiplier;
                 $lastItemNo = -1;
                 $maxAmt = -1;
                 foreach ($discountRows as $row) {
@@ -753,12 +767,18 @@ EOS;
                 }
                 $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
+                $amount = $space['approved_price'];
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust($spaceType, $amount);
+                else
+                    $netAmount = $amount;
+
                 $itemNumber++;
                 $item = [
                     'product_code' => 'space-' . $spaceId,
                     'product_name' => mb_substr($itemName, 0, 1024),
                     'quantity' => 1,
-                    'unit_cost' => round($space['approved_price'] * $currencyMultiplier),
+                    'unit_cost' => round($netAmount * $currencyMultiplier),
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
@@ -776,7 +796,8 @@ EOS;
                 $orderTaxLineItems[] = $item;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
-                $orderValue += $space['approved_price'];
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         }
@@ -789,13 +810,17 @@ EOS;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artShipping', $itemPrice);
+                else
+                    $netAmount = $itemPrice;
 
                 $itemNumber++;
                 $item = [
                     'product_code' => 'mailinFee',
                     'product_name' => mb_substr($itemName, 0, 1024),
                     'quantity' => 1,
-                    'unit_cost' => round($itemPrice * $currencyMultiplier),
+                    'unit_cost' => round($netAmount * $currencyMultiplier),
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
@@ -813,7 +838,8 @@ EOS;
                 $orderTaxLineItems[] = $item;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
-                $orderValue += $itemPrice;
+                $orderValue += $netAmount;
+                $preTaxAmt += $itemPrice;
                 $lineid++;
             }
         }
@@ -917,10 +943,11 @@ EOS;
     $rtn = array();
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
-    $rtn['order'] = $paymentIntent;
     $phpOrder = json_decode(json_encode($paymentIntent), true);
+    $rtn['order'] = $phpOrder;
     $rtn['items'] = $orderLineItems;
-    $rtn['preTaxAmt'] = $orderValue;
+    $rtn['preTaxAmt'] = $preTaxAmt;
+    $rtn['netAmount'] = $orderValue;
     if (array_key_exists('discount_amount', $amountDetails)) {
         $rtn['discountAmt'] = $amountDetails['discount_amount'] / $currencyMultiplier;
     } else {
@@ -936,9 +963,10 @@ EOS;
         $taxAmount += $tax['tax'];
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxAmount'] = $taxAmount / 100;
-    $rtn['totalAmt'] = $phpOrder['amount'] / $currencyMultiplier;
+    $rtn['taxAmt'] = round($taxAmount / 100, 2);
+    $rtn['taxAmount'] = round($taxAmount / 100, 2);
+    $rtn['totalAmt'] = round($phpOrder['amount'] / $currencyMultiplier, 2);
+    $rtn['totalAmountDue'] = round($phpOrder['amount'] / $currencyMultiplier, 2);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $phpOrder['id'];
     $rtn['version'] = '1';
@@ -1338,17 +1366,19 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     $rtn = array();
-    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'netAmount','tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId','cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'],
+        $ccParams['netAmount'], $ccParams['taxAmt'], $approved_amt,
         $txtime,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $orderId, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['netAmount'] = $ccParams['netAmount'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;
