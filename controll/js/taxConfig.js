@@ -17,6 +17,7 @@ class taxConfig {
     #taxField = null;
     #taxLabel = null;
     #taxRate = null;
+    #taxType = null;
     #taxGLNum = null;
     #taxItemsDiv = null;
     #taxActive = null;
@@ -44,6 +45,7 @@ class taxConfig {
             this.#taxTitle = document.getElementById('tax-title');
             this.#taxHeading = document.getElementById('tax-heading');
             this.#taxRate = document.getElementById('taxRate');
+            this.#taxType = document.getElementById('taxType');
             this.#taxLabel = document.getElementById('taxLabel');
             this.#taxActive = document.getElementById('taxActive');
             this.#taxGLNum = document.getElementById('taxGLNum');
@@ -148,6 +150,7 @@ class taxConfig {
 
     editTax(row) {
         clear_message('tax_message_div');
+        clear_message();
         //console.log("editTax: " + row);
         let taxrow = this.#taxTable.getRow(row);
         this.#taxField = row;
@@ -156,6 +159,7 @@ class taxConfig {
         this.#taxHeading.innerHTML = this.#taxRowBeforeEdit.taxField + ' for ' + this.#taxRowBeforeEdit.conid;
         this.#taxLabel.value = this.#taxRowBeforeEdit.label == undefined ? '' : this.#taxRowBeforeEdit.label;
         this.#taxRate.value = this.#taxRowBeforeEdit.rate == undefined ? '0.00' : this.#taxRowBeforeEdit.rate;
+        this.#taxType.value = this.#taxRowBeforeEdit.taxType == undefined ? 'E' : this.#taxRowBeforeEdit.taxType;
         this.#taxActive.value = this.#taxRowBeforeEdit.active == undefined ? 'Y' : this.#taxRowBeforeEdit.active;
         this.#taxGLNum.value = this.#taxRowBeforeEdit.glNum == undefined ? '' : this.#taxRowBeforeEdit.glNum;
         //this.#taxItemsDiv.innerHTML = this.#taxRowBeforeEdit.taxItemsDisplay;
@@ -199,6 +203,7 @@ class taxConfig {
         clearFieldChanged(this.#taxActive);
         clearFieldChanged(this.#taxLabel);
         clearFieldChanged(this.#taxRate);
+        clearFieldChanged(this.#taxType);
         clearFieldChanged(this.#taxGLNum);
         this.#taxSaveRowBtn.disabled = true;
         this.#taxSaveRowBtn.innerHTML = "Save Changes";
@@ -226,6 +231,7 @@ class taxConfig {
         let active = this.#taxActive.value;
         let label = this.#taxLabel.value.trim();
         let rate = this.#taxRate.value;
+        let taxType = this.#taxType.value;
         let glNum = this.#taxGLNum.value.trim();
         let taxItemsData = this.#taxItemsTable.getData();
         let taxItems = {};
@@ -272,6 +278,8 @@ class taxConfig {
             update.active = active;
         if (this.#taxRowBeforeEdit.label != label)
             update.label = label;
+        if (this.#taxRowBeforeEdit.taxType != rate)
+            update.taxType = taxType;
         if (this.#taxRowBeforeEdit.rate != rate)
             update.rate = rate;
         if (this.#taxRowBeforeEdit.glNum != glNum)

@@ -620,6 +620,19 @@ EOS;
                     </div>
                     <div class='row mt-2'>
                         <div class='col-sm-2'>
+                            <label for='taxType' class='form-label-sm'><span class='text-dark'><?php echo $star; ?>Tax Type</span></label>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <select id="taxType", name="TaxType" onchange="tax.editFieldChanged('taxType')"
+                                    tabindex=" <?php echo $tabindex; $tabindex += 10; ?>">
+                                <option value="E">Exclusive Tax</option>
+                                <option value="I">Inclusive Tax</option>
+                            </select>
+                        </div>
+                        <div class='col-sm'>Inclusive means the tax is included in the price, such as VAT, exclusive taxes are added to the price.</div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-2'>
                             <label for='taxGLNum' class='form-label-sm'>General Ledger</label>
                         </div>
                         <div class='col-sm-auto'>
