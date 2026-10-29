@@ -356,7 +356,7 @@ EOS;
                 if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/customer create', $customer, $useLogWrite);
                 $customer = $client->customers->create($customer);
                 $customerPHP = json_decode(json_encode($customer), true);
-                if ($stripeDebug & 14) stcc_logObject('cc_sripe/buildOrder/customer create response', $customerPHP, $useLogWrite);
+                if ($stripeDebug & 14)stcc_logObject ('cc_sripe/buildOrder/customer create response', $customerPHP, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
@@ -913,7 +913,8 @@ EOS;
     try {
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/payment Intent Create-orderFields', $orderFields, $useLogWrite);
         $paymentIntent = $client->paymentIntents->create($orderFields);
-        if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/payment Intent response', $paymentIntent, $useLogWrite);
+        $phpPaymentIntent = json_decode(json_encode($paymentIntent), true);
+        if ($stripeDebug & 14) stcc_logObject('cc_stripe/buildOrder/payment Intent response', $phpPaymentIntent, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
@@ -994,7 +995,8 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/cancelOrder cancel payment intent', $orderId, $useLogWrite);
         $payment = $client->paymentIntents->cancel($orderId, []);
         $payment = json_decode(json_encode($payment), true);
-        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $orderId", $payment, $useLogWrite);
+        $phpPaymen = json_decode(json_encode($payment), true);
+        if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $orderId", $phpPayment, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
         stcc_logException('cc_cancelOrder', $e, 'Invalid Request Exception', 'Unable cancel the order, seek assistance.', $useLogWrite);;
@@ -1124,7 +1126,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         try {
             if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment Intent Confirm of $orderId-confirmFields", $confirmFields, $useLogWrite);
             $paymentIntent = $client->paymentIntents->confirm($orderId, $confirmFields);
-            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment Intent Confirm response of $orderId-paymentIntent", $paymentIntent, $useLogWrite);
+            $phpPaymentIntent = json_decode(json_encode($paymentIntent), true);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment Intent Confirm response of $orderId-paymentIntent", $phpPaymentIntent, $useLogWrite);
         }
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
@@ -1268,7 +1271,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment record create $orderId-paymentRecordFields",
                 $paymentRecordFields, $useLogWrite);
             $paymentRecord = $client->paymentRecords->reportPayment($paymentRecordFields);
-            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment record response of $orderId", $paymentRecord, $useLogWrite);
+            $phpPaymentRecord = json_decode(json_encode($paymentRecord), true);
+            if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment record response of $orderId", $phpPaymentRecord, $useLogWrite);
         }
         catch (\Stripe\Exception\InvalidRequestException $e) {
             if ($cleanUpRegs)
@@ -1310,7 +1314,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 if ($stripeDebug & 14) stcc_logObject("cc_stripe/payOrder/payment change refund create $paymentRecordId-refundFields",
                     $refundFields, $useLogWrite);
                 $refundRecord = $client->paymentRecords->reportRefund($paymentRecordId, $refundFields);
-                if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment refund response of $paymentRecordId", $refundRecord, $useLogWrite);
+                $phpRefundRecord = json_decode(json_encode($refundRecord), true);
+                if ($stripeDebug & 14) stcc_logObject("cc_stripe/PayOrder/payment refund response of $paymentRecordId", $phpRefundRecord, $useLogWrite);
             }
             catch (\Stripe\Exception\InvalidRequestException $e) {
                 if ($cleanUpRegs)
