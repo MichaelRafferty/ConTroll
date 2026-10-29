@@ -1275,8 +1275,12 @@ class Portal {
             let totalWording = '';
             if (plan == null)
                 totalWording = this.#selectedItems ? 'total amount of the selected items' : 'total amount for the cart';
-            else
-                totalWording = 'current amount due to create the payment plan ' + plan.plan.name + ' is';
+            else {
+                totalWording = 'current amount due to create the payment plan ' + plan.plan.name;
+                if (Number(this.#orderData.rtn.taxAmt) > 0) {
+                    totalWording += ' plus the taxes';
+                }
+            }
             html += `
         <div class="row mt-2 mb-4">
             <div class="col-sm-auto"><strong>You are paying the ` + totalWording + `, so the payment amount is ` +
@@ -1323,8 +1327,10 @@ class Portal {
         let totalAmountDue = this.#paymentAmount;
         let taxAmount = 0
         let preTaxAmount = totalAmountDue;
+        let netAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
             preTaxAmount = this.#orderData.rtn.preTaxAmt;
+            netAmount = this.#orderData.rtn.netAmount;
             taxAmount = this.#orderData.rtn.taxAmt;
         }
 
@@ -1364,6 +1370,7 @@ class Portal {
             amount: this.#paymentAmount,
             totalAmountDue: this.#paymentAmount,
             preTaxAmount: preTaxAmount,
+            netAmount: netAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
