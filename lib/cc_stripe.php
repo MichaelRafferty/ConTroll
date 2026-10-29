@@ -635,6 +635,8 @@ EOS;
                 } else {
                     $netAmount = $amount;
                 }
+                $results['badges'][$ord]['netAmount'] = $netAmount;
+
                 $item = [
                     'product_code' => 'badge-' . $badge['memId'],
                     'product_name' => mb_substr($itemName, 0, 1024),
@@ -752,7 +754,7 @@ EOS;
                 }
                 $incCount = 0;
                 $addCount = 0;
-                foreach ($results['badges'] as $badge) {
+                foreach ($results['badges'] as $ord => $badge) {
                     if ($badge['memId'] == $space['includedMemId'])
                         $incCount++;
                     if ($badge['memId'] == $space['additionalMemId'])
@@ -765,6 +767,7 @@ EOS;
                     $netAmount = taxInclusiveAdjust($spaceType, $amount);
                 else
                     $netAmount = $amount;
+                $results['badges'][$ord]['netAmount'] = $netAmount;
 
                 $itemNumber++;
                 $item = [

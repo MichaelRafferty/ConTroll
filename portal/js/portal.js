@@ -1244,7 +1244,7 @@ class Portal {
             html += `
             <div class="row mt-4">
                 <div class="col-sm-4"><b>The Pre-Tax Amount Due ` + preTaxWording + ` is:</b></div>
-                <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
+                <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.netAmount).toFixed(2)) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
             if (Object.keys(config.taxRates).length > 0) {

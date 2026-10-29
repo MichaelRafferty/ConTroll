@@ -334,7 +334,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $totalDiscountable = 0;
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             $rowno = 0;
-            foreach ($results['badges'] as $badge) {
+            foreach ($results['badges'] as $ord => $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
                 }
@@ -395,6 +395,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
                 } else
                     $netAmount = $amount;
+                $results['badges'][$ord]['netAmount'] = $netAmount;
+
                 $item = [
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
@@ -497,7 +499,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $incCount = 0;
                 $addCount = 0;
-                foreach ($results['badges'] as $badge) {
+                foreach ($results['badges'] as $ord => $badge) {
                     if ($badge['memId'] == $space['includedMemId'])
                         $incCount++;
                     if ($badge['memId'] == $space['additionalMemId'])
@@ -510,6 +512,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $netAmount = taxInclusiveAdjust($spaceType, $amount);
                 else
                     $netAmount = $amount;
+
+                $results['badges'][$ord]['netAmount'] = $netAmount;
             }
             $item = [
                 'uid' => 'space-' . $spaceId,

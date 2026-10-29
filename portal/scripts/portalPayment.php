@@ -105,6 +105,12 @@ if (array_key_exists('preTaxAmount', $_POST)) {
     $preTaxAmount = $amount;
 }
 
+if (array_key_exists('netAmount', $_POST)) {
+    $netAmount = $_POST['netAmount'];
+} else {
+    $netAmount = $amount;
+}
+
 if (array_key_exists('badges', $_POST)) {
     try {
         $badges = json_decode($_POST['badges'], true, 512, JSON_THROW_ON_ERROR);
@@ -231,6 +237,7 @@ if ($amount > 0) {
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $preTaxAmount,
+        'netAmount' => $netAmount,
         'taxAmt' => $taxAmount,
         'total' => $amount,
         'price' => null,
@@ -539,7 +546,8 @@ EOS;
 
     $regU = <<<EOS
 UPDATE reg 
-SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
+SET paid=paid + ?, netPrice = CASE WHEN IFNULL(netPrice, 0) > 0 THEN netPrice ELSE ? END,
+    couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
 WHERE id=?;
 EOS;
 
@@ -633,8 +641,8 @@ EOS;
             } else {
                 $regid = 'tbd';
             }
-            $rows_upd += dbSafeCmd($regU, 'ddisii', array (
-                $paid_amt,
+            $rows_upd += dbSafeCmd($regU, 'dddisii', array (
+                $paid_amt, $badge['netAmount'],
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
                 $regStatus,
