@@ -603,10 +603,10 @@ EOS;
                 }
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
-                if (array_key_exists('balDue', $badge)) {
+                if (array_key_exists('balDue', $badge) && $badge['paid'] > 0) {
                     $doInclusive = false;
                     $amount = round($badge['balDue'] * $currencyMultiplier);
-                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
+                } else if ($badge['paid'] > 0) {
                     $doInclusive = false;
                     $amount = round(($badge['price']-$badge['paid']) * $currencyMultiplier);
                 } else {
@@ -624,13 +624,14 @@ EOS;
 
                 $itemNumber++;
                 $amount = $badge['price'];
-                if ($hasTax && $doInclusive) {
+                if ($hasTax) {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
                         $badgeTaxable = 'nontaxMem';
                     }
-                    $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                    if ($doInclusive)
+                        $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
                 } else {
                     $netAmount = $amount;
                 }

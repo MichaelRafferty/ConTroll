@@ -495,10 +495,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
-                if (array_key_exists('balDue', $badge)) {
+                if (array_key_exists('balDue', $badge) && $badge['paid'] > 0) {
                     $doInclusive = false;
                     $amount = $badge['balDue'];
-                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
+                } else if ($badge['paid'] > 0) {
                     $doInclusive = false;
                     $amount = $badge['price']-$badge['paid'];
                 } else {
@@ -509,13 +509,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
-                if ($hasTax && $doInclusive)  {
+                if ($hasTax)  {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
                         $badgeTaxable = 'nontaxMem';
                     }
-                    $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                    if ($doInclusive)
+                        $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
                 } else
                     $netAmount = $amount;
 
