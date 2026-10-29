@@ -729,7 +729,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
         $phpOrder = json_decode(json_encode($order), true);
-        if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $order, $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $phpOrder, $useLogWrite);
     }
     catch (SquareApiException $e) {
         if ($cleanUpRegs)
@@ -889,7 +889,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
             $apiResponse = $client->orders->update($body);
             $order = $apiResponse->getOrder();
             $phpOrder = json_decode(json_encode($order), true);
-            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $order, $useLogWrite);
+            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $phpOrder, $useLogWrite);
         }
         catch (SquareApiException $e) {
             sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
@@ -967,7 +967,8 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
           if ($squareDebug & 12) sqcc_logObject('cc_square/Orders API order update-body', $body, $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order update response', $order, $useLogWrite);
+          $phpOrder = json_decode(json_encode($order), true);
+          if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order update response', $phpOrder, $useLogWrite);
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
@@ -1004,7 +1005,8 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         if ($squareDebug & 12) sqcc_logObject('cc_square/Orders API order create-', $body, $useLogWrite);
         $apiResponse = $client->orders->get($body);
         $order = $apiResponse->getOrder();
-        if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order response', $order, $useLogWrite);
+        $phpOrder = json_decode(json_encode($order), true);
+        if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order response', $phpOrder, $useLogWrite);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
@@ -1123,7 +1125,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $useLogWrite);
             $apiResponse = $client->payments->create($pbody);
             $payment = $apiResponse->getPayment();
-            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
+            $phpPayment = json_decode(json_encode($payment), true);
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite);
             $paymentIds[] = $payment->getId();
         }
         catch (SquareApiException $e) {
@@ -1222,7 +1225,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API create-pbody', $pbody, $useLogWrite);
         $apiResponse = $client->payments->create($pbody);
         $payment = $apiResponse->getPayment();
-        if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $payment, $useLogWrite);
+        $phpPayment = json_decode(json_encode($payment), true);
+        if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite);
         $paymentIds[] = $payment->getId();
     }
     catch (SquareApiException $e) {
@@ -1322,7 +1326,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API order payment request', $payRequest, $useLogWrite);
             $apiResponse = $client->orders->pay($payRequest);
             $payResponse = $apiResponse->getOrder();
-            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $payResponse, $useLogWrite);
+            $phpPayResponse =  json_decode(json_encode($payRequest), true);
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $phpPayResponse, $useLogWrite);
         }
         catch (SquareApiException $e) {
             web_error_log('Payment Square API Exception: ' . $e->getMessage());
