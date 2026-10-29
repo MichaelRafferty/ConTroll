@@ -101,7 +101,7 @@ $txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
 $txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));
 $approved_amt = $ccrtn['amount'];
 
-if ($totalDiscount > 0) {
+ if ($totalDiscount > 0) {
     // Insert the payment record for the coupon
     $ipQ = <<<EOS
 INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
@@ -138,8 +138,13 @@ foreach ($orderRtn['items'] AS $item) {
         $metadata = json_decode($orderRtn['order']['metadata']['im' . $lineno], true, 512);
         $regid = $metadata['regId'];
     } else {
-        $amount = $item['basePriceMoney'];
-        $totalTax = $item['taxAmounts']['totalTax'];
+        if (array_key_exists('base_price_money', $item)) {
+            $amount = $item['base_price_money']['amount'];
+            $totalTax = $item['total_tax_money']['amount'];
+        } else {
+            $amount = $item['basePriceMoney'];
+            $totalTax = $item['taxAmounts']['totalTax'];
+        }
         $regid = $item['metadata']['regId'];
     }
     dbSafeCmd($regQ, 'ddii', array (round($amount / 100.0, 2), round($totalTax / 100.0, 2), $transId, $regid));
