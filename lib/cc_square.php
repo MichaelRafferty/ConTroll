@@ -255,8 +255,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //      ii. add taxes
     //  b. add line items
     //      i. assign which tax line items to ignore
-    //      ii. assign which discount line items to ignore
-    //      iii. skip over already complete items and not add them to the square order
+    //      ii. adjust net price for each line if the tax is inclusive
+    //      iii. assign which discount line items to ignore
+    //      iv. skip over already complete items and not add them to the square order
     //  c. create order
     //  add order id to return items
 
@@ -289,42 +290,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $locationId = getConfValue('cc', 'location', null);
     }
 
-    // SDK 41, builds the parts then passes them into the body
-    // line items first
-    // then order
-    // then body
-
-    // SDK API Quick Reference: order lines (possible values from constructor)
-    //	$this->uid = $values['uid'] ?? null;
-    //	$this->name = $values['name'] ?? null;
-    //	$this->quantity = $values['quantity'];
-    //	$this->quantityUnit = $values['quantityUnit'] ?? null;  (leave out for 'each')
-    //	$this->note = $values['note'] ?? null;
-    //	$this->catalogObjectId = $values['catalogObjectId'] ?? null;  (NOT USED by ConTroll)
-    //	$this->catalogVersion = $values['catalogVersion'] ?? null;  (NOT USED by ConTroll)
-    //	$this->variationName = $values['variationName'] ?? null;  (NOT USED by ConTroll)
-    //	$this->itemType = $values['itemType'] ?? null;
-    //	$this->metadata = $values['metadata'] ?? null;
-    //	$this->modifiers = $values['modifiers'] ?? null;  (NOT USED by ConTroll)
-    //	$this->basePriceMoney = $values['basePriceMoney'] ?? null;
-    //	$this->variationTotalPriceMoney = $values['variationTotalPriceMoney'] ?? null;  (NOT USED by ConTroll)
-    //	$this->pricingBlocklists = $values['pricingBlocklists'] ?? null;    (Both discounts and taxes are in this item)
-    //	$this->appliedTaxes = $values['appliedTaxes'] ?? null;     (if scope Line, then input else computed)
-    //	$this->appliedDiscounts = $values['appliedDiscounts'] ?? null;     (if scope Line, then input else computed)
-    // fields only in the response/getOrder
-    //	$this->appliedTaxes = $values['appliedTaxes'] ?? null;     (Computed field by Square, R/O)
-    //	$this->appliedDiscounts = $values['appliedDiscounts'] ?? null;     (Computed field by Square, R/O)
-    //	$this->appliedServiceCharges = $values['appliedServiceCharges'] ?? null;     (Computed field by Square, R/O)
-    //	$this->grossSalesMoney = $values['grossSalesMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalTaxMoney = $values['totalTaxMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalDiscountMoney = $values['totalDiscountMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalMoney = $values['totalMoney'] ?? null;     (Computed field by Square, R/O)
-    //	$this->totalServiceChargeMoney = $values['totalServiceChargeMoney'] ?? null;     (Computed field by Square, R/O)
-
     $orderLineitems = [];
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
+    $preTaxAmt = 0;
     $planName = '';
     $planId = '';
     $downPmt = '';
@@ -400,6 +370,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         ]);
         $orderLineitems[] = $item;
         $orderValue = $results['total'];
+        $preTaxAmt = $results['total'];
         $itemsBuilt = true;
     }
 
@@ -420,6 +391,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $priceType = $art['priceType'];
                 $quantity = $art['purQuantity'];
                 $amount = $art['amount'];
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artSales', $amount);
+                else
+                    $netAmount = $amount;
                 $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = new OrderLineItem([
@@ -430,7 +405,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($amount * $currencyMultiplier / $quantity),
+                        'amount' => round($netAmount * $currencyMultiplier / $quantity),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -439,7 +414,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $item->setAppliedTaxes(buildSquareAppliedTaxArray('artSales', $lineid));
                 }
                 $orderLineitems[] = $item;
-                $orderValue += $art['amount'];
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         } else {
@@ -520,15 +496,28 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
-                    $amount = round($badge['balDue'] * $currencyMultiplier);
-                } else if (array_key_exists('paid', $badge)) {
-                    $amount = round(($badge['price']-$badge['paid']) * $currencyMultiplier);
+                    $doInclusive = false;
+                    $amount = $badge['balDue'];
+                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
+                    $doInclusive = false;
+                    $amount = $badge['price']-$badge['paid'];
                 } else {
-                    $amount = round($badge['price'] * $currencyMultiplier);
+                    $doInclusive = true;
+                    $amount = $badge['price'] ;
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
+
+                if ($hasTax && $doInclusive)  {
+                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                        $badgeTaxable = 'taxableMem';
+                    } else {
+                        $badgeTaxable = 'nontaxMem';
+                    }
+                    $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                } else
+                    $netAmount = $amount;
 
                 $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
@@ -542,19 +531,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => $amount,
+                        'amount' => round($netAmount * $currencyMultiplier, 2),
                         'currency' => $currency,
                     ]),
                 ]);
 
                 // apply taxes to badge memberships based on the taxable override flags for taxable vs. non taxable
                 if ($hasTax)  {
-                    if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
-                        $badgeTaxable = 'taxableMem';
-                    } else {
-                        $badgeTaxable = 'nontaxMem';
-                    }
-
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildSquareAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
@@ -588,13 +571,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     ])));
                 }
                 $orderLineitems[] = $item;
-                if (array_key_exists('balDue', $badge)) {
-                    $orderValue += $badge['balDue'];
-                } else if (array_key_exists('paid', $badge)) {
-                    $orderValue += $badge['price'] - $badge['paid'];
-                } else {
-                    $orderValue += $badge['price'];
-                }
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
                 $rowno++;
             }
@@ -623,6 +601,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
                 $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
+                $amount = $space['approved_price'];
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust($spaceType, $amount);
+                else
+                    $netAmount = $amount;
+
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'space-' . $spaceId,
@@ -631,7 +615,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($space['approved_price'] * $currencyMultiplier),
+                        'amount' => round($netAmount * $currencyMultiplier),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -647,7 +631,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 $orderLineitems[] = $item;
-                $orderValue += $space['approved_price'];
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
             }
         }
@@ -660,6 +645,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $notesData = cc_mailFeeNotes($fee, $results['transid']);
+                if ($hasTax)
+                    $netAmount = taxInclusiveAdjust('artShipping', $itemPrice);
+                else
+                    $netAmount = $itemPrice;
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
@@ -669,7 +658,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'note' => $notesData['note'],
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
-                        'amount' => round($itemPrice * $currencyMultiplier),
+                        'amount' => round($netAmount * $currencyMultiplier),
                         'currency' => $currency,
                         ]),
                 ]);
@@ -685,7 +674,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 $orderLineitems[] = $item;
-                $orderValue += $itemPrice;
+                $orderValue += $netAmount;
+                $preTaxAmt += $itemPrice;
                 $lineid++;
             }
         }
@@ -710,40 +700,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             $orderDiscounts[] = $item;
         }
     }
-
-    // order (constructor array variables)
-    //	$this->id = $values['id'] ?? null;
-    //	$this->locationId = $values['locationId'];
-    //	$this->referenceId = $values['referenceId'] ?? null;
-    //	$this->source = $values['source'] ?? null;
-    //	$this->customerId = $values['customerId'] ?? null;
-    //	$this->lineItems = $values['lineItems'] ?? null;
-    //	$this->taxes = $values['taxes'] ?? null;
-    //	$this->discounts = $values['discounts'] ?? null;
-    //	$this->serviceCharges = $values['serviceCharges'] ?? null;
-    //	$this->fulfillments = $values['fulfillments'] ?? null;
-    //	$this->returns = $values['returns'] ?? null;
-    //	$this->returnAmounts = $values['returnAmounts'] ?? null;
-    //	$this->netAmounts = $values['netAmounts'] ?? null;
-    //	$this->roundingAdjustment = $values['roundingAdjustment'] ?? null;
-    //	$this->tenders = $values['tenders'] ?? null;
-    //	$this->refunds = $values['refunds'] ?? null;
-    //	$this->metadata = $values['metadata'] ?? null;
-    //	$this->createdAt = $values['createdAt'] ?? null;
-    //	$this->updatedAt = $values['updatedAt'] ?? null;
-    //	$this->closedAt = $values['closedAt'] ?? null;
-    //	$this->state = $values['state'] ?? null;
-    //	$this->version = $values['version'] ?? null;
-    //	$this->totalMoney = $values['totalMoney'] ?? null;
-    //	$this->totalTaxMoney = $values['totalTaxMoney'] ?? null;
-    //	$this->totalDiscountMoney = $values['totalDiscountMoney'] ?? null;
-    //	$this->totalTipMoney = $values['totalTipMoney'] ?? null;
-    //	$this->totalServiceChargeMoney = $values['totalServiceChargeMoney'] ?? null;
-    //	$this->ticketName = $values['ticketName'] ?? null;
-    //	$this->pricingOptions = $values['pricingOptions'] ?? null;
-    //	$this->rewards = $values['rewards'] ?? null;
-    //	$this->netAmountDueMoney = $values['netAmountDueMoney'] ?? null;
-
 
     $order = new Order([
         'locationId' => $locationId,
@@ -800,7 +756,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                             $thisItemDiscount = $discount['applied_money']['amount'];
                         // now find the reg entry to match this item
                         $rowno = $item['metadata']['rowno'];
-                        $results['badges'][$rowno]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
+                        $results['badges'][$rowno]['couponDiscount'] = round($thisItemDiscount / $currencyMultiplier, 2);
                         $results['badges'][$rowno]['coupon'] = $coupon['id'];
                     }
                 }
@@ -825,7 +781,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                             $results['badges'][$rowno]['paid'] = 0;
                         if (!array_key_exists('couponDiscount', $results['badges'][$rowno]))
                             $results['badges'][$rowno]['couponDiscount'] = 0;
-                        $results['badges'][$rowno]['couponDiscount'] += $thisItemDiscount / $currencyMultiplier;
+                        $results['badges'][$rowno]['couponDiscount'] += round($thisItemDiscount / $currencyMultiplier, 2);
                     }
                 }
             }
@@ -837,9 +793,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
     $rtn['items'] = $phpOrder['line_items'];
-    $rtn['preTaxAmt'] = $orderValue;
-    $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
-    $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+    $rtn['preTaxAmt'] = $preTaxAmt;
+    $rtn['netAmount'] = $orderValue;
+    $rtn['discountAmt'] = round($order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['taxAmt'] = round($order->getTotalTaxMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['taxAmount'] = $rtn['taxAmt'];
     // build the return array of taxes applied to the order
     $rtnTaxes = [];
     if ($needTaxes) {
@@ -848,16 +806,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             $uid = $tax->getUid();
             $app = $tax->getAppliedMoney();
             $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+            $rtnTaxes[$uid] = round($amt / $currencyMultiplier, 2);
         }
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+    $rtn['totalAmt'] = round($order->getTotalMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['totalAmountDue'] = $rtn['totalAmt'];
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
     $rtn['version'] = $order->getVersion();
     $rtn['ccType'] = 'square';
     $rtn['source'] = $source;
+    $rtn['version'] = $order->getVersion();
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['locationId'] = $order->getLocationId();
     $rtn['referenceId'] = $order->getReferenceId();
@@ -942,8 +902,8 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
 
         // need to pass back order id, total_amount
         $rtn['order'] = $order;
-        $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
-        $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+        $rtn['discountAmt'] = round($order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier, 2);
+        $rtn['taxAmt'] = round($order->getTotalTaxMoney()->getAmount() / $currencyMultiplier, 2);
         // build the return array of taxes applied to the order
         $rtnTaxes = [];
         if ($rtn['taxAmt'] > 0) {
@@ -952,12 +912,12 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
                 $uid = $tax->getUid();
                 $app = $tax->getAppliedMoney();
                 $amt = $app->getAmount();
-                $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+                $rtnTaxes[$uid] = round($amt / $currencyMultiplier, 2);
             }
         }
 
         $rtn['taxes'] = $rtnTaxes;
-        $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
+        $rtn['totalAmt'] = round($order->getTotalMoney()->getAmount() / $currencyMultiplier, 2);
         $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
         // load into the main rtn the items pay order needs directly
         $rtn['orderId'] = $order->getId();
@@ -1053,8 +1013,8 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
     $rtn = array();
-    $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / $currencyMultiplier;
-    $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / $currencyMultiplier;
+    $rtn['totalAmountDue'] = round($order->getTotalMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['taxAmount'] = round($order->getTotalTaxMoney()->getAmount() / $currencyMultiplier, 2);
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
     $rtnTaxes = [];
@@ -1063,13 +1023,13 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
             $uid = $tax->getUid();
             $app = $tax->getAppliedMoney();
             $amt = $app->getAmount();
-            $rtnTaxes[$uid] = $amt / $currencyMultiplier;
+            $rtnTaxes[$uid] = round($amt / $currencyMultiplier, 2);
         }
     }
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier;
-    $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / $currencyMultiplier;
-    $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / $currencyMultiplier;
+    $rtn['totalDiscountAmount'] = round($order->getTotalDiscountMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['netAmountDue'] = round($order->getNetAmountDueMoney()->getAmount() / $currencyMultiplier, 2);
+    $rtn['netAmount'] = round($order->getNetAmounts()->getTotalMoney()->getAmount() / $currencyMultiplier, 2);
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['order'] = $order;
 
@@ -1324,7 +1284,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $id = $payment->getId();
     $status = $payment->getStatus();
     if ($sourceId == 'CARD') {
-        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / $currencyMultiplier;
+        $approved_amt = round(($payment->getApprovedMoney()->getAmount()) / $currencyMultiplier, 2);
         $last4 = $payment->getCardDetails()->getCard()->getLast4();
         $auth = $payment->getCardDetails()->getAuthResultCode();
     } else {
@@ -1398,17 +1358,19 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     //
 
     $rtn = array();
-    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'netAmount', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId','cashier');
-    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'],
+        $ccParams['netAmount'], $ccParams['taxAmt'], $approved_amt,
         $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $id, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['netAmount'] = $ccParams['netAmount'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;

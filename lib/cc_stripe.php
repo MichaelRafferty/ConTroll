@@ -28,10 +28,6 @@ EOS;
     $sdk = getConfValue('cc', 'websdk', 'https://js.stripe.com/dahlia/stripe.js');
     //$location = getConfValue('cc', 'location', null);
     $pkkey = getConfValue('cc', 'pkkey', null);
-    $postalCode = '';
-    if ($postal_code != '--') {
-        $postalCode = "'postalCode': '$postal_code',\n";
-    }
 
     $html = '';
     $html .= <<<EOS
@@ -60,7 +56,7 @@ global $unitCurrencies;
 $unitCurrencies = array('bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf');
 
 // stripe doesn't multiply all currencies to unit hundreths (2dp currencies), some are zero decimal currencies
-function get_currencyMultiplier($currency) {
+function get_currencyMultiplier($currency) : float {
     global $unitCurrencies;
     if (in_array(strtolower($currency), $unitCurrencies)) {
         return 1.0;
@@ -608,9 +604,14 @@ EOS;
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
+                    $doInclusive = false;
                     $amount = round($badge['balDue'] * $currencyMultiplier);
+                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
+                    $doInclusive = false;
+                    $amount = round(($badge['price']-$badge['paid']) * $currencyMultiplier);
                 } else {
-                    $amount = round(($badge['price'] - $badge['paid']) * $currencyMultiplier);
+                    $doInclusive = true;
+                    $amount = round($badge['price'] * $currencyMultiplier);
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
@@ -623,7 +624,7 @@ EOS;
 
                 $itemNumber++;
                 $amount = $badge['price'];
-                if ($hasTax) {
+                if ($hasTax && $doInclusive) {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
@@ -687,17 +688,8 @@ EOS;
                 $orderTaxLineItems[] = $item;
                 $orderMetadata['in' . $itemNumber] = $notesData['note'];
                 $orderMetadata['im' . $itemNumber] = json_encode($notesData['metadata']);
-
-                if (array_key_exists('balDue', $badge)) {
-                    $orderValue += $badge['balDue'];
-                    $preTaxAmt += $badge['balDue'];
-                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
-                    $orderValue += $badge['price'] - $badge['paid'];
-                    $preTaxAmt += $badge['price'] - $badge['paid'];
-                } else {
-                    $orderValue += $netAmount;
-                    $preTaxAmt += $amount;
-                }
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
                 $lineid++;
                 $rowno++;
             }
@@ -713,8 +705,8 @@ EOS;
                     exit();
                 }
                 $discountRemaining = $totalDiscount;
-                $orderValue -= $totalDiscount / $currencyMultiplier;
-                $preTaxAmt -= $totalDiscount / $currencyMultiplier;
+                $orderValue -= round($totalDiscount / $currencyMultiplier, 2);
+                $preTaxAmt -= round($totalDiscount / $currencyMultiplier, 2);
                 $lastItemNo = -1;
                 $maxAmt = -1;
                 foreach ($discountRows as $row) {
@@ -730,14 +722,14 @@ EOS;
                     if ($thisItemDiscount > 0) {
                         $orderLineItems[$row['row']]['discount_amount'] = $thisItemDiscount;
                         $results['badges'][$row['ord']]['coupon'] = $coupon;
-                        $results['badges'][$row['ord']]['couponDiscount'] = $thisItemDiscount / $currencyMultiplier;
+                        $results['badges'][$row['ord']]['couponDiscount'] = round($thisItemDiscount / $currencyMultiplier, 2);
                     }
                 }
 
                  // deal with rounding error by fudging largest item
                 if ($discountRemaining > 0 && $lastItemNo >= 0) {
                     $orderLineItems[$lastItemNo]['discount_amount'] += $discountRemaining;
-                    $results['badges'][$lastOrd]['couponDiscount'] += $discountRemaining / $currencyMultiplier;
+                    $results['badges'][$lastOrd]['couponDiscount'] += round($discountRemaining / $currencyMultiplier, 2);
                 }
             }
         }
@@ -860,7 +852,7 @@ EOS;
         // this needs to be converted back to the decimal currenty
         if ($currencyMultiplier != 1) {
             foreach ($metaTaxAmounts as $key => $taxarr) {
-                $metaTaxAmounts[$key]['tax'] = $taxarr['tax'] / $currencyMultiplier;
+                $metaTaxAmounts[$key]['tax'] = round($taxarr['tax'] / $currencyMultiplier, 2);
             }
         }
         $orderMetadata['taxesjson'] = json_encode($metaTaxAmounts);
@@ -949,7 +941,7 @@ EOS;
     $rtn['preTaxAmt'] = $preTaxAmt;
     $rtn['netAmount'] = $orderValue;
     if (array_key_exists('discount_amount', $amountDetails)) {
-        $rtn['discountAmt'] = $amountDetails['discount_amount'] / $currencyMultiplier;
+        $rtn['discountAmt'] = round($amountDetails['discount_amount'] / $currencyMultiplier, 2);
     } else {
         $rtn['discountAmt'] = 0;
     }
@@ -1207,7 +1199,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 $desc .= '; ' . $ccParams['desc'];
             }
 
-            $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
+            $approved_amt = round($chargePHP['amount_captured'] / $currencyMultiplier, 2);
             $card = $charge['payment_method_details']['card'];
             $last4 = $card['last4'];
             $nonce = $card['brand'] . '-' . $last4;
@@ -1505,7 +1497,7 @@ function cc_payComplete($ccParams, $paymentIntent, $useLogWrite) {
             }
         }
 
-        $approved_amt = $chargePHP['amount_captured'] / $currencyMultiplier;
+        $approved_amt = round($chargePHP['amount_captured'] / $currencyMultiplier, 2);
         $card = $charge['payment_method_details']['card'];
         $last4 = $card['last4'];
         $nonce = $card['brand'] . '-' . $last4;
@@ -1598,7 +1590,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         $payment['amount_details'] = array ();
     }
     $payment['amount_details']['lineItems'] = $lineItems['data'];
-    $payment['totalAmountDue'] = $payment['amount'] / $currencyMultiplier;
+    $payment['totalAmountDue'] = round($payment['amount'] / $currencyMultiplier, 2);
     $payment['taxAmount'] = $payment['metadata']['totalTax'];
     $payment['customerId'] = $payment['customer'];
     if (array_key_exists('taxesjson', $payment['metadata']))

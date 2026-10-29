@@ -142,8 +142,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //  b. add line items
     //      i. assign which tax line items to ignore
     //      ii. adjust net price for each line if the tax is inclusive
-    //      ii. assign which discount line items to ignore
-    //      iii. skip over already complete items and not add them to the square order
+    //      iii. assign which discount line items to ignore
+    //      iv. skip over already complete items and not add them to the test order
     //  c. create order
     //  add order id to return items
 
@@ -370,16 +370,22 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
+                    $doInclusive = false;
                     $amount = $badge['balDue'];
+                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
+                    $doInclusive = false;
+                    $amount = round(($badge['price'] - $badge['paid']), 2);
                 } else {
-                    $amount = $badge['price'] - $badge['paid'];
+                    $doInclusive = true;
+                    $amount = $badge['price'];
                 }
 
                 $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
-                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                $itemName = $badge['fname'] . ': ' . $badge['shortname'] . ' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
                     ($addMbr ? ' Mbr ' : ' ') . '/ ' . $fullname;
-                if ($hasTax) {
+
+                if ($hasTax && $doInclusive) {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
@@ -396,7 +402,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'basePriceMoney' => round($netAmount * $currencyMultiplier),
                     'metadata' => $notesData['metadata'],
                 ];
-                if ($hasTax)  {
+                if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
@@ -424,19 +430,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[] = $item;
-                if (array_key_exists('balDue', $badge)) {
-                    $orderValue += $badge['balDue'];
-                    $preTaxAmt += $badge['balDue'];
-                } else if (array_key_exists('paid', $badge) && $badge['paid'] > 0) {
-                    //TODO: is this line correct?
-                    $orderValue += $badge['price'] - $badge['paid'];
-                    $preTaxAmt += $badge['price'] - $badge['paid'];
-                } else {
+                {
                     $orderValue += $netAmount;
-                    $preTaxAmt += $badge['price'];
+                    $preTaxAmt += $amount;
+
+                    $lineid++;
+                    $rowno++;
                 }
-                $lineid++;
-                $rowno++;
             }
 
             if (array_key_exists('discount', $results) && $results['discount'] > 0) {
@@ -445,7 +445,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if ($totalDiscount > $totalDiscountable) {
                     $totalDiscount /= $currencyMultiplier;
                     $totalDiscountable /= $currencyMultiplier;
-                    ajaxSuccess(array('error' =>
+                    ajaxSuccess(array ('error' =>
                         "The total discount of $totalDiscount cannot exceed the total amount discountable of $totalDiscountable"));
                     exit();
                 }
@@ -509,91 +509,91 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $netAmount = taxInclusiveAdjust($spaceType, $amount);
                 else
                     $netAmount = $amount;
-                }
-                $item = [
-                    'uid' => 'space-' . $spaceId,
-                    'name' => mb_substr($itemName, 0, 128),
-                    'quantity' => 1,
-                    'note' => $notesData['note'],
-                    'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
-                ];
-
-                // apply taxes to spaces based on the space taxable flag
-                if ($hasTax)  {
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    // need to determine the type of space
-                    $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
-                    if ($needTaxes == false)
-                        $needTaxes = count($taxArray) > 0;
-                    $item['taxes'] = $taxArray;
-                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
-                }
-
-                $orderLineItems[] = $item;
-                $orderValue += $netAmount;
-                $preTaxAmt += $amount;
-                $lineid++;
             }
-        }
-
-        if (array_key_exists('mailInFee', $results)) {
-            foreach ($results['mailInFee'] as $fee) {
-                // because it expects an array, the array of an empty element needs to be skipped
-                if ((!array_key_exists('amount', $fee)) || $fee['amount'] <= 0)
-                    continue;
-                $itemName = 'Mail-in Fee for ' . $fee['name'];
-                $itemPrice = $fee['amount'];
-                $notesData = cc_mailFeeNotes($fee, $results['transid']);
-                if ($hasTax)
-                    $netAmount = taxInclusiveAdjust('artShipping', $itemPrice);
-                else
-                    $netAmount = $itemPrice;
-
-                $item = [
-                    'uid' => 'region-' . $fee['name'],
-                    'name' => mb_substr($itemName, 0, 128),
-                    'quantity' => 1,
-                    'note' => $notesData['note'],
-                    'metadata' => $notesData['metadata'],
-                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
-                ];
-
-                // apply taxes to mail in fees based on the artShipping flag
-                if ($hasTax)  {
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    // need to determine the type of space
-                    $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
-                    if ($needTaxes == false)
-                        $needTaxes = count($taxArray) > 0;
-                    $item['taxes'] = $taxArray;
-                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
-                }
-
-                $orderLineItems[] = $item;
-                $orderValue += $netAmount;
-                $preTaxAmt += $itemPrice;
-                $lineid++;
-            }
-        }
-
-        // TODO: if an item is in plan, set the plan discount to apply only to those line items
-        // if a plan, set a discount called deferred payment for plan to the amount not in this payment
-        if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-            // deferment is total of the items - total of the payment
-            $deferment = $orderValue - $results['total'];
-            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
-            // this is the down payment on a payment plan
             $item = [
-                'uid' => 'planDeferment',
-                'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
+                'uid' => 'space-' . $spaceId,
+                'name' => mb_substr($itemName, 0, 128),
+                'quantity' => 1,
+                'note' => $notesData['note'],
                 'metadata' => $notesData['metadata'],
-                'type' => 'FixedAmount',
-                'amountMoney' => round($deferment * $currencyMultiplier),
+                'basePriceMoney' => round($netAmount * $currencyMultiplier),
             ];
-            $discountAmt += $item['amountMoney'];
-            $orderDiscounts[] = $item;
+
+            // apply taxes to spaces based on the space taxable flag
+            if ($hasTax) {
+                // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                // need to determine the type of space
+                $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
+                if ($needTaxes == false)
+                    $needTaxes = count($taxArray) > 0;
+                $item['taxes'] = $taxArray;
+                $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+            }
+
+            $orderLineItems[] = $item;
+            $orderValue += $netAmount;
+            $preTaxAmt += $amount;
+            $lineid++;
         }
+    }
+
+    if (array_key_exists('mailInFee', $results)) {
+        foreach ($results['mailInFee'] as $fee) {
+            // because it expects an array, the array of an empty element needs to be skipped
+            if ((!array_key_exists('amount', $fee)) || $fee['amount'] <= 0)
+                continue;
+            $itemName = 'Mail-in Fee for ' . $fee['name'];
+            $itemPrice = $fee['amount'];
+            $notesData = cc_mailFeeNotes($fee, $results['transid']);
+            if ($hasTax)
+                $netAmount = taxInclusiveAdjust('artShipping', $itemPrice);
+            else
+                $netAmount = $itemPrice;
+
+            $item = [
+                'uid' => 'region-' . $fee['name'],
+                'name' => mb_substr($itemName, 0, 128),
+                'quantity' => 1,
+                'note' => $notesData['note'],
+                'metadata' => $notesData['metadata'],
+                'basePriceMoney' => round($netAmount * $currencyMultiplier),
+            ];
+
+            // apply taxes to mail in fees based on the artShipping flag
+            if ($hasTax) {
+                // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                // need to determine the type of space
+                $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
+                if ($needTaxes == false)
+                    $needTaxes = count($taxArray) > 0;
+                $item['taxes'] = $taxArray;
+                $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+            }
+
+            $orderLineItems[] = $item;
+            $orderValue += $netAmount;
+            $preTaxAmt += $itemPrice;
+            $lineid++;
+        }
+    }
+
+    // TODO: if an item is in plan, set the plan discount to apply only to those line items
+    // if a plan, set a discount called deferred payment for plan to the amount not in this payment
+    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+        // deferment is total of the items - total of the payment
+        $deferment = $orderValue - $results['total'];
+        $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
+        // this is the down payment on a payment plan
+        $item = [
+            'uid' => 'planDeferment',
+            'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
+            'metadata' => $notesData['metadata'],
+            'type' => 'FixedAmount',
+            'amountMoney' => round($deferment * $currencyMultiplier),
+        ];
+        $discountAmt += $item['amountMoney'];
+        $orderDiscounts[] = $item;
+    }
 
 
     if ($locationId == null) {
@@ -632,11 +632,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $preTaxAmt;
     $rtn['netAmount'] = $orderValue;
-    $rtn['discountAmt'] = $discountAmt / $currencyMultiplier;
+    $rtn['discountAmt'] = round($discountAmt / $currencyMultiplier, 2);
 
     $rtnTaxes = [];
     foreach ($taxAmounts as $taxField => $tax) {
-        $rtnTaxes[$taxField]['tax'] = $tax['tax'] / $currencyMultiplier;
+        $rtnTaxes[$taxField]['tax'] = round($tax['tax'] / $currencyMultiplier, 2);
         $rtnTaxes[$taxField]['name'] = $tax['name'];
         $taxAmount += $tax['tax'];
     }
@@ -695,8 +695,8 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     $rtn = array();
     // need to pass back order id, total_amount
     $rtn['order'] = $order;
-    $rtn['discountAmt'] = $order['discountAmt'] / $currencyMultiplier;
-    $rtn['taxAmt'] = $order['taxAmount'] / $currencyMultiplier;
+    $rtn['discountAmt'] = round($order['discountAmt'] / $currencyMultiplier, 2);
+    $rtn['taxAmt'] = round($order['taxAmount'] / $currencyMultiplier, 2);
     // build the return array of taxes applied to the order
     $rtnTaxes = [];
     if ($rtn['taxAmt'] > 0) {
@@ -708,8 +708,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     }
 
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['totalAmt'] = $order['totalAmt'] / $currencyMultiplier;
-    $rtn['pretaxAmt'] = $rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']);
+    $rtn['pretaxAmt'] = round($rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']), 2);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order['orderId'];
     $rtn['version'] = $order['version'];
