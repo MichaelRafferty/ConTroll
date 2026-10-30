@@ -1071,14 +1071,27 @@ class Portal {
             amountDueName = 'cart is ';
         }
         this.#payDueSubmitButton.innerHTML = buttonName;
+        let taxAmt = paymentPlans.getTaxAmt();
+        let reduction = paymentPlans.getReduction();
+        let totalPreTax = this.#totalAmountDue - reduction;
         html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onclick='portal.makeOrder(null , ` +
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onclick='portal.makeOrder(null, ` +
             makeOrderOther + `);'>` +
                 buttonName + `</button></div>
         <div class="col-sm-auto">
-            <b>Your total` + this.#preTaxLabel + ` amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
+            <b>Your total` + this.#preTaxLabel + ` amount due for the ` + amountDueName +
+            this.#currencyFmt.format(Number(totalPreTax).toFixed(2)) + `</b>
         </div>
+`;
+        if (taxAmt > 0) {
+            html += `
+        <div class="col-sm-auto">
+            <b>Your estimated taxes are ` +  this.#currencyFmt.format(Number(taxAmt).toFixed(2)) + `</b>
+        </div>
+`;
+        }
+        html += `
     </div>
 `;
 

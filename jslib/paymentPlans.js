@@ -6,6 +6,9 @@ class PaymentPlans {
     // payment plan rules
     #paymentPlan = null;
     #matchingPlans = {};
+    #hasTaxes = false;
+    #taxAmt = 0;
+    #reduction = 0;
 
     // account holder payment plan items
     #payorPlan = null;
@@ -56,6 +59,15 @@ class PaymentPlans {
         }
     }
 
+    // get functions
+    getTaxAmt() {
+        return this.#taxAmt;
+    }
+
+    getReduction() {
+        return this.#reduction;
+    }
+
     // plansEligible: for which plans is a current cart eligible
     plansEligible(purchased = null, space = null) {
         let nonPlanAmt;
@@ -67,7 +79,51 @@ class PaymentPlans {
             return false;
 
         let matched = 0;
-        // how much is owed by the right type:
+        this.#hasTaxes = false;
+        this.#taxAmt = 0;
+        this.#reduction = 0;
+
+        if (purchased != null && purchased.length > 0) {
+            // loop over purchased setting netAmount for the later calculation
+            for (let mrow in purchased) {
+                let mem = purchased[mrow];
+                if (mem.status != 'unpaid') // can't add anything without a balance due to a plan, and plan is already covered in a different plan
+                    continue;
+                let taxType = mem.taxable == 'N' ? 'nontaxMem' : 'taxableMem';
+                let amount = Number(mem.price) - Number(mem.paid);
+                let reduction = 0;
+                if (config.inclusiveTax == 1 && amount > 0) {
+                    for (let trow in config.taxRates) {
+                        let rate = config.taxRates[trow];
+                        if (rate.taxType == 'E' || rate.rate == 0)
+                            continue;
+                        if (rate.taxItems[taxType].taxable == 'N')
+                            continue;
+
+                        let ded = (amount - (amount / (1 + (rate.rate/100))));
+
+                        reduction += Math.round(ded * 100) / 100;
+                    }
+                }
+                purchased[mrow].netAmount = Math.round((amount - reduction) * 100) / 100;
+                this.#reduction += reduction;
+
+                // now compute the tax for this item
+                let tax = 0;
+                for (let trow in config.taxRates) {
+                    let rate = config.taxRates[trow];
+                    if (rate.taxItems[taxType].taxable == 'Y') {
+                        tax += Math.round(purchased[mrow].netAmount * rate.rate) / 100;
+                    }
+                }
+                purchased[mrow].taxes = Math.round((tax) * 100) / 100;
+                this.#taxAmt += purchased[mrow].taxes;
+            }
+            this.#taxAmt = Math.round((this.#taxAmt) * 100) / 100;
+            this.#reduction = Math.round((this.#reduction) * 100) / 100;
+            if (this.#taxAmt > 0)
+                this.#hasTaxes = true;
+        }
 
         for (let prow in keys) {
             let plan = paymentPlanList[keys[prow]];
@@ -99,14 +155,11 @@ class PaymentPlans {
                             eligible = false;
                     }
 
-                    if (mem.taxable != 'N')
-                        eligible = false;
-
                     // ignore coupon discount, it's handled later in the calc
                     if (eligible) {
-                        planAmt += Number(mem.price) - Number(mem.paid);
+                        planAmt += mem.netAmount;
                     } else {
-                        nonPlanAmt += Number(mem.price) - Number(mem.paid);
+                        nonPlanAmt += mem.netAmount;
                         notInPlanItems += '<br/>' + mem.fullName + ', ' + mem.label + ', ' +
                             this.#currencyFmt.format((Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount))).toFixed(2));
                     }
@@ -143,7 +196,7 @@ class PaymentPlans {
             if ((downPayment + Number(plan.minPayment)) >= planAmt) // not eligible for plan
                 continue;
 
-            let dueToday = nonPlanAmt + downPayment;
+            let dueToday = nonPlanAmt + downPayment + this.#taxAmt;
             let balanceDue = planAmt - downPayment;
 
             // compute maximum number of payments allowd
@@ -194,7 +247,7 @@ class PaymentPlans {
             this.#matchingPlans[plan.id] = {
                 id: plan.id, plan: plan,
                 planAmt: planAmt, nonPlanAmt: nonPlanAmt, downPayment: downPayment, dueToday: dueToday, maxPayments: maxPayments, daysBetween: daysBetween,
-                balanceDue: balanceDue, paymentAmt: paymentAmt, finalPaymentAmt: finalPaymentAmt, numPayments: numPayments,
+                balanceDue: balanceDue, paymentAmt: paymentAmt, finalPaymentAmt: finalPaymentAmt, numPayments: numPayments, taxAmt: this.#taxAmt,
                 notInPlanItems: notInPlanItems != '' ?  'Not in Plan:' + notInPlanItems : '',
             }
             matched++;
@@ -229,13 +282,15 @@ class PaymentPlans {
         if (keys.length == 0)
             return '';
 
+        let taxStr = this.#hasTaxes ? ' Including Taxes' : '';
+
         let html = '<div class="row mt-2"><div class="col-sm-12"><b>Payment Plans Available:</b></div>' + `
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Plan Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Minimum Down Payment</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>Due Today</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>Due Today` + taxStr + `</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Balance Due</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Maximum Number Payments</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Max Days Between Payments</b></div>

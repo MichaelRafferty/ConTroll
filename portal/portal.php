@@ -100,8 +100,23 @@ if (array_key_exists('onedaycoupons', $con)) {
 } else {
     $onedaycoupons = 0;
 }
+// compute if there are inclusive taxs on membership items.  Portal only cares about membership items, the rest apply to other areas
+$taxes = getTaxRates();
+$mbrTaxes = [];
+$inclusiveTax = 0;
+foreach ($taxes as $tax) {
+    if ($tax['taxType'] != 'I')
+        continue;   // skip over exclusive taxes, looking only at inclusive ones, and getTaxRates skips inactive ones
+
+    if ($tax['taxItems']['taxableMem']['taxable'] == 'Y' || $tax['taxItems']['nontaxMem']['taxable'] == 'Y') {
+        $inclusiveTax = 1;  // we found an inclusive on, stop here.
+        break;
+    }
+}
+
 $config_vars['onedaycoupons'] = $onedaycoupons;
-$config_vars['taxRates'] = getTaxRates();
+$config_vars['taxRates'] = $taxes;
+$config_vars['inclusiveTax'] = $inclusiveTax;
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['ccCurrency'] = cc_getCurrency();
