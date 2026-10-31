@@ -45,6 +45,7 @@ var pay_currentOrderId = null;
 var pay_InitialCart = true;
 var discount_mode = 'none';
 var total_art_due = 0;
+var netAmount = 0;
 var total_tax_due = 0;
 var total_amount_due = 0;
 var display_art_due = 0;
@@ -433,9 +434,10 @@ function buildOrder() {
 function buildOrderSuccess(data) {
     pay_currentOrderId = data.rtn.orderId;
     total_art_due = data.rtn.preTaxAmt;
+    netAmount = data.rtn.netAmount;
     total_tax_due = data.rtn.taxAmt;
     total_amount_due = data.rtn.totalAmt;
-    display_art_due = total_art_due;
+    display_art_due = data.rtn.netAmount;
     display_tax_due = total_tax_due;
     display_amount_due = total_amount_due;
     taxes = data.rtn.taxes;
@@ -1887,6 +1889,7 @@ function pay(nomodal, prow = null, nonce = null) {
         override: payOverride,
         poll: payPoll,
         preTaxAmt: total_art_due,
+        netAmount: netAmount,
         taxAmt: total_tax_due,
         totalAmtDue: display_amount_due,
         cashRound: cashAmountRounded,

@@ -114,15 +114,20 @@ if (array_key_exists('pretax', $new_payment))
 else
     $preTaxAmt = $amt;
 
+if (array_key_exists('netAmount', $_POST))
+    $netAmount = $_POST['netAmount'];
+else
+    $netAmount = $amt;
+
 if (array_key_exists('tax', $new_payment))
     $taxAmt = $new_payment['tax'];
 else
     $taxAmt = 0;
 
-$offset = $amt - ($preTaxAmt + $taxAmt + $cashAmountRounded);
+$offset = $amt - ($netAmount + $taxAmt + $cashAmountRounded);
 if (abs($offset) > 0.008) {
-    error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    error_log("Invalid payment amount passed: netAmount ($netAmount) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    ajaxError("Invalid payment amount passed: netAmount ($netAmount) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     return;
 }
 
@@ -307,6 +312,7 @@ if ($amt > 0) {
             'taxAmt' => $taxAmt,
             'taxes' => $taxes,
             'preTaxAmt' => $preTaxAmt,
+            'netAmount' => $netAmount,
             'total' => $amt,
             'orderId' => $orderId,
             'nonce' => $nonce,
@@ -426,15 +432,6 @@ EOS;
                 default:
                     $paymentType = 'other';
             }
-            if (array_key_exists('preTaxAmt', $_POST))
-                $preTaxAmt = $_POST['preTaxAmt'];
-            else
-                $preTaxAmt = $_POST['totalAmtDue'];
-
-            if (array_key_exists('taxAmt', $_POST))
-                $taxAmt = $_POST['taxAmt'];
-            else
-                $taxAmt = 0;
 
             if ($desc == '')
                 $desc = $new_payment['desc'];
@@ -517,6 +514,7 @@ EOS;
     $approved_amt = $rtn['amount'];
     $type = $rtn['paymentType'];
     $preTaxAmt = $rtn['preTaxAmt'];
+    $netAmount = $rtn['netAmount'];
     $taxAmt = $rtn['taxAmt'];
     $paymentId = $rtn['paymentId'];
     $receiptUrl = $rtn['url'];
@@ -553,12 +551,12 @@ EOS;
         $taxSql = ", $taxSql";
 
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, netAmount, time, cc_approval_code, cashier,
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,?,?,'cashier',?,?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'isssdddsissssssiss' . $taxStr;
-    $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+    $typestr = 'isssddddsissssssiss' . $taxStr;
+    $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $netAmount, $auth, $user_perid,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
 
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));
@@ -578,17 +576,17 @@ $response['message'] = "1 payment added";
 $index = 0;
 $updArtSalesSQL = <<<EOS
 UPDATE artSales
-SET paid = ?, transid = ?, quantity = ?, amount = ?
+SET paid = ?, transid = ?, quantity = ?, amount = ?, netAmount = ?, totalTax = ?
 WHERE id = ?;
 EOS;
-$atypestr = 'diidi';
+$atypestr = 'diidssi';
 
 $updArtSalesQtySQL = <<<EOS
 UPDATE artSales
-SET quantity = ?, amount = ?
+SET quantity = ?, amount = ?, netAmount = ?, totalTax = ?
 WHERE id = ?;
 EOS;
-$aqtypestr = 'idi';
+$aqtypestr = 'idssi';
 
 $updQuantitySQL = <<<EOS
 UPDATE artItems
@@ -681,6 +679,7 @@ $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ",
 $response['approved_amt'] = $rtn['amount'];
 $response['type'] = $rtn['paymentType'];
 $response['preTaxAmt'] = $rtn['preTaxAmt'];
+$response['netAmount'] = $rtn['netAmount'];
 $response['taxAmt'] = $rtn['taxAmt'];
 $response['cart_art'] = $cart_art;
 $response['cashAmountRounded'] = $cashAmountRounded;

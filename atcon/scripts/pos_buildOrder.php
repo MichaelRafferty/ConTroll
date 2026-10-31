@@ -202,14 +202,15 @@ $taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
+SET price = ?, tax = ?, withTax = ?,  netPrice = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
 $preTax = $rtn['preTaxAmt'];
+$netAmount = $rtn['netAmount'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
-$valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
-$typeStr = 'dddds' . $taxStr . 'i';
+$valArray = array($preTax, $taxAmt, $withTax, $netAmount, 0, $rtn['orderId']);
+$typeStr = 'ddddds' . $taxStr . 'i';
 $valArray = array_merge($valArray, $taxValues);
 $valArray[] = $transId;
 

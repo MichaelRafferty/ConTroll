@@ -117,7 +117,6 @@ $results = array(
     'artSales' => 1,
     'price' => $totalAmountDue,
     'art' => $art,
-    'total' => $amount,
     'totalPaid' => $totalPaid,
     'payorId' => $payorId,
     'discount' => 0,
@@ -156,18 +155,55 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 
+// update the cart_art structure and the art sales items
+$items = $rtn['items'];
+$currency = cc_getCurrency();
+$currencyMultiplier = get_currencyMultiplier($currency);
+for ($index = 0; $index < COUNT($cart_art); $index++) {
+    $row = $cart_art[$index];
+
+    // find the matching order line
+    $matchItem = null;
+    foreach ($items as $item) {
+        if ($item['metadata']['artId'] == $row['id']) {
+            $matchItem = $item;
+            break;
+        }
+    }
+
+    if ($matchItem === null) {
+        error_log("cannot find item " . $row['id'] . " in order list, order id " . $rtn['orderId']);
+        continue;
+    }
+
+    $itemPrice = $matchItem['basePriceMoney'];
+    $taxAmts = $matchItem['taxAmounts'];
+    if (is_array($itemPrice) && array_key_exists('amount', $itemPrice)) {
+        $money = $itemPrice['amount'] / $currencyMultiplier;
+        $itemTax = $taxAmts['totalTax']['amount'] / $currencyMultiplier;
+    } else {
+        $money = $itemPrice / $currencyMultiplier;
+        $itemTax = $taxAmts['totalTax'] / $currencyMultiplier;
+    }
+    $cart_art[$index]['netAmount'] = round($money, 2);
+    $cart_art[$index]['totalTax'] = round($itemTax, 2);
+}
+
+$response['cart_art'] = $cart_art;
+
 $taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
+SET price = ?, tax = ?, withTax = ?, netPrice = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
 $preTax = $rtn['preTaxAmt'];
+$netAmount = $rtn['netAmount'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
-$valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
-$typeStr = 'dddds' . $taxStr . 'i';
+$valArray = array($preTax, $taxAmt, $withTax, $netAmount, 0, $rtn['orderId']);
+$typeStr = 'ddddds' . $taxStr . 'i';
 $valArray = array_merge($valArray, $taxValues);
 $valArray[] = $transId;
 
