@@ -713,7 +713,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
     }
 
     $rtn['taxes'] = $rtnTaxes;
-    $rtn['pretaxAmt'] = round($rtn['totalAmt'] - ($rtn['discountAmt'] + $rtn['taxAmt']), 2);
+    $rtn['pretaxAmt'] = round($order['totalAmt'] - ($order['discountAmt'] + $order['taxAmt']), 2);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order['orderId'];
     $rtn['version'] = $order['version'];
