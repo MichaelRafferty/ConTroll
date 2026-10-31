@@ -39,6 +39,7 @@ class Pos {
     #cc_html = '';
     #pay_currentOrderId = null;
     #preTaxAmt = null;
+    #netAmount = null;
     #taxAmt = null;
     #taxes = '';
     #totalPaid = null;
@@ -2234,9 +2235,11 @@ class Pos {
     buildOrderSuccess(data) {
         this.#pay_currentOrderId = data.rtn.orderId;
         this.#preTaxAmt = data.rtn.preTaxAmt;
+        this.#netAmount = data.rtn.netAmount;
         this.#taxAmt = data.rtn.taxAmt;
         this.#taxes = data.rtn.taxes;
         this.#totalPaid = data.rtn.totalPaid;
+        this.#totalAmountDue = data.rtn.totalAmountDue;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         if (this.#payForcePayShown) {
@@ -2492,8 +2495,6 @@ class Pos {
         let ptype = null;
         let crow = null;
         let cprow = null;
-        this.#totalAmountDue = Number(this.#preTaxAmt) + Number(this.#taxAmt) + Number(this.#cashAmountRounded) -
-            (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
 
@@ -2732,6 +2733,7 @@ class Pos {
             pay_tid: this.#pay_tid,
             pay_tid_amt: this.#pay_tid_amt,
             preTaxAmt: this.#preTaxAmt,
+            netAmount: this.#netAmount,
             taxAmt: this.#taxAmt,
             cashRound: this.#cashAmountRounded,
             totalAmtDue: this.#totalAmountDue,
@@ -3232,8 +3234,8 @@ class Pos {
         let unpaidCouponDiscount = cart.getTotalCouponDiscountUnpaid();
         if (unpaidCouponDiscount === this.#couponDiscount)
             totalPaid -= this.#couponDiscount; // if it's in the membership rows,
-        this.#totalAmountDue = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
-        if (this.#totalAmountDue < 0.01) { // allow for rounding error, no need to round here
+        let totalAmountDue = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        if (totalAmountDue < 0.01) { // allow for rounding error, no need to round here
             this.#pay_currentOrderId = null;
             // nothing more to pay
             if (this.#print_tab)
@@ -3340,7 +3342,7 @@ class Pos {
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">` +
-                this.#currencyFmt.format(Number(this.#preTaxAmt).toFixed(2)) + `</div>
+                this.#currencyFmt.format(Number(this.#netAmount).toFixed(2)) + `</div>
     </div>
 `;
             if (this.#managerDiscount > 0) {
@@ -3353,7 +3355,7 @@ class Pos {
 `;
             }
             if (this.#couponDiscount > 0) {
-                let pretax = Number(this.#preTaxAmt) - Number(this.#couponDiscount);
+                let netAmt = Number(this.#netAmount) - Number(this.#couponDiscount);
                 pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
@@ -3363,7 +3365,7 @@ class Pos {
        <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Pre-Tax:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">` +
-                    this.#currencyFmt.format(Number(pretax).toFixed(2)) + `</div>
+                    this.#currencyFmt.format(Number(netAmt).toFixed(2)) + `</div>
     </div>
 `;
             }

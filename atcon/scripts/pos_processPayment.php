@@ -103,12 +103,18 @@ if (array_key_exists('cashRound', $_POST))
 else
     $cashAmountRounded = 0;
 
-if (array_key_exists('preTaxAmt', $_POST)) {
-    $preTaxAmt = $_POST['preTaxAmt'];
-    $totalAmtDue = $preTaxAmt + $cashAmountRounded;
+if (array_key_exists('netAmount', $_POST)) {
+    $netAmount = $_POST['netAmount'];
+    $totalAmtDue = $netAmount + $cashAmountRounded;
 } else {
     $totalAmtDue = $_POST['totalAmtDue'];
-    $preTaxAmt = $totalAmtDue - $cashAmountRounded;
+    $netAmount = $totalAmtDue - $cashAmountRounded;
+}
+
+if (array_key_exists('preTaxAmt', $_POST)) {
+    $preTaxAmt = $_POST['preTaxAmt'];
+} else {
+    $totalAmtDue = $_POST['totalAmtDue'];
 }
 
 if (array_key_exists('taxAmt', $_POST))
@@ -126,10 +132,10 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-$offset = $amt - ($preTaxAmt + $taxAmt + $cashAmountRounded - ($couponDiscount + $discountAmt));
+$offset = $amt - ($netAmount + $taxAmt + $cashAmountRounded - ($couponDiscount + $discountAmt));
 if (abs($offset) > 0.008) {
-    error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
-    ajaxSucess(array('error' => "Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
+    error_log("Invalid payment amount passed: netAmount ($netAmount) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    ajaxSucess(array('error' => "Invalid payment amount passed: netAmount ($netAmount) + Tax ($taxAmt) != Amount ($amt), offset = $offset"));
     exit();
 }
 
@@ -290,6 +296,7 @@ if ($amt > 0) {
                     $rtn['amount'] = $amt;
                     $rtn['paymentType'] = 'discount';
                     $rtn['preTaxAmt'] = $preTaxAmt;
+                    $rtn['netAmount'] = $netAmount;
                     $rtn['taxAmt'] = $taxAmt;
                     $rtn['paymentId'] = null;
                     $rtn['url'] = null;
@@ -316,6 +323,7 @@ if ($amt > 0) {
                 $rtn['amount'] = $amt;
                 $rtn['paymentType'] = 'credit';
                 $rtn['preTaxAmt'] = $preTaxAmt;
+                $rtn['netAmount'] = $netAmount;
                 $rtn['taxAmt'] = $taxAmt;
                 $rtn['paymentId'] = null;
                 $rtn['url'] = null;
@@ -357,6 +365,7 @@ if ($amt > 0) {
                 'taxAmt' => $taxAmt,
                 'taxes' => $taxes,
                 'preTaxAmt' => $preTaxAmt,
+                'netAmount' => $netAmount,
                 'total' => $paymentAmt,
                 'orderId' => $orderId,
                 'nonce' => $nonce,
@@ -578,6 +587,7 @@ EOS;
     $approved_amt = $rtn['amount'];
     $type = $rtn['paymentType'];
     $preTaxAmt = $rtn['preTaxAmt'];
+    $netAmount = $rtn['netAmount'];
     $taxAmt = $rtn['taxAmt'];
     $paymentId = $rtn['paymentId'];
     $receiptUrl = $rtn['url'];
@@ -609,16 +619,16 @@ EOS;
 
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, netAmount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
-VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?,?,?,?,'cashier',?,?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $typestr = 'isssdddsissssssiss';
+    $typestr = 'isssddddsissssssiss';
 
     // coupon payment if it exist
     if ($couponPayment != null) {
-        $paramarray = array ($master_tid, 'coupon', $category, $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
-            null, null, null, null, null, null, $user_perid, 'APPLIED', null);
+        $paramarray = array ($master_tid, 'coupon', $category, $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'],
+            $couponPayment['amt'], null, $user_perid, null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
         if ($new_pid === false) {
@@ -628,8 +638,8 @@ EOS;
     }
 
     if ($drow != null) {
-        $paramarray = array ($master_tid, 'discount', $category, $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
-            null, null, null, null, null, null, $user_perid, 'APPLIED', null);
+        $paramarray = array ($master_tid, 'discount', $category, $drow['desc'], $drow['amt'], 0, $drow['amt'], $drow['amt'], null,
+            $user_perid, null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
         if ($new_pid === false) {
@@ -647,12 +657,12 @@ EOS;
             $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, netAmount, time, cc_approval_code, cashier,
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,?,?,'cashier',?,?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-        $typestr = 'isssdddsissssssiss' . $taxStr;
-        $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+        $typestr = 'isssddddsissssssiss' . $taxStr;
+        $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $netAmount, $auth, $user_perid,
             $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
 
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));

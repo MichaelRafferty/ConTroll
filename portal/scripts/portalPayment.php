@@ -289,13 +289,13 @@ if ($amount > 0) {
         $taxSql = ", $taxSql";
 
     $txnQ = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, netAmount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,'reg',?,'portal',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,'reg',?,'portal',?,?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'issdddsissssssiss' . $taxStr;
+    $typestr = 'issddSdsissssssiss' . $taxStr;
     $cashier = $loginType == 'p' ? $loginId : null;
-    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $cashier,
+    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $netAmount, $auth, $cashier,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
     $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
     $approved_amt = $rtn['amount'];
@@ -307,11 +307,11 @@ EOS;
 if ($webCouponDiscount > 0) {
     // Insert the payment record for the coupon
     $ipQ = <<<EOS
-INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
-VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, netAmount, time, status) 
+VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, ?, now(), 'APPLIED');
 EOS;
     $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
-        $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $webCouponDiscount, $webCouponDiscount));
+        $cpmtID = dbSafeInsert($ipQ, 'isdDd', array($transId, $couponDesc, $webCouponDiscount, $webCouponDiscount, $webCouponDiscount));
     $coupon['totalDiscount'] = $webCouponDiscount;
 }
 
