@@ -18,12 +18,8 @@
 
     $condata = get_con();
     $conid = $condata['id'];
-    $conf = get_conf('con');
-    $portal_conf = get_conf('portal');
-    $ini = get_conf('reg');
-    $log = get_conf('log');
     load_cc_procs();
-    logInit($log['reg']);
+    logInit(getConfValue('log', 'reg'));
 
     $response['conid'] = $conid;
 
@@ -69,8 +65,12 @@
 
     $plan = $_POST['plan'];
     $newPlan = $_POST['newplan'];
-    $amount = $_POST['amount'];
     $planRec = $_POST['planRec'];
+    if ($newPlan == 1) {
+        $amount = $planRec['dueToday'];
+        $total = $planRec['totalAmountDue'];
+    } else
+        $amount = $_POST['amount'];
     $existingPlan = $_POST['existingPlan'];
     $planPayment = $_POST['planPayment'];
 

@@ -361,13 +361,13 @@ class PaymentPlans {
         }
 
 
-        match.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
-        match.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
-        match.daysÏBetween = match.daysBetween;
-        match.paymentAmt = match.paymentAmt.toFixed(2) + ``;
-        match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2) + ``;
-        match.balanceDue = match.balanceDue.toFixed(2) + ``;
-        match.downPayment = match.downPayment.toFixed(2) + ``;
+        match.totalAmountDue = (match.nonPlanAmt + match.planAmt + match.taxAmt).toFixed(2) ;
+        match.currentPayment = (match.nonPlanAmt + match.downPayment + match.taxAmt).toFixed(2);
+        match.daysBetween = match.daysBetween;
+        match.paymentAmt = match.paymentAmt.toFixed(2);
+        match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2); 
+        match.balanceDue = match.balanceDue.toFixed(2) ;
+        match.downPayment = match.downPayment.toFixed(2) ;
         match.new = true;
         portal.makeOrder(match);
     }
@@ -474,13 +474,13 @@ class PaymentPlans {
                 break;
         }
 
-        this.#computedPlan.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
-        this.#computedPlan.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
+        this.#computedPlan.totalAmountDue = (match.nonPlanAmt + match.planAmt).tofixed(2);
+        this.#computedPlan.currentPayment = (match.nonPlanAmt + match.downPayment).tofixed(2);
         this.#computedPlan.numPayments = match.maxPayments;
         this.#computedPlan.daysBetween = match.daysBetween;
-        this.#computedPlan.paymentAmt = match.paymentAmt.toFixed(2) + ``;
-        this.#computedPlan.balanceDue = match.balanceDue.toFixed(2) + ``;
-        this.#computedPlan.downPayment = match.downPayment.toFixed(2) + ``;
+        this.#computedPlan.paymentAmt = match.paymentAmt.tofixed(2);
+        this.#computedPlan.balanceDue = match.balanceDue.tofixed(2);
+        this.#computedPlan.downPayment = match.downPayment.tofixed(2);
 
         this.#customizePlanBody.innerHTML = html;
         this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment;

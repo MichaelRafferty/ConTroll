@@ -20,13 +20,9 @@ $response = array('post' => $_POST, 'get' => $_GET);
 
 $condata = get_con();
 $conid=$condata['id'];
-$conf = get_conf('con');
-$portal_conf = get_conf('portal');
-$ini = get_conf('reg');
-$log = get_conf('log');
 load_cc_procs();
 load_email_procs();
-logInit($log['reg']);
+logInit(getConfValue('log', 'reg'));
 
 $response['conid'] = $conid;
 
@@ -224,7 +220,7 @@ if ($order != null) {
 
     $customerId = $order['customerId'];
 } else
-    $customerId = $conf['id'] . "-$loginType-$loginId";
+    $customerId = $condata['id'] . "-$loginType-$loginId";
 
 if ($amount > 0) {
     $results = array (
@@ -475,7 +471,7 @@ EOS;
     $canUpd = dbSafeCmd($wfQ, 'ss', array($wsfsNom, $wsfs));
 }
 
-$return_arr = send_email($conf['regadminemail'],
+$return_arr = send_email(getConfValue('con', 'regadminemail'),
     trim($info['email_addr']), /* cc */ getConfValue('con', 'regconfirmcc', null),
     /* subject */ $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ $bodyHtml);
 
