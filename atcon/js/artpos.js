@@ -42,6 +42,7 @@ var pay_button_rcpt = null;
 var pay_button_ercpt = null;
 var pay_tid = null;
 var pay_currentOrderId = null;
+var pay_currentCart = null;
 var pay_InitialCart = true;
 var discount_mode = 'none';
 var total_art_due = 0;
@@ -342,6 +343,7 @@ function startOver(reset_all) {
     receiptEmailAddresses_div = null;
     pay_tid = null;
     pay_currentOrderId = null;
+    pay_currentCart = null;
     pay_InitialCart = true;
 
     // clear the credit card stuff
@@ -399,6 +401,7 @@ function buildOrder() {
     if (pay_currentOrderId) {
         postData.cancelOrder = pay_currentOrderId;
         pay_currentOrderId = null;
+        pay_currentCart = null;
     }
 
     clear_message();
@@ -433,6 +436,7 @@ function buildOrder() {
 
 function buildOrderSuccess(data) {
     pay_currentOrderId = data.rtn.orderId;
+    pay_currentCart = data.cart_art;
     total_art_due = data.rtn.preTaxAmt;
     netAmount = data.rtn.netAmount;
     total_tax_due = data.rtn.taxAmt;
@@ -1874,8 +1878,7 @@ function pay(nomodal, prow = null, nonce = null) {
         }
     }
     // process payment
-    let art = cart.getCartArt();
-    let artJSON = JSON.stringify(art);
+    let artJSON = JSON.stringify(pay_currentCart);
     let postData = {
         ajax_request_action: 'processPayment',
         cart_art: artJSON,
@@ -2697,6 +2700,7 @@ function onExit() {
         let currentOrder = pay_currentOrderId;
         let user_id = user_id;
         pay_currentOrderId = null;
+        pay_currentCart = null;
         // cancel terminal request
         let postData = {
             ajax_request_action: 'cancelPayRequest',
@@ -2809,6 +2813,7 @@ function onExit() {
             }
         });
         pay_currentOrderId = null;
+        pay_currentCart = null;
     }
     startOver(1);
     return true;

@@ -579,14 +579,14 @@ UPDATE artSales
 SET paid = ?, transid = ?, quantity = ?, amount = ?, netAmount = ?, totalTax = ?
 WHERE id = ?;
 EOS;
-$atypestr = 'diidssi';
+$atypestr = 'diidddi';
 
 $updArtSalesQtySQL = <<<EOS
 UPDATE artSales
 SET quantity = ?, amount = ?, netAmount = ?, totalTax = ?
 WHERE id = ?;
 EOS;
-$aqtypestr = 'idssi';
+$aqtypestr = 'idddi';
 
 $updQuantitySQL = <<<EOS
 UPDATE artItems
@@ -625,7 +625,8 @@ foreach ($cart_art as $cart_row) {
         $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;
         $amt -= $amt_paid;
-        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
+        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'],
+            $cart_row['netAmount'], $cart_row['totalTax'], $cart_row['artSalesId']));
 
         // change status of items sold, decrease quantity of print items
         if (round($cart_row['amount'],2) == round($cart_row['paid'],2)) {
@@ -651,7 +652,8 @@ foreach ($cart_art as $cart_row) {
         }
     } else {
         if (array_key_exists('updSales', $cart_row) && $cart_row['updSales'] == true) {
-            $upd_rows += dbSafeCmd($updArtSalesQtySQL, $aqtypestr, array($quantity, $cart_row['amount'], $cart_row['artSalesId']));
+            $upd_rows += dbSafeCmd($updArtSalesQtySQL, $aqtypestr, array($quantity, $cart_row['amount'], $cart_row['netAmount'],
+                $cart_row['totalTax'], $cart_row['artSalesId']));
         }
     }
 }
