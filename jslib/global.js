@@ -49,9 +49,11 @@ function show_message(message, type = 'success', div='result_message') {
     message_div.innerHTML = message;
     console.log(message);
 
-    setTimeout(function() {
-        message_div.scrollIntoView({block: 'nearest', inline: 'start'})
-    }, 100);
+    if (type === 'warn' || type === 'error') {
+        setTimeout(function() {
+            message_div.scrollIntoView({block: 'nearest', inline: 'start'})
+        }, 100);
+    }
 }
 
 function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
@@ -108,7 +110,7 @@ function validateAddress(addr) {
     return false;
 }
 
-// convert a form post string to an arrray
+// convert a form post string to an array
 // convert url parameters to associative array
 function URLparamsToArray(urlargs, doTrim = false) {
     const params = new URLSearchParams(urlargs);
@@ -250,6 +252,9 @@ function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
 
 // cconvert arbitary js date string to database date format (YYYY-MM-DD HH:MM:SS)
 function toDBdate(datestr) {
+    if (datestr == null || datestr == '')
+        return '';
+
     jsDate = new Date(datestr);
     let newdate = String(jsDate.getFullYear()) + '-' +
         String(jsDate.getMonth() + 1).padStart(2, '0') + '-' +
@@ -258,4 +263,55 @@ function toDBdate(datestr) {
         String(jsDate.getMinutes()).padStart(2, '0') + ':' +
         String(jsDate.getSeconds()).padStart(2, '0');
     return newdate;
+}
+
+
+window.onerror = (message, source, lineno, colno, error) => {
+    if (lineno == 0 && colno == 0) {
+        console.error(type + ': ' + message + ' from ' + source);
+        return true;
+    }
+    logConTrollJSError({
+        type: 'error',
+        message: message,
+        source: source,
+        lineno: lineno,
+        colno: colno,
+        stack: error?.stack,
+    });
+    return true;
+};
+
+// Resource loading errors and cross-origin script errors
+window.addEventListener('error', (event) => {
+    if (event instanceof ErrorEvent) {
+        // Handled by window.onerror above; skip duplicate
+        return;
+    }
+    logConTrollJSError({
+        type: 'resource',
+        message: `Failed to load ${event.target.tagName}: ${event.target.src}`,
+        stack: null,
+    });
+});
+
+// Unhandled Promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    logConTrollJSError({
+        type: 'unhandledRejection',
+        message: typeof event.reason === 'string'
+            ? event.reason
+            : event.reason?.message || 'Unknown rejection',
+        stack: event.reason?.stack,
+    });
+    event.preventDefault();
+});
+
+function logConTrollJSError(info) {
+    console.error(info);
+    $.ajax({
+        url: "scripts/logError.php",
+        data: info,
+        method: "POST"
+    })
 }
