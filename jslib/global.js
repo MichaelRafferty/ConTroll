@@ -49,9 +49,11 @@ function show_message(message, type = 'success', div='result_message') {
     message_div.innerHTML = message;
     console.log(message);
 
-    setTimeout(function() {
-        message_div.scrollIntoView({block: 'nearest', inline: 'start'})
-    }, 100);
+    if (type === 'warn' || type === 'error') {
+        setTimeout(function() {
+            message_div.scrollIntoView({block: 'nearest', inline: 'start'})
+        }, 100);
+    }
 }
 
 function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
