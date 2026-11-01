@@ -164,8 +164,17 @@ for ($index = 0; $index < COUNT($cart_art); $index++) {
 
     // find the matching order line
     $matchItem = null;
-    foreach ($items as $item) {
-        if ($item['metadata']['artId'] == $row['id']) {
+    for ($itemIndex = 0; $itemIndex < COUNT($items); $itemIndex++) {
+        $item = $items[$itemIndex];
+        if (array_key_exists('metadata', $item))
+            $meta = $item['metadata']; // cc_test
+        else {
+            // cc_stripe
+            $metas = $rtn['order']['metadata'];
+            $metaName = 'im' . ($itemIndex + 1);
+            $meta = json_decode($metas[$metaName], true, 512, JSON_THROW_ON_ERROR);
+        }
+        if ($meta['artId'] == $row['id']) {
             $matchItem = $item;
             break;
         }
@@ -176,14 +185,20 @@ for ($index = 0; $index < COUNT($cart_art); $index++) {
         continue;
     }
 
-    $itemPrice = $matchItem['basePriceMoney'];
-    $taxAmts = $matchItem['taxAmounts'];
-    if (is_array($itemPrice) && array_key_exists('amount', $itemPrice)) {
-        $money = $itemPrice['amount'] / $currencyMultiplier;
-        $itemTax = $taxAmts['totalTax']['amount'] / $currencyMultiplier;
-    } else {
-        $money = $itemPrice / $currencyMultiplier;
-        $itemTax = $taxAmts['totalTax'] / $currencyMultiplier;
+    if (array_key_exists('basepriceMoney', $matchItem)) { // cc_test
+        $itemPrice = $matchItem['basePriceMoney'];
+        $taxAmts = $matchItem['taxAmounts'];
+        if (is_array($itemPrice) && array_key_exists('amount', $itemPrice)) {
+            $money = $itemPrice['amount'] / $currencyMultiplier;
+            $itemTax = $taxAmts['totalTax']['amount'] / $currencyMultiplier;
+        } else {
+            $money = $itemPrice / $currencyMultiplier;
+            $itemTax = $taxAmts['totalTax'] / $currencyMultiplier;
+        }
+    }
+    if (array_key_exists('unit_cost', $matchItem)) { // cc_stripe
+        $money = $matchItem['unit_cost'] / $currencyMultiplier;
+        $itemTax = $matchItem['tax']['total_tax_amount'] / $currencyMultiplier;
     }
     $cart_art[$index]['netAmount'] = round($money, 2);
     $cart_art[$index]['totalTax'] = round($itemTax, 2);
