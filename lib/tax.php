@@ -48,7 +48,7 @@ EOS;
 }
 
 // are there non zero rates in taxList?
-function hasTaxRates() {
+function hasTaxRates() : bool {
     global $taxRates;
 
     getTaxRates();
@@ -114,7 +114,8 @@ function buildSquareAppliedTaxArray($taxitem = '', $lineid = 0) : array {
     return $taxArray;
 }
 
-function buildCCAppliedTaxArray($taxitem = '', $lineid = 0) : array {
+// produce the tax array for stripe and test
+function buildCCAppliedTaxArray($taxitem = '') : array {
     global $taxRates;
 
     getTaxRates();
@@ -290,27 +291,59 @@ function taxInclusiveAdjust($type, $amount) {
     global $taxRates;
 
     getTaxRates();
-    $reduction = 0;
+    $tax = 0;
+    $inclusiveRates = 0;
 
+    // first get the overall inclusive item, based on the sum of all the inclusive tax rates
+    foreach ($taxRates as $tax) {
+        if ($tax['taxType'] == 'E' || $tax['rate'] == 0)
+            continue;   // no net amount to reduce
+        if ($tax['taxItems'][$type]['taxable'] == 'N')
+            continue;   // tax does not apply to this item, no amount to reduce
+        $inclusiveRates += $tax['rate'];
+    }
+
+    // now compute the first pass at the net price
+    $reduction = round($amount - ($amount / (1 + ($inclusiveRates/100))), 2);
+    $netAmount = round($amount - $reduction, 2);
+    /*
+     * Alternate code to reduct the net amount to hold all the taxes
+     *
+    // now return to compute each item
     foreach ($taxRates as $tax) {
         if ($tax['taxType'] == 'E' || $tax['rate'] == 0)
             continue;   // no net amount to reduce
         if ($tax['taxItems'][$type]['taxable'] == 'N')
             continue;   // tax does not apply to this item, no amount to reduce
 
-        $reduction += round($amount - ($amount / (1 + ($tax['rate']/100))), 2);
+        $tax += round($amount * $tax['rate'] / 100, 2);
     }
-    return round($amount - $reduction, 2);
+    $offset = round($netAmount + $tax, 2) - $amount;
+    if ($offset > 0)
+        $netAmount = round($netAmount - $offset, 2);
+     *
+     * end the alternate code
+     */
+    return $netAmount;
 }
 
 function computeTotalTax(&$items) {
     $taxableAmounts = array();
     $taxes = array();
     $rates = array();
-    $maxItem = array();
-    $maxes = array();
+    $maxItem = array('netPrice' => null);
+    $maxes = array('netPrice' => 0);
+    $totalPrice = 0;
+    $totalNetPrice = 0;
     // compute the total of each line item taxes as computed by computeTax
     foreach ($items as $item) {
+        $totalPrice += $item['price'];
+        $totalNetPrice += $item['basePriceMoney'];
+        // compute the largest item to fudge the netPrice if needed
+        if ($item['basePriceMoney'] > $maxes['netPrice']) {
+            $maxItem['netPrice'] = $item;
+            $maxes['netPrice'] = $item['basePriceMoney'];
+        }
         foreach ($item['taxes'] as $tax) {
             $taxField  = $tax['taxUid'];
             if (array_key_exists($taxField, $taxableAmounts)) {
@@ -333,12 +366,15 @@ function computeTotalTax(&$items) {
 
     // now recompute the total tax and fudge the largest item in the list
     foreach ($taxes as $taxField => $tax) {
-        $totalTax = $taxableAmounts[$taxField] *  $rates[$taxField] / 100.0;
+        $totalTax = round($taxableAmounts[$taxField] *  $rates[$taxField] / 100.0, 2);
         if ($totalTax != $tax['tax']) { // fudge largest item in the list so the decimal part adds up
             $item = $maxItem[$taxField];
-             $item['taxAmounts'][$taxField] += $totalTax - $tax['tax'];
+            $item['taxAmounts'][$taxField] = round($item['taxAmounts'][$taxField] + $totalTax - $tax['tax'], 2);
         }
     }
 
+    // now fudge the netPrice of the maxItem
+    if (round($totalTax + $totalNetPrice, 2) != round($totalPrice, 2))
+        $maxItem['netPrice'] = round($maxes['netPrice']  + $totalPrice - ($totalTax + $totalNetPrice), 2);
     return $taxes;
 }

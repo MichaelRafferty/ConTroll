@@ -286,7 +286,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $taxArray = buildCCAppliedTaxArray('artSales', $lineid);
+                    $taxArray = buildCCAppliedTaxArray('artSales');
                     $item['taxes'] = $taxArray;
                     $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
                     if ($needTaxes == false)
@@ -407,7 +407,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ];
                 if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($badgeTaxable);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -528,7 +528,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             if ($hasTax) {
                 // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                 // need to determine the type of space
-                $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
+                $taxArray = buildCCAppliedTaxArray($spaceType);
                 if ($needTaxes == false)
                     $needTaxes = count($taxArray) > 0;
                 $item['taxes'] = $taxArray;
@@ -568,7 +568,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             if ($hasTax) {
                 // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                 // need to determine the type of space
-                $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
+                $taxArray = buildCCAppliedTaxArray('artShipping');
                 if ($needTaxes == false)
                     $needTaxes = count($taxArray) > 0;
                 $item['taxes'] = $taxArray;

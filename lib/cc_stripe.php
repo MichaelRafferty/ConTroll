@@ -523,7 +523,7 @@ EOS;
                 // compute the art line item tax
                 if ($hasTax) {
                     // create the Line Item tax record, art sales are taxable
-                    $item['taxes'] = buildCCAppliedTaxArray('artSales', $lineid);
+                    $item['taxes'] = buildCCAppliedTaxArray('artSales');
                     $item['taxable'] = count($item['taxes']) > 0 ? 'Y' : 'N';
                 }
                 $orderTaxLineItems[] = $item;
@@ -682,7 +682,7 @@ EOS;
 
                 // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                 $item['basePriceMoney'] = round($netAmount * $currencyMultiplier);
-                $taxArray = buildCCAppliedTaxArray($badgeTaxable, $lineid);
+                $taxArray = buildCCAppliedTaxArray($badgeTaxable);
 
                 if ($needTaxes == false)
                     $needTaxes = count($taxArray) > 0;
@@ -783,7 +783,7 @@ EOS;
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildCCAppliedTaxArray($spaceType, $lineid);
+                    $taxArray = buildCCAppliedTaxArray($spaceType);
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
@@ -825,7 +825,7 @@ EOS;
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
-                    $taxArray = buildCCAppliedTaxArray('artShipping', $lineid);
+                    $taxArray = buildCCAppliedTaxArray('artShipping');
                     if ($needTaxes == false)
                         $needTaxes = count($taxArray) > 0;
                     $item['taxes'] = $taxArray;
