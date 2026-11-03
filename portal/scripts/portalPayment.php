@@ -215,7 +215,8 @@ if ($order != null) {
         exit();
     }
 
-    if (round($taxAmount * $currencyMultiplier) != $order['taxAmount']) {
+    // test uses no multiplication, stripe uses multiplication, square??, check for both ways
+    if (round($taxAmount * $currencyMultiplier) != $order['taxAmount'] && $taxAmount != $order['taxAmount']) {
         error_log('bad tax: post=' . $taxAmount . ', order=' . $order['taxAmount']);
         ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad tax sent to Server'));
         exit();
