@@ -398,6 +398,7 @@ EOS;
     // 4. set up all rtn variables, and return the payment intent id for future use
 
     $orderLineItems = []; // array (non associative) where each item is a line item of the order in a very basic form
+    $orderPrices = [];
     $orderTaxLineitems = []; // array (non associative) same as orderLineItems + stuff to compute the taxes
     $itemNumber = 0;
     $orderMetadata = [];  // associative array of items we can't store in the line item structure, as well as overall order metadata
@@ -478,6 +479,7 @@ EOS;
             'tax' => ['total_tax_amount' => 0 ],
             ];
         $orderLineItems[] = $item;
+        $orderPrices[] = $results['total'];
         $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
         $orderTaxLineItems[] = $item;
         $orderValue = $results['total'];
@@ -519,6 +521,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for tax until computed later
                 ];
                 $orderLineItems[] = $item;
+                $orderPrices[] = $amount;
                 $item['basePriceMoney'] = $item['unit_cost']; // convert to common name for tax comps
                 // compute the art line item tax
                 if ($hasTax) {
@@ -679,6 +682,7 @@ EOS;
                 }
 
                 $orderLineItems[] = $item;
+                $orderPrices[] = $amount;
 
                 // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                 $item['basePriceMoney'] = round($netAmount * $currencyMultiplier);
@@ -778,6 +782,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
+                $orderPrices[] = $amount;
                 // compute the art line item tax
                 if ($hasTax)  {
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
@@ -820,6 +825,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
+                $orderPrices[] = $itemPrice;
                 // apply taxes to mail in fees based on the artShipping flag
                 if ($hasTax)  {
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
@@ -851,7 +857,7 @@ EOS;
                 $orderTaxLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderTaxLineItems);
+        $taxAmounts = computeTotalTax($orderTaxLineItems, $orderPrices);
         $metaTaxAmounts = $taxAmounts;
         // this needs to be converted back to the decimal currenty
         if ($currencyMultiplier != 1) {
@@ -999,7 +1005,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
         if ($stripeDebug & 14) stcc_logObject('cc_stripe/cancelOrder cancel payment intent', $orderId, $useLogWrite);
         $payment = $client->paymentIntents->cancel($orderId, []);
         $payment = json_decode(json_encode($payment), true);
-        $phpPaymen = json_decode(json_encode($payment), true);
+        $phpPayment = json_decode(json_encode($payment), true);
         if ($stripeDebug & 14) stcc_logObject("cc_Stripe/cancelOrder payment intent response for $orderId", $phpPayment, $useLogWrite);
     }
     catch (\Stripe\Exception\InvalidRequestException $e) {
