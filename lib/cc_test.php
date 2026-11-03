@@ -173,6 +173,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
 
     $orderLineItems = [];
+    $orderPrices = [];
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
@@ -249,6 +250,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'basePriceMoney' => round($results['total'] * $currencyMultiplier),
         ];
         $orderLineItems[] = $item;
+        $orderPrices[] = $results['total'];
         $orderValue = $results['total'];
         $preTaxAmt = $results['total'];
         $itemsBuilt = true;
@@ -293,6 +295,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $needTaxes = count($taxArray) > 0;
                 }
                 $orderLineItems[] = $item;
+                $orderPrices[] = $amount;
                 $orderValue += $netAmount;
                 $preTaxAmt += $amount;
                 $lineid++;
@@ -433,13 +436,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[] = $item;
-                {
-                    $orderValue += $netAmount;
-                    $preTaxAmt += $amount;
+                $orderPrices[] = $amount;
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
 
-                    $lineid++;
-                    $rowno++;
-                }
+                $lineid++;
+                $rowno++;
             }
 
             if (array_key_exists('discount', $results) && $results['discount'] > 0) {
@@ -536,6 +538,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
 
             $orderLineItems[] = $item;
+            $orderPrices[] = $amount;
             $orderValue += $netAmount;
             $preTaxAmt += $amount;
             $lineid++;
@@ -576,6 +579,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
 
             $orderLineItems[] = $item;
+            $orderPrices[] = $itemPrice;
             $orderValue += $netAmount;
             $preTaxAmt += $itemPrice;
             $lineid++;
@@ -627,7 +631,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderLineItems);
+        $taxAmounts = computeTotalTax($orderLineItems, $orderPrices);
     }
 
     $rtn = array ();

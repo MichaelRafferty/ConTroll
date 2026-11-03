@@ -272,6 +272,7 @@ EOS;
 
 function computeTax($item) : array {
     // item has taxable Y/N and taxes for each tax rage
+    // note: used by cc_test and cc_stripe, cc_square has the build order api call compute the taxes
     $taxes = array();
     $taxes['totalTax'] = 0;
     $taxes['totalTax_base'] = $item['basePriceMoney'];
@@ -327,7 +328,7 @@ function taxInclusiveAdjust($type, $amount) {
     return $netAmount;
 }
 
-function computeTotalTax(&$items) {
+function computeTotalTax(&$items, $prices) {
     $taxableAmounts = array();
     $taxes = array();
     $rates = array();
@@ -336,12 +337,15 @@ function computeTotalTax(&$items) {
     $totalPrice = 0;
     $totalNetPrice = 0;
     // compute the total of each line item taxes as computed by computeTax
-    foreach ($items as $item) {
-        $totalPrice += $item['price'];
+    for ($index = 0; $index < count($items); $index++) {
+        $item = $items[$index];
+        $price = $prices[$index];
+        $totalPrice += $price;
         $totalNetPrice += $item['basePriceMoney'];
         // compute the largest item to fudge the netPrice if needed
         if ($item['basePriceMoney'] > $maxes['netPrice']) {
             $maxItem['netPrice'] = $item;
+            $maxItem['index'] = $index;
             $maxes['netPrice'] = $item['basePriceMoney'];
         }
         foreach ($item['taxes'] as $tax) {

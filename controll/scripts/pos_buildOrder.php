@@ -212,7 +212,7 @@ SET price = ?, tax = ?, withTax = ?, netPrice = ?, couponDiscountCart = ?, order
 WHERE id = ?;
 EOS;
 $preTax = $rtn['preTaxAmt'];
-$netAmount = $rtn['$netAmount'];
+$netAmount = $rtn['netAmount'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
 $valArray = array($preTax, $taxAmt, $withTax, $netAmount, 0, $rtn['orderId']);
