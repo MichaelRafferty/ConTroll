@@ -204,6 +204,9 @@ $phone = $info['phone'];
 
 $referenceId = $transId . '-' . 'pay-' . time();
 
+$currency = cc_getCurrency();
+$currencyMultiplier = get_currencyMultiplier($currency);
+
 $order = cc_fetchOrder($source, $orderId, true);
 if ($order != null) {
     if ($amount != $order['totalAmountDue']) {
@@ -212,7 +215,7 @@ if ($order != null) {
         exit();
     }
 
-    if ($taxAmount != $order['taxAmount']) {
+    if (round($taxAmount * $currencyMultiplier) != $order['taxAmount']) {
         error_log('bad tax: post=' . $taxAmount . ', order=' . $order['taxAmount']);
         ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad tax sent to Server'));
         exit();
@@ -293,7 +296,7 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
 VALUES (?,?,'reg',?,'portal',?,?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'issddSdsissssssiss' . $taxStr;
+    $typestr = 'issddddsissssssiss' . $taxStr;
     $cashier = $loginType == 'p' ? $loginId : null;
     $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $netAmount, $auth, $cashier,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
