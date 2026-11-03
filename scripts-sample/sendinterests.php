@@ -256,12 +256,13 @@ You have been configured by $regadminemail to receive notifications of changes t
 This is the list of updates as of $runDate
 
 EOS;
-    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested, notes\n";
+    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested, notes, perid\n";
     foreach ($notifyList as $row) {
         $bn = $row['badge_name'];
         if ($row['badgeNameL2'] != '')
             $bn .= '/' . $row['badgeNameL2'];
-        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $bn, $row['email_addr'], $row['phone'], $row['interested'], $row['notes']);
+        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $bn, $row['email_addr'], $row['phone'], $row['interested'],
+            $row['notes'], $row['perid']);
         $csv .= '"' . join('","', $csvRow) . '"' . PHP_EOL;
     }
 
