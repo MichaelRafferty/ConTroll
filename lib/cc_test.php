@@ -250,7 +250,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             'basePriceMoney' => round($results['total'] * $currencyMultiplier),
         ];
         $orderLineItems[] = $item;
-        $orderPrices[] = $results['total'];
+        $orderPrices[] = round($results['total'] * $currencyMultiplier);
         $orderValue = $results['total'];
         $preTaxAmt = $results['total'];
         $itemsBuilt = true;
@@ -295,7 +295,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $needTaxes = count($taxArray) > 0;
                 }
                 $orderLineItems[] = $item;
-                $orderPrices[] = $amount;
+                $orderPrices[] = round($amount * $currencyMultiplier);
                 $orderValue += $netAmount;
                 $preTaxAmt += $amount;
                 $lineid++;
@@ -436,7 +436,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[] = $item;
-                $orderPrices[] = $amount;
+                $orderPrices[] = round($amount * $currencyMultiplier);
                 $orderValue += $netAmount;
                 $preTaxAmt += $amount;
 
@@ -579,7 +579,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
 
             $orderLineItems[] = $item;
-            $orderPrices[] = $itemPrice;
+            $orderPrices[] = round($itemPrice * $currencyMultiplier);
             $orderValue += $netAmount;
             $preTaxAmt += $itemPrice;
             $lineid++;
@@ -631,7 +631,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderLineItems, $orderPrices);
+        $noSecondItems = 0;
+        $taxAmounts = computeTotalTax($orderLineItems, $noSecondItems, $orderPrices, $orderValue, $currencyMultiplier);
     }
 
     $rtn = array ();

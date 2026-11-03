@@ -479,7 +479,7 @@ EOS;
             'tax' => ['total_tax_amount' => 0 ],
             ];
         $orderLineItems[] = $item;
-        $orderPrices[] = $results['total'];
+        $orderPrices[] = round($results['total'] * $currencyMultiplier);
         $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
         $orderTaxLineItems[] = $item;
         $orderValue = $results['total'];
@@ -521,7 +521,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ], // placeholder for tax until computed later
                 ];
                 $orderLineItems[] = $item;
-                $orderPrices[] = $amount;
+                $orderPrices[] = round($amount * $currencyMultiplier / $quantity);
                 $item['basePriceMoney'] = $item['unit_cost']; // convert to common name for tax comps
                 // compute the art line item tax
                 if ($hasTax) {
@@ -682,7 +682,7 @@ EOS;
                 }
 
                 $orderLineItems[] = $item;
-                $orderPrices[] = $amount;
+                $orderPrices[] = round($amount * $currencyMultiplier);
 
                 // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                 $item['basePriceMoney'] = round($netAmount * $currencyMultiplier);
@@ -782,7 +782,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
-                $orderPrices[] = $amount;
+                $orderPrices[] = round($amount * $currencyMultiplier);
                 // compute the art line item tax
                 if ($hasTax)  {
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
@@ -825,7 +825,7 @@ EOS;
                     'tax' => ['total_tax_amount' => 0 ],
                 ];
                 $orderLineItems[] = $item;
-                $orderPrices[] = $itemPrice;
+                $orderPrices[] = round($itemPrice * $currencyMultiplier);
                 // apply taxes to mail in fees based on the artShipping flag
                 if ($hasTax)  {
                     $item['basePriceMoney']  = $item['unit_cost']; // convert to common name for tax comps
@@ -857,7 +857,7 @@ EOS;
                 $orderTaxLineItems[$ord]['taxAmounts'] = computeTax($item);
             }
         }
-        $taxAmounts = computeTotalTax($orderTaxLineItems, $orderPrices);
+        $taxAmounts = computeTotalTax($orderTaxLineItems, $orderLineItems, $orderPrices, $orderValue, $currencyMultiplier);
         $metaTaxAmounts = $taxAmounts;
         // this needs to be converted back to the decimal currenty
         if ($currencyMultiplier != 1) {

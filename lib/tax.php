@@ -328,7 +328,7 @@ function taxInclusiveAdjust($type, $amount) {
     return $netAmount;
 }
 
-function computeTotalTax(&$items, $prices) {
+function computeTotalTax(&$items, &$items2, $prices, &$orderValue, $currencyMultiplier) {
     $taxableAmounts = array();
     $taxes = array();
     $rates = array();
@@ -370,7 +370,7 @@ function computeTotalTax(&$items, $prices) {
 
     // now recompute the total tax and fudge the largest item in the list
     foreach ($taxes as $taxField => $tax) {
-        $totalTax = round($taxableAmounts[$taxField] *  $rates[$taxField] / 100.0, 2);
+        $totalTax = round($taxableAmounts[$taxField] *  $rates[$taxField] / 100.0);
         if ($totalTax != $tax['tax']) { // fudge largest item in the list so the decimal part adds up
             $item = $maxItem[$taxField];
             $item['taxAmounts'][$taxField] = round($item['taxAmounts'][$taxField] + $totalTax - $tax['tax'], 2);
@@ -378,7 +378,16 @@ function computeTotalTax(&$items, $prices) {
     }
 
     // now fudge the netPrice of the maxItem
-    if (round($totalTax + $totalNetPrice, 2) != round($totalPrice, 2))
-        $maxItem['netPrice'] = round($maxes['netPrice']  + $totalPrice - ($totalTax + $totalNetPrice), 2);
+    if (round($totalTax + $totalNetPrice, 2) != round($totalPrice, 2)) {
+        $offset = $totalPrice - ($totalTax + $totalNetPrice);
+        if (array_key_exists('basePriceMoney',   $items[$maxItem['index']]))
+            $items[$maxItem['index']]['basePriceMoney'] = round($maxes['netPrice'] + $offset);
+        if (array_key_exists('unit_cost',   $items[$maxItem['index']])) {
+            $items[$maxItem['index']]['unit_cost'] = round($maxes['netPrice'] + $offset);
+            if ($items2 != null && is_array($items2))
+                $items2[$maxItem['index']]['unit_cost'] = round($maxes['netPrice'] + $offset);
+        }
+        $orderValue = round($orderValue + ($offset / $currencyMultiplier), 2);
+    }
     return $taxes;
 }
