@@ -502,6 +502,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $incCount = 0;
                 $addCount = 0;
                 foreach ($results['badges'] as $ord => $badge) {
+                    //TODO: issue with bundle id in the space here, not getting right inc count, add count
                     if ($badge['memId'] == $space['includedMemId'])
                         $incCount++;
                     if ($badge['memId'] == $space['additionalMemId'])
@@ -516,32 +517,33 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $netAmount = $amount;
 
                 $results['badges'][$ord]['netAmount'] = $netAmount;
-            }
-            $item = [
-                'uid' => 'space-' . $spaceId,
-                'name' => mb_substr($itemName, 0, 128),
-                'quantity' => 1,
-                'note' => $notesData['note'],
-                'metadata' => $notesData['metadata'],
-                'basePriceMoney' => round($netAmount * $currencyMultiplier),
-            ];
 
-            // apply taxes to spaces based on the space taxable flag
-            if ($hasTax) {
-                // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                // need to determine the type of space
-                $taxArray = buildCCAppliedTaxArray($spaceType);
-                if ($needTaxes == false)
-                    $needTaxes = count($taxArray) > 0;
-                $item['taxes'] = $taxArray;
-                $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
-            }
+                $item = [
+                    'uid' => 'space-' . $spaceId,
+                    'name' => mb_substr($itemName, 0, 128),
+                    'quantity' => 1,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
+                    'basePriceMoney' => round($netAmount * $currencyMultiplier),
+                ];
 
-            $orderLineItems[] = $item;
-            $orderPrices[] = $amount;
-            $orderValue += $netAmount;
-            $preTaxAmt += $amount;
-            $lineid++;
+                // apply taxes to spaces based on the space taxable flag
+                if ($hasTax) {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // need to determine the type of space
+                    $taxArray = buildCCAppliedTaxArray($spaceType);
+                    if ($needTaxes == false)
+                        $needTaxes = count($taxArray) > 0;
+                    $item['taxes'] = $taxArray;
+                    $item['taxable'] = count($taxArray) > 0 ? 'Y' : 'N';
+                }
+
+                $orderLineItems[] = $item;
+                $orderPrices[] = round($amount * $currencyMultiplier);
+                $orderValue += $netAmount;
+                $preTaxAmt += $amount;
+                $lineid++;
+            }
         }
     }
 

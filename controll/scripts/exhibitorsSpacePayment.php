@@ -312,14 +312,15 @@ EOS;
     [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
+SET price = ?, tax = ?, withTax = ?, netPrice = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
     $preTaxAmt = $orderRtn['preTaxAmt'];
+    $netPrice = $orderRtn['netAmount'];
     $taxAmt = $orderRtn['taxAmt'];
     $withTax = $orderRtn['totalAmt'];
-    $valArray = array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId']);
-    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array($preTaxAmt, $taxAmt, $withTax, $netPrice, 0, $orderRtn['orderId']);
+    $typeStr = 'ddddds' . $taxStr . 'i';
     $valArray = array_merge($valArray, $taxValues);
     $valArray[] = $transid;
 
@@ -344,8 +345,15 @@ if ($txnU != 1) {
 }
 
 // reg (badge)
-$regQ = "UPDATE reg SET paid=price, status='paid', complete_trans=? WHERE create_trans=?;";
-$numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
+$regQ = <<<EOS
+UPDATE reg SET paid=price, netPrice = CASE WHEN IFNULL(netPrice, 0) > 0 THEN netPrice ELSE ? END, status='paid', complete_trans=?
+WHERE id = ?
+EOS;
+
+// compute total owed and if needed update perid in reg
+foreach ($data['orderRtn']['results']['badges'] as $badge) {
+    $numrows = dbSafeCmd($regQ, 'dii', array($badge['netAmount'], $transid, $badge['badge']));
+}
 
 // vendor_space
 $vendorUQ = <<<EOS

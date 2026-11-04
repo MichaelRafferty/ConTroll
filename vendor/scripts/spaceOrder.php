@@ -481,6 +481,9 @@ if ($totprice > 0) {
         exit();
     }
     $order = $rtn['order'];
+    $rtn['totalPaid'] = 0;
+    $response['orderRtn'] = $rtn;
+
     labeled_logWrite('spaceOrder-order',
         array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $referenceId = $transId . '-' . 'pay-' . time();
@@ -493,6 +496,7 @@ if ($totprice > 0) {
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $rtn['preTaxAmt'],
+        'netAmount' => $rtn['netAmount'],
         'taxAmt' => $rtn['taxAmt'],
         'taxes' => $rtn['taxes'],
         'vendorId' => $exhId,
@@ -649,13 +653,12 @@ EOS;
     $badge['transid'] = $transId;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
-    // now loop over the list of badges for this person based on the Mlist.
-    foreach ($Mlist as $memId => $mFields) {
-        $badgeQ = <<<EOS
+    $badgeQ = <<<EOS
 INSERT INTO reg(conid, newperid, create_trans, price, status, memID, mldId)
 VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
-
+    // now loop over the list of badges for this person based on the Mlist.
+    foreach ($Mlist as $memId => $mFields) {
         $badge['label'] = $mFields['label'];
         $badge['glNum'] = $mFields['glNum'];
         $badgeId = dbSafeInsert($badgeQ, 'iiidsii', array (

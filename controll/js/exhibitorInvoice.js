@@ -491,7 +491,7 @@ class ExhibitorInvoice {
         let id = document.getElementById('vendor_pay_mbr_cost');
         if (id)
             id.innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
-        let totalPreOrder = data.results.preTaxAmt;
+        let totalPreOrder = data.results.netAmount;
         id = document.getElementById('vendor_pay_cost');
         if (id)
             id.innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));

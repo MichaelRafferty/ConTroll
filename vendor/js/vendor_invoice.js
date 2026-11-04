@@ -365,7 +365,7 @@ class VendorInvoice {
         let totalSpacePrice = drawExhibitorApprovedSpaces('You', exhibitor_spacelist, region, regionList, 'vendor_pay_approved_for');
         let membershipCost = data.results.preTaxAmt - totalSpacePrice;
         document.getElementById('vendor_pay_mbr_cost').innerHTML = currencyFmt.format(Number(membershipCost).toFixed(2));
-        let totalPreOrder = data.results.preTaxAmt;
+        let totalPreOrder = data.results.netAmount;
         let pretaxhtml = document.getElementById('vendor_pay_cost');
         if (pretaxhtml)
             pretaxhtml.innerHTML = currencyFmt.format(Number(totalPreOrder).toFixed(2));

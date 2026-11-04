@@ -508,6 +508,7 @@ if ($totprice > 0) {
         'referenceId' => $referenceId,
         'transid' => $transid,
         'preTaxAmt' => $orderRtn['preTaxAmt'],
+        'netAmount' => $orderRtn['netAmount'],
         'taxAmt' => $orderRtn['taxAmt'],
         'taxes' => $orderRtn['taxes'],
         'vendorId' => $exhId,
@@ -524,7 +525,6 @@ if ($totprice > 0) {
         'formbadges' => $badges,
         'total' => $totprice,
     );
-
 
     $response['results'] = $results;
     $response['orderRtn'] = $orderRtn;
@@ -687,11 +687,6 @@ EOS;
 
     // now loop over the list of badges for this person based on the Mlist.
     foreach ($Mlist as $memId => $mFields) {
-        $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, create_trans, price, status, memID, mldId)
-VALUES(?, ?, ?, ?, ?, ?, ?);
-EOS;
-
         $badge['label'] = $mFields['label'];
         $badge['glNum'] = $mFields['glNum'];
         $badgeId = dbSafeInsert($badgeQ, 'iiidsii', array (

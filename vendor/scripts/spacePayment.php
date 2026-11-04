@@ -95,6 +95,7 @@ $notfound = array();
 
 $results = $data['results'];
 $orderResults = $data['orderResults'];
+$orderRtn = $data['orderRtn'];
 $totprice = $results['total'];
 $spaces = $results['spaces'];
 $badgeResults = $results['badges'];
@@ -198,14 +199,18 @@ EOS;
     [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $updTrans = <<<EOS
 UPDATE transaction
-SET tax = ?, ccPaymentId = ?, paymentStatus = ?, $taxSql
+SET price=?, tax = ?, withTax= ?, netPrice = ?, ccPaymentId = ?, paymentStatus = ?, $taxSql
 WHERE id = ?;
 EOS;
 
-$valArray = array($tax, $ccrtn['paymentId'], $ccrtn['status']);
+$preTaxAmt = $orderRtn['preTaxAmt'];
+$taxAmt = $orderRtn['taxAmt'];
+$withTax = $orderRtn['totalAmt'];
+$netPrice = $orderRtn['netAmount'];
+$valArray = array($preTaxAmt, $tax, $withTax, $netPrice, $ccrtn['paymentId'], $ccrtn['status']);
 $valArray = array_merge($valArray, $taxValues);
 $valArray[] = $transId;
-$typeStr = 'dss' . $taxStr . 'i';
+$typeStr = 'ddddss' . $taxStr . 'i';
 
     $numUpd = dbSafeCmd($updTrans, $typeStr, $valArray);
 } else {
@@ -227,10 +232,14 @@ if (round($approved_amt,2) == round($totprice,2)) {
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transId));
 // reg (badge)
-$regQ = "UPDATE reg SET paid=price, complete_trans=?, status='paid' WHERE create_trans=?;";
-$numrows = dbSafeCmd($regQ, 'ii', array($transId, $transId));
-if ($numrows != 1) {
-    $error_msg .= "Unable to mark transaction completed\n";
+$regQ = <<<EOS
+UPDATE reg SET paid=price, netPrice = CASE WHEN IFNULL(netPrice, 0) > 0 THEN netPrice ELSE ? END, status='paid', complete_trans=?
+WHERE id = ?
+EOS;
+
+// compute total owed and if needed update perid in reg
+foreach ($data['orderRtn']['results']['badges'] as $badge) {
+    $numrows = dbSafeCmd($regQ, 'dii', array($badge['netAmount'], $transId, $badge['badge']));
 }
 
 // vendor_space
