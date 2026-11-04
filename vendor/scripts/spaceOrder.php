@@ -526,7 +526,7 @@ if ($totprice > 0) {
     $orderRtn['totalAmt'] = 0;
     $orderRtn['preTaxAmt'] = 0;
     $orderRtn['taxAmt'] = 0;
-    $referenceId = $transid . '-' . 'pay-' . time();
+    $referenceId = $transId . '-' . 'pay-' . time();
     $results = array(
         'source' => $portalType,
         'totalAmt' => 0,
@@ -534,7 +534,7 @@ if ($totprice > 0) {
         'customerId' => $custId,
         'locationId' => $ccLocation,
         'referenceId' => $referenceId,
-        'transid' => $transid,
+        'transid' => $transId,
         'preTaxAmt' => $orderRtn['preTaxAmt'],
         'taxAmt' => $orderRtn['taxAmt'],
         'taxes' => $orderRtn['taxes'],

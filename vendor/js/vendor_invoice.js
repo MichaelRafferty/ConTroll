@@ -84,9 +84,12 @@ class VendorInvoice {
 
         this.#membershipCostDiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
         this.#vendorInvoice.show();
-        setTimeout(() => {
-            document.getElementById('agreeNone').focus({focusVisible: true});
-        }, 600);
+        let agNone = document.getElementById('agreeNone');
+        if (agNone != null) {
+            setTimeout(() => {
+                agNone.focus({focusVisible: true});
+            }, 600);
+        }
     }
 
     // update invoice for the Cost of Memberships and total Cost when an additional member is started
