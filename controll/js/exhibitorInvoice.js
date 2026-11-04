@@ -16,6 +16,7 @@ class ExhibitorInvoice {
     #payCheckno = null;
     #payCcauth = null;
     #payButton = null;
+    #noChargeButton = null;
     #overrideButton = null;
     #payAmt = null;
     #totalInvCost = null;
@@ -62,6 +63,7 @@ class ExhibitorInvoice {
         this.#payCcauth = document.getElementById('pay-ccauth');
         this.#payDescription = document.getElementById('pay-desc');
         this.#payButton = document.getElementById('card-button');
+        this.#noChargeButton = document.getElementById('zeropay-button');
         this.#overrideButton = document.getElementById('pay-override-pay');
         this.#payAmt = document.getElementById('pay-amt');
         this.#totalInvCost = document.getElementById('vendor_inv_cost');
@@ -79,10 +81,12 @@ class ExhibitorInvoice {
         if (this.#totalAmountDue == 0) {
             this.#payButton.disabled = false;
             this.#paymentDiv.hidden = true;
+            this.#noChargeButton.hidden = false;
         } else {
             this.#payButton.disabled = !(document.getElementById('pt-cash').checked ||
                 document.getElementById('pt-check').checked || document.getElementById('pt-credit').checked)
             this.#paymentDiv.hidden = false;
+            this.#noChargeButton.hidden = true;
             this.#payRow = null;
         }
     }
@@ -152,7 +156,7 @@ class ExhibitorInvoice {
         this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
         this.#exhibitorInvoiceModal.show();
-        this.#updatePaymentDiv();
+        this.#paymentDiv.hidden = true;
     }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -171,7 +175,6 @@ class ExhibitorInvoice {
         if (config.debug & 1)
             console.log('After adding this.#totalSpacePrice: ' + String(this.#totalAmountDue));
         this.#totalInvCost.innerHTML = Number(this.#totalAmountDue).toFixed(2);
-        this.#updatePaymentDiv();
     }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -516,6 +519,7 @@ class ExhibitorInvoice {
         document.getElementById('pay-desc').value = '';
 
         this.#exhibitorPaymentModal.show();
+        this.#updatePaymentDiv();
     }
 
     // process payment

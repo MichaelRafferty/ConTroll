@@ -311,6 +311,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                     </div>
                 </div>
                 <div class='modal-footer'>
+                    <button class='btn btn-primary btn-sm mt-2' type='button' id='zeropay-button' hidden
+                            onclick="exhibitorInvoice.pay('nomodal');">Process No Change Space</button>
                     <button type='button' class='btn btn-secondary' id='pay_cancel_button' onclick='orderCancel()'>
                         Cancel Payment
                     </button>
