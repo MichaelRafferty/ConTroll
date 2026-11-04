@@ -231,15 +231,17 @@ if (round($approved_amt,2) == round($totprice,2)) {
 
 $txnUpdate .= 'paid=? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transId));
-// reg (badge)
-$regQ = <<<EOS
+
+// compute total owed and if needed update perid in reg
+if (array_key_exists('badges', $data['orderRtn']['results'])) {
+    // reg (badge)
+    $regQ = <<<EOS
 UPDATE reg SET paid=price, netPrice = CASE WHEN IFNULL(netPrice, 0) > 0 THEN netPrice ELSE ? END, status='paid', complete_trans=?
 WHERE id = ?
 EOS;
-
-// compute total owed and if needed update perid in reg
-foreach ($data['orderRtn']['results']['badges'] as $badge) {
-    $numrows = dbSafeCmd($regQ, 'dii', array($badge['netAmount'], $transId, $badge['badge']));
+    foreach ($data['orderRtn']['results']['badges'] as $badge) {
+        $numrows = dbSafeCmd($regQ, 'dii', array ($badge['netAmount'], $transId, $badge['badge']));
+    }
 }
 
 // vendor_space
