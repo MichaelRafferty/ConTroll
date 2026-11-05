@@ -39,10 +39,12 @@ $eyID = getSessionVar('eyID');
 
 $data = json_decode($_POST['orderData'], true);
 if (array_key_exists('nonce', $_POST) && $_POST['nonce'] == 'c') {
-    $results = $data['results'];
-    cc_cancelOrder($results['source'], $data['orderId']);
-    cleanRegs($results['badges'], $results['transid']);
-    ajaxSuccess(array('status'=>'success', 'message'=>'Payment canceled'));
+    if (array_key_exists('orderId', $data)) {
+        $results = $data['results'];
+        cc_cancelOrder($results['source'], $data['orderId']);
+        cleanRegs($results['badges'], $results['transid']);
+    }
+    ajaxSuccess(array ('status' => 'success', 'message' => 'Payment canceled'));
     exit;
 }
 
