@@ -873,3 +873,15 @@ function ageChanged(prefix, field) {
     age = document.getElementById(prefix + field).value;
     profile.setAge(age);
 }
+
+function buildOrder(doHide) {
+    if (exhibitorInvoice == null)
+        return;
+    exhibitorInvoice.buildOrder(doHide);
+}
+
+function pay(doHide) {
+    if (exhibitorInvoice == null)
+        return;
+    exhibitorInvoice.pay();
+}

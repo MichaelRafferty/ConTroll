@@ -24,6 +24,8 @@ class VendorInvoice {
     #payPostData = null;
     #currentPaymentIntentId = null;
     #totalAmountDue = null;
+    #paymentDiv = null;
+    #noChargeBtn = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
@@ -39,6 +41,8 @@ class VendorInvoice {
         }
         this.#membershipCostDiv = document.getElementById("membershipCost");
         this.#paymentForDiv = document.getElementById("paymentForDiv");
+        this.#paymentDiv = document.getElementById("paymentDiv");
+        this.#noChargeBtn = document.getElementById("zeropay-button");
     }
 
     // openInvoice: display the vendor invoice (and registration items)
@@ -376,19 +380,31 @@ class VendorInvoice {
         document.getElementById('vendor_pay_total_due').innerHTML = currencyFmt.format(Number(totalWithTax).toFixed(2));
         this.#orderData = data;
         this.#totalAmountDue = data.rtn.totalAmt;
-        if (data.rtn.ccType) {
-            ccType = data.rtn.ccType;
-        }
+        if (this.#totalAmountDue > 0) {
+            if (data.rtn.ccType) {
+                ccType = data.rtn.ccType;
+            }
 
-        if (ccType == 'stripe') {
-            this.#currentPaymentIntentId = data.rtn.orderId;
-        }
+            if (ccType == 'stripe') {
+                this.#currentPaymentIntentId = data.rtn.orderId;
+            }
 
-        let id = document.getElementById('card-button');
-        if (id)
-            id.disabled = false;
-        this.#vendorPayment.show();
-        startCCPay(totalWithTax * currencyMultiplier, 'vendor_pay_form');
+            let id = document.getElementById('card-button');
+            if (id)
+                id.disabled = false;
+            this.#vendorPayment.show();
+            if (this.#paymentDiv)
+                this.#paymentDiv.hidden = false;
+            if (this.#noChargeBtn)
+                this.#noChargeBtn.hidden = true;
+            startCCPay(totalWithTax * currencyMultiplier, 'vendor_pay_form');
+        } else {
+            if (this.#paymentDiv)
+                this.#paymentDiv.hidden = true;
+            if (this.#noChargeBtn)
+                this.#noChargeBtn.hidden = false;
+            this.#vendorPayment.show();
+        }
     }
 
     processPay() {
@@ -643,4 +659,16 @@ function ageChanged(prefix, field) {
 
     age = document.getElementById(prefix + field).value;
     profile.setAge(age);
+}
+
+function buildOrder(doHide) {
+    if (vendorInvoice == null)
+        return;
+    vendorInvoice.buildOrder(doHide);
+}
+
+function pay(doHide) {
+    if (vendorInvoice == null)
+        return;
+    vendorInvoice.processPay();
 }

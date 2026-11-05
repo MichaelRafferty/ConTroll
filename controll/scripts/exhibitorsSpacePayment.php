@@ -113,8 +113,13 @@ $transid = $results['transid'];
 $buyer = $orderResults['buyer'];
 $preTaxAmt = $orderRtn['preTaxAmt'];
 $taxAmt = $orderRtn['taxAmt'];
-$orderId = $orderRtn['orderId'];
-$order = $orderRtn['order'];
+if (array_key_exists('orderId', $orderRtn)) {
+    $orderId = $orderRtn['orderId'];
+    $order = $orderRtn['order'];
+} else {
+    $orderId = null;
+    $order = [];
+}
 $results['buyer'] = $buyer;
 $totprice = $results['totalAmt'];
 
@@ -256,6 +261,10 @@ if ($totprice > 0) {
     else
         $nonceCode = $nonce;
     $complete = round($approved_amt,2) == round($totprice,2);
+} else {
+    $approved_amt = 0;
+    $rtn = array('url' => '', 'paymentId' => 'No Charge', 'status' => 'COMPLETED');
+    $taxes = array();
 }
 
 // extract the values needed for the payment
@@ -539,16 +548,20 @@ if ($approved_amt > 0) {
 // artist inventory request
 $return_arr = emailArtistInventoryReq($eryID, 'Payment');
 
-if (array_key_exists('error_code', $return_arr)) {
-    $error_code = $return_arr['error_code'];
-} else {
-    $error_code = null;
-}
+if (is_array($return_arr)) {
+    if (array_key_exists('error_code', $return_arr)) {
+        $error_code = $return_arr['error_code'];
+    } else {
+        $error_code = null;
+    }
 
-if (array_key_exists('email_error', $return_arr))
-    $error_msg .= $return_arr['email_error'];
-else
-    $status_msg .= "Inventory Entry Request Sent<br/>\n";
+    if (array_key_exists('email_error', $return_arr))
+        $error_msg .= $return_arr['email_error'];
+    else
+        $status_msg .= "Inventory Entry Request Sent<br/>\n";
+} else {
+    $status_msg .= "No Inventory Entry Request Sent due to no templates<br/>\n";
+}
 
 ajaxSuccess(array(
     'status' => $error_msg != '' ? 'error' : 'success',

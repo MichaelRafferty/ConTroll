@@ -554,7 +554,7 @@ if ($totprice > 0) {
     );
     $response['orderRtn'] = $orderRtn;
     $response['results'] = $results;
-    $response['rtn'] = [];
+    $response['rtn'] = $orderRtn;
     $response['order'] = 'none';
     $response['status'] = 'success';
     $response['message'] = 'No payment required';

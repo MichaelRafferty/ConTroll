@@ -194,7 +194,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                     </button>
                     <div class='col-sm-auto ms-0 me-2 p-0'>
                         <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
-                                onclick='exhibitorInvoice.buildOrder(true);' tabindex="<?php echo $tabindex;
+                                onclick='buildOrder(true);' tabindex="<?php echo $tabindex;
                             $tabindex += 2; ?>">Overide Validation and Pay
                         </button>
                     </div>
@@ -293,7 +293,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                 <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
                                     <button class='btn btn-primary btn-sm mt-2' type='button' id='card-button' disabled
-                                            onclick="exhibitorInvoice.pay('nomodal');" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                                            onclick="pay('nomodal');" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
                                 </div>
                                 <div class='col-sm-auto ms-0 me-2 p-0'>
                                     <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
@@ -311,8 +311,8 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-primary btn-sm mt-2' type='button' id='zeropay-button' hidden
-                            onclick="exhibitorInvoice.pay('nomodal');">Process No Change Space</button>
+                    <button class='btn btn-primary' type='button' id='zeropay-button' hidden
+                            onclick="pay('nomodal');">Process No Change Space</button>
                     <button type='button' class='btn btn-secondary' id='pay_cancel_button' onclick='orderCancel()'>
                         Cancel Payment
                     </button>
