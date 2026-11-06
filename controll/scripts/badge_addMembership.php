@@ -39,7 +39,10 @@ $response['user_perid'] = $user_perid;
 
 $perid = $_POST['perid'];
 $memId = $_POST['memId'];
-$regId = $_POST['regId'];
+if (array_key_exists('regId', $_POST))
+    $regId = $_POST['regId'];
+else
+    $regId = -9999;
 
 // chech to see if there already is a primary membership for this person
 $iQ = <<<EOS
