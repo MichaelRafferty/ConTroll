@@ -563,6 +563,7 @@ class AuctionItemRegistration {
 
         this.drawArtItemTable(data['items']);
         this.validateLoadLimit(true, 'art', data['items']['art']);
+        document.getElementById('print_bidsheet').hidden = data.art.length == 0 && data.nfs.length == 0;
 
         // continue on to prints
         this.saveAll(2);
@@ -735,6 +736,7 @@ class AuctionItemRegistration {
         //console.log(data);
         this.drawPrintItemTable(data['items']);
         this.validateLoadLimit(true, 'print', data['items']['print']);
+        document.getElementById('print_printshop').hidden = data.print.length == 0;
 
         this.saveAll(3);
     }
@@ -892,6 +894,7 @@ class AuctionItemRegistration {
         //console.log(data);
         this.drawNFSItemTable(data['items']);
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
+        document.getElementById('print_bidsheet').hidden = data.art.length == 0 && data.nfs.length == 0;
 
         this.saveAll(999);
     }
