@@ -965,7 +965,7 @@ class AuctionItemRegistration {
             //console.log("drawItemTable calling checkDupsArt");
             this.#artItemTable.on("tableBuilt", checkDupsArt);
         }
-        document.getElementById('print_bidsheet').hidden = data.art.length == 0;
+        document.getElementById('print_bidsheet').hidden = data.art.length == 0 && data.nfs.length == 0;
     }
 
     // add art from the import list to the art items table
