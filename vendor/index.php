@@ -577,15 +577,18 @@ EOS;
 <?php   }
 
     $pastItemsQ = <<<EOS
-SELECT conid, count(*) AS itemCount
-FROM artItems
-WHERE conid >= ? AND conid <= ?
+SELECT a.conid, count(*) AS itemCount
+FROM artItems a
+JOIN exhibitorRegionYears ery ON ery.id = a.exhibitorRegionYearId
+JOIN exhibitorYears ey ON ey.id = ery.exhibitorYearId
+WHERE a.conid >= ? AND a.conid <= ? AND ey.exhibitorId = ?
 GROUP BY conid
 HAVING count(*) > 0
 ORDER BY conid DESC;
 EOS;
+
+//  what sections do we show for each space that exists, only show the ones they have access to.
     foreach ($region_list as $id => $region) {
-        // check if they already have paid space, if so, offer to show them the receipt
         $paid = 0;
         $requested = 0;
         $approved = 0;
@@ -596,16 +599,6 @@ EOS;
         $regionName = $region['name'];
         $foundSpace = false;
 
-        // see if they have past conid's with artItems
-        $pastItemR = dbSafeQuery($pastItemsQ, 'ii', array($minConid, $conid));
-        $pastYears = [];
-        if ($pastItemR !== false) {
-            while ($pastItem = $pastItemR->fetch_row()) {
-                $pastYears[] = $pastItem[0];
-            }
-            $pastItemR->free();
-        }
-
         if (array_key_exists($regionYearId, $space_list)) {
             foreach ($space_list[$regionYearId] as $spaceId => $space) {
                 if ($space['exhibitsRegionYear'] != $region['id'])
@@ -615,7 +608,6 @@ EOS;
                 $foundSpace = true;
                 if (array_key_exists($space['id'], $exhibitorSpaceList)) {
                     $exhibitorSpace = $exhibitorSpaceList[$space['id']];
-
 
                     if ($exhibitorSpace !== null) {
                         $exhibitorSpaces[$space['id']] = $exhibitorSpace;
@@ -628,7 +620,6 @@ EOS;
                         if ($exhibitorSpace['item_purchased'] != null)
                             $paid++;
                     }
-
                 }
             }
         }
@@ -714,25 +705,37 @@ EOS;
             </div>
         </div>
 <?php
-        if ($portalType == 'artist' &&  count($pastYears) > 0) {
-            echo <<<EOS
+        if ($portalType == 'artist') {
+            // see if they have past conid's with artItems, compute the regionyearid for that past year
+            $pastItemR = dbSafeQuery($pastItemsQ, 'iii', array($minConid, $conid, $exhibitor));
+            $pastYears = [];
+            if ($pastItemR !== false) {
+                while ($pastItem = $pastItemR->fetch_row()) {
+                    $pastYears[] = $pastItem[0];
+                }
+                $pastItemR->free();
+            }
+
+            if (count($pastYears) > 0) {
+                echo <<<EOS
         <div class="row mt-1">
 EOS;
-            foreach ($pastYears as $year) {
-                if ($year == $conid)
-                    $name = "Current Year";
-                else
-                    $name = "$conname $year";
-                echo <<<EOS
+                foreach ($pastYears as $year) {
+                    if ($year == $conid)
+                        $name = "Current Year";
+                    else
+                        $name = "$conname $year";
+                    echo <<<EOS
             <div class="col-sm-auto p-1">
                 <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
                 for $name</button>
             </div>
 EOS;
-            }
-            echo <<<EOS
+                }
+                echo <<<EOS
         </div>
 EOS;
+            }
         }
     }
 ?>
