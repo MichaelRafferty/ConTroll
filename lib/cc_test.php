@@ -396,6 +396,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     }
                     if ($doInclusive)
                         $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                    else
+                        $netAmount = $amount;
                 } else
                     $netAmount = $amount;
                 $results['badges'][$ord]['netAmount'] = $netAmount;

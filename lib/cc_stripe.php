@@ -635,6 +635,8 @@ EOS;
                     }
                     if ($doInclusive)
                         $netAmount = taxInclusiveAdjust($badgeTaxable, $amount);
+                    else
+                        $netAmount = $amount;
                 } else {
                     $netAmount = $amount;
                 }
