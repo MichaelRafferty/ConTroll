@@ -954,20 +954,38 @@ draw_fileManagerModals($authToken);
                 </div>
                 <?php if ($config_vars['finance']) { ?>
                 <div class='row mt-1'>
+                    <div class='col-sm-1'>Net Price:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type='number' placeholder='New Net Price' id='edit_newNetPrice' style='text-align: right;'/>
+                    </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origNetPrice'></div>
+                </div>
+                <div class='row mt-1'>
                     <div class='col-sm-1'>Paid:</div>
                     <div class='col-sm-auto'>New:</div>
                     <div class='col-sm-auto'>
-                        <input type='number' placeholder='New Paid' id='edit_newPaid'/>
+                        <input type='number' placeholder='New Paid' id='edit_newPaid' style='text-align: right;'/>
                     </div>
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origPaid'></div>
                 </div>
-                    <?php } ?>
+                <div class='row mt-1'>
+                    <div class='col-sm-1'>Total Taxes:</div>
+                    <div class='col-sm-auto'>New:</div>
+                    <div class='col-sm-auto'>
+                        <input type='number' placeholder='New Total Tax' id='edit_newTotalTax' style='text-align: right;'/>
+                    </div>
+                    <div class='col-sm-auto'>Original:</div>
+                    <div class='col-sm-auto' id='edit_origTotalTax'></div>
+                </div>
+                <?php } ?>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>Coupon:</div>
                     <div class='col-sm-auto'>New:</div>
                     <div class='col-sm-auto'>
-                        <input type='number' placeholder='New Coupon' id='edit_newCoupon'/>
+                        <input type='number' placeholder='New Coupon' id='edit_newCoupon' style='text-align: right;'/>
                     </div>
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origCoupon'></div>
@@ -976,7 +994,7 @@ draw_fileManagerModals($authToken);
                     <div class='col-sm-1'>Cpn Disc:</div>
                     <div class='col-sm-auto'>New:</div>
                     <div class='col-sm-auto'>
-                        <input type='number' placeholder='New Coupon' id='edit_newCouponDiscount'/>
+                        <input type='number' placeholder='New Coupon' id='edit_newCouponDiscount' style='text-align: right;'/>
                     </div>
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origCouponDiscount'></div>

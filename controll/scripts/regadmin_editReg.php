@@ -47,14 +47,20 @@ $changedCoupon = ((int) $old['coupon']) != ((int) $new['coupon']);
 if ($finance) {
     $changedStatus = $old['status'] != $new['status'];
     $changedPaid = ((float)$old['paid']) != ((float)$new['paid']);
+    $changedNetPrice = ((float)$old['netPrice']) != ((float)$new['netPrice']);
+    $changedTotalTax = ((float)$old['totalTax']) != ((float)$new['totalTax']);
 } else {
     $new['paid'] = $old['paid'];
+    $new['netPrice'] = $old['netPrice'];
+    $new['totalTax'] = $old['totalTax'];
     $new['status'] = $old['status'];
     $changedPaid = false;
+    $changedNetPrice = false;
+    $changedTotalTax = false;
     $changedStatus = false;
 }
 
-$changes = $changedMemId || $changedPrice || $changedPaid || $changedDiscount || $changedCoupon || $changedStatus;
+$changes = $changedMemId || $changedPrice || $changedPaid || $changedDiscount || $changedCoupon || $changedStatus || $changedNetPrice || $changedTotalTax;
 if (!$changes) {
     $response['message'] = 'Nothing to change';
     ajaxSuccess($response);
@@ -85,6 +91,20 @@ if ($changedPaid) {
     $upQ .= 'paid = ?, ';
     $typeStr .= 'd';
     $valuearr[] = (float) $new['paid'];
+    $recast = true;
+}
+
+if ($changedNetPrice) {
+    $upQ .= 'netPrice = ?, ';
+    $typeStr .= 'd';
+    $valuearr[] = (float) $new['netPrice'];
+    $recast = true;
+}
+
+if ($changedTotalTax) {
+    $upQ .= 'totalTax = ?, ';
+    $typeStr .= 'd';
+    $valuearr[] = (float) $new['totalTax'];
     $recast = true;
 }
 

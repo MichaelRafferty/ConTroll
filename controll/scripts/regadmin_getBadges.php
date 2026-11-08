@@ -113,7 +113,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     END AS managedByType,
     CASE WHEN M.conid = ? THEN M.label ELSE CONCAT(M.conid, ' ', M.label) END AS label, 
     CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, M.conid,
-    R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    R.price, R.netPrice, R.couponDiscount, R.paid, R.totalTax, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R
@@ -185,7 +185,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     END AS managedByType,
     CASE WHEN M.conid = ? THEN M.label ELSE CONCAT(M.conid, ' ', M.label) END AS label, 
     CONCAT(R.memId, '/', IFNULL(R.mldId, '')) AS memId, M.conid, 
-    R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
+    R.price, R.netPrice, R.couponDiscount, R.paid, R.totalTax, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount, R.updatedBy, R.create_user
 FROM reg R

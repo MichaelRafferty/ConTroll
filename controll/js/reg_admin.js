@@ -71,6 +71,10 @@ var editMemSelect = null;
 var editOrigMemlabel = null;
 var editNewPrice = null;
 var editOrigPrice = null;
+var editNewNetPrice = null;
+var editNewTotalTax = null;
+var editOrigNetPrice = null;
+var editOrigTotalTax = null;
 var editNewRegPrice = null;
 var editNewPaid = null;
 var editOrigPaid = null;
@@ -116,7 +120,11 @@ window.onload = function initpage() {
         editMemSelect = document.getElementById("edit_memSelect");
         editOrigMemlabel = document.getElementById("edit_origMemLabel");
         editNewPrice = document.getElementById("edit_newPrice");
+        editNewNetPrice = document.getElementById("edit_newNetPrice");
+        editNewTotalTax = document.getElementById("edit_newTotalTax");
         editOrigPrice = document.getElementById("edit_origPrice");
+        editOrigNetPrice = document.getElementById("edit_origNetPrice");
+        editOrigTotalTax = document.getElementById("edit_origTotalTax");
         editNewRegPrice = document.getElementById("edit_newRegPrice");
         editNewPaid = document.getElementById("edit_newPaid");
         editOrigPaid = document.getElementById("edit_origPaid");
@@ -1679,6 +1687,14 @@ function changeEdit(badgeId) {
         editNewPaid.value = currentRow.paid == null ? '' : currentRow.paid;
     if (editOrigPaid)
         editOrigPaid.innerHTML = currentRow.paid == null ? '' : currentRow.paid;
+    if (editNewNetPrice)
+        editNewNetPrice.value = currentRow.netPrice == null ? '' : currentRow.netPrice;
+    if (editOrigNetPrice)
+        editOrigNetPrice.innerHTML = currentRow.netPrice == null ? '' : currentRow.netPrice;
+    if (editNewTotalTax)
+        editNewTotalTax.value = currentRow.totalTax == null ? '' : currentRow.totalTax;
+    if (editOrigTotalTax)
+        editOrigTotalTax.innerHTML = currentRow.totalTax == null ? '' : currentRow.totalTax;
     editNewCoupon.value = currentRow.coupon == null ? '' : currentRow.coupon;
     editOrigCoupon.innerHTML = currentRow.coupon == null ? '' : currentRow.coupon;
     editNewCouponDiscount.value = currentRow.couponDiscount == null ? '' : currentRow.couponDiscount;
@@ -1704,6 +1720,8 @@ function changeEditSave(override) {
     let newMemId = document.getElementById("newMemId").value.split('-');
     let newPrice = editNewPrice.value;
     let newPaid = null;
+    let newNetPrice = null;
+    let newTotalTax = null;
     let newCoupon = editNewCoupon.value;
     let newDiscount = editNewCouponDiscount.value;
     if (newDiscount == '')
@@ -1715,6 +1733,11 @@ function changeEditSave(override) {
 
     if (editNewPaid)
         newPaid = editNewPaid.value;
+
+    if (editNewNetPrice)
+        newNetPrice = editNewNetPrice.value;
+    if (editNewTotalTax)
+        newTotalTax = editNewTotalTax.value;
 
     if (newMemId == '')
         newMemId = currentRow.memId.split('/');
@@ -1747,7 +1770,7 @@ function changeEditSave(override) {
         }
 
         if (Number(newDiscount) > 0 && newCoupon == '') {
-            warnings += 'Coupon Discount of ' + Number(newDiscoint) + 'is > 0, yet the coupon is blank<br/>';
+            warnings += 'Coupon Discount of ' + Number(newDiscount) + 'is > 0, yet the coupon is blank<br/>';
             numWarnings++;
         }
 
@@ -1783,6 +1806,8 @@ function changeEditSave(override) {
             mdId: newMdId,
             price: newPrice,
             paid: newPaid,
+            netPrice: newNetPrice,
+            totalTax: newTotalTax,
             coupon: newCoupon,
             couponDiscount: newDiscount,
             status: newStatus,
@@ -1836,8 +1861,16 @@ function changeEditClose() {
     editNewRegPrice.innerHTML = '';
     if (editNewPaid)
         editNewPaid.value = '';
+    if (editNewNetPrice)
+        editNewNetPrice.value = '';
+    if (editNewTotalTax)
+        editNewTotalTax.value = '';
     if (editOrigPaid)
         editOrigPaid.innerHTML = '';
+    if (editOrigNetPrice)
+        editOrigNetPrice.innerHTML = '';
+    if (editOrigTotalTax)
+        editOrigTotalTax.innerHTML = '';
     editNewCoupon.value = '';
     editOrigCoupon.innerHTML = '';
     editNewCouponDiscount.value = '';
@@ -1861,6 +1894,62 @@ function draw_registrations(data) {
     }
     document.getElementById('tabPaginationDiv').innerHTML = '';
     document.getElementById('tabPaginationDiv').hidden = data.badges.length <= 25;
+    let columns = [
+        { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false, minWidth: 100, },
+        { title: "TID", field: "display_trans", hozAlign: "right",
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { title: "PID", field: "perid", width: 80, hozAlign: "right", formatter: this.idStatus,
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { title: "NPID", field: "newperson_id", width: 75, hozAlign: "right",
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { field: "managedByType", visible: false,},
+        { title: "Full Name", field: "fullName", width: 200, headerSort: true, formatter: "textarea",
+            headerFilter: "textarea", headerFilterFunc: fullNameHeaderFilter, },
+        { title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: "textarea", formatter: 'html', },
+        { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
+        { title: "Membership Type", field: "label", width: 200, headerSort: true, headerFilter: "textarea", formatter: "textarea" },
+        { title: "#pr", field: "pcount", minWidth: 50, hozAlign: "right",
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { title: "mId", field: "memId", hozAlign: "right",
+            headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+        { title: "Price", field: "price", hozAlign: "right",
+            formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+        { title: "Net<br/>Price", field: "price", hozAlign: "right", headerWordWrap: true,
+            formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, visible: config.finance == 1 },
+        { title: "Disc", field: "couponDiscount", hozAlign: "right",
+            formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+        { title: "Paid", field: "paid", hozAlign: "right",
+            formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+        { title: "Total<br/>Tax", field: "totalTax", hozAlign: "right", headerWordWrap: true,
+            formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, visible: config.finance == 1 },
+        { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
+        { title: "Status", field: "status", headerSort: true, headerFilter: true, },
+        { title: "Created", field: "create_date", headerSort: true, headerFilter: true,
+            headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: ''}, },
+        { title: "Changed", field: "change_date", headerSort: true, headerFilter: true,
+            headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'}, },
+        { field: "category", visible: false },
+        { field: "age", visible: false },
+        { field: "type", visible: false },
+        { field: "badgeId", visible: false },
+        { field: "conid", visible: false },
+        { field: "perid", visible: false },
+        { field: "create_trans", visible: false },
+        { field: "complete_trans", visible: false },
+        { field: "ncount", visible: false,},
+        { field: "hcount", visible: false,},
+        { field: "memCategory", visible: false,},
+        { field: "memType", visible: false,},
+        { field: 'first_name', visible: false,},
+        { field: 'middle_name', visible: false,},
+        { field: 'last_name', visible: false,},
+        { field: 'create_user', visible: false,},
+        { field: 'deceased', visible: false,},
+        { field: 'banned', visible: false,},
+        { field: 'updatedBy', visible: false,},
+    ];
     registrationtable = new Tabulator('#registration-table', {
         data: data.badges,
         layout: "fitDataTable",
@@ -1869,58 +1958,7 @@ function draw_registrations(data) {
         paginationSize: 25,
         paginationElement: document.getElementById('tabPaginationDiv'),
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-        columns: [
-            { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false, minWidth: 100, },
-            { title: "TID", field: "display_trans", hozAlign: "right",
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "PID", field: "perid", width: 80, hozAlign: "right", formatter: this.idStatus,
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "NPID", field: "newperson_id", width: 75, hozAlign: "right",
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { field: "managedByType", visible: false,},
-            { title: "Full Name", field: "fullName", width: 200, headerSort: true, formatter: "textarea",
-                headerFilter: "textarea", headerFilterFunc: fullNameHeaderFilter, },
-            { title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: "textarea", formatter: 'html', },
-            { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
-            { title: "Membership Type", field: "label", width: 200, headerSort: true, headerFilter: "textarea", formatter: "textarea" },
-            { title: "#pr", field: "pcount", minWidth: 50, hozAlign: "right",
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "mId", field: "memId", hozAlign: "right",
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "Price", field: "price", hozAlign: "right",
-                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Disc", field: "couponDiscount", hozAlign: "right",
-                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Paid", field: "paid", hozAlign: "right",
-                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
-            { title: "Status", field: "status", headerSort: true, headerFilter: true, },
-            { title: "Created", field: "create_date", headerSort: true, headerFilter: true,
-                headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: ''}, },
-            { title: "Changed", field: "change_date", headerSort: true, headerFilter: true,
-                headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'}, },
-            { field: "category", visible: false },
-            { field: "age", visible: false },
-            { field: "type", visible: false },
-            { field: "badgeId", visible: false },
-            { field: "conid", visible: false },
-            { field: "perid", visible: false },
-            { field: "create_trans", visible: false },
-            { field: "complete_trans", visible: false },
-            { field: "ncount", visible: false,},
-            { field: "hcount", visible: false,},
-            { field: "memCategory", visible: false,},
-            { field: "memType", visible: false,},
-            {field: 'first_name', visible: false,},
-            {field: 'middle_name', visible: false,},
-            {field: 'last_name', visible: false,},
-            {field: 'create_user', visible: false,},
-            {field: 'deceased', visible: false,},
-            {field: 'banned', visible: false,},
-            {field: 'updatedBy', visible: false,},
-        ],
+        columns: columns,
         initialSort: [
             {column: "display_trans", dir: "desc" },
             {column: "change_date", dir: "desc" },
