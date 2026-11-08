@@ -255,8 +255,6 @@ class AuctionItemRegistration {
             this.#artSaveBtn.disabled = false;
         }
         this.checkArtUndoRedo();
-        //console.log("dataChangedArt calling computeDups(art)");
-        this.computeDups('art');
     };
 
     // check all the rows in the table for title and material matching to color code the duplicates.
@@ -307,19 +305,7 @@ class AuctionItemRegistration {
             let cell = duprow.getCell('dupItem');
             cell.setValue(dup);
         }
-        //console.log("Setting timeout redraw(true)");
-        setTimeout(function() {
-            //console.log("redrawing " + type);
-            //console.log(table);
-            let cell = null;
-            if (typeof table.getActiveCell === 'function') {
-                cell = table.getActiveCell();
-            }
-            table.redraw(true);
-            if (cell)
-                cell.focus();
-        }, 200);
-
+        table.redraw(true);
         this.#skipComputeDups = false;
     }
 
@@ -597,8 +583,6 @@ class AuctionItemRegistration {
             this.#printSaveBtn.disabled = false;
         }
         this.checkPrintUndoRedo();
-        //console.log("dataChangedPrint calling computeDups(print)");
-        this.computeDups('print');
     };
     
     checkPrintUndoRedo() {
@@ -757,8 +741,6 @@ class AuctionItemRegistration {
             this.#nfsSaveBtn.disabled = false;
         }
         this.checkNFSUndoRedo();
-        //console.log("dataChangedNFS calling computeDups(nfs)");
-        this.computeDups('nfs');
     };
     
     checkNFSUndoRedo() {
@@ -1419,30 +1401,15 @@ function checkDupsNFS() {
 
 // processing the on art item for data cell changed, add doing dups only on title or material changed
 function artSetCellChanged(cell) {
-    let field = cell.getField();
-    if (field == 'title' || field == 'material') {
-        //console.log("title/material changed in art");
-        auctionItemRegistration.computeDups('art');
-    }
     return setCellChanged(cell);
 }
 
 // processing the on print item for data cell changed, add doing dups only on title or material changed
 function printSetCellChanged(cell) {
-    let field = cell.getField();
-    if (field == 'title' || field == 'material') {
-        //console.log("title/material changed in print");
-        auctionItemRegistration.computeDups('print');
-    }
     return setCellChanged(cell);
 }
 
 // processing the on nfs item for data cell changed, add doing dups only on title or material changed
 function nfsSetCellChanged(cell) {
-    let field = cell.getField();
-    if (field == 'title' || field == 'material') {
-        //console.log("title/material changed in nfs");
-        auctionItemRegistration.computeDups('nfs');
-    }
     return setCellChanged(cell);
 }
