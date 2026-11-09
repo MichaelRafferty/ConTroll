@@ -762,11 +762,15 @@ $totalPaid = 0;
 $unpaidByOthers = 0;
 $unpaidByMe = 0;
 $numExpired = 0;
+$numUnpaidIssues = 0;
 $disablePay = '';
 
 foreach ($allMemberships as $key => $membership) {
-    if ($membership['issue'] == 'Y')
+    if ($membership['issue'] == 'Y') {
+        if ($membership['status'] == 'unpaid')
+            $numUnpaidIssues++;
         continue;
+    }
 
     $status = $membership['status'];
     if ($membership['completePerid'] != null) {
@@ -813,7 +817,7 @@ foreach ($allMemberships as $key => $membership) {
         }
     }
 }
-if ($numExpired > 0) {
+if ($numExpired > 0 || $numUnpaidIssues > 0) {
     $disablePay = ' disabled';
 }
 
