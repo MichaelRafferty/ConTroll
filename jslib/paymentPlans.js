@@ -368,6 +368,7 @@ class PaymentPlans {
         match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2); 
         match.balanceDue = match.balanceDue.toFixed(2) ;
         match.downPayment = match.downPayment.toFixed(2) ;
+        match.dueToday = match.dueToday.toFixed(2);
         match.new = true;
         portal.makeOrder(match);
     }

@@ -376,7 +376,7 @@ function drawPersonTab($personId, $personType, $person, $conid, $ageList, $membe
         echo <<<EOS
     <div class="row mt-1 mb-2">
         <div class="col-sm-12">
-             <span class="h3">There is an issue with this account, please contact registration at $regadminemail for assistance.</span>
+             <span class="h3 need">There is an issue with this account, please contact registration at $regadminemail for assistance.</span>
         </div>
     </div>
 EOS;

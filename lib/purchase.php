@@ -94,7 +94,7 @@ EOQ;
     }
 
     // compute Purchase Totals
-    function computePurchaseTotals(&$coupon, &$badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) : array {
+    function computePurchaseTotals(&$coupon, &$badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories, $hasTax = false) : array {
         $num_primary = 0;
         $total = 0;
         $badgeCheckQ = <<<EOS
@@ -171,6 +171,7 @@ EOS;
 
         $total = 0;
         $preDiscount = 0;
+        $preTax = 0;
         $totalDiscount = 0;
         $totalElibibleForDiscount = 0;
         $maxMbrDiscounts = 0;
@@ -212,6 +213,18 @@ EOS;
                 }
             }
             $total += $price;
+
+            if ($hasTax) {
+                if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                    $badgeTaxable = 'taxableMem';
+                } else {
+                    $badgeTaxable = 'nontaxMem';
+                }
+                $netAmount = taxInclusiveAdjust($badgeTaxable, $price);
+            } else
+                $netAmount = $price;
+            $preTax += $netAmount;
+
             if (array_key_exists('paid', $badge))
                 $paid += $badge['paid'];
         }
@@ -231,6 +244,7 @@ EOS;
             'maxMbrDiscounts' => $maxMbrDiscounts,
             'applyDiscount' => $apply_discount,
             'paid' => $paid,
+            'pretax' => $preTax,
             );
 
         return $data;

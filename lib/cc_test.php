@@ -590,25 +590,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         }
     }
 
-    // TODO: if an item is in plan, set the plan discount to apply only to those line items
-    // if a plan, set a discount called deferred payment for plan to the amount not in this payment
-    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-        // deferment is total of the items - total of the payment
-        $deferment = $orderValue - $results['total'];
-        $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
-        // this is the down payment on a payment plan
-        $item = [
-            'uid' => 'planDeferment',
-            'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
-            'metadata' => $notesData['metadata'],
-            'type' => 'FixedAmount',
-            'amountMoney' => round($deferment * $currencyMultiplier),
-        ];
-        $discountAmt += $item['amountMoney'];
-        $orderDiscounts[] = $item;
-    }
-
-
     if ($locationId == null) {
         $locationId = getConfValue('cc', 'location', null);
     }
@@ -639,6 +620,30 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $taxAmounts = computeTotalTax($orderLineItems, $noSecondItems, $orderPrices, $orderValue, $currencyMultiplier);
     }
 
+    foreach ($taxAmounts as $taxField => $tax) {
+        $rtnTaxes[$taxField]['tax'] = round($tax['tax'] / $currencyMultiplier, 2);
+        $rtnTaxes[$taxField]['name'] = $tax['name'];
+        $taxAmount += $tax['tax'];
+    }
+
+    // TODO: if an item is in plan, set the plan discount to apply only to those line items
+    // if a plan, set a discount called deferred payment for plan to the amount not in this payment
+    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+        // deferment is total of the items - total of the payment
+        $deferment = $orderValue - ($results['total'] - round($taxAmount / $currencyMultiplier, 2));
+        $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
+        // this is the down payment on a payment plan
+        $item = [
+            'uid' => 'planDeferment',
+            'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
+            'metadata' => $notesData['metadata'],
+            'type' => 'FixedAmount',
+            'amountMoney' => round($deferment * $currencyMultiplier),
+        ];
+        $discountAmt += $item['amountMoney'];
+        $orderDiscounts[] = $item;
+    }
+
     $rtn = array ();
     $rtn['results'] = $results;
     // need to pass back order id, total_amount, tax_amount,
@@ -649,11 +654,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['discountAmt'] = round($discountAmt / $currencyMultiplier, 2);
 
     $rtnTaxes = [];
-    foreach ($taxAmounts as $taxField => $tax) {
-        $rtnTaxes[$taxField]['tax'] = round($tax['tax'] / $currencyMultiplier, 2);
-        $rtnTaxes[$taxField]['name'] = $tax['name'];
-        $taxAmount += $tax['tax'];
-    }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['taxAmt'] = round($taxAmount / $currencyMultiplier, 2);
     $rtn['taxAmount'] = round($taxAmount / $currencyMultiplier, 2);

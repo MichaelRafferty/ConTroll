@@ -73,7 +73,7 @@ $orderId = $_POST['orderId'];
 $source = 'portal';
 
 if ($newplan) {
-    $amount = $planRec['currentPayment'];
+    $amount = $planRec['downPayment'] + $planRec['nonPlanAmt'];
 }
 
 if (array_key_exists('couponDiscount', $_POST)) {
@@ -149,8 +149,12 @@ EOS;
         $valid = true;
         while ($badgeL = $badgeRegR->fetch_assoc()) {
             $reg = $badges[$badgeIndex[$badgeL['id']]]; // get the passed reg record
+            if ($reg['paid'] === null)
+                $reg['paid'] = 0;
+            if ($badgeL['paid'] === null)
+                $badgeL['paid'] = 0;
             // compare the fields
-            if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] || $reg['status'] != $badgeL['status'] ||
+            if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] ||
                 $reg['price'] != $badgeL['price'] || $reg['paid'] != $badgeL['paid'])
                 $valid = false;
         }
@@ -348,7 +352,7 @@ if ($newplan == 1) {
     }
     $planRec['payorPlanId'] = $newPlanId;
 } else if ($planPayment == 1) {
-    // update the plan for the payment
+    // update the existing plan for the payment
     $allocateAmt = $amount;
     $uQ = <<<EOS
 UPDATE payorPlans SET balanceDue = balanceDue - ?, updateBy = ?
@@ -380,8 +384,9 @@ EOS;
     $valArray = array($existingPlan['id'], $paymentNbr, $dueDate, $existingPlan['minPayment'], $amount, $txnid, $transId);
     $paymntkey = dbSafeInsert($iQ, $typestr, $valArray);
 
-    // now allocate the payment to the items in the plan
+    // now allocate the payment on an existing plan to the items in the plan
     // $amount needs to be allocated across each item based on it's unpaid balances
+
     $bQ = <<<EOS
 SELECT r.*, r.id as regid, m.conid AS mConid, m.memCategory, m.memType, m.memAge, m.label, m.price AS mPrice, m.startdate, m.enddate
 FROM reg r
@@ -402,7 +407,7 @@ EOS;
         $bR->free();
 
         if ($balance > 0) {
-            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true);
+            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true, false);
         }
     }
 }
@@ -424,12 +429,14 @@ $txnU = dbSafeCmd($txnUpdate, 'ddissi',
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt + $webCouponDiscount;
-    // first all the out of plan ones
-    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false);
+    // first all the out of plan ones (note, still need both parts to get the inclusive and the exclusive taxes separated out
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false, true);
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false, false);
 
     // now all the in plan ones
     // figure out the percentage to apply to each
-    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true, true);
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true, false);
 }
 if ($amount > 0) {
     [$body, $bodyHtml] = getEmailBody($transId, $info, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['amount'], $planPayment);
@@ -515,9 +522,9 @@ unsetSessionVar('totalDue');
 ajaxSuccess($response);
 return;
 
-// now all the in plan ones
+// now all the regs that are included in a transaction involving payment plan (new or existing)
 // figure out the percentage to apply to each
-function allocateBalance(&$balance, &$badges, $conid, $newPlanId, $transId, $planOnly) {
+function allocateBalance(&$balance, &$badges, $conid, $newPlanId, $transId, $planOnly, $taxOnly = false) {
     // now all the in plan ones
     // figure out the percentage to apply to each
     $totalOwed = 0;
@@ -546,8 +553,7 @@ EOS;
 
     $regU = <<<EOS
 UPDATE reg 
-SET paid=paid + ?, netPrice = CASE WHEN IFNULL(netPrice, 0) > 0 THEN netPrice ELSE ? END,
-    couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
+SET paid=IFNULL(paid, 0) + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
 WHERE id=?;
 EOS;
 
@@ -560,9 +566,16 @@ EOS;
 
     // compute total owed and if needed update perid in reg
     foreach ($badges as $badge) {
+        // only count those in or out of the plan based on $planOnly
         if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $count++;
-            $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+            // for taxonly: count only the tax portion, else everything
+            if ($taxOnly) {
+                $totalOwed += $badge['totalTax'];
+            } else {
+                // tax was already paid in total tax part, and paid was set to the remainder of the tax after inclusive tax
+                $totalOwed += round($badge['price'] - ($badge['paid'] + $badge['couponDiscount']), 2);
+            }
         }
         if (array_key_exists('newperid', $badge) && $badge['newperid'] != null) {
             if (!array_key_exists('perid', $badge) || $badge['perid'] == null) {
@@ -570,8 +583,13 @@ EOS;
             }
         }
     }
+    $totalOwed = round($totalOwed, 2);
     if ($totalOwed > 0) {
-        $ratio = $balance / $totalOwed;
+        if ($taxOnly) {
+            $ratio = 1;
+        } else {
+            $ratio = $balance / $totalOwed;
+        }
     }
     else {
         $ratio = 1;
@@ -591,7 +609,15 @@ EOS;
         $badge = $badges[$idx];
         if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $applied++;
-            $due = $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+            if ($taxOnly) {
+                $due = $badge['totalTax'];
+                // for tax only, paid decrement = only the inclusice tax portion (price - net price)
+                $paidDecr = round($badge['price'] - $badge['netPrice'], 2);
+            } else {
+                // tax was already paid in total tax part, and paid was set to the remainder of the tax after inclusive tax
+                $due = round($badge['price'] - ($badge['paid'] + $badge['couponDiscount']), 2);
+            }
+
             if ($applied == $count) // last row, give it all of the balance
                 $paid_amt = ($due < ($balance + 0.01)) ? $due : $balance; //deal with rounding error
             else
@@ -632,8 +658,10 @@ EOS;
                 }
             }
             $balance -= $paid_amt;
-            $left = $due - $paid_amt;
+
+            $left = round($due - $paid_amt, 2);
             $regStatus = ($left < 0.01) ? 'paid' : ($planOnly ? 'plan' : 'unpaid');
+
             if (array_key_exists('regid', $badge)) {
                 $regid = $badge['regid'];
             } else if (array_key_exists('regId', $badge)) {
@@ -641,15 +669,15 @@ EOS;
             } else {
                 $regid = 'tbd';
             }
-            $rows_upd += dbSafeCmd($regU, 'dddisii', array (
-                $paid_amt, $badge['netAmount'],
+            $rows_upd += dbSafeCmd($regU, 'ddisii', array (
+                $taxOnly ? $paidDecr : $paid_amt,
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
                 $regStatus,
                 $planId,
                 $regid
             ));
-            $badges[$idx]['paid'] += $paid_amt;
+            $badges[$idx]['paid'] += $taxOnly ? $paidDecr : $paid_amt;
             $badges[$idx]['status'] = $regStatus;
             $badges[$idx]['balance_due'] = $left < 0.01 ? 0 : $left;
             $badges[$idx]['modified'] = true;

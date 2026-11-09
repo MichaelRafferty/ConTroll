@@ -242,6 +242,10 @@ EOS;
             $valid = true;
             while ($badgeL = $badgeRegR->fetch_assoc()) {
                 $reg = $badges[$badgeIndex[$badgeL['id']]]; // get the passed reg record
+                if ($reg['paid'] === null)
+                    $reg['paid'] = 0;
+                if ($badgeL['paid'] === null)
+                    $badgeL['paid'] = 0;
                 // compare the fields
                 if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] || $reg['status'] != $badgeL['status'] ||
                     $reg['price'] != $badgeL['price'] || $reg['paid'] != $badgeL['paid'])
@@ -255,10 +259,12 @@ EOS;
         }
 
         if ($newPlan == 1) {
+            $hasTax =   $hasTax = hasTaxRates();
             $badges = whatMembershipsInPlan($badges, $planRec);
             $deferredAmount = $planRec['balanceDue'];
         } else foreach ($badges as $keyPlanBadge => $badge) {
             $badges[$keyPlanBadge]['inPlan'] = false;
+            $hasTax = false;
         }
 
         // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
@@ -276,17 +282,23 @@ EOS;
 
         //// $rules = $data['rules'];
         //// TODO: load and apply rules checks here to $badges
-        $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+        $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories, $hasTax);
 
         $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
         $apply_discount = $data['applyDiscount'];
         $preDiscount = $data['preDiscount'];
         $total = $data['total'];
         $paid = $data['paid'];
+        $preTax = $data['pretax'];
         $totalDiscount = $data['totalDiscount'];
+        if ($newPlan == 1) {
+            $checkAmount = round($preTax + $planRec['taxAmt'] - ($paid + $deferredAmount), 2);
+        } else {
+            $checkAmount = round($total - ($paid + $deferredAmount), 2);
+        }
 
-        if ($amount != ($total - ($paid + $deferredAmount))) {
-            error_log('bad total: post=' . $amount . ', calc=' . $total);
+        if ($amount != $checkAmount) {
+            error_log('bad total: post=' . $amount . ', calc=' . $checkAmount);
             ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad total sent to Server'));
             exit();
         }
@@ -343,7 +355,6 @@ EOS;
             ajaxSuccess(array ('status' => 'error', 'message' => 'Order not built'));
             exit();
         }
-        $response['rtn'] = $rtn;
 
         // update the transaction with the order id
         $taxes = $rtn['taxes'];
@@ -362,10 +373,30 @@ EOS;
         $valArray[] = $transId;
 
         $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
+
+        // need to update all the regs with their total taxes
+        $currency = cc_getCurrency();
+        $currencyMultiplier = get_currencyMultiplier($currency);
+        $uR = <<<EOS
+UPDATE reg
+SET totalTax = ?, netPrice = ?
+WHERE id = ?;
+EOS;
+        for ($index = 0; $index < count($results['badges']); $index++) {
+            $badge = $results['badges'][$index];
+            $item = $rtn['items'][$index];
+            $totalTax = round($item['taxAmounts']['totalTax'] / $currencyMultiplier, 2);
+            $netPrice = round($item['basePriceMoney'] / $currencyMultiplier, 2);
+            $regId = $badge['regId'];
+            $numUpd = dbSafeCmd($uR, 'ddi', array ($totalTax, $netPrice, $regId));
+            // now add those fields to the returning array of badges
+            $rtn['results']['badges'][$index]['totalTax'] = $totalTax;
+            $rtn['results']['badges'][$index]['netPrice'] = $netPrice;
+        }
     } else {
         $rtn = array ();
     }
-
+    $response['rtn'] = $rtn;
 //$tnx_record = $rtn['tnx'];
     $response['status'] = 'success';
     labeled_logWrite('c/portalOrder-return', array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
