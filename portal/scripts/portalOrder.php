@@ -385,8 +385,17 @@ EOS;
         for ($index = 0; $index < count($results['badges']); $index++) {
             $badge = $results['badges'][$index];
             $item = $rtn['items'][$index];
-            $totalTax = round($item['taxAmounts']['totalTax'] / $currencyMultiplier, 2);
-            $netPrice = round($item['basePriceMoney'] / $currencyMultiplier, 2);
+            // stripe vs square stuff
+            if (array_key_exists('tax', $item)) {
+                $totalTax  = round($item['tax']['total_tax_amount'] / $currencyMultiplier, 2);
+            } else {
+                $totalTax = round($item['taxAmounts']['totalTax'] / $currencyMultiplier, 2);
+            }
+            if (array_key_exists('unit_cost', $item)) {
+                $netPrice = round($item['unit_cost'] / $currencyMultiplier, 2);
+            } else {
+                $netPrice = round($item['basePriceMoney'] / $currencyMultiplier, 2);
+            }
             $regId = $badge['regId'];
             $numUpd = dbSafeCmd($uR, 'ddi', array ($totalTax, $netPrice, $regId));
             // now add those fields to the returning array of badges

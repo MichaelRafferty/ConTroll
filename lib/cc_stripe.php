@@ -651,10 +651,10 @@ EOS;
                 ];
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
                    if ($badge['inPlan']) {
-                       $planDiscountAmount = round(($amount / $planAmount) * $balanceDue);
+                       $planDiscountAmount = round(($netAmount * $currencyMultiplier / $planAmount) * $balanceDue);
                        if ($planDiscountAmount > 0) {
                            $item['discount_amount'] = $planDiscountAmount;
-                           $orderValue -= round($planDiscountAmount / $currencyMultiplier);
+                           $orderValue -= round($planDiscountAmount / $currencyMultiplier, 2);
                        }
                    }
                 }
