@@ -245,7 +245,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
         else
-            $loginNewperid = getSessionVar('id');
+            $loginNewPerid = getSessionVar('id');
     }
 
     // square order api steps
@@ -295,11 +295,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $lineid = 0;
     $orderValue = 0;
     $preTaxAmt = 0;
+    $notInPlan = 0;
+    $downPmt = 0;
     $planName = '';
     $planId = '';
-    $downPmt = '';
-    $nonPlanAmt = '';
-    $balanceDue = '';
+    $nonPlanAmt = 0;
+    $balanceDue = 0;
     $itemsBuilt = false;
     // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
     $hasTax = hasTaxRates();
@@ -551,8 +552,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-                    if ($badge['inPlan'])
-                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                    if ($badge['inPlan']) {
+                        $item->setAppliedDiscounts(array (new Square\Types\OrderLineItemAppliedDiscount([
                             'uid' => 'planDeferment-' . $lineid,
                             'discountUid' => 'planDeferment',
                         ])));
@@ -735,7 +736,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
         $phpOrder = json_decode(json_encode($order), true);
-        if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $phpOrder, $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject('cc_square/Orders API order response', $phpOrder, $useLogWrite, false);
     }
     catch (SquareApiException $e) {
         if ($cleanUpRegs)
@@ -895,7 +896,7 @@ function cc_roundOrder($orderId, $roundAmt, $useLogWrite = false, $locationId = 
             $apiResponse = $client->orders->update($body);
             $order = $apiResponse->getOrder();
             $phpOrder = json_decode(json_encode($order), true);
-            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $phpOrder, $useLogWrite);
+            if ($squareDebug & 14) sqcc_logObject('cc_square/roundOrder API order response', $phpOrder, $useLogWrite, false);
         }
         catch (SquareApiException $e) {
             sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
@@ -974,7 +975,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
           $phpOrder = json_decode(json_encode($order), true);
-          if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order update response', $phpOrder, $useLogWrite);
+          if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order update response', $phpOrder, $useLogWrite, false);
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
@@ -1012,7 +1013,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         $apiResponse = $client->orders->get($body);
         $order = $apiResponse->getOrder();
         $phpOrder = json_decode(json_encode($order), true);
-        if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order response', $phpOrder, $useLogWrite);
+        if ($squareDebug & 12) sqcc_logObject('cc_square-Orders API order response', $phpOrder, $useLogWrite, false);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
@@ -1070,7 +1071,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
         else
-            $loginNewperid = getSessionVar('id');
+            $loginNewPerid = getSessionVar('id');
     }
     // sanitize the email address to avoid empty and refused
     if ($buyer['email'] == '/r' || $buyer['email'] == null)
@@ -1132,7 +1133,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             $apiResponse = $client->payments->create($pbody);
             $payment = $apiResponse->getPayment();
             $phpPayment = json_decode(json_encode($payment), true);
-            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite);
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite, false);
             $paymentIds[] = $payment->getId();
         }
         catch (SquareApiException $e) {
@@ -1232,7 +1233,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $apiResponse = $client->payments->create($pbody);
         $payment = $apiResponse->getPayment();
         $phpPayment = json_decode(json_encode($payment), true);
-        if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API Response', $phpPayment, $useLogWrite, false);
         $paymentIds[] = $payment->getId();
     }
     catch (SquareApiException $e) {
@@ -1332,8 +1333,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             if ($squareDebug & 14) sqcc_logObject('cc_square-Payments API order payment request', $payRequest, $useLogWrite);
             $apiResponse = $client->orders->pay($payRequest);
             $payResponse = $apiResponse->getOrder();
-            $phpPayResponse =  json_decode(json_encode($payRequest), true);
-            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $phpPayResponse, $useLogWrite);
+            $phpPayResponse =  json_decode(json_encode($payResponse), true);
+            if ($squareDebug & 14) sqcc_logObject('cc_Square-Payments API order payment Response', $phpPayResponse, $useLogWrite, false);
         }
         catch (SquareApiException $e) {
             web_error_log('Payment Square API Exception: ' . $e->getMessage());
@@ -1418,7 +1419,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         if ($squareDebug & 14) sqcc_logObject('cc_square/Payments API get payment-body', $body, $useLogWrite);
         $apiResponse = $client->payments->get($body);
         $payment = json_decode(json_encode($apiResponse->getPayment()), true);
-        if ($squareDebug & 14) sqcc_logObject('Payments API get payment', $payment, $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject('Payments API get payment', $payment, $useLogWrite, false);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
@@ -1430,13 +1431,15 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     return $payment;
 }
 
-function sqcc_logObject($message, $objArray, $useLogWrite = false) : void {
-    $response = json_encode($objArray);
-    $response = json_decode($response, true);
+function sqcc_logObject($message, $objArray, $useLogWrite = false, $doJson = true) : void {
+    if ($doJson) {
+        $response = json_encode($objArray);
+        $objArray = json_decode($response, true);
+    }
     if ($useLogWrite) {
-        labeled_logWrite($message, $response);
+        labeled_logWrite($message, $objArray);
     } else {
-        labeled_error_log($message, $response);
+        labeled_error_log($message, $objArray);
     }
 }
 
