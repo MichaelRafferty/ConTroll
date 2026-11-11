@@ -501,16 +501,16 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $amount = $badge['balDue'];
                 } else if ($badge['paid'] > 0) {
                     $doInclusive = false;
-                    $amount = $badge['price']-$badge['paid'];
+                    $amount = $badge['price'] - $badge['paid'];
                 } else {
                     $doInclusive = true;
-                    $amount = $badge['price'] ;
+                    $amount = $badge['price'];
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
-                if ($hasTax)  {
+                if ($hasTax) {
                     if (array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                         $badgeTaxable = 'taxableMem';
                     } else {
@@ -527,7 +527,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
-                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                $itemName = $badge['fname'] . ': ' . $badge['shortname'] . ' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
                     ($addMbr ? ' Mbr ' : ' ') . 'for ' . $fullname;
                 $item = new OrderLineItem ([
                     'itemType' => OrderLineItemItemType::Item->value,
@@ -543,7 +543,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ]);
 
                 // apply taxes to badge memberships based on the taxable override flags for taxable vs. non taxable
-                if ($hasTax)  {
+                if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $taxArray = buildSquareAppliedTaxArray($badgeTaxable, $lineid);
                     if ($needTaxes == false)
@@ -557,32 +557,34 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                             'uid' => 'planDeferment-' . $lineid,
                             'discountUid' => 'planDeferment',
                         ])));
-                }
+                    }
 
-                if ($couponDiscount &&
-                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $cat = $badge['memCategory'];
-                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
-                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
-                            'uid' => 'couponDiscount-' . $lineid,
-                            'discountUid' => 'discount' ,
+                    if ($couponDiscount &&
+                        (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                        $cat = $badge['memCategory'];
+                        if (in_array($cat, array ('standard', 'supplement', 'upgrade', 'add-on', 'virtual'))) {
+                            $item->setAppliedDiscounts(array (new Square\Types\OrderLineItemAppliedDiscount([
+                                'uid' => 'couponDiscount-' . $lineid,
+                                'discountUid' => 'discount',
+                            ])));
+                        }
+                    }
+                    if ($managerDiscount &&
+                        (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                        $item->setAppliedDiscounts(array (new Square\Types\OrderLineItemAppliedDiscount([
+                            'uid' => 'managerDiscount-' . $lineid,
+                            'discountUid' => 'discount',
                         ])));
                     }
+                    $orderLineitems[] = $item;
+                    $orderValue += $netAmount;
+                    $preTaxAmt += $amount;
+                    $lineid++;
+                    $rowno++;
                 }
-                if ($managerDiscount &&
-                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
-                        'uid' => 'managerDiscount-' . $lineid,
-                        'discountUid' => 'discount' ,
-                    ])));
-                }
-                $orderLineitems[] = $item;
-                $orderValue += $netAmount;
-                $preTaxAmt += $amount;
-                $lineid++;
-                $rowno++;
             }
         }
+
         if (array_key_exists('spaces', $results)) {
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
@@ -628,7 +630,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ]);
 
                 // apply taxes to spaces based on the space taxable flag
-                if ($hasTax)  {
+                if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
                     $taxArray = buildSquareAppliedTaxArray($spaceType, $lineid);
@@ -667,11 +669,11 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'basePriceMoney' => new Money([
                         'amount' => round($netAmount * $currencyMultiplier),
                         'currency' => $currency,
-                        ]),
+                    ]),
                 ]);
 
                 // apply taxes to mail in fees based on the artShipping flag
-                if ($hasTax)  {
+                if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     // need to determine the type of space
                     $taxArray = buildSquareAppliedTaxArray('artShipping', $lineid);
@@ -691,7 +693,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
+            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewPerid, $results['transid']);
             // this is the down payment on a payment plan
             $item = new OrderLineItemDiscount ([
                 'uid' => 'planDeferment',
