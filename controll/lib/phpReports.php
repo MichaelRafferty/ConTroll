@@ -47,8 +47,8 @@ function loadToCSVArray($fileName, $delimiter=','): array {
         return $dataArray;
 
     // load the header row
-    $elements = fgetcsv($fd, 0, $delimiter);
-    while (($row = fgetcsv($fd, 0, $delimiter)) !== false) {
+    $elements = fgetcsv($fd, 0, $delimiter, '"', "\\");
+    while (($row = fgetcsv($fd, 0, $delimiter, '"', "\\")) !== false) {
         $rowData = [];
         foreach ($elements as $key => $name) {
             $rowData[$name] = $row[$key];

@@ -485,7 +485,7 @@ function phoneNumberNormalize($buyer) : string {
             return '';
 
         $callingCodes = [];
-        while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+        while (($data = fgetcsv($fh, 1000, ',', '"', "\\")) != false) {
             $callingCodes[$data[0]] = $data[1];
         }
         fclose($fh);
@@ -646,7 +646,7 @@ function loadCountryOptions($defaultCode = null) {
         $defaultCode = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 
     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+    while (($data = fgetcsv($fh, 1000, ',', '"', "\\")) != false) {
         $selected = $data[1] == $defaultCode ? ' selected' : '';
         $optionList .= "<option value='" . $data[1] . "'" . $selected . ">" . $data[0] . "</option>\n";
     }
@@ -658,7 +658,7 @@ function loadCountryOptions($defaultCode = null) {
 function loadCountryConvert() {
     $ISO3 = [];
     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+    while (($data = fgetcsv($fh, 1000, ',', '"', "\\")) != false) {
         $ISO3[$data[1]] = $data[2];
     }
     fclose($fh);
