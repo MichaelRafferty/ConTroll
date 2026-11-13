@@ -129,6 +129,13 @@ draw_fileManagerModals($authToken);
                                     <div class='col-sm-auto' id='editMemListConID'></div>
                                 </div>
                                 <div class='row mt-1'>
+                                    <div class='col-sm-2'><label for='edidMemListSortOrder'>Sort Order:</label></div>
+                                    <div class='col-sm-10'>
+                                        <input type="number" id="editMemListSortOrder" onchange='memListModalMarkDirty(true);'
+                                        placeholder="Sort Order"/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
                                     <div class='col-sm-2'><label for="memListCategorySelect">Category:</label></div>
                                     <div class='col-sm-10' id="editMemListCategory"></div>
                                 </div>

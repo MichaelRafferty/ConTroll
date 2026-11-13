@@ -490,7 +490,8 @@ class consetup {
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
                 {
-                    title: "Sort", field: "sort_order", width: 75, headerSort: true, headerHozAlign: "right", hozAlign: "right", sorter: "number",
+                    title: "Sort", field: "sort_order", width: 75, headerSort: true, headerHozAlign: "right", hozAlign: "right",
+                    sorter: "number",  editor: "number",
                 },
                 {
                     title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
@@ -691,10 +692,10 @@ class consetup {
             }
         }
 
+        document.getElementById('editMemListSortOrder').value = this.#editDataCurrentRow.sort_order;
         document.getElementById('memListCategorySelect').value = this.#editDataCurrentRow.memCategory;
         document.getElementById('memListAgeSelect').value = this.#editDataCurrentRow.memAge;
         document.getElementById('memListTypeSelect').value = this.#editDataCurrentRow.memType;
-        document.getElementById('editMemListAtcon').value = this.#editDataCurrentRow.atcon;
         document.getElementById('editMemListOnline').value = this.#editDataCurrentRow.online;
         document.getElementById('editMemListLabel').value = label;
         document.getElementById('editMemListNotes').value = notes;
@@ -1686,6 +1687,7 @@ class consetup {
         this.#memListDates[this.#editDataCurrentMemId] = rowListDates;
         this.#editDataCurrentMemId = null;
         // now copy the main row data into editData
+        this.#editDataCurrentRow.sort_order = document.getElementById('editMemListSortOrder').value;
         this.#editDataCurrentRow.memCategory = document.getElementById('memListCategorySelect').value;
         this.#editDataCurrentRow.memAge = document.getElementById('memListAgeSelect').value;
         this.#editDataCurrentRow.memType = document.getElementById('memListTypeSelect').value;
