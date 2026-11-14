@@ -23,5 +23,5 @@ $libJSversion = '2.3.15';
 $controllJSversion = '2.3.15';
 $globalJSversion = '2.3.1';
 $atJSversion = '2.3.3';
-$exhibitorJSversion = '2.3.5';
+$exhibitorJSversion = '2.3.6';
 $onlineregJSversion = '2.3.1';
