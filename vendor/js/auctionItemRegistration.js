@@ -931,6 +931,13 @@ class AuctionItemRegistration {
                 return auctionItemRegistration.tabNewRow();
             };
         }
+        if(this.#artItemTable) {
+            this.#artItemTable.off('dataChanged');
+            this.#artItemTable.off('cellEdited');
+            this.#artItemTable.destroy();
+            this.#artItemTable = null;
+        }
+
         this.#artItemTable = new Tabulator('#artItemTable', tableSpecs);
         this.#artItemsDirty = false;
         this.#artItemTable.on("dataChanged", function (data) {
@@ -1017,6 +1024,12 @@ class AuctionItemRegistration {
                 return auctionItemRegistration.tabNewRow();
             };
         }
+        if(this.#printItemTable) {
+            this.#printItemTable.off('dataChanged');
+            this.#printItemTable.off('cellEdited');
+            this.#printItemTable.destroy();
+            this.#printItemTable = null;
+        }
         this.#printItemTable = new Tabulator('#printItemTable', tableSpecs);
         this.#printItemsDirty = false;
         this.#printItemTable.on("dataChanged", function (data) {
@@ -1099,6 +1112,14 @@ class AuctionItemRegistration {
                 return auctionItemRegistration.tabNewRow();
             };
         }
+
+        if(this.#nfsItemTable) {
+            this.#nfsItemTable.off('dataChanged');
+            this.#nfsItemTable.off('cellEdited');
+            this.#nfsItemTable.destroy();
+            this.#nfsItemTable = null;
+        }
+
         this.#nfsItemTable = new Tabulator('#nfsItemTable', tableSpecs);
         this.#nfsItemsDirty = false;
         this.#nfsItemTable.on("dataChanged", function (data) {
