@@ -427,6 +427,13 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EAC
 END;;
 DELIMITER ;
 
+/*
+ * payor plans for square need to track the order number so a payment against the plan will actually use the same order number
+ * for the payment and not a separate order
+ */
+ALTER TABLE payorPlans ADD COLUMN orderId varchar(64) DEFAULT NULL
+    COMMENT 'For Square all payments against the plan must use the same order, as a partial payment, this is the Square Order ID for the plan';
+
 INSERT INTO patchLog(id, name) VALUES(x60, 'Release 2.4');
 
 SELECT 'Now run the memMapCleanup.php script in the install directory'
