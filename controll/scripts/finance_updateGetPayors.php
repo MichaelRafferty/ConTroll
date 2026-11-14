@@ -76,7 +76,7 @@ WITH pmts AS (
 SELECT  pp.id, pp.planId, pp.conid, pp.perid, pp.newperid, pp.initialAmt, pp.nonPlanAmt, pp.downPayment, pp.minPayment, pp.finalPayment,
         pp.openingBalance, pp.numPayments, pp.daysBetween, pp.payByDate, UPPER(SUBSTRING(pp.payType, 1, 1)) AS payType, pp.reminders, pp.status, pp
         .createTransaction,
-        pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy,
+        pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy, pp.orderId,
         p.name, l.paymentsMade, l.lastPaymentDate, l.lastPaymentAmt,
         CASE WHEN pi.id IS NOT NULL THEN pi.fullName ELSE ni.fullName END AS fullName
 FROM payorPlans pp

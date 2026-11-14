@@ -244,6 +244,8 @@ if ($amount > 0) {
         'netAmount' => $netAmount,
         'taxAmt' => $taxAmount,
         'total' => $amount,
+        'newPlan' => $newplan,
+        'planPayment' => $planPayment,
         'price' => null,
         'badges' => null,
         'change' => 0,

@@ -1090,7 +1090,17 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
     $paymentIds = [];
-    $autoComplete = true;
+    if (array_key_exists('newplan', $ccParams)) {
+        $newPlan = $ccParams['newPlan'];
+    } else {
+        $newPlan = 0;
+    }
+    if (array_key_exists('planPayment', $ccParams)) {
+        $planPayment = $ccParams['newplan'];
+    } else {
+        $planPayment = 0;
+    }
+    $autoComplete = $newPlan == 0 && $planPayment == 0;
 
     // first pay the rounding adjustment if the order type is cash and its a round down
     if ($sourceId == 'CASH' && array_key_exists('cashAmountRounded', $ccParams) && $ccParams['cashAmountRounded'] < 0) {
@@ -1322,9 +1332,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $category = 'reg';
     }
 
-    // now if autocomplete wasnt set, do a pay order call
-
-    if (!$autoComplete) {
+    // now if not newplan and autocomplete wasnt set, do a pay order call
+    if ($newPlan == 0 && !$autoComplete) {
         $payRequest = new PayOrderRequest([
             'idempotencyKey' => guidv4(),
             'orderId' => $ccParams['orderId'],

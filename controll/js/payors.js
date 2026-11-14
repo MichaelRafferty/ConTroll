@@ -96,6 +96,7 @@ class Payors {
                     headerHozAlign: "right", hozAlign:"right", headerFilterFunc: numberHeaderFilter, },
                 {title: "Create Date", field: "createDate", width: 130, headerWordWrap: true, headerFilter: true, headerSort: true,
                     headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: ''}, },
+                {title: "Order ID", field: "orderId", width: 100, headerWordWrap: true, headerFilter: true, },
                 {title: "Pmts Made", field: "paymentsMade", width: 65, headerWordWrap: true, headerFilter: true,
                     headerHozAlign: "right", hozAlign:"right", headerFilterFunc: numberHeaderFilter, },
                 {title: "Last Pmt Date", field: "lastPaymentDate", width: 130, headerWordWrap: true, headerFilter: true, headerSort: true,
