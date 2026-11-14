@@ -334,16 +334,16 @@ if ($newplan == 1) {
     $iQ = <<<EOS
     INSERT INTO payorPlans (planId, conid, $pfield, initialAmt, nonPlanAmt, downPayment, minPayment, finalPayment,
                             openingBalance, numPayments, daysBetween, payByDate, payType, reminders, 
-                            createTransaction, balanceDue, updateBy)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                            createTransaction, balanceDue, orderid, updateBy)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     
     EOS;
-    $typestr = 'iiiddddddiisssidi';
+    $typestr = 'iiiddddddiisssidsi';
     $planData = $planRec['plan'];
     $valArray = array($planData['id'], $conid, $loginId, $planRec['totalAmountDue'], $planRec['nonPlanAmt'], $planRec['downPayment'], $planRec['paymentAmt'],
         $planRec['finalPaymentAmt'],
         $planRec['planAmt'], $planRec['numPayments'], $planRec['daysBetween'], $planData['payByDate'], $planData['payType'], $planData['reminders'],
-        $transId, $planRec['balanceDue'], $loginId);
+        $transId, $planRec['balanceDue'], $orderId, $loginId);
     $newPlanId = dbSafeInsert($iQ, $typestr, $valArray);
     if ($newPlanId == false || $newPlanId < 0) {
         labeled_logWrite('p/portalPayment-plan create error', array("plan msg"=>"create of plan failed", "plan data" => $valArray ));
