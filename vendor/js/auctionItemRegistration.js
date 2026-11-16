@@ -220,18 +220,21 @@ class AuctionItemRegistration {
         if(this.#artItemTable) {
             this.#artItemTable.off('dataChanged');
             this.#artItemTable.off('cellEdited');
+            this.#artItemTable.off('rowAdded');
             this.#artItemTable.destroy();
             this.#artItemTable = null;
         }
         if(this.#printItemTable) {
             this.#printItemTable.off('dataChanged');
             this.#printItemTable.off('cellEdited');
+            this.#printItemTable.off('rowAdded');``
             this.#printItemTable.destroy();
             this.#printItemTable = null;
         }
         if(this.#nfsItemTable) {
             this.#nfsItemTable.off('dataChanged');
             this.#nfsItemTable.off('cellEdited');
+            this.#nfsItemTable.off('rowAdded');
             this.#nfsItemTable.destroy();
             this.#nfsItemTable = null;
         }
@@ -886,7 +889,7 @@ class AuctionItemRegistration {
         let _this = this;
         artPagination = data.art.length > 25;
         let tableSpecs = {
-            maxHeight: "400px",
+            maxHeight: "420px",
             history: true,
             data: data.art,
             layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
@@ -934,6 +937,7 @@ class AuctionItemRegistration {
         if(this.#artItemTable) {
             this.#artItemTable.off('dataChanged');
             this.#artItemTable.off('cellEdited');
+            this.#artItemTable.off('rowAdded');
             this.#artItemTable.destroy();
             this.#artItemTable = null;
         }
@@ -944,6 +948,12 @@ class AuctionItemRegistration {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", artSetCellChanged);
+        if (artPagination) {
+            let _artItemTable = this.#artItemTable;
+            this.#artItemTable.on("rowAdded", function (row) {
+                _artItemTable.setPageToRow(row);
+            });
+        }
 
         // now if imported items are passed, add them to the section
         if (art != null && art.length > 0) {
@@ -985,7 +995,7 @@ class AuctionItemRegistration {
         let _this = this;
         printPagination = data.print.length > 25;
         let tableSpecs = {
-            maxHeight: "400px",
+            maxHeight: "420px",
             history: true,
             data: data.print,
             index: 'item_key',
@@ -1027,6 +1037,7 @@ class AuctionItemRegistration {
         if(this.#printItemTable) {
             this.#printItemTable.off('dataChanged');
             this.#printItemTable.off('cellEdited');
+            this.#printItemTable.off('rowAdded');
             this.#printItemTable.destroy();
             this.#printItemTable = null;
         }
@@ -1036,6 +1047,13 @@ class AuctionItemRegistration {
             _this.dataChangedPrint(data);
         });
         this.#printItemTable.on("cellEdited", printSetCellChanged);
+        if (printPagination) {
+            let _printItemTable = this.#printItemTable;
+            this.#printItemTable.on("rowAdded", function (row) {
+                _printItemTable.setPageToRow(row);
+            });
+        }
+
         // now if imported items are passed, add them to the section
         if (print != null && print.length > 0) {
             this.#printSaveBtn.innerHTML = 'Save Changes*';
@@ -1076,7 +1094,7 @@ class AuctionItemRegistration {
         let _this = this;
         nfsPagination = data.nfs.length > 25;
         let tableSpecs = {
-            maxHeight: "400px",
+            maxHeight: "420px",
             history: true,
             data: data.nfs,
             index: 'item_key',
@@ -1116,6 +1134,7 @@ class AuctionItemRegistration {
         if(this.#nfsItemTable) {
             this.#nfsItemTable.off('dataChanged');
             this.#nfsItemTable.off('cellEdited');
+            this.#nfsItemTable.off('rowAdded');
             this.#nfsItemTable.destroy();
             this.#nfsItemTable = null;
         }
@@ -1126,6 +1145,12 @@ class AuctionItemRegistration {
             _this.dataChangedNFS(data);
         });
         this.#nfsItemTable.on("cellEdited", nfsSetCellChanged);
+        if (nfsPagination) {
+            let _nfsItemTable = this.#nfsItemTable;
+            this.#nfsItemTable.on("rowAdded", function (row) {
+                _nfsItemTable.setPageToRow(row);
+            });
+        }
 
         // now if imported items are passed, add them to the section
         if (nfs != null && nfs.length > 0) {
@@ -1205,7 +1230,7 @@ class AuctionItemRegistration {
             this.#importTable.replaceData(data.items);
         } else {
             this.#importTable = new Tabulator('#importTable', {
-                maxHeight: "800px",
+                maxHeight: "840px",
                 data: data.items,
                 index: 'itemNum',
                 layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
