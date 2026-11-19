@@ -494,7 +494,7 @@ class mergesetup {
 
     // draw the manager central editblock from the match and new person
     drawManager(direction) {
-        let manager = '<i>Not Manged</i>';
+        let manager = '<i>Not Managed</i>';
         if (direction == 'remain' && this.#remainPerson.managedBy)
             manager = this.#remainPerson.manager + ' (' + this.#remainPerson.manager + ')';
         if (direction == 'merge')

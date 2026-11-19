@@ -826,7 +826,7 @@ class Unmatched {
 
     // draw the manager central editblock from the match and new person
     drawManager(type, manager, managerId) {
-        manager = (managerId == undefined || managerId == null) ? '<i>Not Manged</i>' : (manager + ' (' + managerId + ')');
+        manager = (managerId == undefined || managerId == null) ? '<i>Not Managed</i>' : (manager + ' (' + managerId + ')');
 
         let nManagerId = null;
         let pManagerId = null;
