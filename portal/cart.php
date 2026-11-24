@@ -172,7 +172,7 @@ $person['Ages'] = $personAges;
 outputCustomText('main/top');
 // draw the skeleton
 drawVariablePriceModal('cart');
-if (array_key_exists('currentAgeType', $person) && $person['currentAgeType'] !== null) {
+if (array_key_exists('currentAgeType', $person) && $person['currentAgeType'] !== null && $person['currentAgeType'] != '') {
     $ageName =  ' (' .
             $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [' . $ruleData['ageListIdx'][$person['currentAgeType']]['label'] .
             ')';
