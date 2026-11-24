@@ -724,6 +724,7 @@ function findArt(findType) {
                 show_message('Invalid barcode scanned or entered, check entry and try again.', 'warn');
                 return;
             }
+            itemId = Barcodes.trimChecksum(itemId);
             break;
 
         case 'unit':
