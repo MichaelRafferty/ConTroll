@@ -3,6 +3,7 @@
 
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/updateAgeFromMembership.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -366,6 +367,13 @@ EOS;
         }
     }
 }
+
+// in the case their age is still null, find the age and update it from the regs they just added to the cart.
+// this should not happen, but this is the just in case item for those of type all that were added from a bundle, etc.
+$ageMsg = updateAgeFromMembership($personId, $personType, $conid);
+if ($ageMsg != '')
+    $response['message'] .= "<br/>". $ageMsg;
+
 
 if ($response['message'] == '') {
     $response['status'] = 'success';
