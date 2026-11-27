@@ -442,10 +442,12 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkArtUndoRedo();
                 if (artPagination) {
                     row.pageTo().then(function () {
-                        setCellChanged(row);
+                        row.scrollTo("bottom", true);
+                        setCellChanged(row.getCell("item_key"));
                     });
                 } else {
-                    setCellChanged(row);
+                    row.scrollTo("bottom", true);
+                    setCellChanged(row.getCell("item_key"));
                 }
             });
             this.#skipComputeDups = false;
@@ -648,10 +650,12 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkPrintUndoRedo();
                 if (printPagination) {
                     row.pageTo().then(function () {
-                        setCellChanged(row);
+                        row.scrollTo("bottom", true);
+                        setCellChanged(row.getCell("item_key"));
                     });
                 } else {
-                    setCellChanged(row);
+                    row.scrollTo("bottom", true);
+                    setCellChanged(row.getCell("item_key"));
                 }
             });
             this.#skipComputeDups = false;
@@ -804,10 +808,12 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkNFSUndoRedo();
                 if (nfsPagination) {
                     row.pageTo().then(function () {
-                        setCellChanged(row);
+                        row.scrollTo("bottom", true);
+                        setCellChanged(row.getCell("item_key"));
                     });
                 } else {
-                    setCellChanged(row);
+                    row.scrollTo("bottom", true);
+                    setCellChanged(row.getCell("item_key"));
                 }
             });
             this.#skipComputeDups = false;
