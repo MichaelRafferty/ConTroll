@@ -6,6 +6,9 @@ var profile = null;
 // initial setup
 window.onload = function () {
     login = new Login();
+    if (typeof config === 'undefined') // check if we are not called in a proper environment
+        return;
+
     if (config.refresh == 'passkey')
         login.loginWithPasskey();
 }
