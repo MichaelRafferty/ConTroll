@@ -833,9 +833,9 @@ class Unmatched {
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
-                this.#updateExisting.disabled = priorUpdateExistingDisabled;
-                this.#createNew.disabled = priorCreateNewDisabled;
-                this.#deleteNew.disabled = priorDeleteNewDisabled;
+                _this.#updateExisting.disabled = priorUpdateExistingDisabled;
+                _this.#createNew.disabled = priorCreateNewDisabled;
+                _this.#deleteNew.disabled = priorDeleteNewDisabled;
                 return false;
             }
         });
