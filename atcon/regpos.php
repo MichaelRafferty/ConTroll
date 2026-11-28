@@ -243,7 +243,7 @@ if ($config_vars['creditonline'] == 1) {
                                 <input type='hidden' name='perinfo-perid' id='perinfo-perid'/>
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
-                                    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+                                    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true, $ageByDate,
                                             array(), $ageListIdx, 200, true, '', false, true, null, null);
                                 ?>
                                 <div class="row">
