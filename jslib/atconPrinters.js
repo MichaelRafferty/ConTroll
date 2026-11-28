@@ -74,14 +74,14 @@ class Printers {
             history: true,
             index: 'serverName',
             columns: [
-                { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, },
+                { title: "Server", field: "serverName", editor: "list", editorParams: { valuesLookup: localServersList, autocomplete: true, },
                     editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter: 'input'  },
                 { title: "Printer", field: "printerName", editor: "input", editable: printerLocalonly, minWidth: 150, headerSort: true, headerFilter:true },
                 { title: "Type", field: "printerType", headerSort: true, headerFilter: true, headerFilterParams: { values: this.#printerTypes, },
-                    editor: "list", editorParams: { values: this.#printerTypes, defaultValue: "generic", emptyValue: "generic", },
+                    editor: "list", editorParams: { values: this.#printerTypes, defaultValue: "generic", emptyValue: "generic",  autocomplete: true, },
                 },
                 { title: "Code Page", field: "codePage", headerSort: true, headerFilter:true, headerFilterParams: { values: this.#printerCodePages, },
-                    editor: "list", editorParams: { values: this.#printerCodePages, defaultValue: "ASCII", emptyValue: "ASCII", },
+                    editor: "list", editorParams: { values: this.#printerCodePages, defaultValue: "ASCII", emptyValue: "ASCII", autocomplete: true, },
                 },
                 { title: "Active", field: "active", headerSort: false, formatter: "tickCross", cellClick: invertTickCross, headerFilter:true },
                 { title: "Printer Test", formatter: function (cell, onRendered, sucess, cancelCallback, editorParams) {

@@ -105,7 +105,7 @@ class taxConfig {
                 {title: "Taxable Overrides", field: "taxItemsDisplay", headerSort:false, width: 300, formatter: 'textarea', },
                 {
                     title: "GL Num/Label", field: "glNum", width: 380, headerWordWrap: true,
-                    editor: "list", editorParams: {values: glEditorList,},
+                    editor: "list", editorParams: {values: glEditorList, autocomplete: true, },
                     formatter: "lookup", formatterParams: glEditorList,
                     headerFilter: true, headerFilterParams: {values: glEditorList},
                 },

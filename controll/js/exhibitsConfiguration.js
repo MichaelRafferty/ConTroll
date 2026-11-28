@@ -872,17 +872,17 @@ class exhibitssetup {
         if (config.useGL == 1) {
             columns.push(
                 {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, width: 320,
-                    editor: "list", editorParams: {values: glEditorList,},
+                    editor: "list", editorParams: {values: glEditorList, autocomplete: true, },
                     formatter: "lookup", formatterParams: glEditorList,
                     headerFilter: true, headerFilterParams: {values: glEditorList},
                 },
                 {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
-                    editor: "list", editorParams: {values: glEditorList,},
+                    editor: "list", editorParams: {values: glEditorList, autocomplete: true,  },
                     formatter: "lookup", formatterParams: glEditorList,
                     headerFilter: true, headerFilterParams: {values: glEditorList},
                 },
                 {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, width: 320,
-                    editor: "list", editorParams: {values: glEditorList,},
+                    editor: "list", editorParams: {values: glEditorList, autocomplete: true, },
                     formatter: "lookup", formatterParams: glEditorList,
                     headerFilter: true, headerFilterParams: {values: glEditorList},
                 },
@@ -961,7 +961,7 @@ class exhibitssetup {
                 width: 100,
                 headerFilter: true,
                 headerFilterParams: {values: this.#regionYearsListArr},
-                editor: "list", editorParams: {values: this.#regionYearsListArr},
+                editor: "list", editorParams: {values: this.#regionYearsListArr,  autocomplete: true,},
                 validator: "required",
                 formatter: "lookup", formatterParams: this.#regionYearsListArr,
             },
@@ -983,7 +983,7 @@ class exhibitssetup {
         if (config.useGL == 1)
             columns.push(
             {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
-                editor: "list", editorParams: {values: glEditorList,},
+                editor: "list", editorParams: {values: glEditorList,  autocomplete: true,},
                 formatter: "lookup", formatterParams: glEditorList,
                 headerFilter: true, headerFilterParams: {values: glEditorList}, }
             );
@@ -1048,7 +1048,8 @@ class exhibitssetup {
                 {
                     title: "&bigstar;Exhibits Space", field: "spaceId", width: 200, headerSort: true, headerWordWrap: true,
                     headerFilter: true, headerFilterParams: {values: this.#spacesListArr}, validator: "required",
-                    editor: "list", editorParams: {values: this.#spacesListArr}, formatter: "lookup", formatterParams: this.#spacesListArr,
+                    editor: "list", editorParams: {values: this.#spacesListArr, autocomplete: true,},
+                    formatter: "lookup", formatterParams: this.#spacesListArr,
                 },
                 {
                     title: "&bigstar;Code", field: "code", headerSort: true, headerFilter: true, width: 140,
@@ -1084,7 +1085,7 @@ class exhibitssetup {
             if (config.useGL == 1)
                 columns.push(
                     {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, width: 320,
-                        editor: "list", editorParams: {values: glEditorList,},
+                        editor: "list", editorParams: {values: glEditorList, autocomplete: true, },
                         formatter: "lookup", formatterParams: glEditorList,
                         headerFilter: true, headerFilterParams: {values: glEditorList}, }
                 );

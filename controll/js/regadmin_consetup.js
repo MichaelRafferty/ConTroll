@@ -501,18 +501,18 @@ class consetup {
                 {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
                 {
                     title: "Category", field: "memCategory",
-                    editor: "list", editorParams: {values: data['memCats'],},
+                    editor: "list", editorParams: {values: data['memCats'], autocomplete: true, },
                     headerFilter: true, headerFilterParams: {values: data['memCats']}
                 },
                 {
                     title: "Type", field: "memType",
-                    editor: "list", editorParams: {values: data['memTypes'],},
+                    editor: "list", editorParams: {values: data['memTypes'], autocomplete: true, },
                     headerFilter: true,
                     headerFilterParams: {values: data['memTypes'],}
                 },
                 {
                     title: "Age", field: "memAge",
-                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'], autocomplete: true, },
                     headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
