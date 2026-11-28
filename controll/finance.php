@@ -821,7 +821,7 @@ EOS;
             <div class='row mt-2'>
                 <div class='col-sm-6' id='mbrConfigDiv'><H1 class='h3'><b>Membership General Ledger Configuration:</b></H1></div>
                 <div class='col-sm-5 text-end'>
-                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_new'>How to filter on the Start/End Date column</a></strong>
+                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_blank'>How to filter on the Start/End Date column</a></strong>
                 </div>
             </div>
             <div class='row mt-2'>
@@ -854,7 +854,7 @@ EOS;
             <div class='row mt-2'>
                 <div class='col-sm-6' id='exhConfigDiv'><H1 class='h3'><b>Exhibitors General Ledger Configuration:</b></H1></div>
                 <div class='col-sm-5 text-end'>
-                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_new'>How to filter on the Start/End Date column</a></strong>
+                    <strong><a href='markdown.php?mdf=md/DateFiltering.md' target='_blank'>How to filter on the Start/End Date column</a></strong>
                 </div>
             </div>
             <div class='row mt-2'>

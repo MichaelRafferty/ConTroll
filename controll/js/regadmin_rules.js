@@ -230,7 +230,7 @@ class rulesSetup {
                 <h4><strong>Edit Membership Rules:</strong></h4>              
             </div>
             <div class="col-sm-6 text-end">
-                <strong><a href="markdown.php?mdf=md/Membership-Rules.md" target="_new">Display Rules Documentation</a></strong>
+                <strong><a href="markdown.php?mdf=md/Membership-Rules.md" target="_blank">Display Rules Documentation</a></strong>
             </div>
         </div>
         <div class="row">

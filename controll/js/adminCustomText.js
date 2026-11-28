@@ -33,7 +33,7 @@ class customTextSetup {
             <h4><strong>Edit Custom Text:</strong></h4>
        </div>
        <div class="col-sm-6 text-end">
-            <strong><a href="markdown.php?mdf=md/CustomText.md" target="_new">Display Custom Text Documentation</a></strong>
+            <strong><a href="markdown.php?mdf=md/CustomText.md" target="_blank">Display Custom Text Documentation</a></strong>
         </div>
     </div>
     <div class="row">

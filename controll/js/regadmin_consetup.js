@@ -275,7 +275,7 @@ class consetup {
             <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
         </div>
        <div class="col-sm-5 text-end">
-           <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_new">How to filter on the Price Break column</a></strong>
+           <strong><a href="markdown.php?mdf=md/DateFiltering.md" target="_blank">How to filter on the Price Break column</a></strong>
        </div>
     </div>
 `;
