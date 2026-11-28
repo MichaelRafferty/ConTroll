@@ -77,11 +77,11 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $country
 <?php
 }
 // drawVerifyInterestsBlock - non modal version of validate interests
-function drawVerifyInterestsBlock($interests) : void {
+function drawVerifyInterestsBlock($interests, $class='portal') : void {
 ?>
     <form id='editInterests' class='form-floating' onsubmit='return false;'>
         <?php
-        drawInterestList($interests);
+        drawInterestList($interests, false, $class);
         ?>
     </form>
 <?php

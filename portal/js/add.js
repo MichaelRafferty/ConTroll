@@ -362,6 +362,14 @@ class Add {
         }
         return true;
     }
+
+    // interest select item - copied from portal.js
+    // check for need to open the notes section
+    updateInterestSelect(id) {
+        let checked = document.getElementById('i_' + id).checked;
+        let prompt = document.getElementById('i_p_' + id).innerHTML;
+        document.getElementById('i_d_' + id).hidden = ((!checked) || prompt.trim() == '');
+    }
 }
 
 function addNewEmailListener(event) {

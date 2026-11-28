@@ -161,7 +161,7 @@ drawVerifyPersonInfo($policies, $condata['startdate'], $ageList, $countryOptions
         </div>  
 EOS;
 
-            drawVerifyInterestsBlock($interests);
+            drawVerifyInterestsBlock($interests, 'add');
         }
         ?>
     </div>
