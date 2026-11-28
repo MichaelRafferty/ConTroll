@@ -149,7 +149,6 @@ function draw(data, textStatus, jqXHR) {
     document.getElementById('artControlPaginationDiv').hidden = data.art.length <= 50;
     if(itemTable != null) {
         itemTable.replaceData(data.art);
-        itemTable.setPagination(data.art.length > 50);
     } else {
         itemTable = new Tabulator('#artItems_table', {
             mxHeight: "800px",
