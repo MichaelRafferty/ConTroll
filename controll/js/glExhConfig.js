@@ -65,7 +65,7 @@ class glExhConfig {
             columns: [
                 // tableName, fieldName, glNum, id, title
                 {title: "GL Num (Click cell to edit)", field: "glNum", headerSort: false, formatter: "lookup", formatterParams: this.#glEditorList,
-                    headerFilter: true, editor: "list", editorParams: {values: this.#glEditorList}, minWidth: 300, },
+                    headerFilter: true, editor: "list", editorParams: {values: this.#glEditorList}, minWidth: 300, autocomplete: true, },
                 {title: "Table Row Id", field: "id", headerWordWrap: true, headerFilter: true, visible: true, },
                 {title: "Table Name", field: "tableName", headerWordWrap: true, headerFilter: true, },
                 {title: "Field Name", field: "fieldName", headerWordWrap: true, headerFilter: true, },
