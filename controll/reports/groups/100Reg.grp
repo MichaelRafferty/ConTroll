@@ -14,3 +14,10 @@
 	template=regByCategory.rpt
 	auth=registration
 	type=rpt
+[200ManagersAndManaged]
+	name="Managers"
+	description="People who manage other people"
+	template=reg_managersAndManaged.rpt
+	auth=registration
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Conid (number only)/~/#con.id#"

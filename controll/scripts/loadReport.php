@@ -117,7 +117,11 @@ foreach ($sections AS $key => $section) {
     } else {
         $sql .= "), ";
     }
-    $sql .= $cte['name'] .  ' AS (' . PHP_EOL . $cte['select'] . PHP_EOL . $cte['tables'] . PHP_EOL . $cte['where'] . PHP_EOL;
+    if (array_key_exists('where', $cte))
+        $cteWhere = $cte['where'];
+    else
+        $cteWhere = '';
+    $sql .= $cte['name'] .  ' AS (' . PHP_EOL . $cte['select'] . PHP_EOL . $cte['tables'] . PHP_EOL . $cteWhere . PHP_EOL;
 }
 if ($first == false)
     $sql .= ")\n";

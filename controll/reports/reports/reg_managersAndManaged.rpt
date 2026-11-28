@@ -1,0 +1,68 @@
+[report]
+    name="List of persons who manage other persons"
+    auth=registration
+    csvfile="managersAndManaged"
+    totals=bottom
+    index=perid
+
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+
+; associate ages with person IDs
+[C001]
+    name=perIdsAndAges
+    select="SELECT r.perid AS id, m.memAge AS age"
+    tables="FROM reg r LEFT OUTER JOIN memList m ON m.id = r.memId"
+    where="WHERE r.conid = ? AND m.memAge != 'all'"
+
+; group the ages by person ID
+[C002]
+    name=groupedAges
+    select="SELECT id, group_concat(DISTINCT age ORDER BY age SEPARATOR ' ') AS groupedAge"
+    tables="from perIdsAndAges group by id"
+
+[F010]
+    name=managerId
+    sql="p.managedby"
+    title="Manager ID"
+[F020]
+    name=managerFullName
+    sql="m.fullname"
+    title="Manager Full Name"
+    filter=fullname
+[F025]
+    name=managerEmail
+    sql="m.email_addr"
+    title="Manager Email"
+[F030]
+    name=managedId
+    sql="p.id"
+    title="Managed ID"
+[F040]
+    name=managedFullName
+    sql="p.fullname"
+    title="Managed Full Name"
+    filter=fullname
+[F050]
+    name=managedAgeList
+    sql="IFNULL(p.currentAgeType, g.groupedAge)"
+    title="Managed Age"
+    filter=true
+
+[T001]
+    name=perinfo
+    alias=p
+[T002]
+    name=groupedAges
+    alias=g
+    join="p.id = g.id"
+    left=true
+[T003]
+    name=perinfo
+    alias=m
+    join="m.id = p.managedby"
+
+[sort]
+    001="p.managedBy, p.id"
