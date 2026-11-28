@@ -86,3 +86,8 @@ function makePurchase(token, label) {
 function payActionComplete(paymentIntent, post, payParams) {
     pos.payActionComplete(paymentIntent, post, payParams);
 }
+
+// no op function country change
+function countryChange() {
+    return;
+}

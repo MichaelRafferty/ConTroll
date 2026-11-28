@@ -86,7 +86,7 @@ function payActionComplete(paymentIntent, post, payParams) {
     pos.payActionComplete(paymentIntent, post, payParams);
 }
 
-
+// no op function country change
 function countryChange() {
-    console.log("TODO: add country Change/USPS check");
+    return
 }
