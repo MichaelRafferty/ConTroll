@@ -75,7 +75,7 @@ class glMbrConfig {
             columns: [
                 // memId, mdId, memType, memCategory, memAge, label, startdate, enddate, glNum
                 {title: "GL Num (Click cell to edit)", field: "glNum", headerSort: false, formatter: "lookup", formatterParams: this.#glEditorList,
-                    headerFilter: true, editor: "list", editorParams: {values: this.#glEditorList}, minWidth: 300, autocomplete: true, },
+                    headerFilter: true, editor: "list", editorParams: {values: this.#glEditorList, autocomplete: true, }, minWidth: 300, },
                 {title: "Mem Id", field: "memid", headerWordWrap: true, headerFilter: true },
                 {title: "MLD Id", field: "mdId", headerWordWrap: true, visible: false, },
                 {title: "Mem Type", field: "memType", headerWordWrap: true, headerFilter: true, },
